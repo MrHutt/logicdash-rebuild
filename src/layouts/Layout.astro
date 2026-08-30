@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { title } = Astro.props;
+const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 ---
 
 <html lang="en">
@@ -16,7 +17,7 @@ const { title } = Astro.props;
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>{title} | LogicDash</title>
+		<title>{pageTitle}</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -79,7 +80,7 @@ const { title } = Astro.props;
 
 	main {
 		flex: 1;
-		padding: 2.5rem 1.5rem 3.5rem;
+		padding: 1.25rem 1.5rem 1.5rem;
 		max-width: 960px;
 		margin: 0 auto;
 		width: 100%;

@@ -1,8 +1,182 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const secretExample = "1011";
+const guessExample = "1101";
 ---
 
 <Layout title="How to Play">
-	<h1>How to Play</h1>
-	<p>Instructions for playing LogicDash games will go here.</p>
+	<div class="page-intro">
+		<h1>How to Play</h1>
+		<p>LogicDash and Overclocked are binary guessing games. Here's the whole rulebook.</p>
+	</div>
+
+	<div class="rules">
+		<section class="rule">
+			<h2>1. Making a guess</h2>
+			<p>
+				Tap the bit buttons to flip each one between <code>0</code> and <code>1</code>, building a
+				binary string the same length as the secret — 5 bits in LogicDash, 6 bits in Overclocked.
+				Press <strong>Guess</strong> to submit it.
+			</p>
+		</section>
+
+		<section class="rule">
+			<h2>2. Reading the result</h2>
+			<p>
+				After each guess you get one number: how many bits <strong>differ</strong> from the secret.
+				This is the <em>Hamming distance</em>. Lower is closer — <code>0</code> means an exact match.
+			</p>
+			<p>
+				The game only ever tells you <strong>how many</strong> bits are wrong, never <strong>which
+				ones</strong>. Narrowing that down guess by guess is the whole puzzle.
+			</p>
+		</section>
+
+		<section class="rule">
+			<h2>3. Worked example</h2>
+			<p>Say the hidden secret is <code>{secretExample}</code> and you guess <code>{guessExample}</code>:</p>
+			<p class="example-note">
+				(Shown side by side here for teaching — in an actual game you never see the secret until
+				you match it or run out of attempts.)
+			</p>
+			<div class="example">
+				<div class="example-row">
+					<span class="example-label">Secret</span>
+					<div class="example-tiles">
+						{secretExample.split("").map((bit) => <span class="example-tile">{bit}</span>)}
+					</div>
+				</div>
+				<div class="example-row">
+					<span class="example-label">Guess</span>
+					<div class="example-tiles">
+						{
+							guessExample.split("").map((bit, i) => (
+								<span class={`example-tile ${bit !== secretExample[i] ? "example-tile--diff" : ""}`}>
+									{bit}
+								</span>
+							))
+						}
+					</div>
+				</div>
+			</div>
+			<p>
+				Positions 2 and 3 differ (<code>0↔1</code> and <code>1↔0</code>); the other two match. The
+				game would report <strong>2 bits off</strong> — nothing more.
+			</p>
+		</section>
+
+		<section class="rule">
+			<h2>4. Attempts</h2>
+			<p>
+				You get 6 guesses per game, Wordle-style. Run out without matching and the secret is
+				revealed — hit <strong>Play Again</strong> to get a fresh one instantly, no reload needed.
+			</p>
+		</section>
+	</div>
 </Layout>
+
+<style>
+	.page-intro {
+		margin-bottom: 1.5rem;
+	}
+
+	.page-intro h1 {
+		margin: 0 0 0.3rem;
+		font-size: clamp(1.5rem, 4vw, 2rem);
+	}
+
+	.page-intro p {
+		margin: 0;
+	}
+
+	.rules {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.rule {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 16px;
+		padding: 1.1rem 1.35rem;
+	}
+
+	.rule h2 {
+		margin: 0 0 0.5rem;
+		font-size: 1.05rem;
+	}
+
+	.rule p {
+		margin: 0 0 0.5rem;
+	}
+
+	.rule p:last-child {
+		margin-bottom: 0;
+	}
+
+	.example-note {
+		font-size: 0.8rem;
+		font-style: italic;
+	}
+
+	.rule code {
+		font-family: var(--font-mono);
+		background: var(--color-surface-alt);
+		border: 1px solid var(--color-border);
+		border-radius: 4px;
+		padding: 0.05rem 0.35rem;
+		color: var(--color-text);
+	}
+
+	.rule strong {
+		color: var(--color-text);
+	}
+
+	.example {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin: 0.75rem 0;
+	}
+
+	.example-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.example-label {
+		width: 4rem;
+		flex-shrink: 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.example-tiles {
+		display: flex;
+		gap: 0.4rem;
+	}
+
+	.example-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		border-radius: 8px;
+		border: 1px solid #363c52;
+		background: var(--color-surface-alt);
+		color: #ced2e2;
+		font-family: var(--font-mono);
+		font-weight: 600;
+		font-size: 1.05rem;
+	}
+
+	.example-tile--diff {
+		border-color: color-mix(in srgb, var(--color-danger) 55%, transparent);
+		color: var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface-alt));
+	}
+</style>

@@ -3,9 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import HammingGame from "../components/HammingGame.astro";
 ---
 
-<Layout title="5-Bit">
+<Layout title="LogicDash">
 	<div class="page-intro">
-		<h1>5-Bit</h1>
+		<h1>LogicDash</h1>
 		<p>Guess the 5-bit secret. Each guess shows how many bits differ from the answer.</p>
 	</div>
 	<HammingGame bitLength={5} maxAttempts={6} />
@@ -13,12 +13,12 @@ import HammingGame from "../components/HammingGame.astro";
 
 <style>
 	.page-intro {
-		margin-bottom: 1.75rem;
+		margin-bottom: 1rem;
 	}
 
 	.page-intro h1 {
-		margin: 0 0 0.4rem;
-		font-size: clamp(1.75rem, 5vw, 2.25rem);
+		margin: 0 0 0.3rem;
+		font-size: clamp(1.5rem, 4vw, 2rem);
 	}
 
 	.page-intro p {
