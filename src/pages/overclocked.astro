@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import HammingGame from "../components/HammingGame.astro";
 ---
 
 <Layout title="Overclocked">
 	<h1>Overclocked</h1>
-	<p>Placeholder page for the 6-bit game, "Overclocked". Coming soon.</p>
+	<p>Guess the 6-bit secret. Each guess shows how many bits differ from the answer.</p>
+	<HammingGame bitLength={6} maxAttempts={6} />
 </Layout>

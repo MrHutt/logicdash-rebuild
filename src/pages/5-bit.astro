@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import HammingGame from "../components/HammingGame.astro";
 ---
 
 <Layout title="5-Bit">
 	<h1>5-Bit</h1>
-	<p>Placeholder page for the 5-bit game. Coming soon.</p>
+	<p>Guess the 5-bit secret. Each guess shows how many bits differ from the answer.</p>
+	<HammingGame bitLength={5} maxAttempts={6} />
 </Layout>

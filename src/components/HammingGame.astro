@@ -1,0 +1,210 @@
+---
+interface Props {
+	bitLength: number;
+	maxAttempts?: number;
+}
+
+const { bitLength, maxAttempts = 6 } = Astro.props;
+const placeholder = "0".repeat(bitLength);
+---
+
+<div class="hamming-game" data-bit-length={bitLength} data-max-attempts={maxAttempts}>
+	<form class="guess-form">
+		<input
+			type="text"
+			inputmode="numeric"
+			pattern="[01]*"
+			maxlength={bitLength}
+			placeholder={placeholder}
+			aria-label={`Enter a ${bitLength}-bit binary guess`}
+			class="guess-input"
+			autocomplete="off"
+		/>
+		<button type="submit" class="guess-submit">Guess</button>
+	</form>
+	<p class="game-message" role="status"></p>
+	<div class="guess-history"></div>
+</div>
+
+<style>
+	.hamming-game {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		max-width: 480px;
+	}
+
+	.guess-form {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.guess-input {
+		flex: 1;
+		font-family: monospace;
+		font-size: 1.1rem;
+		letter-spacing: 0.15em;
+		padding: 0.5rem;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+	}
+
+	.guess-submit {
+		padding: 0.5rem 1rem;
+		border: 1px solid #333;
+		border-radius: 4px;
+		background: #f5f5f5;
+		cursor: pointer;
+	}
+
+	.guess-submit:disabled,
+	.guess-input:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.game-message {
+		min-height: 1.5em;
+		font-size: 0.95rem;
+	}
+
+	.guess-history {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.guess-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.guess-tiles {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.guess-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border: 1px solid #999;
+		border-radius: 4px;
+		font-family: monospace;
+		font-size: 1.1rem;
+	}
+
+	.guess-distance {
+		font-size: 0.9rem;
+		color: #444;
+	}
+</style>
+
+<script>
+	function randomBinaryString(length: number): string {
+		let result = "";
+		for (let i = 0; i < length; i++) {
+			result += Math.random() < 0.5 ? "0" : "1";
+		}
+		return result;
+	}
+
+	function hammingDistance(a: string, b: string): number {
+		let distance = 0;
+		for (let i = 0; i < a.length; i++) {
+			if (a[i] !== b[i]) distance++;
+		}
+		return distance;
+	}
+
+	function initGame(root: HTMLElement) {
+		const bitLength = Number(root.dataset.bitLength);
+		const maxAttempts = Number(root.dataset.maxAttempts);
+		const secret = randomBinaryString(bitLength);
+
+		const form = root.querySelector<HTMLFormElement>(".guess-form")!;
+		const input = root.querySelector<HTMLInputElement>(".guess-input")!;
+		const submitButton = root.querySelector<HTMLButtonElement>(".guess-submit")!;
+		const message = root.querySelector<HTMLParagraphElement>(".game-message")!;
+		const history = root.querySelector<HTMLDivElement>(".guess-history")!;
+
+		let attempts = 0;
+		let gameOver = false;
+
+		function setMessage(text: string) {
+			message.textContent = text;
+		}
+
+		function renderGuessRow(guess: string, distance: number) {
+			const row = document.createElement("div");
+			row.className = "guess-row";
+
+			const tiles = document.createElement("div");
+			tiles.className = "guess-tiles";
+			for (const bit of guess) {
+				const tile = document.createElement("span");
+				tile.className = "guess-tile";
+				tile.textContent = bit;
+				tiles.appendChild(tile);
+			}
+
+			const distanceEl = document.createElement("span");
+			distanceEl.className = "guess-distance";
+			distanceEl.textContent =
+				distance === 0 ? "Match!" : `${distance} bit${distance === 1 ? "" : "s"} off`;
+
+			row.appendChild(tiles);
+			row.appendChild(distanceEl);
+			history.prepend(row);
+		}
+
+		function endGame(won: boolean) {
+			gameOver = true;
+			input.disabled = true;
+			submitButton.disabled = true;
+			setMessage(
+				won
+					? `You matched it in ${attempts} guess${attempts === 1 ? "" : "es"}!`
+					: `Out of attempts. The answer was ${secret}.`,
+			);
+		}
+
+		function submitGuess(event: SubmitEvent) {
+			event.preventDefault();
+			if (gameOver) return;
+
+			const guess = input.value.trim();
+
+			if (guess.length !== bitLength || !/^[01]+$/.test(guess)) {
+				setMessage(`Enter exactly ${bitLength} bits (0s and 1s).`);
+				return;
+			}
+
+			attempts++;
+			const distance = hammingDistance(guess, secret);
+			renderGuessRow(guess, distance);
+			input.value = "";
+			input.focus();
+
+			if (distance === 0) {
+				endGame(true);
+				return;
+			}
+
+			if (attempts >= maxAttempts) {
+				endGame(false);
+				return;
+			}
+
+			setMessage(`Attempt ${attempts} of ${maxAttempts}.`);
+		}
+
+		form.addEventListener("submit", submitGuess);
+		setMessage(`Attempt 0 of ${maxAttempts}. Enter your first guess.`);
+	}
+
+	document.querySelectorAll<HTMLElement>(".hamming-game").forEach(initGame);
+</script>
