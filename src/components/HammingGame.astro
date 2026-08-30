@@ -43,7 +43,10 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		<button type="submit" class="guess-submit">Guess</button>
 	</form>
 	<p class="game-status" role="status"></p>
-	<div class="game-banner" hidden></div>
+	<div class="game-banner" hidden>
+		<p class="game-banner-main"></p>
+		<p class="game-banner-flavor"></p>
+	</div>
 	<button type="button" class="play-again" hidden>Play Again</button>
 	<div class="guess-history"></div>
 </div>
@@ -229,12 +232,23 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	.game-banner {
 		text-align: center;
 		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: clamp(0.8rem, 2.2vw, 0.95rem);
 		padding: 0.55rem 0.9rem;
 		border-radius: 8px;
 		border: 1px solid transparent;
 		background: var(--led-off-bg);
+	}
+
+	.game-banner-main {
+		margin: 0;
+		font-weight: 700;
+		font-size: clamp(0.8rem, 2.2vw, 0.95rem);
+	}
+
+	.game-banner-flavor {
+		margin: 0.3rem 0 0;
+		font-weight: 500;
+		font-size: 0.72rem;
+		opacity: 0.75;
 	}
 
 	.game-banner[hidden] {
@@ -377,6 +391,64 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 </style>
 
 <script>
+	// Flavor-text pools. Shared here so a future "Share Result" feature can reuse the
+	// same selection logic and reproduce exactly what the player saw on screen.
+	const WIN_FLAVOR_TEXT: Record<number, string[]> = {
+		1: [
+			"Lucky guess, or are you secretly the Oracle from The Matrix?",
+			"One shot. Thanos would be proud.",
+			"Either incredible instinct or you peeked. We won't ask.",
+		],
+		2: [
+			"Fast. Suspiciously fast.",
+			"That's faster than your WiFi reconnecting after a power cut.",
+			"Sherlock Holmes could not have deduced it quicker.",
+		],
+		3: [
+			"Solid. A modern CPU would be jealous of that clock speed.",
+			"Efficient. Very 'best practices.'",
+			"Clean solve. Textbook, almost.",
+		],
+		4: [
+			"Respectable. Somewhere between a smartphone and a calculator, speed-wise.",
+			"Good work — you'd survive a technical interview.",
+			"R2-D2 would beep approvingly.",
+		],
+		5: [
+			"You're slower than a Commodore 64 loading a game from tape.",
+			"Getting there — like buffering on old YouTube.",
+			"That's the scenic route, but you made it.",
+		],
+		6: [
+			"Down to the wire — dial-up modem energy.",
+			"Nail-biter. Respect for not giving up.",
+			"Right under the wire — like finishing an exam as time's called.",
+		],
+	};
+
+	const LOSS_FLAVOR_TEXT: string[] = [
+		"Out of attempts. Even dial-up would've gotten there eventually.",
+		"No dice. Time to reboot and try again.",
+		"The signal was lost. Try recalibrating.",
+		"Not today — even HAL 9000 has off days.",
+		"Connection timed out. Give it another shot.",
+		"System failure. Blame the hardware, not yourself.",
+		"You've been disconnected. Try reconnecting.",
+	];
+
+	function pickRandom<T>(items: T[]): T {
+		return items[Math.floor(Math.random() * items.length)];
+	}
+
+	function winFlavorText(attempts: number): string {
+		const bucketKey = Math.min(Math.max(attempts, 1), 6);
+		return pickRandom(WIN_FLAVOR_TEXT[bucketKey] ?? WIN_FLAVOR_TEXT[6]);
+	}
+
+	function lossFlavorText(): string {
+		return pickRandom(LOSS_FLAVOR_TEXT);
+	}
+
 	function randomBinaryString(length: number): string {
 		let result = "";
 		for (let i = 0; i < length; i++) {
@@ -474,6 +546,8 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		const submitButton = root.querySelector<HTMLButtonElement>(".guess-submit")!;
 		const status = root.querySelector<HTMLParagraphElement>(".game-status")!;
 		const banner = root.querySelector<HTMLDivElement>(".game-banner")!;
+		const bannerMain = banner.querySelector<HTMLParagraphElement>(".game-banner-main")!;
+		const bannerFlavor = banner.querySelector<HTMLParagraphElement>(".game-banner-flavor")!;
 		const playAgainButton = root.querySelector<HTMLButtonElement>(".play-again")!;
 		const history = root.querySelector<HTMLDivElement>(".guess-history")!;
 
@@ -543,8 +617,9 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 			history.prepend(row);
 		}
 
-		function showBanner(kind: "success" | "failure", text: string) {
-			banner.textContent = text;
+		function showBanner(kind: "success" | "failure", text: string, flavor: string) {
+			bannerMain.textContent = text;
+			bannerFlavor.textContent = flavor;
 			banner.className = `game-banner game-banner--${kind}`;
 			banner.hidden = false;
 		}
@@ -554,12 +629,15 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 			for (const toggle of toggles) toggle.disabled = true;
 			submitButton.disabled = true;
 			setStatus("");
-			showBanner(
-				won ? "success" : "failure",
-				won
-					? `You matched it in ${attempts} guess${attempts === 1 ? "" : "es"}!`
-					: `Out of attempts. The answer was ${secret}.`,
-			);
+			if (won) {
+				showBanner(
+					"success",
+					`You matched it in ${attempts} guess${attempts === 1 ? "" : "es"}!`,
+					winFlavorText(attempts),
+				);
+			} else {
+				showBanner("failure", `Out of attempts. The answer was ${secret}.`, lossFlavorText());
+			}
 			playAgainButton.hidden = false;
 		}
 
@@ -573,7 +651,8 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 			for (const toggle of toggles) toggle.disabled = false;
 			submitButton.disabled = false;
 			banner.hidden = true;
-			banner.textContent = "";
+			bannerMain.textContent = "";
+			bannerFlavor.textContent = "";
 			playAgainButton.hidden = true;
 			setStatus(`${attemptsLeftLabel(maxAttempts)}. Tap bits to set your first guess.`);
 		}
