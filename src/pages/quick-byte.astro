@@ -1,0 +1,240 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HammingBoard from "../components/HammingBoard.astro";
+---
+
+<Layout title="Today's Quick Byte">
+	<div class="page-intro">
+		<h1>Today's Quick Byte</h1>
+		<p>Three 5-bit rounds. Same puzzles for everyone today — come back tomorrow for new ones.</p>
+	</div>
+
+	<div class="quick-byte-play">
+		<p class="quick-byte-round-label"></p>
+		<HammingBoard bitLength={5} maxAttempts={6} />
+		<button type="button" class="quick-byte-next" hidden>Next Round</button>
+	</div>
+
+	<div class="quick-byte-results" hidden>
+		<p class="quick-byte-results-label">Today's result</p>
+		<p class="quick-byte-sequence"></p>
+		<p class="quick-byte-total"></p>
+		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte.</p>
+	</div>
+</Layout>
+
+<style>
+	.page-intro {
+		margin-bottom: 0.75rem;
+	}
+
+	.page-intro h1 {
+		margin: 0 0 0.15rem;
+		font-size: clamp(1.25rem, 3vw, 1.6rem);
+	}
+
+	.page-intro p {
+		margin: 0;
+		font-size: 0.85rem;
+	}
+
+	.quick-byte-play {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.quick-byte-play[hidden] {
+		display: none;
+	}
+
+	.quick-byte-round-label {
+		margin: 0;
+		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.quick-byte-next {
+		align-self: center;
+		padding: 0.45rem 1.6rem;
+		border: 1px solid #ffae2e;
+		border-radius: 8px;
+		background: color-mix(in srgb, #ffae2e 18%, #120d09);
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+		text-shadow: 0 0 6px #ffae2e;
+		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 45%, transparent);
+		transition:
+			background 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.1s ease;
+	}
+
+	.quick-byte-next:hover {
+		background: color-mix(in srgb, #ffae2e 30%, #120d09);
+		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 70%, transparent);
+	}
+
+	.quick-byte-next:active {
+		transform: scale(0.97);
+	}
+
+	.quick-byte-next[hidden] {
+		display: none;
+	}
+
+	.quick-byte-results {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 16px;
+		padding: 1.5rem 1rem;
+		text-align: center;
+	}
+
+	.quick-byte-results[hidden] {
+		display: none;
+	}
+
+	.quick-byte-results-label {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+	}
+
+	.quick-byte-sequence {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(1.5rem, 6vw, 2.25rem);
+		color: #fff3d6;
+		text-shadow:
+			0 0 6px #ffae2e,
+			0 0 14px #ffae2e;
+	}
+
+	.quick-byte-total {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1rem;
+		color: var(--color-text);
+	}
+
+	.quick-byte-return-note {
+		margin: 0.5rem 0 0;
+		font-size: 0.8rem;
+	}
+</style>
+
+<script>
+	import { createHammingGame } from "../lib/hammingGame";
+	import { getLocalDateString, generateDailySecrets } from "../lib/dailySeed";
+
+	// Result storage is browser-local only for now (no accounts yet), keyed by the
+	// player's local calendar day. Cross-device sync will come later once accounts exist.
+	const STORAGE_PREFIX = "logicdash:quickbyte:";
+
+	const BIT_LENGTH = 5;
+	const MAX_ATTEMPTS = 6;
+	const ROUND_COUNT = 3;
+
+	interface QuickByteResult {
+		perRound: number[];
+		total: number;
+		completedAt: string;
+	}
+
+	const dateString = getLocalDateString();
+	const storageKey = STORAGE_PREFIX + dateString;
+
+	const playSection = document.querySelector<HTMLElement>(".quick-byte-play")!;
+	const roundLabel = document.querySelector<HTMLElement>(".quick-byte-round-label")!;
+	const nextButton = document.querySelector<HTMLButtonElement>(".quick-byte-next")!;
+	const resultsSection = document.querySelector<HTMLElement>(".quick-byte-results")!;
+	const sequenceEl = document.querySelector<HTMLElement>(".quick-byte-sequence")!;
+	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
+
+	function readStoredResult(): QuickByteResult | null {
+		try {
+			const raw = localStorage.getItem(storageKey);
+			if (!raw) return null;
+			return JSON.parse(raw) as QuickByteResult;
+		} catch {
+			return null;
+		}
+	}
+
+	function storeResult(result: QuickByteResult) {
+		try {
+			localStorage.setItem(storageKey, JSON.stringify(result));
+		} catch {
+			// localStorage unavailable (private browsing, quota, etc.) — the result just
+			// won't persist across reloads; gameplay itself is unaffected.
+		}
+	}
+
+	function showResults(perRound: number[]) {
+		playSection.hidden = true;
+		resultsSection.hidden = false;
+		sequenceEl.textContent = perRound.join("-");
+		totalEl.textContent = `Total: ${perRound.reduce((sum, n) => sum + n, 0)}`;
+	}
+
+	const alreadyPlayed = readStoredResult();
+
+	if (alreadyPlayed) {
+		showResults(alreadyPlayed.perRound);
+	} else {
+		const secrets = generateDailySecrets(dateString, BIT_LENGTH, ROUND_COUNT);
+		const perRound: number[] = [];
+		let roundIndex = 0;
+
+		function updateRoundLabel() {
+			roundLabel.textContent = `Round ${roundIndex + 1} of ${ROUND_COUNT}`;
+		}
+
+		const board = document.querySelector<HTMLElement>(".hamming-game")!;
+		const controller = createHammingGame(board, {
+			bitLength: BIT_LENGTH,
+			maxAttempts: MAX_ATTEMPTS,
+			secret: secrets[0],
+			showPlayAgain: false,
+			onRoundEnd: ({ attempts }) => {
+				perRound.push(attempts);
+				nextButton.textContent = roundIndex < ROUND_COUNT - 1 ? "Next Round" : "See Results";
+				nextButton.hidden = false;
+			},
+		});
+
+		updateRoundLabel();
+
+		nextButton.addEventListener("click", () => {
+			nextButton.hidden = true;
+			if (roundIndex < ROUND_COUNT - 1) {
+				roundIndex++;
+				updateRoundLabel();
+				controller.reset(secrets[roundIndex]);
+			} else {
+				const total = perRound.reduce((sum, n) => sum + n, 0);
+				storeResult({ perRound, total, completedAt: new Date().toISOString() });
+				showResults(perRound);
+			}
+		});
+	}
+</script>
