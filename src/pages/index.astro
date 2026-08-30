@@ -1,11 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../lib/hammingGame";
+
+const teaserBits = ["1", "0", "1", "1", "0"];
 
 const games = [
 	{
 		href: "/5-bit",
 		name: "Classic",
-		blurb: "The original 5-bit puzzle. Six guesses, play anytime.",
+		blurb: "The original 5-bit puzzle. Six guesses.",
 	},
 	{
 		href: "/overclocked",
@@ -23,9 +26,7 @@ const games = [
 			each guess, we tell you <em>how many</em> digits are wrong — never <em>which</em>{" "}
 			ones. Use logic to find the answer.
 		</p>
-		<p class="hero-flavor">
-			Warning: mildly addictive. Side effects may include muttering binary under your breath.
-		</p>
+		<p class="hero-flavor">Warning: known to blow a few mental fuses.</p>
 	</section>
 
 	<img
@@ -39,11 +40,20 @@ const games = [
 
 	<div class="teaser">
 		<div class="teaser-tiles">
-			<span class="teaser-tile teaser-tile--on">1</span>
-			<span class="teaser-tile">0</span>
-			<span class="teaser-tile teaser-tile--on">1</span>
-			<span class="teaser-tile teaser-tile--on">1</span>
-			<span class="teaser-tile">0</span>
+			{
+				teaserBits.map((bit) => (
+					<span class={`teaser-tile ${bit === "1" ? "teaser-tile--on" : ""}`}>
+						<svg class="teaser-digit" viewBox="0 0 60 100" aria-hidden="true">
+							{Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
+								<polygon
+									class={`teaser-segment ${SEGMENTS_BY_DIGIT[bit].includes(seg) ? "is-on" : ""}`}
+									points={points}
+								/>
+							))}
+						</svg>
+					</span>
+				))
+			}
 		</div>
 		<span class="teaser-badge">2 bits off</span>
 	</div>
@@ -57,7 +67,7 @@ const games = [
 				>Three rounds, once a day — same puzzle for everyone. This is the one to come back for.</span
 			>
 		</div>
-		<span class="quick-byte-feature-cta">Play Today's Byte →</span>
+		<span class="quick-byte-feature-cta">Play Now →</span>
 	</a>
 
 	<section class="game-picker">
@@ -134,22 +144,37 @@ const games = [
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 2rem;
-		height: 2rem;
+		width: 2.2rem;
+		height: 2.2rem;
 		border-radius: 22%;
 		border: 1px solid #2b1f16;
 		background: #120d09;
-		color: #4a3420;
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 1rem;
 	}
 
 	.teaser-tile--on {
-		color: #fff3d6;
-		background: color-mix(in srgb, #ffae2e 22%, #120d09);
 		border-color: #ffae2e;
 		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 55%, transparent);
+	}
+
+	.teaser-digit {
+		width: 68%;
+		height: 68%;
+		overflow: visible;
+	}
+
+	.teaser-segment {
+		fill: #1c140f;
+	}
+
+	.teaser-tile:not(.teaser-tile--on) .teaser-segment.is-on {
+		fill: #4a3420;
+	}
+
+	.teaser-tile--on .teaser-segment.is-on {
+		fill: #fff3d6;
+		filter:
+			drop-shadow(0 0 3px #ffae2e)
+			drop-shadow(0 0 8px #ffae2e);
 	}
 
 	.teaser-badge {

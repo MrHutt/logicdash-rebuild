@@ -107,7 +107,7 @@ function createScopedElement<K extends keyof HTMLElementTagNameMap>(
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-const SEGMENT_POINTS: Record<string, string> = {
+export const SEGMENT_POINTS: Record<string, string> = {
 	a: "8,8 14,2 46,2 52,8 46,14 14,14",
 	b: "52,8 58,14 58,44 52,50 46,44 46,14",
 	c: "52,50 58,56 58,86 52,92 46,86 46,56",
@@ -117,7 +117,7 @@ const SEGMENT_POINTS: Record<string, string> = {
 	g: "8,50 14,44 46,44 52,50 46,56 14,56",
 };
 
-const SEGMENTS_BY_DIGIT: Record<string, string[]> = {
+export const SEGMENTS_BY_DIGIT: Record<string, string[]> = {
 	"0": ["a", "b", "c", "d", "e", "f"],
 	"1": ["b", "c"],
 };
