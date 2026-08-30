@@ -1,8 +1,148 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const games = [
+	{
+		href: "/5-bit",
+		name: "LogicDash",
+		blurb: "The original 5-bit puzzle. Six guesses, play anytime.",
+	},
+	{
+		href: "/overclocked",
+		name: "Overclocked",
+		blurb: "Same rules, 6 bits. Tighter odds, sharper focus.",
+	},
+	{
+		href: "/quick-byte",
+		name: "Today's Quick Byte",
+		blurb: "Three rounds, once a day — same puzzle for everyone.",
+	},
+];
 ---
 
-<Layout title="Home">
-	<h1>LogicDash</h1>
-	<p>Welcome to LogicDash. Pick a game to get started.</p>
+<Layout title="LogicDash">
+	<section class="hero">
+		<h1>Guess the bits. Beat the distance.</h1>
+		<p>
+			LogicDash is a small family of binary logic puzzles — think Wordle, but for bits. Flip toggles
+			to build a guess; each round only tells you <em>how many</em> bits are wrong, never <em>which</em>{" "}
+			ones, until you close the distance to zero.
+		</p>
+	</section>
+
+	<img
+		class="hero-art"
+		src="/logicdash-runners.png"
+		alt="Two cartoon figures shaped like a running &quot;0&quot; and &quot;1&quot;, sprinting side by side"
+		width="904"
+		height="319"
+		loading="eager"
+	/>
+
+	<section class="game-picker">
+		<h2>Pick a game</h2>
+		<div class="game-cards">
+			{
+				games.map((game) => (
+					<a class="game-card" href={game.href}>
+						<span class="game-card-name">{game.name}</span>
+						<span class="game-card-blurb">{game.blurb}</span>
+					</a>
+				))
+			}
+		</div>
+	</section>
+
+	<p class="how-to-play-note">New here? <a href="/how-to-play">Learn how to play</a> in under a minute.</p>
 </Layout>
+
+<style>
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.5rem, 4.5vw, 2.1rem);
+	}
+
+	.hero p {
+		margin: 0 auto;
+		max-width: 46rem;
+		font-size: 0.9rem;
+	}
+
+	.hero em {
+		color: var(--color-text);
+		font-style: normal;
+		font-weight: 700;
+	}
+
+	.hero-art {
+		display: block;
+		width: 100%;
+		max-width: 30rem;
+		height: auto;
+		margin: 0 auto 1.5rem;
+	}
+
+	.game-picker h2 {
+		margin: 0 0 0.6rem;
+		text-align: center;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-text-muted);
+	}
+
+	.game-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: 0.75rem;
+	}
+
+	.game-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 1rem 1.1rem;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.1s ease;
+	}
+
+	.game-card:hover {
+		border-color: #ffae2e;
+		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 35%, transparent);
+		transform: translateY(-1px);
+	}
+
+	.game-card-name {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--color-text);
+	}
+
+	.game-card-blurb {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.how-to-play-note {
+		margin: 1.25rem 0 0;
+		text-align: center;
+		font-size: 0.85rem;
+	}
+
+	.how-to-play-note a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+</style>
