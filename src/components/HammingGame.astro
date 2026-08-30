@@ -78,9 +78,9 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		aspect-ratio: 1 / 1;
 		height: auto;
 		border-radius: 10px;
-		border: 1px solid #363c52;
-		background: var(--color-surface-alt);
-		color: #ced2e2;
+		border: 1px solid #262a3a;
+		background: #14161f;
+		color: #737b98;
 		font-family: var(--font-mono);
 		font-size: clamp(0.95rem, 3.2vw, 1.15rem);
 		font-weight: 600;
@@ -95,6 +95,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 
 	.bit-toggle:hover {
 		border-color: var(--color-accent);
+		color: #a4abc4;
 	}
 
 	.bit-toggle:active {
@@ -105,7 +106,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		background: var(--color-accent);
 		border-color: var(--color-accent);
 		color: var(--color-accent-contrast);
-		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 50%, transparent);
+		box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 65%, transparent);
 	}
 
 	.bit-toggle[aria-pressed="true"]:not(:disabled) {
@@ -120,10 +121,10 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	@keyframes bit-toggle-glow {
 		0%,
 		100% {
-			box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+			box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 50%, transparent);
 		}
 		50% {
-			box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 70%, transparent);
+			box-shadow: 0 0 24px color-mix(in srgb, var(--color-accent) 85%, transparent);
 		}
 	}
 
@@ -251,28 +252,28 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		width: clamp(1.4rem, 7vw, 1.8rem);
 		height: clamp(1.4rem, 7vw, 1.8rem);
 		border-radius: 6px;
-		border: 1px solid #363c52;
-		background: var(--color-surface-alt);
-		color: #ced2e2;
+		border: 1px solid #262a3a;
+		background: #14161f;
+		color: #737b98;
 		font-family: var(--font-mono);
 		font-weight: 600;
 		font-size: clamp(0.8rem, 3vw, 0.95rem);
 	}
 
 	.guess-tile--on {
-		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface-alt));
-		border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
-		color: var(--color-accent);
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-accent-contrast);
 		animation: tile-throb 3s ease-in-out infinite;
 	}
 
 	@keyframes tile-throb {
 		0%,
 		100% {
-			box-shadow: 0 0 3px color-mix(in srgb, var(--color-accent) 30%, transparent);
+			box-shadow: 0 0 4px color-mix(in srgb, var(--color-accent) 40%, transparent);
 		}
 		50% {
-			box-shadow: 0 0 9px color-mix(in srgb, var(--color-accent) 55%, transparent);
+			box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 70%, transparent);
 		}
 	}
 
@@ -284,7 +285,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		border-radius: 999px;
 		border: 1px solid var(--badge-color, var(--color-border));
 		color: var(--badge-color, var(--color-text-muted));
-		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 16%, transparent);
+		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 24%, transparent);
 		white-space: nowrap;
 	}
 
@@ -328,9 +329,13 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	}
 
 	function distanceColor(distance: number, bitLength: number): string {
-		const closeness = 1 - distance / bitLength;
-		const hue = 250 - closeness * (250 - 35);
-		return `hsl(${hue}deg 75% 62%)`;
+		// distance ranges 1..bitLength here (0 is handled separately as a match).
+		// Map the closest miss to a warm yellow-green and the farthest to a cool violet-blue,
+		// so every step in between is a clearly distinct hue rather than clustering in one band.
+		const steps = Math.max(bitLength - 1, 1);
+		const t = (distance - 1) / steps;
+		const hue = 90 + t * (250 - 90);
+		return `hsl(${hue}deg 85% 58%)`;
 	}
 
 	function getScopeAttr(root: HTMLElement): string | null {
