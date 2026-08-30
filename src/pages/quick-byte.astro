@@ -19,6 +19,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<p class="quick-byte-results-label">Today's result</p>
 		<p class="quick-byte-sequence"></p>
 		<p class="quick-byte-total"></p>
+		<p class="quick-byte-badge" hidden></p>
 		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte.</p>
 	</div>
 </Layout>
@@ -136,6 +137,18 @@ import HammingBoard from "../components/HammingBoard.astro";
 		color: var(--color-text);
 	}
 
+	.quick-byte-badge {
+		margin: 0.4rem 0 0;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: #fff3d6;
+		text-shadow: 0 0 6px #ffae2e;
+	}
+
+	.quick-byte-badge[hidden] {
+		display: none;
+	}
+
 	.quick-byte-return-note {
 		margin: 0.5rem 0 0;
 		font-size: 0.8rem;
@@ -145,6 +158,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 <script>
 	import { createHammingGame } from "../lib/hammingGame";
 	import { getLocalDateString, generateDailySecrets } from "../lib/dailySeed";
+	import { roundScore, formatResultSequence, totalScore, findResultBadge } from "../lib/quickByteScoring";
 
 	// Result storage is browser-local only for now (no accounts yet), keyed by the
 	// player's local calendar day. Cross-device sync will come later once accounts exist.
@@ -169,6 +183,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const resultsSection = document.querySelector<HTMLElement>(".quick-byte-results")!;
 	const sequenceEl = document.querySelector<HTMLElement>(".quick-byte-sequence")!;
 	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
+	const badgeEl = document.querySelector<HTMLElement>(".quick-byte-badge")!;
 
 	function readStoredResult(): QuickByteResult | null {
 		try {
@@ -192,8 +207,12 @@ import HammingBoard from "../components/HammingBoard.astro";
 	function showResults(perRound: number[]) {
 		playSection.hidden = true;
 		resultsSection.hidden = false;
-		sequenceEl.textContent = perRound.join("-");
-		totalEl.textContent = `Total: ${perRound.reduce((sum, n) => sum + n, 0)}`;
+		sequenceEl.textContent = formatResultSequence(perRound);
+		totalEl.textContent = `Total: ${totalScore(perRound)}`;
+
+		const badge = findResultBadge(perRound);
+		badgeEl.textContent = badge ?? "";
+		badgeEl.hidden = badge === null;
 	}
 
 	const alreadyPlayed = readStoredResult();
@@ -215,8 +234,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 			maxAttempts: MAX_ATTEMPTS,
 			secret: secrets[0],
 			showPlayAgain: false,
-			onRoundEnd: ({ attempts }) => {
-				perRound.push(attempts);
+			onRoundEnd: ({ won, attempts }) => {
+				perRound.push(roundScore(won, attempts));
 				nextButton.textContent = roundIndex < ROUND_COUNT - 1 ? "Next Round" : "See Results";
 				nextButton.hidden = false;
 			},
@@ -231,8 +250,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 				updateRoundLabel();
 				controller.reset(secrets[roundIndex]);
 			} else {
-				const total = perRound.reduce((sum, n) => sum + n, 0);
-				storeResult({ perRound, total, completedAt: new Date().toISOString() });
+				storeResult({ perRound, total: totalScore(perRound), completedAt: new Date().toISOString() });
 				showResults(perRound);
 			}
 		});
