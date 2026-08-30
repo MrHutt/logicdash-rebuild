@@ -5,16 +5,22 @@ const navLinks = [
 	{ href: "/overclocked", label: "Overclocked" },
 	{ href: "/how-to-play", label: "How to Play" },
 ];
+
+const currentPath = Astro.url.pathname;
 ---
 
 <header class="site-header">
-	<a class="brand" href="/">LogicDash</a>
+	<a class="brand" href="/">
+		Logic<span class="brand-accent">Dash</span>
+	</a>
 	<nav>
 		<ul>
 			{
 				navLinks.map((link) => (
 					<li>
-						<a href={link.href}>{link.label}</a>
+						<a href={link.href} aria-current={currentPath === link.href ? "page" : undefined}>
+							{link.label}
+						</a>
 					</li>
 				))
 			}
@@ -27,15 +33,22 @@ const navLinks = [
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 1rem 1.5rem;
-		border-bottom: 1px solid #ddd;
+		padding: 1.1rem 1.5rem;
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface);
+		flex-wrap: wrap;
+		gap: 0.75rem;
 	}
 
 	.brand {
-		font-weight: bold;
+		font-weight: 700;
 		font-size: 1.25rem;
 		text-decoration: none;
-		color: inherit;
+		color: var(--color-text);
+	}
+
+	.brand-accent {
+		color: var(--color-accent);
 	}
 
 	nav ul {
@@ -44,14 +57,22 @@ const navLinks = [
 		list-style: none;
 		margin: 0;
 		padding: 0;
+		flex-wrap: wrap;
 	}
 
 	nav a {
 		text-decoration: none;
-		color: inherit;
+		color: var(--color-text-muted);
+		font-weight: 600;
+		font-size: 0.95rem;
+		transition: color 0.15s ease;
 	}
 
 	nav a:hover {
-		text-decoration: underline;
+		color: var(--color-text);
+	}
+
+	nav a[aria-current="page"] {
+		color: var(--color-accent);
 	}
 </style>

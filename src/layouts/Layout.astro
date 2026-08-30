@@ -17,6 +17,12 @@ const { title } = Astro.props;
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title} | LogicDash</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+			rel="stylesheet"
+		/>
 	</head>
 	<body>
 		<Header />
@@ -28,17 +34,52 @@ const { title } = Astro.props;
 </html>
 
 <style is:global>
+	:root {
+		--color-bg: #0b0d13;
+		--color-surface: #14161f;
+		--color-surface-alt: #1c1f2c;
+		--color-border: #2a2e3f;
+		--color-text: #e8eaf2;
+		--color-text-muted: #9aa0b4;
+		--color-accent: #22d3ee;
+		--color-accent-strong: #06b6d4;
+		--color-accent-contrast: #04222a;
+		--color-success: #34d399;
+		--color-danger: #fb7185;
+		--font-sans: "Space Grotesk", system-ui, sans-serif;
+		--font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+	}
+
+	* {
+		box-sizing: border-box;
+	}
+
 	body {
 		margin: 0;
-		font-family: system-ui, sans-serif;
+		font-family: var(--font-sans);
+		background: var(--color-bg);
+		color: var(--color-text);
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
 	}
 
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-sans);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+
+	p {
+		color: var(--color-text-muted);
+		line-height: 1.6;
+	}
+
 	main {
 		flex: 1;
-		padding: 2rem 1.5rem;
+		padding: 2.5rem 1.5rem 3.5rem;
 		max-width: 960px;
 		margin: 0 auto;
 		width: 100%;

@@ -4,7 +4,24 @@ import HammingGame from "../components/HammingGame.astro";
 ---
 
 <Layout title="Overclocked">
-	<h1>Overclocked</h1>
-	<p>Guess the 6-bit secret. Each guess shows how many bits differ from the answer.</p>
+	<div class="page-intro">
+		<h1>Overclocked</h1>
+		<p>Guess the 6-bit secret. Each guess shows how many bits differ from the answer.</p>
+	</div>
 	<HammingGame bitLength={6} maxAttempts={6} />
 </Layout>
+
+<style>
+	.page-intro {
+		margin-bottom: 1.75rem;
+	}
+
+	.page-intro h1 {
+		margin: 0 0 0.4rem;
+		font-size: clamp(1.75rem, 5vw, 2.25rem);
+	}
+
+	.page-intro p {
+		margin: 0;
+	}
+</style>
