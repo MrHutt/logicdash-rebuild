@@ -9,13 +9,8 @@ const games = [
 	},
 	{
 		href: "/overclocked",
-		name: "Overclocked",
+		name: "OverClocked",
 		blurb: "Same rules, 6 bits. Tighter odds, sharper focus.",
-	},
-	{
-		href: "/quick-byte",
-		name: "Today's Quick Byte",
-		blurb: "Three rounds, once a day — same puzzle for everyone.",
 	},
 ];
 ---
@@ -41,8 +36,19 @@ const games = [
 		loading="eager"
 	/>
 
+	<a class="quick-byte-feature" href="/quick-byte">
+		<div class="quick-byte-feature-text">
+			<span class="quick-byte-feature-label">Daily challenge</span>
+			<span class="quick-byte-feature-name">Today's Quick Byte</span>
+			<span class="quick-byte-feature-blurb"
+				>Three rounds, once a day — same puzzle for everyone. This is the one to come back for.</span
+			>
+		</div>
+		<span class="quick-byte-feature-cta">Play Today's Byte →</span>
+	</a>
+
 	<section class="game-picker">
-		<h2>Pick a game</h2>
+		<h2>Or play anytime</h2>
 		<div class="game-cards">
 			{
 				games.map((game) => (
@@ -98,9 +104,72 @@ const games = [
 	.hero-art {
 		display: block;
 		width: 100%;
-		max-width: 22rem;
+		max-width: 17.6rem;
 		height: auto;
 		margin: 0 auto 1.5rem;
+	}
+
+	.quick-byte-feature {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 1rem;
+		margin-bottom: 1.5rem;
+		padding: 1.1rem 1.4rem;
+		border-radius: 14px;
+		border: 1px solid var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+		text-decoration: none;
+		transition:
+			box-shadow 0.15s ease,
+			transform 0.1s ease;
+	}
+
+	.quick-byte-feature:hover {
+		box-shadow: 0 0 22px color-mix(in srgb, var(--color-accent) 45%, transparent);
+		transform: translateY(-1px);
+	}
+
+	.quick-byte-feature-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.quick-byte-feature-label {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-accent);
+	}
+
+	.quick-byte-feature-name {
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.quick-byte-feature-blurb {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.quick-byte-feature-cta {
+		flex-shrink: 0;
+		padding: 0.6rem 1.5rem;
+		border-radius: 999px;
+		background: var(--color-accent);
+		color: var(--color-accent-contrast);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		white-space: nowrap;
+		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 55%, transparent);
 	}
 
 	.game-picker h2 {
