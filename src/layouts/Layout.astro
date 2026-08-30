@@ -47,9 +47,9 @@ const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 		--color-border: #2a2e3f;
 		--color-text: #e8eaf2;
 		--color-text-muted: #9aa0b4;
-		--color-accent: #22d3ee;
-		--color-accent-strong: #06b6d4;
-		--color-accent-contrast: #04222a;
+		--color-accent: #ffae2e;
+		--color-accent-strong: #ff9500;
+		--color-accent-contrast: #241202;
 		--color-success: #34d399;
 		--color-danger: #fb7185;
 		--font-sans: "Space Grotesk", system-ui, sans-serif;
@@ -63,7 +63,11 @@ const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 	body {
 		margin: 0;
 		font-family: var(--font-sans);
-		background: var(--color-bg);
+		background-color: var(--color-bg);
+		background-image:
+			linear-gradient(rgba(255, 174, 46, 0.04) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 174, 46, 0.04) 1px, transparent 1px);
+		background-size: 40px 40px;
 		color: var(--color-text);
 		display: flex;
 		flex-direction: column;
