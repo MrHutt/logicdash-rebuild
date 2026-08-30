@@ -22,10 +22,12 @@ const games = [
 
 <Layout title="LogicDash">
 	<section class="hero">
+		<p class="hero-brand">Logic<span class="hero-brand-accent">Dash</span></p>
 		<h1>Guess the bits. Beat the distance.</h1>
 		<p>
-			LogicDash is a small family of binary logic puzzles — think Wordle, but for bits. Flip toggles
-			to build a guess; each round only tells you <em>how many</em> bits are wrong, never <em>which</em>{" "}
+			LogicDash is a set of quick binary logic puzzles — a sharp little workout for pattern
+			recognition and deductive thinking. Flip toggles to build a guess; each round only tells you{" "}
+			<em>how many</em> bits are wrong, never <em>which</em>{" "}
 			ones, until you close the distance to zero.
 		</p>
 	</section>
@@ -62,6 +64,20 @@ const games = [
 		margin-bottom: 1rem;
 	}
 
+	.hero-brand {
+		margin: 0 0 0.35rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(1rem, 2.5vw, 1.25rem);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.hero-brand-accent {
+		color: var(--color-accent);
+	}
+
 	.hero h1 {
 		margin: 0 0 0.5rem;
 		font-size: clamp(1.5rem, 4.5vw, 2.1rem);
@@ -82,7 +98,7 @@ const games = [
 	.hero-art {
 		display: block;
 		width: 100%;
-		max-width: 30rem;
+		max-width: 22rem;
 		height: auto;
 		margin: 0 auto 1.5rem;
 	}
