@@ -55,10 +55,10 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	.hamming-game {
 		--led-on: #ffae2e;
 		--led-on-digit: #fff3d6;
-		--led-off-bg: #120d09;
-		--led-off-border: #2b1f16;
-		--seg-ghost: #1c140f;
-		--seg-dim: #4a3420;
+		--led-off-bg: #1c140d;
+		--led-off-border: #4a3826;
+		--seg-ghost: #241a10;
+		--seg-dim: #7a5c3a;
 		display: flex;
 		flex-direction: column;
 		gap: 0.6rem;
@@ -106,7 +106,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		transition:
 			border-color 0.15s ease,
 			box-shadow 0.15s ease,
-			transform 0.1s ease;
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
 	.bit-digit {
@@ -141,7 +141,11 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	}
 
 	.bit-toggle:active {
-		transform: scale(0.94);
+		transform: scale(0.95);
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.1s ease-out;
 	}
 
 	.bit-toggle[aria-pressed="true"] {
@@ -191,7 +195,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 			0 0 10px color-mix(in srgb, var(--led-on) 45%, transparent),
 			inset 0 1px 0 rgba(255, 255, 255, 0.08);
 		transition:
-			transform 0.1s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
 			box-shadow 0.15s ease,
 			background 0.15s ease,
 			opacity 0.15s ease;
@@ -205,7 +209,12 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	}
 
 	.guess-submit:active {
-		transform: scale(0.97);
+		transform: scale(0.95);
+		transition:
+			transform 0.1s ease-out,
+			box-shadow 0.15s ease,
+			background 0.15s ease,
+			opacity 0.15s ease;
 	}
 
 	.guess-submit:disabled {
@@ -287,7 +296,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 			background 0.15s ease,
 			color 0.15s ease,
 			box-shadow 0.15s ease,
-			transform 0.1s ease;
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
 	.play-again:hover {
@@ -296,6 +305,15 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		text-shadow: 0 0 6px var(--led-on);
 		box-shadow: 0 0 14px color-mix(in srgb, var(--led-on) 60%, transparent);
 		transform: translateY(-1px);
+	}
+
+	.play-again:active {
+		transform: scale(0.95);
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.1s ease-out;
 	}
 
 	.play-again[hidden] {

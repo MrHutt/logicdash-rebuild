@@ -192,6 +192,12 @@ const games = [
 		letter-spacing: 0.06em;
 		white-space: nowrap;
 		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 55%, transparent);
+		transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.quick-byte-feature:active .quick-byte-feature-cta {
+		transform: scale(0.95);
+		transition: transform 0.1s ease-out;
 	}
 
 	.game-picker h2 {
@@ -221,13 +227,21 @@ const games = [
 		transition:
 			border-color 0.15s ease,
 			box-shadow 0.15s ease,
-			transform 0.1s ease;
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
 	.game-card:hover {
 		border-color: #ffae2e;
 		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 35%, transparent);
 		transform: translateY(-1px);
+	}
+
+	.game-card:active {
+		transform: scale(0.97);
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.1s ease-out;
 	}
 
 	.game-card-name {

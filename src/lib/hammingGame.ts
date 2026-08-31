@@ -81,13 +81,15 @@ function hammingDistance(a: string, b: string): number {
 }
 
 export function distanceColor(distance: number, bitLength: number): string {
-	// distance ranges 1..bitLength here (0 is handled separately as a match).
-	// Map the closest miss to a warm yellow-green and the farthest to a cool violet-blue,
-	// so every step in between is a clearly distinct hue rather than clustering in one band.
+	// distance ranges 1..bitLength here (0 is a match, handled separately as fixed green).
+	// Stay within the site's amber hue rather than rotating through the rainbow: farther
+	// guesses get a duller, darker amber; closer guesses get a brighter, richer one.
 	const steps = Math.max(bitLength - 1, 1);
-	const t = (distance - 1) / steps;
-	const hue = 90 + t * (250 - 90);
-	return `hsl(${hue}deg 85% 58%)`;
+	const t = 1 - (distance - 1) / steps;
+	const hue = 36;
+	const saturation = 55 + t * 35;
+	const lightness = 40 + t * 22;
+	return `hsl(${hue}deg ${saturation}% ${lightness}%)`;
 }
 
 function getScopeAttr(root: HTMLElement): string | null {

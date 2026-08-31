@@ -65,7 +65,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		padding: 0.45rem 1.6rem;
 		border: 1px solid #ffae2e;
 		border-radius: 8px;
-		background: color-mix(in srgb, #ffae2e 18%, #120d09);
+		background: color-mix(in srgb, #ffae2e 18%, #1c140d);
 		color: #fff3d6;
 		font-family: var(--font-mono);
 		font-weight: 700;
@@ -78,16 +78,20 @@ import HammingBoard from "../components/HammingBoard.astro";
 		transition:
 			background 0.15s ease,
 			box-shadow 0.15s ease,
-			transform 0.1s ease;
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
 	.quick-byte-next:hover {
-		background: color-mix(in srgb, #ffae2e 30%, #120d09);
+		background: color-mix(in srgb, #ffae2e 30%, #1c140d);
 		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 70%, transparent);
 	}
 
 	.quick-byte-next:active {
-		transform: scale(0.97);
+		transform: scale(0.95);
+		transition:
+			background 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.1s ease-out;
 	}
 
 	.quick-byte-next[hidden] {
