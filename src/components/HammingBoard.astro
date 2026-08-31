@@ -329,8 +329,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	.guess-row {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.6rem;
+		gap: 0.5rem;
 		flex-wrap: wrap;
 		padding: 0.2rem 0.15rem;
 		border-bottom: 1px solid var(--color-border);
@@ -338,6 +337,15 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 
 	.guess-row:last-child {
 		border-bottom: none;
+	}
+
+	.guess-number {
+		flex-shrink: 0;
+		min-width: 1.6rem;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: var(--color-text-muted);
 	}
 
 	.guess-tiles {
@@ -375,15 +383,37 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	}
 
 	.distance-badge {
+		margin-left: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.25rem 0.6rem;
+		border-radius: 8px;
+		border: 1px solid var(--badge-color, var(--color-border));
+		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 18%, transparent);
+		white-space: nowrap;
+	}
+
+	.distance-badge-label {
 		font-family: var(--font-sans);
 		font-weight: 700;
 		font-size: 0.75rem;
-		padding: 0.2rem 0.6rem;
-		border-radius: 999px;
-		border: 1px solid var(--badge-color, var(--color-border));
 		color: var(--badge-color, var(--color-text-muted));
-		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 24%, transparent);
-		white-space: nowrap;
+	}
+
+	.distance-badge-bar {
+		display: block;
+		height: 3px;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 25%, transparent);
+		overflow: hidden;
+	}
+
+	.distance-badge-fill {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--badge-color, var(--color-text-muted));
 	}
 
 	.distance-badge--match {
@@ -401,9 +431,4 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		}
 	}
 
-	@media (max-width: 420px) {
-		.guess-row {
-			justify-content: flex-start;
-		}
-	}
 </style>

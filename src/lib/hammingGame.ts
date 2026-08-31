@@ -80,15 +80,21 @@ function hammingDistance(a: string, b: string): number {
 	return distance;
 }
 
+/** 0 (farthest) to 1 (closest, excluding an actual match) — shared by color and the badge's fill bar. */
+export function distanceCloseness(distance: number, bitLength: number): number {
+	const steps = Math.max(bitLength - 1, 1);
+	return 1 - (distance - 1) / steps;
+}
+
 export function distanceColor(distance: number, bitLength: number): string {
 	// distance ranges 1..bitLength here (0 is a match, handled separately as fixed green).
 	// Stay within the site's amber hue rather than rotating through the rainbow: farther
-	// guesses get a duller, darker amber; closer guesses get a brighter, richer one.
-	const steps = Math.max(bitLength - 1, 1);
-	const t = 1 - (distance - 1) / steps;
+	// guesses get a duller, darker amber; closer guesses get a brighter, richer one. The
+	// range is deliberately wide so adjacent distances don't blur into each other.
+	const t = distanceCloseness(distance, bitLength);
 	const hue = 36;
-	const saturation = 55 + t * 35;
-	const lightness = 40 + t * 22;
+	const saturation = 45 + t * 50;
+	const lightness = 32 + t * 36;
 	return `hsl(${hue}deg ${saturation}% ${lightness}%)`;
 }
 
@@ -149,10 +155,41 @@ function createBitDigitSvg(scopeAttr: string | null): SVGSVGElement {
 	return svg;
 }
 
+function createDistanceBadge(distance: number, bitLength: number, scopeAttr: string | null): HTMLSpanElement {
+	const badge = createScopedElement("span", "distance-badge", scopeAttr);
+	const label = createScopedElement("span", "distance-badge-label", scopeAttr);
+	const bar = createScopedElement("span", "distance-badge-bar", scopeAttr);
+	const fill = createScopedElement("span", "distance-badge-fill", scopeAttr);
+
+	if (distance === 0) {
+		badge.classList.add("distance-badge--match");
+		badge.style.setProperty("--badge-color", "var(--color-success)");
+		label.textContent = "Match!";
+		fill.style.width = "100%";
+	} else {
+		badge.style.setProperty("--badge-color", distanceColor(distance, bitLength));
+		label.textContent = `${distance} bit${distance === 1 ? "" : "s"} off`;
+		fill.style.width = `${Math.round(distanceCloseness(distance, bitLength) * 100)}%`;
+	}
+
+	bar.appendChild(fill);
+	badge.appendChild(label);
+	badge.appendChild(bar);
+	return badge;
+}
+
 export interface RoundResult {
 	won: boolean;
 	attempts: number;
 	secret: string;
+}
+
+export interface GuessInfo {
+	bits: string;
+	distance: number;
+	attempts: number;
+	won: boolean;
+	gameOver: boolean;
 }
 
 export interface HammingGameOptions {
@@ -164,15 +201,22 @@ export interface HammingGameOptions {
 	showPlayAgain?: boolean;
 	/** Called once a round ends, win or lose. */
 	onRoundEnd?: (result: RoundResult) => void;
+	/** Called after every guess (whether or not it ends the round) — for progress persistence. */
+	onGuess?: (info: GuessInfo) => void;
 }
 
 export interface HammingGameController {
 	/** Starts a fresh round on the same board. Random secret if none is given. */
 	reset: (secret?: string) => void;
+	/**
+	 * Replays previously-made guesses onto a freshly reset board (same secret), to restore
+	 * a round exactly where the player left off. Fires onGuess/onRoundEnd as usual.
+	 */
+	restore: (guesses: string[]) => void;
 }
 
 export function createHammingGame(root: HTMLElement, options: HammingGameOptions): HammingGameController {
-	const { bitLength, maxAttempts, showPlayAgain = true, onRoundEnd } = options;
+	const { bitLength, maxAttempts, showPlayAgain = true, onRoundEnd, onGuess } = options;
 	const scopeAttr = getScopeAttr(root);
 
 	const form = root.querySelector<HTMLFormElement>(".guess-form")!;
@@ -220,8 +264,11 @@ export function createHammingGame(root: HTMLElement, options: HammingGameOptions
 		}
 	}
 
-	function renderGuessRow(guess: string, distance: number) {
+	function renderGuessRow(attemptNumber: number, guess: string, distance: number) {
 		const row = createScopedElement("div", "guess-row", scopeAttr);
+
+		const number = createScopedElement("span", "guess-number", scopeAttr);
+		number.textContent = `#${attemptNumber}`;
 
 		const tiles = createScopedElement("div", "guess-tiles", scopeAttr);
 		for (const bit of guess) {
@@ -236,16 +283,9 @@ export function createHammingGame(root: HTMLElement, options: HammingGameOptions
 			tiles.appendChild(tile);
 		}
 
-		const badge = createScopedElement("span", "distance-badge", scopeAttr);
-		if (distance === 0) {
-			badge.classList.add("distance-badge--match");
-			badge.style.setProperty("--badge-color", "var(--color-success)");
-			badge.textContent = "Match!";
-		} else {
-			badge.style.setProperty("--badge-color", distanceColor(distance, bitLength));
-			badge.textContent = `${distance} bit${distance === 1 ? "" : "s"} off`;
-		}
+		const badge = createDistanceBadge(distance, bitLength, scopeAttr);
 
+		row.appendChild(number);
 		row.appendChild(tiles);
 		row.appendChild(badge);
 		history.prepend(row);
@@ -292,11 +332,8 @@ export function createHammingGame(root: HTMLElement, options: HammingGameOptions
 		setStatus(`${attemptsLeftLabel(maxAttempts)}. Tap bits to set your first guess.`);
 	}
 
-	function submitGuess(event: SubmitEvent) {
-		event.preventDefault();
+	function applyGuess(guess: string) {
 		if (gameOver) return;
-
-		const guess = currentGuess();
 
 		if (previousGuesses.has(guess)) {
 			setStatus("You've already tried this combination.", true);
@@ -306,20 +343,30 @@ export function createHammingGame(root: HTMLElement, options: HammingGameOptions
 		previousGuesses.add(guess);
 		attempts++;
 		const distance = hammingDistance(guess, secret);
-		renderGuessRow(guess, distance);
+		renderGuessRow(attempts, guess, distance);
 		resetToggles();
 
-		if (distance === 0) {
+		const won = distance === 0;
+		if (won) {
 			endGame(true);
-			return;
-		}
-
-		if (attempts >= maxAttempts) {
+		} else if (attempts >= maxAttempts) {
 			endGame(false);
-			return;
+		} else {
+			setStatus(attemptsLeftLabel(maxAttempts - attempts));
 		}
 
-		setStatus(attemptsLeftLabel(maxAttempts - attempts));
+		onGuess?.({ bits: guess, distance, attempts, won, gameOver });
+	}
+
+	function submitGuess(event: SubmitEvent) {
+		event.preventDefault();
+		applyGuess(currentGuess());
+	}
+
+	function restore(guesses: string[]) {
+		for (const guess of guesses) {
+			applyGuess(guess);
+		}
 	}
 
 	resetRound(secret);
@@ -332,5 +379,6 @@ export function createHammingGame(root: HTMLElement, options: HammingGameOptions
 
 	return {
 		reset: resetRound,
+		restore,
 	};
 }

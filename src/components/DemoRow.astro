@@ -2,7 +2,7 @@
 // Static (non-interactive) illustration of a guess + its result, reusing the real
 // seven-segment tile rendering AND the real distance-to-color logic from the game engine,
 // so this never drifts out of sync with what the actual game looks like.
-import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT, distanceColor } from "../lib/hammingGame";
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT, distanceColor, distanceCloseness } from "../lib/hammingGame";
 
 interface Props {
 	/** The guess to display, e.g. "10110". */
@@ -16,6 +16,7 @@ const bitArray = bits.split("");
 const isMatch = distance === 0;
 const label = isMatch ? "Match!" : `${distance} bit${distance === 1 ? "" : "s"} off`;
 const badgeColor = isMatch ? "var(--color-success)" : distanceColor(distance, bits.length);
+const fillPercent = isMatch ? 100 : Math.round(distanceCloseness(distance, bits.length) * 100);
 ---
 
 <div class="demo-row">
@@ -36,7 +37,8 @@ const badgeColor = isMatch ? "var(--color-success)" : distanceColor(distance, bi
 		}
 	</div>
 	<span class="demo-badge" style={`--badge-color: ${badgeColor}`}>
-		{label}
+		<span class="demo-badge-label">{label}</span>
+		<span class="demo-badge-bar"><span class="demo-badge-fill" style={`width: ${fillPercent}%`} /></span>
 	</span>
 </div>
 
@@ -93,17 +95,37 @@ const badgeColor = isMatch ? "var(--color-success)" : distanceColor(distance, bi
 
 	.demo-badge {
 		display: flex;
-		align-items: center;
+		flex-direction: column;
 		justify-content: center;
+		gap: 0.2rem;
 		height: 2.2rem;
-		padding: 0 0.85rem;
+		padding: 0.3rem 0.85rem;
+		border-radius: 8px;
+		border: 1px solid var(--badge-color);
+		background: color-mix(in srgb, var(--badge-color) 16%, transparent);
+		white-space: nowrap;
+		box-sizing: border-box;
+	}
+
+	.demo-badge-label {
 		font-family: var(--font-sans);
 		font-weight: 700;
 		font-size: 0.85rem;
-		border-radius: 8px;
-		border: 1px solid var(--badge-color);
 		color: var(--badge-color);
-		background: color-mix(in srgb, var(--badge-color) 16%, transparent);
-		white-space: nowrap;
+	}
+
+	.demo-badge-bar {
+		display: block;
+		height: 3px;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--badge-color) 25%, transparent);
+		overflow: hidden;
+	}
+
+	.demo-badge-fill {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--badge-color);
 	}
 </style>

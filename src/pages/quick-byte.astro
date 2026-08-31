@@ -167,6 +167,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	// Result storage is browser-local only for now (no accounts yet), keyed by the
 	// player's local calendar day. Cross-device sync will come later once accounts exist.
 	const STORAGE_PREFIX = "logicdash:quickbyte:";
+	const PROGRESS_PREFIX = "logicdash:quickbyte:progress:";
 
 	const BIT_LENGTH = 5;
 	const MAX_ATTEMPTS = 6;
@@ -178,8 +179,18 @@ import HammingBoard from "../components/HammingBoard.astro";
 		completedAt: string;
 	}
 
+	// Saved after every single guess (not just on full completion) so navigating away
+	// mid-round and coming back restores exactly where the player left off — same round,
+	// same guess history, same attempts remaining. Cleared once the day is fully complete.
+	interface QuickByteProgress {
+		roundIndex: number;
+		completedRounds: number[];
+		guessesThisRound: string[];
+	}
+
 	const dateString = getLocalDateString();
 	const storageKey = STORAGE_PREFIX + dateString;
+	const progressKey = PROGRESS_PREFIX + dateString;
 
 	const playSection = document.querySelector<HTMLElement>(".quick-byte-play")!;
 	const roundLabel = document.querySelector<HTMLElement>(".quick-byte-round-label")!;
@@ -202,9 +213,28 @@ import HammingBoard from "../components/HammingBoard.astro";
 	function storeResult(result: QuickByteResult) {
 		try {
 			localStorage.setItem(storageKey, JSON.stringify(result));
+			localStorage.removeItem(progressKey);
 		} catch {
 			// localStorage unavailable (private browsing, quota, etc.) — the result just
 			// won't persist across reloads; gameplay itself is unaffected.
+		}
+	}
+
+	function readProgress(): QuickByteProgress | null {
+		try {
+			const raw = localStorage.getItem(progressKey);
+			if (!raw) return null;
+			return JSON.parse(raw) as QuickByteProgress;
+		} catch {
+			return null;
+		}
+	}
+
+	function storeProgress(progress: QuickByteProgress) {
+		try {
+			localStorage.setItem(progressKey, JSON.stringify(progress));
+		} catch {
+			// Same as storeResult — persistence is best-effort, not required for gameplay.
 		}
 	}
 
@@ -225,21 +255,37 @@ import HammingBoard from "../components/HammingBoard.astro";
 		showResults(alreadyPlayed.perRound);
 	} else {
 		const secrets = generateDailySecrets(dateString, BIT_LENGTH, ROUND_COUNT);
-		const perRound: number[] = [];
-		let roundIndex = 0;
+		const savedProgress = readProgress();
+
+		const perRound: number[] = savedProgress?.completedRounds ?? [];
+		let roundIndex = Math.min(Math.max(savedProgress?.roundIndex ?? 0, 0), ROUND_COUNT - 1);
+		let guessesThisRound: string[] = savedProgress ? [...savedProgress.guessesThisRound] : [];
 
 		function updateRoundLabel() {
 			roundLabel.textContent = `Round ${roundIndex + 1} of ${ROUND_COUNT}`;
+		}
+
+		function persistProgress() {
+			storeProgress({ roundIndex, completedRounds: perRound, guessesThisRound });
 		}
 
 		const board = document.querySelector<HTMLElement>(".hamming-game")!;
 		const controller = createHammingGame(board, {
 			bitLength: BIT_LENGTH,
 			maxAttempts: MAX_ATTEMPTS,
-			secret: secrets[0],
+			secret: secrets[roundIndex],
 			showPlayAgain: false,
+			onGuess: ({ bits }) => {
+				guessesThisRound.push(bits);
+				persistProgress();
+			},
 			onRoundEnd: ({ won, attempts }) => {
-				perRound.push(roundScore(won, attempts));
+				// Guard against double-counting: replaying a round that had already ended
+				// before the player navigated away re-fires this same callback. Only record
+				// a score the first time this round finishes (i.e. no score for it yet).
+				if (perRound.length === roundIndex) {
+					perRound.push(roundScore(won, attempts));
+				}
 				nextButton.textContent = roundIndex < ROUND_COUNT - 1 ? "Next Round" : "See Results";
 				nextButton.hidden = false;
 			},
@@ -247,10 +293,22 @@ import HammingBoard from "../components/HammingBoard.astro";
 
 		updateRoundLabel();
 
+		if (guessesThisRound.length > 0) {
+			// Fast-forward the fresh board to exactly where the player left off. This
+			// replays through the same guess logic used for real play, so it naturally
+			// re-triggers onRoundEnd (and shows Next/See Results) if that round had
+			// already been finished when the player navigated away.
+			const toReplay = guessesThisRound;
+			guessesThisRound = [];
+			controller.restore(toReplay);
+		}
+
 		nextButton.addEventListener("click", () => {
 			nextButton.hidden = true;
 			if (roundIndex < ROUND_COUNT - 1) {
 				roundIndex++;
+				guessesThisRound = [];
+				persistProgress();
 				updateRoundLabel();
 				controller.reset(secrets[roundIndex]);
 			} else {
