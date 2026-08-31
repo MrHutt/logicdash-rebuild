@@ -80,7 +80,7 @@ function hammingDistance(a: string, b: string): number {
 	return distance;
 }
 
-function distanceColor(distance: number, bitLength: number): string {
+export function distanceColor(distance: number, bitLength: number): string {
 	// distance ranges 1..bitLength here (0 is handled separately as a match).
 	// Map the closest miss to a warm yellow-green and the farthest to a cool violet-blue,
 	// so every step in between is a clearly distinct hue rather than clustering in one band.

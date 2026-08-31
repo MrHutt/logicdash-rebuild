@@ -1,11 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import DemoRow from "../components/DemoRow.astro";
+import BitChip from "../components/BitChip.astro";
 
+// Distances deliberately avoid the maximum (bit length itself) — if every single digit
+// were wrong, flipping all of them would trivially solve it next guess. That's not a useful
+// example of the general mechanic, so these stick to more ordinary in-between distances.
 const steps = [
-	{ bits: "01011", result: "5 bits off", note: "Way off. Try something different." },
-	{ bits: "11000", result: "2 bits off", note: "Closer. Adjust and try again." },
-	{ bits: "10100", result: "Match!", note: "Got it.", variant: "match" as const },
+	{ bits: "01110", distance: 3 },
+	{ bits: "10110", distance: 1 },
+	{ bits: "10100", distance: 0 },
 ];
 
 const games = [
@@ -18,40 +22,49 @@ const games = [
 <Layout title="How to Play">
 	<section class="hero">
 		<h1>Bits, Explained.</h1>
-		<p class="hero-subline">Guess the secret pattern of 1s and 0s.</p>
+		<p class="hero-lead">Here's everything you need before your first guess.</p>
 	</section>
 
-	<section class="example">
-		<div class="example-steps">
-			{
-				steps.map((step) => (
-					<div class="example-step">
-						<DemoRow bits={step.bits} result={step.result} variant={step.variant} />
-						<span class="example-note">{step.note}</span>
-					</div>
-				))
-			}
-		</div>
-	</section>
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">The Basics</p>
+			<p class="block-text">
+				Every LogicDash secret is binary — a pattern made only of <BitChip value="0" /> and{" "}
+				<BitChip value="1" />. Tap a tile to flip it, build your guess, then hit Guess. Your goal is
+				simple: match the secret exactly.
+			</p>
+		</section>
 
-	<p class="rule-line">
-		You always learn <em>how many</em> digits are wrong, never <em>which</em> ones.
-	</p>
+		<section class="block">
+			<p class="block-title">Your Score</p>
+			<p class="block-text">
+				After each guess you get one number: the <em>Hamming distance</em>. It's how many digits
+				differ from the secret — never which ones. Figuring that out is the whole game.
+			</p>
+		</section>
 
-	<p class="attempts-line">You get 6 tries per game.</p>
+		<section class="block block--example">
+			<p class="block-title">See It In Action</p>
+			<p class="block-text">A few example guesses and their scores:</p>
+			<div class="example-rows">
+				{steps.map((step) => <DemoRow bits={step.bits} distance={step.distance} />)}
+			</div>
+		</section>
 
-	<section class="ready">
-		<p class="ready-label">Ready? Pick a game:</p>
-		<div class="ready-links">
-			{
-				games.map((game) => (
-					<a class="ready-link" href={game.href}>
-						{game.name}
-					</a>
-				))
-			}
-		</div>
-	</section>
+		<section class="block">
+			<p class="block-title">Tries &amp; Games</p>
+			<p class="block-text">You get 6 tries per game. Ready? Pick one:</p>
+			<div class="ready-links">
+				{
+					games.map((game) => (
+						<a class="ready-link" href={game.href}>
+							{game.name}
+						</a>
+					))
+				}
+			</div>
+		</section>
+	</div>
 </Layout>
 
 <style>
@@ -61,79 +74,67 @@ const games = [
 	}
 
 	.hero h1 {
-		margin: 0 0 0.4rem;
+		margin: 0 0 0.35rem;
 		font-size: clamp(1.6rem, 5vw, 2.1rem);
 	}
 
-	.hero-subline {
+	.hero-lead {
 		margin: 0 auto;
-		max-width: 26rem;
-		font-size: 0.95rem;
-		font-weight: 600;
-		color: var(--color-text);
-	}
-
-	.example {
-		margin-bottom: 1rem;
-	}
-
-	.example-steps {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.6rem;
-	}
-
-	.example-step {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.25rem;
-	}
-
-	.example-note {
-		font-size: 0.78rem;
-		color: var(--color-text-muted);
-	}
-
-	.rule-line {
-		margin: 0 auto;
-		max-width: 32rem;
-		text-align: center;
 		font-size: 0.9rem;
-		font-weight: 600;
-		color: var(--color-text);
 	}
 
-	.rule-line em {
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0;
+		font-size: 0.88rem;
+	}
+
+	.block-text em {
 		color: var(--color-text);
 		font-style: normal;
 		font-weight: 700;
 	}
 
-	.attempts-line {
-		margin: 0.4rem auto 1.25rem;
-		text-align: center;
-		font-size: 0.85rem;
-	}
-
-	.ready {
+	.block--example {
 		text-align: center;
 	}
 
-	.ready-label {
-		margin: 0 0 0.6rem;
-		font-size: 0.85rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--color-text-muted);
+	.block--example .block-text {
+		margin-bottom: 0.75rem;
+	}
+
+	.example-rows {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
 	}
 
 	.ready-links {
 		display: flex;
-		justify-content: center;
 		flex-wrap: wrap;
 		gap: 0.6rem;
+		margin-top: 0.7rem;
 	}
 
 	.ready-link {

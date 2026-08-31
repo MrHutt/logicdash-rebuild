@@ -1,20 +1,21 @@
 ---
 // Static (non-interactive) illustration of a guess + its result, reusing the real
-// seven-segment tile rendering from the game engine. Used on the homepage and How to Play
-// so both pages show the exact same visual, not two versions that could drift apart.
-import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../lib/hammingGame";
+// seven-segment tile rendering AND the real distance-to-color logic from the game engine,
+// so this never drifts out of sync with what the actual game looks like.
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT, distanceColor } from "../lib/hammingGame";
 
 interface Props {
 	/** The guess to display, e.g. "10110". */
 	bits: string;
-	/** The result label, e.g. "2 bits off" or "Match!". */
-	result: string;
-	/** "match" styles the badge in the success color instead of amber. Defaults to "distance". */
-	variant?: "distance" | "match";
+	/** How many digits differ from the (unshown) secret. 0 renders as a "Match!" badge. */
+	distance: number;
 }
 
-const { bits, result, variant = "distance" } = Astro.props;
+const { bits, distance } = Astro.props;
 const bitArray = bits.split("");
+const isMatch = distance === 0;
+const label = isMatch ? "Match!" : `${distance} bit${distance === 1 ? "" : "s"} off`;
+const badgeColor = isMatch ? "var(--color-success)" : distanceColor(distance, bits.length);
 ---
 
 <div class="demo-row">
@@ -34,7 +35,9 @@ const bitArray = bits.split("");
 			))
 		}
 	</div>
-	<span class={`demo-badge ${variant === "match" ? "demo-badge--match" : ""}`}>{result}</span>
+	<span class="demo-badge" style={`--badge-color: ${badgeColor}`}>
+		{label}
+	</span>
 </div>
 
 <style>
@@ -98,15 +101,9 @@ const bitArray = bits.split("");
 		font-weight: 700;
 		font-size: 0.85rem;
 		border-radius: 8px;
-		border: 1px solid #ffae2e;
-		color: #ffae2e;
-		background: color-mix(in srgb, #ffae2e 16%, transparent);
+		border: 1px solid var(--badge-color);
+		color: var(--badge-color);
+		background: color-mix(in srgb, var(--badge-color) 16%, transparent);
 		white-space: nowrap;
-	}
-
-	.demo-badge--match {
-		border-color: var(--color-success);
-		color: var(--color-success);
-		background: color-mix(in srgb, var(--color-success) 16%, transparent);
 	}
 </style>

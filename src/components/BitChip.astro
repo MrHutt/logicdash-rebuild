@@ -1,0 +1,63 @@
+---
+// Small inline reference to a single bit value (0 or 1) for use within prose text,
+// styled like the real game's tiles so bit values stay visually consistent everywhere
+// they're mentioned, not just inside the actual game/demo components.
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../lib/hammingGame";
+
+interface Props {
+	value: "0" | "1";
+}
+
+const { value } = Astro.props;
+---
+
+<span class={`bit-chip ${value === "1" ? "bit-chip--on" : ""}`}>
+	<svg class="bit-chip-digit" viewBox="0 0 60 100" aria-hidden="true">
+		{
+			Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
+				<polygon class={`bit-chip-segment ${SEGMENTS_BY_DIGIT[value].includes(seg) ? "is-on" : ""}`} points={points} />
+			))
+		}
+	</svg>
+</span>
+
+<style>
+	.bit-chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.3em;
+		height: 1.3em;
+		margin: 0 0.05em;
+		vertical-align: -0.22em;
+		border-radius: 22%;
+		border: 1px solid #2b1f16;
+		background: #120d09;
+	}
+
+	.bit-chip--on {
+		border-color: #ffae2e;
+		box-shadow: 0 0 6px color-mix(in srgb, #ffae2e 55%, transparent);
+	}
+
+	.bit-chip-digit {
+		width: 68%;
+		height: 68%;
+		overflow: visible;
+	}
+
+	.bit-chip-segment {
+		fill: #1c140f;
+	}
+
+	.bit-chip:not(.bit-chip--on) .bit-chip-segment.is-on {
+		fill: #4a3420;
+	}
+
+	.bit-chip--on .bit-chip-segment.is-on {
+		fill: #fff3d6;
+		filter:
+			drop-shadow(0 0 2px #ffae2e)
+			drop-shadow(0 0 5px #ffae2e);
+	}
+</style>
