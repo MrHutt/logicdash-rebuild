@@ -1,8 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../lib/hammingGame";
-
-const teaserBits = ["1", "0", "1", "1", "0"];
+import DemoRow from "../components/DemoRow.astro";
 
 const games = [
 	{
@@ -38,23 +36,7 @@ const games = [
 	/>
 
 	<div class="teaser">
-		<div class="teaser-tiles">
-			{
-				teaserBits.map((bit) => (
-					<span class={`teaser-tile ${bit === "1" ? "teaser-tile--on" : ""}`}>
-						<svg class="teaser-digit" viewBox="0 0 60 100" aria-hidden="true">
-							{Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
-								<polygon
-									class={`teaser-segment ${SEGMENTS_BY_DIGIT[bit].includes(seg) ? "is-on" : ""}`}
-									points={points}
-								/>
-							))}
-						</svg>
-					</span>
-				))
-			}
-		</div>
-		<span class="teaser-badge">2 bits off</span>
+		<DemoRow bits="10110" result="2 bits off" />
 	</div>
 	<p class="teaser-caption">That's the idea. Try it for real below.</p>
 
@@ -141,64 +123,6 @@ const games = [
 		flex-wrap: wrap;
 		gap: 0.75rem;
 		margin: 0 0 0.4rem;
-	}
-
-	.teaser-tiles {
-		display: flex;
-		gap: 0.3rem;
-	}
-
-	.teaser-tile {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.2rem;
-		height: 2.2rem;
-		border-radius: 22%;
-		border: 1px solid #2b1f16;
-		background: #120d09;
-	}
-
-	.teaser-tile--on {
-		border-color: #ffae2e;
-		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 55%, transparent);
-	}
-
-	.teaser-digit {
-		width: 68%;
-		height: 68%;
-		overflow: visible;
-	}
-
-	.teaser-segment {
-		fill: #1c140f;
-	}
-
-	.teaser-tile:not(.teaser-tile--on) .teaser-segment.is-on {
-		fill: #4a3420;
-	}
-
-	.teaser-tile--on .teaser-segment.is-on {
-		fill: #fff3d6;
-		filter:
-			drop-shadow(0 0 3px #ffae2e)
-			drop-shadow(0 0 8px #ffae2e);
-	}
-
-	.teaser-badge {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 2.2rem;
-		padding: 0 0.85rem;
-		font-family: var(--font-sans);
-		font-weight: 700;
-		font-size: 0.85rem;
-		border-radius: 8px;
-		border: 1px solid #ffae2e;
-		color: #ffae2e;
-		background: color-mix(in srgb, #ffae2e 16%, transparent);
-		white-space: nowrap;
 	}
 
 	.teaser-caption {

@@ -1,184 +1,156 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import DemoRow from "../components/DemoRow.astro";
 
-const secretExample = "1011";
-const guessExample = "1101";
+const steps = [
+	{ bits: "01011", result: "5 bits off", note: "Way off. Try something different." },
+	{ bits: "11000", result: "2 bits off", note: "Closer. Adjust and try again." },
+	{ bits: "10100", result: "Match!", note: "Got it.", variant: "match" as const },
+];
+
+const games = [
+	{ href: "/5-bit", name: "Classic" },
+	{ href: "/overclocked", name: "OverClocked" },
+	{ href: "/quick-byte", name: "Today's Quick Byte" },
+];
 ---
 
 <Layout title="How to Play">
-	<div class="page-intro">
-		<h1>How to Play</h1>
-		<p>Classic and OverClocked are LogicDash's binary guessing games. Here's the whole rulebook.</p>
-	</div>
+	<section class="hero">
+		<h1>Bits, Explained.</h1>
+		<p class="hero-subline">Guess the secret pattern of 1s and 0s.</p>
+	</section>
 
-	<div class="rules">
-		<section class="rule">
-			<h2>1. Making a guess</h2>
-			<p>
-				Tap the bit buttons to flip each one between <code>0</code> and <code>1</code>, building a
-				binary string the same length as the secret — 5 bits in Classic, 6 bits in OverClocked.
-				Press <strong>Guess</strong> to submit it.
-			</p>
-		</section>
-
-		<section class="rule">
-			<h2>2. Reading the result</h2>
-			<p>
-				After each guess you get one number: how many bits <strong>differ</strong> from the secret.
-				This is the <em>Hamming distance</em>. Lower is closer — <code>0</code> means an exact match.
-			</p>
-			<p>
-				The game only ever tells you <strong>how many</strong> bits are wrong, never <strong>which
-				ones</strong>. Narrowing that down guess by guess is the whole puzzle.
-			</p>
-		</section>
-
-		<section class="rule">
-			<h2>3. Worked example</h2>
-			<p>Say the hidden secret is <code>{secretExample}</code> and you guess <code>{guessExample}</code>:</p>
-			<p class="example-note">
-				(Shown side by side here for teaching — in an actual game you never see the secret until
-				you match it or run out of attempts.)
-			</p>
-			<div class="example">
-				<div class="example-row">
-					<span class="example-label">Secret</span>
-					<div class="example-tiles">
-						{secretExample.split("").map((bit) => <span class="example-tile">{bit}</span>)}
+	<section class="example">
+		<div class="example-steps">
+			{
+				steps.map((step) => (
+					<div class="example-step">
+						<DemoRow bits={step.bits} result={step.result} variant={step.variant} />
+						<span class="example-note">{step.note}</span>
 					</div>
-				</div>
-				<div class="example-row">
-					<span class="example-label">Guess</span>
-					<div class="example-tiles">
-						{
-							guessExample.split("").map((bit, i) => (
-								<span class={`example-tile ${bit !== secretExample[i] ? "example-tile--diff" : ""}`}>
-									{bit}
-								</span>
-							))
-						}
-					</div>
-				</div>
-			</div>
-			<p>
-				Positions 2 and 3 differ (<code>0↔1</code> and <code>1↔0</code>); the other two match. The
-				game would report <strong>2 bits off</strong> — nothing more.
-			</p>
-		</section>
+				))
+			}
+		</div>
+	</section>
 
-		<section class="rule">
-			<h2>4. Attempts</h2>
-			<p>
-				You get 6 guesses per game, Wordle-style. Run out without matching and the secret is
-				revealed — hit <strong>Play Again</strong> to get a fresh one instantly, no reload needed.
-			</p>
-		</section>
-	</div>
+	<p class="rule-line">
+		You always learn <em>how many</em> digits are wrong, never <em>which</em> ones.
+	</p>
+
+	<p class="attempts-line">You get 6 tries per game.</p>
+
+	<section class="ready">
+		<p class="ready-label">Ready? Pick a game:</p>
+		<div class="ready-links">
+			{
+				games.map((game) => (
+					<a class="ready-link" href={game.href}>
+						{game.name}
+					</a>
+				))
+			}
+		</div>
+	</section>
 </Layout>
 
 <style>
-	.page-intro {
-		margin-bottom: 0.75rem;
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
 	}
 
-	.page-intro h1 {
-		margin: 0 0 0.15rem;
-		font-size: clamp(1.25rem, 3vw, 1.6rem);
+	.hero h1 {
+		margin: 0 0 0.4rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
 	}
 
-	.page-intro p {
-		margin: 0;
-		font-size: 0.85rem;
-	}
-
-	.rules {
-		display: flex;
-		flex-direction: column;
-		gap: 0.65rem;
-	}
-
-	.rule {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 12px;
-		padding: 0.65rem 0.85rem;
-	}
-
-	.rule h2 {
-		margin: 0 0 0.3rem;
+	.hero-subline {
+		margin: 0 auto;
+		max-width: 26rem;
 		font-size: 0.95rem;
-	}
-
-	.rule p {
-		margin: 0 0 0.35rem;
-		font-size: 0.85rem;
-	}
-
-	.rule p:last-child {
-		margin-bottom: 0;
-	}
-
-	.example-note {
-		font-size: 0.8rem;
-		font-style: italic;
-	}
-
-	.rule code {
-		font-family: var(--font-mono);
-		background: var(--color-surface-alt);
-		border: 1px solid var(--color-border);
-		border-radius: 4px;
-		padding: 0.05rem 0.35rem;
-		color: var(--color-text);
-	}
-
-	.rule strong {
+		font-weight: 600;
 		color: var(--color-text);
 	}
 
 	.example {
+		margin-bottom: 1rem;
+	}
+
+	.example-steps {
 		display: flex;
 		flex-direction: column;
-		gap: 0.35rem;
-		margin: 0.5rem 0;
-	}
-
-	.example-row {
-		display: flex;
 		align-items: center;
-		gap: 0.75rem;
+		gap: 0.6rem;
 	}
 
-	.example-label {
-		width: 4rem;
-		flex-shrink: 0;
-		font-size: 0.85rem;
+	.example-step {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	.example-note {
+		font-size: 0.78rem;
 		color: var(--color-text-muted);
 	}
 
-	.example-tiles {
-		display: flex;
-		gap: 0.4rem;
-	}
-
-	.example-tile {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.7rem;
-		height: 1.7rem;
-		border-radius: 6px;
-		border: 1px solid #363c52;
-		background: var(--color-surface-alt);
-		color: #ced2e2;
-		font-family: var(--font-mono);
-		font-weight: 600;
+	.rule-line {
+		margin: 0 auto;
+		max-width: 32rem;
+		text-align: center;
 		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--color-text);
 	}
 
-	.example-tile--diff {
-		border-color: color-mix(in srgb, var(--color-danger) 55%, transparent);
-		color: var(--color-danger);
-		background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface-alt));
+	.rule-line em {
+		color: var(--color-text);
+		font-style: normal;
+		font-weight: 700;
+	}
+
+	.attempts-line {
+		margin: 0.4rem auto 1.25rem;
+		text-align: center;
+		font-size: 0.85rem;
+	}
+
+	.ready {
+		text-align: center;
+	}
+
+	.ready-label {
+		margin: 0 0 0.6rem;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-text-muted);
+	}
+
+	.ready-links {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
+
+	.ready-link {
+		padding: 0.45rem 1.1rem;
+		border-radius: 999px;
+		border: 1px solid #ffae2e;
+		color: #ffae2e;
+		font-weight: 600;
+		font-size: 0.85rem;
+		text-decoration: none;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.ready-link:hover {
+		background: #ffae2e;
+		color: #241202;
 	}
 </style>

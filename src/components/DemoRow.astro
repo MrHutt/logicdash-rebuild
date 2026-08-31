@@ -1,0 +1,112 @@
+---
+// Static (non-interactive) illustration of a guess + its result, reusing the real
+// seven-segment tile rendering from the game engine. Used on the homepage and How to Play
+// so both pages show the exact same visual, not two versions that could drift apart.
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../lib/hammingGame";
+
+interface Props {
+	/** The guess to display, e.g. "10110". */
+	bits: string;
+	/** The result label, e.g. "2 bits off" or "Match!". */
+	result: string;
+	/** "match" styles the badge in the success color instead of amber. Defaults to "distance". */
+	variant?: "distance" | "match";
+}
+
+const { bits, result, variant = "distance" } = Astro.props;
+const bitArray = bits.split("");
+---
+
+<div class="demo-row">
+	<div class="demo-tiles">
+		{
+			bitArray.map((bit) => (
+				<span class={`demo-tile ${bit === "1" ? "demo-tile--on" : ""}`}>
+					<svg class="demo-digit" viewBox="0 0 60 100" aria-hidden="true">
+						{Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
+							<polygon
+								class={`demo-segment ${SEGMENTS_BY_DIGIT[bit]?.includes(seg) ? "is-on" : ""}`}
+								points={points}
+							/>
+						))}
+					</svg>
+				</span>
+			))
+		}
+	</div>
+	<span class={`demo-badge ${variant === "match" ? "demo-badge--match" : ""}`}>{result}</span>
+</div>
+
+<style>
+	.demo-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.demo-tiles {
+		display: flex;
+		gap: 0.3rem;
+	}
+
+	.demo-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		border-radius: 22%;
+		border: 1px solid #2b1f16;
+		background: #120d09;
+	}
+
+	.demo-tile--on {
+		border-color: #ffae2e;
+		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 55%, transparent);
+	}
+
+	.demo-digit {
+		width: 68%;
+		height: 68%;
+		overflow: visible;
+	}
+
+	.demo-segment {
+		fill: #1c140f;
+	}
+
+	.demo-tile:not(.demo-tile--on) .demo-segment.is-on {
+		fill: #4a3420;
+	}
+
+	.demo-tile--on .demo-segment.is-on {
+		fill: #fff3d6;
+		filter:
+			drop-shadow(0 0 3px #ffae2e)
+			drop-shadow(0 0 8px #ffae2e);
+	}
+
+	.demo-badge {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 2.2rem;
+		padding: 0 0.85rem;
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 0.85rem;
+		border-radius: 8px;
+		border: 1px solid #ffae2e;
+		color: #ffae2e;
+		background: color-mix(in srgb, #ffae2e 16%, transparent);
+		white-space: nowrap;
+	}
+
+	.demo-badge--match {
+		border-color: var(--color-success);
+		color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 16%, transparent);
+	}
+</style>
