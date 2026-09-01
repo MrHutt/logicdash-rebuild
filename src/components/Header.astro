@@ -5,6 +5,7 @@ const navLinks = [
 	{ href: "/overclocked", label: "OverClocked" },
 	{ href: "/quick-byte", label: "Today's Quick Byte" },
 	{ href: "/how-to-play", label: "How to Play" },
+	{ href: "/learn", label: "Learn" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -17,13 +18,17 @@ const currentPath = Astro.url.pathname;
 	<nav>
 		<ul>
 			{
-				navLinks.map((link) => (
-					<li>
-						<a href={link.href} aria-current={currentPath === link.href ? "page" : undefined}>
-							{link.label}
-						</a>
-					</li>
-				))
+				navLinks.map((link) => {
+					const isActive =
+						link.href === "/learn" ? currentPath.startsWith("/learn") : currentPath === link.href;
+					return (
+						<li>
+							<a href={link.href} aria-current={isActive ? "page" : undefined}>
+								{link.label}
+							</a>
+						</li>
+					);
+				})
 			}
 		</ul>
 	</nav>

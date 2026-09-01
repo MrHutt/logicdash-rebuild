@@ -1,0 +1,348 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../../lib/hammingGame";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
+
+const CURRENT_HREF = "/learn/hamming-distance";
+const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
+
+const patternA = "10110";
+const patternB = "10011";
+const diffPositions = new Set(
+	patternA.split("").flatMap((bit, i) => (bit === patternB[i] ? [] : [i])),
+);
+
+const comparisons = patternA.split("").map((bit, i) => ({
+	position: i + 1,
+	a: bit,
+	b: patternB[i],
+	same: bit === patternB[i],
+}));
+---
+
+<Layout title="Hamming Distance, Explained">
+	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+
+	<section class="hero">
+		<h1>Hamming Distance, Explained</h1>
+		<p class="hero-lead">
+			You've been calculating this every time you play LogicDash. Here's what it actually is.
+		</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block block--example">
+			<p class="block-title">The Basic Idea</p>
+			<p class="block-text">
+				Hamming distance is just a fancy name for a simple question: how many positions are
+				different between two binary patterns?
+			</p>
+			<p class="block-text">Take two 5-bit patterns:</p>
+
+			<div class="compare-stack">
+				{
+					[patternA, patternB].map((pattern) => (
+						<div class="compare-row">
+							{pattern.split("").map((bit, i) => (
+								<span
+									class={`compare-tile ${bit === "1" ? "compare-tile--on" : ""} ${diffPositions.has(i) ? "compare-tile--diff" : ""}`}
+								>
+									<svg class="compare-digit" viewBox="0 0 60 100" aria-hidden="true">
+										{Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
+											<polygon
+												class={`compare-segment ${SEGMENTS_BY_DIGIT[bit]?.includes(seg) ? "is-on" : ""}`}
+												points={points}
+											/>
+										))}
+									</svg>
+								</span>
+							))}
+						</div>
+					))
+				}
+			</div>
+			<p class="compare-caption">Highlighted tiles mark the positions that differ.</p>
+
+			<ul class="compare-list">
+				{
+					comparisons.map((row) => (
+						<li>
+							Position {row.position}: <span class="mono-highlight">{row.a}</span> vs{" "}
+							<span class="mono-highlight">{row.b}</span> → {row.same ? "same" : "different"}
+						</li>
+					))
+				}
+			</ul>
+
+			<p class="block-text">
+				Two positions are different. So the Hamming distance is <span class="mono-highlight">2</span>.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">That's the Whole Game</p>
+			<p class="block-text">
+				When LogicDash tells you "2 bits off," it's telling you the Hamming distance between your
+				guess and the secret. It never tells you which positions are wrong — just how many. Figuring
+				out which ones takes logic, not luck.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Where This Idea Comes From</p>
+			<p class="block-text">
+				Hamming distance isn't just a puzzle mechanic — it's a real concept from computer science,
+				named after Richard Hamming, who worked on it in the 1940s while trying to solve a very
+				practical problem: how can a computer tell when data has been corrupted, and fix it
+				automatically?
+			</p>
+			<p class="block-text">
+				That idea is still everywhere today — it's part of how your phone's memory checks for
+				errors, how satellites send data across huge distances without it arriving garbled, and how
+				barcodes and QR codes stay readable even when partly damaged.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Keep Going</p>
+			<ul class="keep-going-list">
+				<li>
+					New to binary? Start with <a href="/learn/what-is-binary">What is Binary?</a>
+				</li>
+				<li>
+					Want to see the real-world error-correcting codes this idea leads to? Read Error
+					Correction, Explained <span class="coming-soon">(coming soon)</span>.
+				</li>
+				<li>Or <a href="/learn">browse all Learn topics</a>.</li>
+			</ul>
+
+			{
+				(prev || next) && (
+					<div class="learn-pagination">
+						{prev && (
+							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+								← Back to {prev.title}
+							</a>
+						)}
+						{next &&
+							(next.live ? (
+								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+									{next.title} →
+								</a>
+							) : (
+								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+									{next.title} (coming soon)
+								</span>
+							))}
+					</div>
+				)
+			}
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.breadcrumb {
+		margin: 0 0 0.75rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.breadcrumb a {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 0.9rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.88rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.mono-highlight {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.block--example {
+		text-align: center;
+	}
+
+	.compare-stack {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+		margin: 0.9rem 0 0.5rem;
+	}
+
+	.compare-row {
+		display: flex;
+		gap: 0.3rem;
+	}
+
+	.compare-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		border-radius: 22%;
+		border: 1px solid #4a3826;
+		background: #1c140d;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.compare-tile--on {
+		border-color: #ffae2e;
+		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 55%, transparent);
+	}
+
+	.compare-tile--diff {
+		border-color: var(--color-danger);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-danger) 65%, transparent);
+	}
+
+	.compare-digit {
+		width: 68%;
+		height: 68%;
+		overflow: visible;
+	}
+
+	.compare-segment {
+		fill: #241a10;
+	}
+
+	.compare-tile:not(.compare-tile--on) .compare-segment.is-on {
+		fill: #7a5c3a;
+	}
+
+	.compare-tile--on .compare-segment.is-on {
+		fill: #fff3d6;
+		filter:
+			drop-shadow(0 0 3px #ffae2e)
+			drop-shadow(0 0 8px #ffae2e);
+	}
+
+	.compare-caption {
+		margin: 0 0 0.9rem;
+		font-size: 0.75rem;
+		color: var(--color-danger);
+	}
+
+	.compare-list {
+		display: inline-block;
+		text-align: left;
+		margin: 0 0 0.9rem;
+		padding: 0.8rem 1rem 0.8rem 1.6rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.compare-list li {
+		margin: 0.15rem 0;
+	}
+
+	.keep-going-list {
+		margin: 0;
+		padding-left: 1.2rem;
+		font-size: 0.88rem;
+	}
+
+	.keep-going-list li {
+		margin: 0.3rem 0;
+	}
+
+	.keep-going-list a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+
+	.coming-soon {
+		color: var(--color-text-muted);
+		font-style: italic;
+	}
+
+	.learn-pagination {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--color-border);
+		font-size: 0.85rem;
+	}
+
+	.learn-pagination-link {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
+	.learn-pagination-next {
+		margin-left: auto;
+	}
+
+	.learn-pagination-soon {
+		color: var(--color-text-muted);
+		font-weight: 600;
+		font-style: italic;
+	}
+</style>

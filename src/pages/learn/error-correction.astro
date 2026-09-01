@@ -1,0 +1,384 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../../lib/hammingGame";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
+
+const CURRENT_HREF = "/learn/error-correction";
+const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
+
+const before = "10110010";
+const flipIndex = 5;
+const after = before
+	.split("")
+	.map((bit, i) => (i === flipIndex ? (bit === "1" ? "0" : "1") : bit))
+	.join("");
+
+const realWorldExamples = [
+	{
+		name: "Satellites",
+		text: "sending data across huge distances, where interference is common and re-sending data is slow or expensive",
+	},
+	{
+		name: "Computer memory (RAM)",
+		text: "many servers use error-correcting memory that silently fixes the occasional flipped bit, caused by things as small as background radiation",
+	},
+	{
+		name: "QR codes and barcodes",
+		text: "built to stay scannable even when part of the code is smudged, torn, or dirty",
+	},
+	{
+		name: "CDs and DVDs",
+		text: "able to keep playing even with small scratches on the disc",
+	},
+];
+---
+
+<Layout title="Error Correction, Explained">
+	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+
+	<section class="hero">
+		<h1>Error Correction, Explained</h1>
+		<p class="hero-lead">
+			Hamming distance isn't just a game mechanic. It's how computers catch their own mistakes.
+		</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">The Problem: Data Gets Corrupted</p>
+			<p class="block-text">
+				Every time data moves — through the air to a satellite, across a network cable, sitting in
+				your phone's memory — there's a small chance a bit flips by accident. A 0 becomes a 1, or a
+				1 becomes a 0. Usually caused by things like electrical interference, cosmic radiation, or a
+				weak signal.
+			</p>
+			<p class="block-text">
+				For a single wrong digit, that might not sound serious. But multiply it across billions of
+				bits, and errors become inevitable. Computers need a way to catch them — and ideally, fix
+				them — automatically.
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">The Idea: Add a Few Extra Bits</p>
+			<p class="block-text">
+				In the 1940s, a mathematician named Richard Hamming came up with a clever trick. Instead of
+				just sending your data as-is, you add a small number of extra bits, calculated from the
+				original data. These extra bits don't carry new information — they exist purely to check the
+				rest.
+			</p>
+			<p class="block-text">
+				If a bit gets flipped in transmission, those extra "check" bits won't line up anymore. And
+				because of exactly where the mismatch shows up, the receiving computer can work out precisely
+				which bit was wrong — and flip it back. No retransmission needed.
+			</p>
+
+			<div class="compare-stack">
+				{
+					[
+						{ label: "Before", bits: before },
+						{ label: "After", bits: after },
+					].map((row) => (
+						<div class="compare-labeled-row">
+							<span class="compare-row-label">{row.label}</span>
+							<div class="compare-row">
+								{row.bits.split("").map((bit, i) => (
+									<span
+										class={`compare-tile ${bit === "1" ? "compare-tile--on" : ""} ${i === flipIndex ? "compare-tile--diff" : ""}`}
+									>
+										<svg class="compare-digit" viewBox="0 0 60 100" aria-hidden="true">
+											{Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
+												<polygon
+													class={`compare-segment ${SEGMENTS_BY_DIGIT[bit]?.includes(seg) ? "is-on" : ""}`}
+													points={points}
+												/>
+											))}
+										</svg>
+									</span>
+								))}
+							</div>
+						</div>
+					))
+				}
+			</div>
+			<p class="compare-caption">The highlighted bit is the one that flipped.</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">This Is the Same Idea as LogicDash</p>
+			<p class="block-text">
+				Sound familiar? It's the same core concept you use every time you play. In the game, you're
+				told how many bits differ from the secret, and you use logic to figure out which ones. Real
+				error-correcting codes do something similar, just automated — the extra check bits let a
+				computer instantly pinpoint the flipped bit, without a human needing to guess at all.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Where This Shows Up in Real Life</p>
+			<ul class="unit-list">
+				{
+					realWorldExamples.map((example) => (
+						<li>
+							<span class="example-name">{example.name}</span> — {example.text}
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Keep Going</p>
+			<ul class="keep-going-list">
+				<li>
+					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
+				</li>
+				<li>
+					Refresh the core mechanic: <a href="/learn/hamming-distance">Hamming Distance, Explained</a>
+				</li>
+				<li>
+					See how bits scale up: <a href="/learn/bits-and-bytes">Bits, Bytes, and Beyond</a>
+				</li>
+			</ul>
+
+			{
+				(prev || next) && (
+					<div class="learn-pagination">
+						{prev && (
+							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+								← Back to {prev.title}
+							</a>
+						)}
+						{next &&
+							(next.live ? (
+								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+									{next.title} →
+								</a>
+							) : (
+								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+									{next.title} (coming soon)
+								</span>
+							))}
+					</div>
+				)
+			}
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.breadcrumb {
+		margin: 0 0 0.75rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.breadcrumb a {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 0.9rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.88rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.block--example {
+		text-align: center;
+	}
+
+	.compare-stack {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0.9rem 0 0.5rem;
+	}
+
+	.compare-labeled-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.compare-row-label {
+		min-width: 3.2rem;
+		text-align: right;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+	}
+
+	.compare-row {
+		display: flex;
+		gap: 0.3rem;
+	}
+
+	.compare-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		border-radius: 22%;
+		border: 1px solid #4a3826;
+		background: #1c140d;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.compare-tile--on {
+		border-color: #ffae2e;
+		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 55%, transparent);
+	}
+
+	.compare-tile--diff {
+		border-color: var(--color-danger);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-danger) 65%, transparent);
+	}
+
+	.compare-digit {
+		width: 68%;
+		height: 68%;
+		overflow: visible;
+	}
+
+	.compare-segment {
+		fill: #241a10;
+	}
+
+	.compare-tile:not(.compare-tile--on) .compare-segment.is-on {
+		fill: #7a5c3a;
+	}
+
+	.compare-tile--on .compare-segment.is-on {
+		fill: #fff3d6;
+		filter:
+			drop-shadow(0 0 3px #ffae2e)
+			drop-shadow(0 0 8px #ffae2e);
+	}
+
+	.compare-caption {
+		margin: 0;
+		font-size: 0.75rem;
+		color: var(--color-danger);
+	}
+
+	.unit-list {
+		display: inline-block;
+		text-align: left;
+		margin: 0;
+		padding: 0.8rem 1rem 0.8rem 1.6rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.unit-list li {
+		margin: 0.3rem 0;
+	}
+
+	.example-name {
+		color: var(--color-text);
+		font-weight: 700;
+	}
+
+	.keep-going-list {
+		margin: 0;
+		padding-left: 1.2rem;
+		font-size: 0.88rem;
+	}
+
+	.keep-going-list li {
+		margin: 0.3rem 0;
+	}
+
+	.keep-going-list a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+
+	.learn-pagination {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--color-border);
+		font-size: 0.85rem;
+	}
+
+	.learn-pagination-link {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
+	.learn-pagination-next {
+		margin-left: auto;
+	}
+
+	.learn-pagination-soon {
+		color: var(--color-text-muted);
+		font-weight: 600;
+		font-style: italic;
+	}
+</style>

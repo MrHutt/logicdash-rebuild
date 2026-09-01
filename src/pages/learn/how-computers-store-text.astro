@@ -1,0 +1,281 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import BitChip from "../../components/BitChip.astro";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
+
+const CURRENT_HREF = "/learn/how-computers-store-text";
+const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
+
+const word = "HI";
+const letters = word.split("").map((char) => ({
+	char,
+	code: char.charCodeAt(0),
+	bits: char.charCodeAt(0).toString(2).padStart(8, "0"),
+}));
+---
+
+<Layout title="How Computers Store Text">
+	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+
+	<section class="hero">
+		<h1>How Computers Store Text</h1>
+		<p class="hero-lead">
+			You already know a computer's secrets are just 0s and 1s. So how does a keyboard letter like
+			"H" become binary?
+		</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">Every Character Gets a Number</p>
+			<p class="block-text">
+				Long before your screen shows a letter, your computer has already turned it into a number.
+				Computers and keyboards agree in advance on exactly which number means which character — so
+				"H" always means the same thing to every device.
+			</p>
+			<p class="block-text">
+				Once it's a number, it's easy: just write that number in binary, the same way you've already
+				seen with any other value.
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">ASCII: One of the First Systems</p>
+			<p class="block-text">
+				One of the earliest standards, called ASCII, assigned a number to every letter, digit, and
+				punctuation mark on a standard keyboard — 128 characters in total, each fitting in a single
+				byte.
+			</p>
+			<p class="block-text">
+				Take the word "HI." Your computer stores it as two numbers — H is 72, I is 73 — written out
+				here as 8-bit binary, one byte each:
+			</p>
+
+			<div class="byte-demo">
+				{
+					letters.map((letter) => (
+						<div class="byte-demo-group">
+							<div class="byte-demo-tiles">
+								{letter.bits.split("").map((bit) => (
+									<BitChip value={bit as "0" | "1"} />
+								))}
+							</div>
+							<span class="byte-demo-label">
+								"{letter.char}" = {letter.code}
+							</span>
+						</div>
+					))
+				}
+			</div>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Why 128 Characters Wasn't Enough</p>
+			<p class="block-text">
+				ASCII covers English letters, numbers, and basic punctuation — plenty for a 1960s
+				teleprinter, not enough for a modern one. It has no room for accented letters, other
+				alphabets like Arabic or Chinese, or a single emoji.
+			</p>
+			<p class="block-text">
+				That's why almost every computer today uses Unicode instead — a much bigger system built to
+				give every character in every language (and yes, every 😀) its own number. The letters and
+				numbers you already know still work exactly the same way underneath.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Text Is Just Another Kind of Bits</p>
+			<p class="block-text">
+				Every message you've ever sent, every word on this page, is binary underneath — no different
+				in kind from a LogicDash secret. The only difference is scale: your guess is 5 or 6 bits; a
+				text message is thousands.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Keep Going</p>
+			<ul class="keep-going-list">
+				<li>
+					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
+				</li>
+				<li>
+					See how bits group into bytes: <a href="/learn/bits-and-bytes">Bits, Bytes, and Beyond</a>
+				</li>
+				<li>
+					Curious about number systems? <a href="/learn/binary-hex-decimal">Binary ↔ Hex ↔ Decimal</a>
+				</li>
+			</ul>
+
+			{
+				(prev || next) && (
+					<div class="learn-pagination">
+						{prev && (
+							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+								← Back to {prev.title}
+							</a>
+						)}
+						{next &&
+							(next.live ? (
+								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+									{next.title} →
+								</a>
+							) : (
+								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+									{next.title} (coming soon)
+								</span>
+							))}
+					</div>
+				)
+			}
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.breadcrumb {
+		margin: 0 0 0.75rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.breadcrumb a {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 0.9rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.88rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.block--example {
+		text-align: center;
+	}
+
+	.byte-demo {
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+		margin: 0.9rem 0 0.3rem;
+		padding: 1rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.byte-demo-group {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.byte-demo-tiles {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.byte-demo-label {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.keep-going-list {
+		margin: 0;
+		padding-left: 1.2rem;
+		font-size: 0.88rem;
+	}
+
+	.keep-going-list li {
+		margin: 0.3rem 0;
+	}
+
+	.keep-going-list a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+
+	.learn-pagination {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--color-border);
+		font-size: 0.85rem;
+	}
+
+	.learn-pagination-link {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
+	.learn-pagination-next {
+		margin-left: auto;
+	}
+
+	.learn-pagination-soon {
+		color: var(--color-text-muted);
+		font-weight: 600;
+		font-style: italic;
+	}
+</style>

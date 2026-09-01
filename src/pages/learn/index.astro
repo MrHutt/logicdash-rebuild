@@ -1,0 +1,112 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { LEARN_TOPICS } from "../../lib/learnTopics";
+---
+
+<Layout title="Learn">
+	<section class="hero">
+		<h1>Learn</h1>
+		<p class="hero-lead">The ideas behind the puzzle, explained simply.</p>
+	</section>
+
+	<div class="topic-cards">
+		{
+			LEARN_TOPICS.map((topic) =>
+				topic.live ? (
+					<a class="topic-card" href={topic.href}>
+						<span class="topic-card-name">{topic.title}</span>
+						<span class="topic-card-blurb">{topic.blurb}</span>
+					</a>
+				) : (
+					<div class="topic-card topic-card--soon">
+						<span class="topic-card-name">{topic.title}</span>
+						<span class="topic-card-blurb">{topic.blurb}</span>
+						<span class="topic-card-badge">Coming soon</span>
+					</div>
+				),
+			)
+		}
+	</div>
+</Layout>
+
+<style>
+	.hero {
+		text-align: center;
+		margin-bottom: 1.25rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.4rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		font-size: 0.9rem;
+	}
+
+	.topic-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: 0.75rem;
+	}
+
+	.topic-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 1rem 1.1rem;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	a.topic-card:hover {
+		border-color: #ffae2e;
+		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 35%, transparent);
+		transform: translateY(-1px);
+	}
+
+	a.topic-card:active {
+		transform: scale(0.97);
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.1s ease-out;
+	}
+
+	.topic-card-name {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--color-text);
+	}
+
+	.topic-card-blurb {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.topic-card--soon {
+		opacity: 0.6;
+	}
+
+	.topic-card-badge {
+		align-self: flex-start;
+		margin-top: 0.15rem;
+		padding: 0.15rem 0.55rem;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		font-size: 0.65rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+	}
+</style>

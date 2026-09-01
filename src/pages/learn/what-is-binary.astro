@@ -1,0 +1,270 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import BitChip from "../../components/BitChip.astro";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
+
+const CURRENT_HREF = "/learn/what-is-binary";
+const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
+
+const countingRows = Array.from({ length: 9 }, (_, decimal) => ({
+	decimal,
+	bits: decimal.toString(2).padStart(3, "0"),
+}));
+---
+
+<Layout title="What is Binary?">
+	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+
+	<section class="hero">
+		<h1>What is Binary?</h1>
+		<p class="hero-lead">
+			Every computer, from a calculator to a supercomputer, speaks one language underneath everything
+			else: binary. It sounds technical, but the idea is simple.
+		</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">Just Two Options</p>
+			<p class="block-text">
+				A light switch is either on or off. There's no in-between. Binary works the same way —
+				everything is either a <BitChip value="0" /> or a <BitChip value="1" />. Nothing else.
+			</p>
+			<p class="block-text">
+				Computers use this because electricity is easy to read as "on" or "off" — like a switch
+				that's flipped or not. Every letter you type, every photo you see, every game you play is,
+				underneath, just a very long string of 0s and 1s.
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">Counting with Only 0 and 1</p>
+			<p class="block-text">
+				In the number system you grew up with (decimal), you count 0 to 9, then roll over into a new
+				column: 9 becomes 10. Binary works the same way — it just rolls over much sooner, because it
+				only has two digits to work with (0 and 1), not ten.
+			</p>
+
+			<div class="counting-rows">
+				{
+					countingRows.map((row) => (
+						<div class="counting-row">
+							<span class="counting-tiles">
+								{row.bits.split("").map((bit) => (
+									<BitChip value={bit as "0" | "1"} />
+								))}
+							</span>
+							<span class="counting-eq">=</span>
+							<span class="counting-decimal">{row.decimal}</span>
+						</div>
+					))
+				}
+			</div>
+
+			<p class="block-text">
+				Each column doubles in value as you move left — 1, 2, 4, 8, 16 — instead of going up by 10s.
+				So <span class="mono-highlight">101</span> means: one 4, no 2s, one 1 → 4 + 0 + 1 = 5.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Why This Matters for LogicDash</p>
+			<p class="block-text">
+				Every secret pattern in LogicDash — the one you're guessing — is just binary. A 5-bit secret
+				like <span class="mono-highlight">10110</span> is a single number, hidden in five 0s and 1s.
+				When you're playing, you're not just guessing randomly — you're doing exactly what a computer
+				does every microsecond: working with binary.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Keep Going</p>
+			<ul class="keep-going-list">
+				<li>
+					Want to see this idea in action? Read{" "}
+					<a href="/learn/hamming-distance">Hamming Distance, Explained</a>.
+				</li>
+				<li>Or <a href="/learn">browse all Learn topics</a>.</li>
+			</ul>
+
+			{
+				(prev || next) && (
+					<div class="learn-pagination">
+						{prev && (
+							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+								← Back to {prev.title}
+							</a>
+						)}
+						{next &&
+							(next.live ? (
+								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+									{next.title} →
+								</a>
+							) : (
+								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+									{next.title} (coming soon)
+								</span>
+							))}
+					</div>
+				)
+			}
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.breadcrumb {
+		margin: 0 0 0.75rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.breadcrumb a {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 0.9rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.88rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.mono-highlight {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.block--example {
+		text-align: center;
+	}
+
+	.counting-rows {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+		gap: 0.6rem 0.5rem;
+		margin: 0.9rem 0;
+		padding: 0.9rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.counting-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+	}
+
+	.counting-tiles {
+		display: inline-flex;
+		gap: 0.15rem;
+	}
+
+	.counting-eq {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.counting-decimal {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 60%, transparent);
+	}
+
+	.keep-going-list {
+		margin: 0;
+		padding-left: 1.2rem;
+		font-size: 0.88rem;
+	}
+
+	.keep-going-list li {
+		margin: 0.3rem 0;
+	}
+
+	.keep-going-list a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+
+	.learn-pagination {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--color-border);
+		font-size: 0.85rem;
+	}
+
+	.learn-pagination-link {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
+	.learn-pagination-next {
+		margin-left: auto;
+	}
+
+	.learn-pagination-soon {
+		color: var(--color-text-muted);
+		font-weight: 600;
+		font-style: italic;
+	}
+</style>
