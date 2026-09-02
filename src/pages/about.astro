@@ -1,0 +1,117 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="About">
+	<section class="hero">
+		<h1>About</h1>
+		<p class="hero-lead">Where logic meets a little bit of fun.</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">Our Story</p>
+			<p class="block-text">
+				I'm a computer science teacher, and LogicDash grew out of something I noticed in the
+				classroom: logic is at the heart of programming, math, and problem-solving in general — but a
+				lot of people find logic exercises dry, or even intimidating. LogicDash is my attempt to fix
+				that: turn logic practice into something people actually want to come back to.
+			</p>
+			<p class="block-text">
+				Website building is something I've enjoyed for a long time — I've run{" "}
+				<a href="https://funkyenglish.com/" target="_blank" rel="noopener noreferrer">FunkyEnglish.com</a>,
+				a site for English language learners, for over 10 years. LogicDash is where that same instinct
+				meets my day job.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">How It Works</p>
+			<p class="block-text">
+				The idea is simple: guess a secret binary number within a set number of tries, using
+				feedback to narrow it down. That's it. But figuring out the right strategy — the actual
+				algorithm for solving it efficiently — takes real thought. It's not as easy as it looks.
+			</p>
+			<p class="block-text">
+				There's <a href="/5-bit">Classic</a> (the original 5-bit puzzle),{" "}
+				<a href="/overclocked">OverClocked</a> (a tougher 6-bit version), and{" "}
+				<a href="/quick-byte">Today's Quick Byte</a> — a daily three-round challenge, the same for
+				everyone, each day.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Built for Learning</p>
+			<p class="block-text">
+				I believe learning should be fun, not a chore. Every round of LogicDash exercises pattern
+				recognition, critical thinking, and a bit of stubborn perseverance — the same traits that
+				matter in computer science, and honestly, in most of life. If you want to go deeper into the
+				ideas behind the game, the <a href="/learn">Learn section</a> covers everything from binary
+				basics to real-world error correction.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">What's Next</p>
+			<p class="block-text">
+				LogicDash is a work in progress, built and maintained by one person (me), in the time I can
+				find outside the classroom. I'm continuing to add new content, features, and challenges — the
+				goal is for LogicDash to be a genuinely good home for puzzle lovers and learners alike. If
+				you've got ideas, I'd like to hear them.
+			</p>
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 0.9rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.88rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.block-text a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+</style>

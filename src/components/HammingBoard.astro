@@ -387,11 +387,13 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		display: flex;
 		flex-direction: column;
 		gap: 0.2rem;
+		min-width: 6.5rem;
 		padding: 0.25rem 0.6rem;
 		border-radius: 8px;
 		border: 1px solid var(--badge-color, var(--color-border));
 		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 18%, transparent);
 		white-space: nowrap;
+		box-sizing: border-box;
 	}
 
 	.distance-badge-label {

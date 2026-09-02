@@ -1,0 +1,207 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Update this string by hand whenever the policy content below actually changes —
+// it's not derived from the current date, so a page reload won't move it on its own.
+const LAST_UPDATED = "September 2, 2026";
+---
+
+<Layout title="Privacy">
+	<section class="hero">
+		<h1>Privacy Policy</h1>
+		<p class="hero-lead">
+			Welcome to LogicDash.io (the "Site"). We take your privacy seriously, and this policy explains
+			what information we collect, how we use it, and what choices you have.
+		</p>
+		<p class="last-updated">Last updated: {LAST_UPDATED}</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">Information We Collect</p>
+			<p class="block-text">
+				LogicDash does not currently require an account to play. We do not collect personally
+				identifiable information from visitors simply playing the game.
+			</p>
+			<p class="block-text">
+				If you contact us through our Contact page, we collect the information you provide (name,
+				email, message) in order to respond to you. This is handled through a third-party form
+				service, Formspree — see "Third-party services" below.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Local Storage</p>
+			<p class="block-text">
+				LogicDash uses your browser's local storage to remember things like your daily puzzle
+				progress and results (e.g. for Today's Quick Byte). This information stays on your device and
+				is not transmitted to us or any third party.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Cookies and Analytics</p>
+			<p class="block-text">
+				We use Google Analytics to understand how visitors use the Site — for example, which pages
+				are popular. This data is aggregated and anonymized; it is not used to identify you
+				personally. You can learn more about how Google handles this data in{" "}
+				<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+					Google's Privacy Policy
+				</a>.
+			</p>
+			<p class="block-text">
+				You can instruct your browser to refuse cookies. Some features of the Site may not work as
+				intended if cookies are disabled.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Advertising</p>
+			<p class="block-text">
+				LogicDash does not currently display advertising. If this changes in the future, this policy
+				will be updated to describe what ad-related data is collected and how, and — where legally
+				required — visitors will be shown a consent option before any personalized ads are served.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Third-Party Services</p>
+			<p class="block-text">
+				Our Contact form is powered by Formspree, a third-party form service. Information submitted
+				through that form is subject to{" "}
+				<a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener noreferrer">
+					Formspree's Privacy Policy
+				</a>. We do not control how Formspree processes this data beyond delivering your message to
+				us.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">How We Use Information</p>
+			<p class="block-text">
+				Any information you provide via the Contact form is used solely to respond to your inquiry.
+				We do not sell or share this information with third parties for marketing purposes.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Your Rights</p>
+			<p class="block-text">Depending on where you live, you may have rights including:</p>
+			<ul class="rights-list">
+				<li>The right to access</li>
+				<li>The right to rectification</li>
+				<li>The right to erasure</li>
+				<li>The right to restrict processing</li>
+				<li>The right to object to processing</li>
+				<li>The right to data portability</li>
+				<li>The right to complain to a supervisory authority</li>
+				<li>The right to withdraw consent</li>
+			</ul>
+			<p class="block-text">To exercise any of these rights, contact us using the details below.</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Children's Privacy</p>
+			<p class="block-text">
+				Our Service does not knowingly collect personally identifiable information from children
+				under 18. If you are a parent or guardian and believe your child has provided us with
+				personal information, please contact us and we will delete it.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Compliance with Laws</p>
+			<p class="block-text">
+				We will disclose information if required to do so by law, such as in response to a court
+				order, subpoena, or law enforcement request, or where reasonably necessary to protect the
+				safety of our visitors.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Changes to This Policy</p>
+			<p class="block-text">
+				We may update this policy from time to time. Changes will be posted on this page with an
+				updated "Last updated" date.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Contact Us</p>
+			<p class="block-text">
+				Questions about this policy? Reach out via our <a href="/contact">Contact page</a>.
+			</p>
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 0.9rem;
+	}
+
+	.last-updated {
+		margin: 0.5rem 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.88rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.block-text a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+
+	.rights-list {
+		margin: 0 0 0.6rem;
+		padding-left: 1.2rem;
+		font-size: 0.88rem;
+		color: var(--color-text-muted);
+	}
+
+	.rights-list li {
+		margin: 0.2rem 0;
+	}
+</style>

@@ -20,7 +20,31 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<p class="quick-byte-sequence"></p>
 		<p class="quick-byte-total"></p>
 		<p class="quick-byte-badge" hidden></p>
+		<button type="button" class="quick-byte-share">Share Result</button>
 		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte.</p>
+	</div>
+
+	<div class="share-modal-overlay" hidden>
+		<div class="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+			<button type="button" class="share-modal-close" aria-label="Close">×</button>
+			<p id="share-modal-title" class="share-modal-title">Share Your Result</p>
+			<div class="share-preview">
+				<p class="share-preview-date"></p>
+				<div class="share-preview-squares"></div>
+				<p class="share-preview-phrase" hidden></p>
+				<p class="share-preview-sequence"></p>
+				<p class="share-preview-site">logicdash.io</p>
+			</div>
+			<div class="share-actions">
+				<button type="button" class="share-copy-btn">Copy</button>
+				<span class="share-copied-note" hidden>Copied!</span>
+			</div>
+			<div class="share-links">
+				<a class="share-link share-link--twitter" target="_blank" rel="noopener noreferrer">Share on X</a>
+				<a class="share-link share-link--whatsapp" target="_blank" rel="noopener noreferrer">Share on WhatsApp</a>
+			</div>
+			<button type="button" class="share-native-btn" hidden>Share via Device</button>
+		</div>
 	</div>
 </Layout>
 
@@ -157,12 +181,256 @@ import HammingBoard from "../components/HammingBoard.astro";
 		margin: 0.5rem 0 0;
 		font-size: 0.8rem;
 	}
+
+	.quick-byte-share {
+		margin-top: 0.6rem;
+		padding: 0.5rem 1.5rem;
+		border: 1px solid #ffae2e;
+		border-radius: 999px;
+		background: transparent;
+		color: #ffae2e;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.quick-byte-share:hover {
+		background: #ffae2e;
+		color: #241202;
+	}
+
+	.quick-byte-share:active {
+		transform: scale(0.95);
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			transform 0.1s ease-out;
+	}
+
+	.share-modal-overlay {
+		position: fixed;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		background: rgba(6, 4, 2, 0.72);
+		z-index: 100;
+	}
+
+	.share-modal-overlay[hidden] {
+		display: none;
+	}
+
+	.share-modal {
+		position: relative;
+		width: 100%;
+		max-width: 24rem;
+		background: var(--color-surface);
+		border: 1px solid #ffae2e;
+		border-radius: 16px;
+		padding: 1.25rem;
+		box-shadow: 0 0 24px color-mix(in srgb, #ffae2e 30%, transparent);
+		text-align: center;
+	}
+
+	.share-modal-close {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.75rem;
+		border: none;
+		background: none;
+		color: var(--color-text-muted);
+		font-size: 1.4rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0.25rem;
+	}
+
+	.share-modal-close:hover {
+		color: var(--color-text);
+	}
+
+	.share-modal-title {
+		margin: 0 0 0.75rem;
+		font-size: 0.85rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: #ffae2e;
+	}
+
+	.share-preview {
+		margin: 0 0 0.85rem;
+		padding: 0.75rem 0.85rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		line-height: 1.5;
+		text-align: left;
+	}
+
+	.share-preview p {
+		margin: 0;
+		color: var(--color-text);
+	}
+
+	.share-preview-phrase[hidden] {
+		display: none;
+	}
+
+	.share-preview-squares {
+		display: flex;
+		gap: 0.3rem;
+		margin: 0.35rem 0;
+	}
+
+	/*
+	 * Rendered as real CSS-colored squares rather than the 🟩🟧🟥 emoji used in the
+	 * actual copyable/shareable text — emoji square colors are fixed by the platform's
+	 * font and can't be restyled, and on some platforms the "orange" one reads closer
+	 * to coral than the site's amber. This preview shows the exact on-brand colors;
+	 * squareColorClass() below maps each score to the matching emoji for the real text.
+	 */
+	.share-square {
+		display: inline-block;
+		width: 1.2rem;
+		height: 1.2rem;
+		border-radius: 22%;
+	}
+
+	.share-square--green {
+		background: var(--color-success);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 60%, transparent);
+	}
+
+	.share-square--amber {
+		background: #ffae2e;
+		box-shadow: 0 0 8px color-mix(in srgb, #ffae2e 60%, transparent);
+	}
+
+	.share-square--red {
+		background: #ef4444;
+		box-shadow: 0 0 8px color-mix(in srgb, #ef4444 60%, transparent);
+	}
+
+	.share-actions {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.6rem;
+		margin-bottom: 0.85rem;
+	}
+
+	.share-copy-btn {
+		padding: 0.45rem 1.4rem;
+		border: 1px solid #ffae2e;
+		border-radius: 8px;
+		background: #ffae2e;
+		color: #241202;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 45%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.15s ease;
+	}
+
+	.share-copy-btn:hover {
+		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 65%, transparent);
+	}
+
+	.share-copy-btn:active {
+		transform: scale(0.95);
+		transition:
+			transform 0.1s ease-out,
+			box-shadow 0.15s ease;
+	}
+
+	.share-copied-note {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--color-success);
+	}
+
+	.share-copied-note[hidden] {
+		display: none;
+	}
+
+	.share-links {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.6rem;
+	}
+
+	.share-link {
+		padding: 0.4rem 1rem;
+		border: 1px solid #ffae2e;
+		border-radius: 999px;
+		color: #ffae2e;
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.share-link:hover {
+		background: #ffae2e;
+		color: #241202;
+	}
+
+	.share-native-btn {
+		display: block;
+		margin: 0.85rem auto 0;
+		padding: 0.35rem 0.9rem;
+		border: none;
+		background: none;
+		color: var(--color-text-muted);
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
+
+	.share-native-btn:hover {
+		color: var(--color-text);
+	}
+
+	.share-native-btn[hidden] {
+		display: none;
+	}
 </style>
 
 <script>
 	import { createHammingGame } from "../lib/hammingGame";
 	import { getLocalDateString, generateDailySecrets } from "../lib/dailySeed";
-	import { roundScore, formatResultSequence, totalScore, findResultBadge } from "../lib/quickByteScoring";
+	import {
+		roundScore,
+		formatResultSequence,
+		totalScore,
+		findResultBadge,
+		buildShareText,
+		shareSpecialPhrase,
+		squareColor,
+	} from "../lib/quickByteScoring";
 
 	// Result storage is browser-local only for now (no accounts yet), keyed by the
 	// player's local calendar day. Cross-device sync will come later once accounts exist.
@@ -199,6 +467,114 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const sequenceEl = document.querySelector<HTMLElement>(".quick-byte-sequence")!;
 	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
 	const badgeEl = document.querySelector<HTMLElement>(".quick-byte-badge")!;
+	const shareButton = document.querySelector<HTMLButtonElement>(".quick-byte-share")!;
+	const shareOverlay = document.querySelector<HTMLElement>(".share-modal-overlay")!;
+	const shareModalCloseBtn = document.querySelector<HTMLButtonElement>(".share-modal-close")!;
+	const sharePreviewDate = document.querySelector<HTMLElement>(".share-preview-date")!;
+	const sharePreviewSquares = document.querySelector<HTMLElement>(".share-preview-squares")!;
+	const sharePreviewPhrase = document.querySelector<HTMLElement>(".share-preview-phrase")!;
+	const sharePreviewSequence = document.querySelector<HTMLElement>(".share-preview-sequence")!;
+	const shareCopyBtn = document.querySelector<HTMLButtonElement>(".share-copy-btn")!;
+	const shareCopiedNote = document.querySelector<HTMLElement>(".share-copied-note")!;
+	const shareTwitterLink = document.querySelector<HTMLAnchorElement>(".share-link--twitter")!;
+	const shareWhatsappLink = document.querySelector<HTMLAnchorElement>(".share-link--whatsapp")!;
+	const shareNativeBtn = document.querySelector<HTMLButtonElement>(".share-native-btn")!;
+
+	// Set whenever results are shown (either just now, or on revisiting an already-completed
+	// day), so the share button always has the right scores regardless of which path ran.
+	let resultScores: number[] = [];
+
+	// squareColor() names the tier "orange" (matching the 🟧 emoji used in the real
+	// shareable text), but the on-page preview swatch is styled in the site's actual
+	// amber accent rather than a coral/orange tone — hence the different class name here.
+	const SQUARE_CLASS_BY_COLOR = {
+		green: "share-square--green",
+		orange: "share-square--amber",
+		red: "share-square--red",
+	} as const;
+
+	// Elements written directly in this file's markup get Astro's scoped-style attribute
+	// automatically, but ones created here via document.createElement don't — without
+	// stamping it on manually, none of this component's scoped CSS would match them.
+	function getScopeAttr(el: Element): string | null {
+		for (const attr of el.attributes) {
+			if (attr.name.startsWith("data-astro-cid-")) return attr.name;
+		}
+		return null;
+	}
+
+	const scopeAttr = getScopeAttr(sharePreviewSquares);
+
+	function renderSharePreview(scores: number[]) {
+		sharePreviewDate.textContent = `Quick Byte — ${dateString.replaceAll("-", ".")}`;
+
+		sharePreviewSquares.innerHTML = "";
+		for (const score of scores) {
+			const square = document.createElement("span");
+			square.className = `share-square ${SQUARE_CLASS_BY_COLOR[squareColor(score)]}`;
+			if (scopeAttr) square.setAttribute(scopeAttr, "");
+			sharePreviewSquares.appendChild(square);
+		}
+
+		const phrase = shareSpecialPhrase(scores);
+		sharePreviewPhrase.textContent = phrase ?? "";
+		sharePreviewPhrase.hidden = phrase === null;
+
+		sharePreviewSequence.textContent = `${formatResultSequence(scores)}   Total: ${totalScore(scores)}`;
+	}
+
+	function openShareModal() {
+		renderSharePreview(resultScores);
+		const shareText = buildShareText(dateString, resultScores);
+		const encoded = encodeURIComponent(shareText);
+		shareTwitterLink.href = `https://twitter.com/intent/tweet?text=${encoded}`;
+		shareWhatsappLink.href = `https://wa.me/?text=${encoded}`;
+		// navigator.share's presence isn't a reliable "this is a phone" signal — some desktop
+		// browsers (e.g. Windows Edge/Chrome) support it too. So the modal is always the
+		// primary path; this button is just an optional extra, offered only when supported,
+		// and only triggered by an explicit tap — never automatically.
+		shareNativeBtn.hidden = !navigator.share;
+		shareOverlay.hidden = false;
+	}
+
+	function closeShareModal() {
+		shareOverlay.hidden = true;
+	}
+
+	shareButton.addEventListener("click", () => {
+		openShareModal();
+	});
+
+	shareNativeBtn.addEventListener("click", () => {
+		const shareText = buildShareText(dateString, resultScores);
+		navigator.share({ text: shareText }).catch(() => {});
+	});
+
+	shareModalCloseBtn.addEventListener("click", closeShareModal);
+
+	shareOverlay.addEventListener("click", (event) => {
+		if (event.target === shareOverlay) closeShareModal();
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && !shareOverlay.hidden) closeShareModal();
+	});
+
+	let copiedNoteTimeout: ReturnType<typeof setTimeout> | undefined;
+
+	shareCopyBtn.addEventListener("click", async () => {
+		try {
+			await navigator.clipboard.writeText(buildShareText(dateString, resultScores));
+			shareCopiedNote.hidden = false;
+			clearTimeout(copiedNoteTimeout);
+			copiedNoteTimeout = setTimeout(() => {
+				shareCopiedNote.hidden = true;
+			}, 1500);
+		} catch {
+			// Clipboard access denied or unavailable — the preview text is still visible
+			// and selectable by hand.
+		}
+	});
 
 	function readStoredResult(): QuickByteResult | null {
 		try {
@@ -239,6 +615,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	}
 
 	function showResults(perRound: number[]) {
+		resultScores = perRound;
 		playSection.hidden = true;
 		resultsSection.hidden = false;
 		sequenceEl.textContent = formatResultSequence(perRound);

@@ -1,0 +1,211 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Contact">
+	<section class="hero">
+		<h1>Contact</h1>
+		<p class="hero-lead">Got ideas, bugs, or feedback? I'd like to hear them.</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<div class="form-banner" data-fs-error></div>
+
+			<form id="contact-form">
+				<div class="form-field">
+					<label for="name">Name</label>
+					<input id="name" name="name" type="text" autocomplete="name" required data-fs-field />
+					<span class="field-error" data-fs-error="name"></span>
+				</div>
+
+				<div class="form-field">
+					<label for="email">Email</label>
+					<input id="email" name="email" type="email" autocomplete="email" required data-fs-field />
+					<span class="field-error" data-fs-error="email"></span>
+				</div>
+
+				<div class="form-field">
+					<label for="message">Message</label>
+					<textarea id="message" name="message" rows="5" required data-fs-field></textarea>
+					<span class="field-error" data-fs-error="message"></span>
+				</div>
+
+				<button type="submit" class="submit-btn" data-fs-submit-btn>Send Message</button>
+			</form>
+
+			<div class="form-success" data-fs-success>Thanks — I'll get back to you soon.</div>
+		</section>
+	</div>
+</Layout>
+
+<script>
+	// @formspree/ajax's package.json "browser" field points at its CDN/global.js
+	// bundle, which Vite prefers over "module" for client builds and which has no
+	// real exports — importing the ESM file directly avoids that misresolution.
+	import { initForm } from "@formspree/ajax/dist/index.mjs";
+
+	const form = document.querySelector<HTMLFormElement>("#contact-form");
+
+	if (form) {
+		initForm({
+			formElement: "#contact-form",
+			formId: "xrpgqybp",
+			// The library's default behavior (no data-fs-success element) would replace
+			// the form automatically, but we have a custom success message — so with
+			// data-fs-success present, the default is just to reset the form. Hiding it
+			// ourselves here gives the "replace the form" behavior we actually want.
+			onSuccess: () => {
+				form.hidden = true;
+			},
+		});
+	}
+</script>
+
+<style>
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		font-size: 0.9rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		max-width: 30rem;
+		margin: 0 auto;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1.25rem 1.25rem;
+	}
+
+	.form-banner {
+		display: none;
+		margin-bottom: 0.9rem;
+		padding: 0.6rem 0.8rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+		color: var(--color-danger);
+		font-size: 0.85rem;
+	}
+
+	.form-banner[data-fs-active] {
+		display: block;
+	}
+
+	.form-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		margin-bottom: 0.9rem;
+	}
+
+	.form-field label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.form-field input,
+	.form-field textarea {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		padding: 0.55rem 0.7rem;
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 0.9rem;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.form-field textarea {
+		resize: vertical;
+		min-height: 6rem;
+	}
+
+	.form-field input:focus,
+	.form-field textarea:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.form-field input[aria-invalid="true"],
+	.form-field textarea[aria-invalid="true"] {
+		border-color: var(--color-danger);
+	}
+
+	.field-error {
+		display: block;
+		min-height: 1rem;
+		font-size: 0.75rem;
+		color: var(--color-danger);
+	}
+
+	.submit-btn {
+		width: 100%;
+		padding: 0.6rem 1.4rem;
+		border: 1px solid #ffae2e;
+		border-radius: 8px;
+		background: #ffae2e;
+		color: var(--color-accent-contrast);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 45%, transparent);
+		transition:
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.submit-btn:hover {
+		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 65%, transparent);
+	}
+
+	.submit-btn:active {
+		transform: scale(0.97);
+		transition: transform 0.1s ease-out;
+	}
+
+	.submit-btn:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+		box-shadow: none;
+	}
+
+	.form-success {
+		display: none;
+		text-align: center;
+		padding: 1.5rem 1rem;
+		border-radius: 14px;
+		border: 1px solid var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 14%, transparent);
+		color: var(--color-text);
+		font-size: 0.95rem;
+		font-weight: 600;
+	}
+
+	.form-success[data-fs-active] {
+		display: block;
+	}
+</style>

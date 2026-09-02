@@ -29,6 +29,21 @@ const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
 			rel="stylesheet"
 		/>
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1GLCD506S"></script>
+		<script>
+			declare global {
+				interface Window {
+					dataLayer: unknown[][];
+				}
+			}
+
+			window.dataLayer = window.dataLayer || [];
+			function gtag(...args: unknown[]) {
+				window.dataLayer.push(args);
+			}
+			gtag("js", new Date());
+			gtag("config", "G-Q1GLCD506S");
+		</script>
 	</head>
 	<body>
 		<Header />

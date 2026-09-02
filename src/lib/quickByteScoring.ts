@@ -63,3 +63,50 @@ export const RESULT_BADGES: ResultBadge[] = [
 export function findResultBadge(scores: number[]): string | null {
 	return RESULT_BADGES.find((badge) => badge.matches(scores))?.text ?? null;
 }
+
+export type SquareColor = "green" | "orange" | "red";
+
+/** Classifies a round's score into the color bucket used for share-text squares. */
+export function squareColor(score: number): SquareColor {
+	if (score === LOSS_SCORE) return "red";
+	return score <= 2 ? "green" : "orange";
+}
+
+const SQUARE_EMOJI: Record<SquareColor, string> = {
+	green: "🟩",
+	orange: "🟧",
+	red: "🟥",
+};
+
+export function formatResultSquares(scores: number[]): string {
+	return scores.map((score) => SQUARE_EMOJI[squareColor(score)]).join("");
+}
+
+/**
+ * Special phrase for share text. Uniform-color patterns (all-green/orange/red) are checked
+ * first, then fall back to the same badge rules used on the results screen. In practice the
+ * fallback can only ever surface Liftoff or the countdown pattern — every other existing
+ * badge (hacked-the-mainframe, number-of-the-beast, total-system-failure, perfectly-balanced)
+ * is itself a uniform-color pattern, so it's already caught by one of the checks above.
+ */
+export function shareSpecialPhrase(scores: number[]): string | null {
+	if (scores.every((score) => squareColor(score) === "green")) return "Fully optimized.";
+	if (scores.every((score) => squareColor(score) === "orange")) return "Stable build.";
+	if (scores.every((score) => squareColor(score) === "red")) return "404: Logic not found.";
+	return findResultBadge(scores);
+}
+
+export function buildShareText(dateString: string, scores: number[]): string {
+	const formattedDate = dateString.replaceAll("-", ".");
+	const phrase = shareSpecialPhrase(scores);
+
+	const lines = [
+		`Quick Byte — ${formattedDate}`,
+		formatResultSquares(scores),
+		...(phrase ? [phrase] : []),
+		`${formatResultSequence(scores)}   Total: ${totalScore(scores)}`,
+		"logicdash.io",
+	];
+
+	return lines.join("\n");
+}
