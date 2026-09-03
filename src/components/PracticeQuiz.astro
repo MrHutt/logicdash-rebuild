@@ -1,0 +1,862 @@
+---
+// Ten-question multiple-choice quiz: read a byte, pick its decimal value.
+// The intro (heading copy + Start Quiz button) stays inline on the page.
+// Clicking Start opens the quiz itself in a focused modal, matching the
+// site's existing Share Result modal pattern (quick-byte.astro) — dimmed
+// backdrop, centered card. Unlike that modal, this one is deliberately hard
+// to dismiss by accident: the backdrop is inert (clicking it does nothing),
+// and the X button doesn't close immediately — it shows an inline "exit
+// quiz?" confirmation first. A fresh set of 10 random bytes (and plausible
+// wrong-answer distractors) is generated every time the modal opens, so no
+// two attempts look the same.
+//
+// The hint, explanation, and "Next question" button are hidden via the
+// `hidden` attribute (removed from layout) until revealed, so the card sizes
+// itself to whatever is actually visible rather than reserving empty space.
+---
+
+<div class="quiz-intro">
+	<p class="quiz-intro-text">Can you read binary like a pro? Ten bytes, one focused round. Let's find out.</p>
+	<label class="quiz-timed-toggle">
+		<input type="checkbox" data-timed-toggle />
+		<span>Timed mode</span>
+	</label>
+	<button type="button" class="quiz-start" data-start>Start Quiz</button>
+</div>
+
+<div class="quiz-modal-overlay" data-quiz-overlay hidden>
+	<div class="quiz-modal" role="dialog" aria-modal="true" aria-label="Practice quiz">
+		<button type="button" class="quiz-modal-close" data-quiz-close aria-label="Close">×</button>
+		<p class="quiz-timer" data-timer hidden>0:00</p>
+		<div class="quiz-card" data-quiz></div>
+		<div class="quiz-exit-confirm" data-exit-confirm hidden>
+			<p class="quiz-exit-confirm-text">Exit quiz? Your progress will be lost.</p>
+			<div class="quiz-exit-confirm-actions">
+				<button type="button" class="quiz-exit-confirm-keep" data-exit-confirm-keep>Keep going</button>
+				<button type="button" class="quiz-exit-confirm-exit" data-exit-confirm-exit>Exit</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	interface Question {
+		bits: string;
+		hint: string;
+		options: number[];
+		correctIndex: number;
+	}
+
+	const GENERIC_HINT = "Add up the value of every lit position.";
+	const BYTE_LENGTH = 8;
+
+	function shuffle<T>(items: T[]): T[] {
+		const arr = items.slice();
+		for (let i = arr.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+		return arr;
+	}
+
+	function placeValuesFor(bits: string): number[] {
+		const length = bits.length;
+		return bits.split("").map((_, i) => 2 ** (length - 1 - i));
+	}
+
+	function valueOfBits(bits: string): number {
+		const values = placeValuesFor(bits);
+		return values.reduce((sum, v, i) => sum + (bits[i] === "1" ? v : 0), 0);
+	}
+
+	function randomByte(): string {
+		let s = "";
+		for (let i = 0; i < BYTE_LENGTH; i++) s += Math.random() < 0.5 ? "0" : "1";
+		return s;
+	}
+
+	// Builds a pool of plausible wrong-answer candidates from three common
+	// real mistakes, then picks 3 distinct, in-range ones from it (falling
+	// back to nearby offsets in the rare case the pool runs short).
+	function pickDistractors(bits: string, correct: number, values: number[]): number[] {
+		const pool: number[] = [];
+
+		// Off-by-one-bit: flip a single bit and recompute.
+		for (let i = 0; i < bits.length; i++) {
+			pool.push(bits[i] === "1" ? correct - values[i] : correct + values[i]);
+		}
+
+		// Miscounted position: read one lit position's column as its neighbor
+		// (an 8 misread as a 16, or as a 4).
+		for (let i = 0; i < bits.length; i++) {
+			if (bits[i] !== "1") continue;
+			const pv = values[i];
+			if (i > 0) pool.push(correct - pv + pv * 2);
+			if (i < bits.length - 1) pool.push(correct - pv + pv / 2);
+		}
+
+		// Digit-order slip: read the byte back to front.
+		pool.push(valueOfBits(bits.split("").reverse().join("")));
+
+		const chosen: number[] = [];
+		for (const candidate of shuffle(pool)) {
+			if (candidate === correct || candidate < 0 || candidate > 255) continue;
+			if (chosen.includes(candidate)) continue;
+			chosen.push(candidate);
+			if (chosen.length === 3) break;
+		}
+
+		// Extremely rare fallback (e.g. tiny pools on edge-case bytes): pad
+		// out with the nearest still-distinct, in-range values.
+		let offset = 1;
+		while (chosen.length < 3 && offset <= 255) {
+			for (const candidate of [correct + offset, correct - offset]) {
+				if (chosen.length >= 3) break;
+				if (candidate < 0 || candidate > 255 || candidate === correct) continue;
+				if (chosen.includes(candidate)) continue;
+				chosen.push(candidate);
+			}
+			offset++;
+		}
+
+		return chosen;
+	}
+
+	function generateQuestions(count: number): Question[] {
+		const used = new Set<string>();
+		const questions: Question[] = [];
+
+		while (questions.length < count) {
+			const bits = randomByte();
+			if (used.has(bits)) continue;
+			used.add(bits);
+
+			const values = placeValuesFor(bits);
+			const correct = valueOfBits(bits);
+			const distractors = pickDistractors(bits, correct, values);
+			const options = shuffle([correct, ...distractors]);
+
+			questions.push({
+				bits,
+				hint: GENERIC_HINT,
+				options,
+				correctIndex: options.indexOf(correct),
+			});
+		}
+
+		return questions;
+	}
+
+	function formatTime(totalSeconds: number): string {
+		const minutes = Math.floor(totalSeconds / 60);
+		const seconds = totalSeconds % 60;
+		return `${minutes}:${String(seconds).padStart(2, "0")}`;
+	}
+
+	function scoreMessage(score: number, total: number): string {
+		if (score === total) return "Perfect — you've got this down.";
+		if (score >= total * 0.7) return "Solid — you're reading bytes like a pro.";
+		if (score >= total * 0.4) return "Getting there — review the examples above and try again.";
+		return "Binary takes practice — check the examples above if a few tripped you up.";
+	}
+
+	// Lets the page (reading-a-byte.astro) know whether the quiz modal is
+	// currently open, so it can hide the "Try It Yourself" tool while it is
+	// — otherwise a student could flip its tiles to match the current
+	// question and read the answer straight off it.
+	function setQuizActive(active: boolean) {
+		document.dispatchEvent(new CustomEvent("quiz:active-change", { detail: { active } }));
+	}
+
+	document.querySelectorAll<HTMLElement>("[data-quiz-overlay]").forEach((overlay) => {
+		const root = overlay.querySelector<HTMLElement>("[data-quiz]");
+		if (!root) return;
+
+		const startBtn = document.querySelector<HTMLButtonElement>("[data-start]");
+		const timedToggle = document.querySelector<HTMLInputElement>("[data-timed-toggle]");
+		const closeBtn = overlay.querySelector<HTMLButtonElement>("[data-quiz-close]");
+		const timerEl = overlay.querySelector<HTMLElement>("[data-timer]");
+		const exitConfirm = overlay.querySelector<HTMLElement>("[data-exit-confirm]");
+		const exitConfirmKeepBtn = overlay.querySelector<HTMLButtonElement>("[data-exit-confirm-keep]");
+		const exitConfirmExitBtn = overlay.querySelector<HTMLButtonElement>("[data-exit-confirm-exit]");
+
+		let questions: Question[] = [];
+		let current = 0;
+		let score = 0;
+		let showingResult = false;
+		let timedMode = false;
+		let timerStartedAt = 0;
+		let timerIntervalId: number | undefined;
+
+		// The timer element lives outside the per-question `data-quiz` root (see
+		// render() below, which replaces that root's innerHTML on every question)
+		// so it keeps running undisturbed across all 10 questions instead of
+		// getting torn down and restarted each time.
+		function startTimer() {
+			timerStartedAt = Date.now();
+			if (timerEl) {
+				timerEl.hidden = false;
+				timerEl.textContent = "0:00";
+			}
+			timerIntervalId = window.setInterval(() => {
+				if (timerEl) timerEl.textContent = formatTime(Math.floor((Date.now() - timerStartedAt) / 1000));
+			}, 1000);
+		}
+
+		// Stops the running timer (if any) and returns the total elapsed seconds.
+		function stopTimer(): number {
+			if (timerIntervalId !== undefined) {
+				window.clearInterval(timerIntervalId);
+				timerIntervalId = undefined;
+			}
+			if (timerEl) timerEl.hidden = true;
+			return Math.floor((Date.now() - timerStartedAt) / 1000);
+		}
+
+		function openModal() {
+			questions = generateQuestions(10);
+			current = 0;
+			score = 0;
+			showingResult = false;
+			timedMode = timedToggle?.checked ?? false;
+			overlay.hidden = false;
+			setQuizActive(true);
+			render();
+			if (timedMode) startTimer();
+		}
+
+		// Closing mid-quiz needs no ceremony beyond the confirmation below —
+		// the next "Start Quiz" click always regenerates a fresh set, so
+		// there's no partial state to carry over.
+		function closeModal() {
+			if (exitConfirm) exitConfirm.hidden = true;
+			stopTimer();
+			overlay.hidden = true;
+			setQuizActive(false);
+		}
+
+		// The modal is deliberately hard to dismiss by accident while questions
+		// are in progress: clicking the dimmed backdrop does nothing, and the X
+		// doesn't close immediately — it shows an inline "are you sure" first.
+		// Once the score screen is showing there's no progress left to lose, so
+		// the X just closes right away.
+		function requestClose() {
+			if (showingResult) {
+				closeModal();
+				return;
+			}
+			if (exitConfirm) exitConfirm.hidden = false;
+		}
+
+		function dismissExitConfirm() {
+			if (exitConfirm) exitConfirm.hidden = true;
+		}
+
+		startBtn?.addEventListener("click", openModal);
+		closeBtn?.addEventListener("click", requestClose);
+		exitConfirmExitBtn?.addEventListener("click", closeModal);
+		exitConfirmKeepBtn?.addEventListener("click", dismissExitConfirm);
+		document.addEventListener("keydown", (event) => {
+			if (event.key !== "Escape" || overlay.hidden) return;
+			if (exitConfirm && !exitConfirm.hidden) dismissExitConfirm();
+			else requestClose();
+		});
+
+		function render() {
+			if (current >= questions.length) {
+				renderResult();
+				return;
+			}
+
+			showingResult = false;
+
+			const q = questions[current];
+			const isLastQuestion = current === questions.length - 1;
+			const nextLabel = isLastQuestion ? "See my score →" : "Next question →";
+
+			root.innerHTML = `
+				<p class="quiz-progress">Question ${current + 1} of ${questions.length}</p>
+				<div class="quiz-tiles" aria-label="Binary byte ${q.bits}">
+					${q.bits
+						.split("")
+						.map((bit) => `<span class="quiz-tile ${bit === "1" ? "quiz-tile--on" : ""}">${bit}</span>`)
+						.join("")}
+				</div>
+				<button type="button" class="quiz-hint-toggle" data-hint-toggle>Show hint</button>
+				<p class="quiz-hint" data-hint hidden>${q.hint}</p>
+				<div class="quiz-options" data-options>
+					${q.options
+						.map((opt, i) => `<button type="button" class="quiz-option" data-option data-index="${i}">${opt}</button>`)
+						.join("")}
+				</div>
+				<p class="quiz-explanation" data-explanation hidden></p>
+				<button type="button" class="quiz-next" data-next hidden>${nextLabel}</button>
+			`;
+
+			wireQuestion(q);
+		}
+
+		function wireQuestion(q: Question) {
+			const values = placeValuesFor(q.bits);
+
+			const hintToggle = root.querySelector<HTMLButtonElement>("[data-hint-toggle]");
+			const hintEl = root.querySelector<HTMLElement>("[data-hint]");
+			hintToggle?.addEventListener("click", () => {
+				if (!hintEl) return;
+				hintEl.hidden = !hintEl.hidden;
+				hintToggle.textContent = hintEl.hidden ? "Show hint" : "Hide hint";
+			});
+
+			const optionButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-option]"));
+			const explanationEl = root.querySelector<HTMLElement>("[data-explanation]");
+			const nextBtn = root.querySelector<HTMLButtonElement>("[data-next]");
+			let answered = false;
+
+			optionButtons.forEach((btn) => {
+				btn.addEventListener("click", () => {
+					if (answered) return;
+					answered = true;
+
+					const chosenIndex = Number(btn.dataset.index);
+					const correct = chosenIndex === q.correctIndex;
+					if (correct) score++;
+
+					optionButtons.forEach((b, i) => {
+						b.disabled = true;
+						if (i === q.correctIndex) b.classList.add("quiz-option--correct");
+						else if (i === chosenIndex) b.classList.add("quiz-option--incorrect");
+					});
+
+					const answerValue = q.options[q.correctIndex];
+					const litValues = values.filter((_, i) => q.bits[i] === "1");
+					const detail =
+						litValues.length > 0
+							? `Positions lit: ${litValues.join(", ")} → ${litValues.join(" + ")} = ${answerValue}.`
+							: `No positions are lit, so the value is 0.`;
+
+					if (explanationEl) {
+						explanationEl.textContent = (correct ? "Correct! " : `Not quite — the answer is ${answerValue}. `) + detail;
+						explanationEl.hidden = false;
+						explanationEl.classList.toggle("quiz-explanation--correct", correct);
+						explanationEl.classList.toggle("quiz-explanation--incorrect", !correct);
+					}
+
+					if (nextBtn) nextBtn.hidden = false;
+				});
+			});
+
+			nextBtn?.addEventListener("click", () => {
+				current++;
+				render();
+			});
+		}
+
+		function renderResult() {
+			showingResult = true;
+
+			const scoreLine = timedMode
+				? `${score}/${questions.length} — ${formatTime(stopTimer())}`
+				: `${score}/${questions.length}`;
+
+			root.innerHTML = `
+				<div class="quiz-result">
+					<p class="quiz-result-label">Your score</p>
+					<p class="quiz-result-score">${scoreLine}</p>
+					<p class="quiz-result-message">${scoreMessage(score, questions.length)}</p>
+					<button type="button" class="quiz-restart" data-restart>Try again</button>
+				</div>
+			`;
+
+			// Try Again restarts fresh inside the same modal — it doesn't close
+			// it — but Timed mode is a deliberate, per-attempt choice, not a
+			// holdover, so it resets to off (both the flag and the checkbox back
+			// on the page intro) rather than carrying over automatically.
+			root.querySelector<HTMLButtonElement>("[data-restart]")?.addEventListener("click", () => {
+				questions = generateQuestions(10);
+				current = 0;
+				score = 0;
+				timedMode = false;
+				if (timedToggle) timedToggle.checked = false;
+				render();
+			});
+		}
+	});
+</script>
+
+<style is:global>
+	/*
+	 * This component builds its per-question markup as an HTML string and
+	 * injects it via innerHTML (see the script above), so these elements never
+	 * receive Astro's scoped-style attribute. The style tag is global for that
+	 * reason — every class below is prefixed "quiz-" to avoid colliding with
+	 * other components' styles on the page.
+	 */
+	.quiz-intro {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+	}
+
+	.quiz-intro-text {
+		margin: 0;
+		max-width: 22rem;
+		font-size: 0.9rem;
+		color: var(--color-text);
+		text-align: center;
+	}
+
+	.quiz-timed-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.quiz-timed-toggle input[type="checkbox"] {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-accent);
+		cursor: pointer;
+	}
+
+	.quiz-start {
+		padding: 0.6rem 2rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+		text-shadow: 0 0 6px var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.quiz-start:hover {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 70%, transparent);
+	}
+
+	.quiz-start:active {
+		transform: scale(0.95);
+	}
+
+	/*
+	 * Modal chrome — deliberately mirrors the site's existing Share Result
+	 * modal (.share-modal-overlay / .share-modal in quick-byte.astro): a
+	 * dimmed fixed backdrop, a centered card, an absolutely-positioned ×
+	 * close button. The card itself uses the Practice section's teal
+	 * (#14313a) rather than the share modal's neutral surface color.
+	 */
+	.quiz-modal-overlay {
+		position: fixed;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1.5rem;
+		background: rgba(6, 4, 2, 0.72);
+		z-index: 100;
+	}
+
+	.quiz-modal-overlay[hidden] {
+		display: none;
+	}
+
+	.quiz-modal {
+		position: relative;
+		width: 100%;
+		max-width: 34rem;
+		max-height: calc(100vh - 3rem);
+		overflow-y: auto;
+		background: #14313a;
+		border: 1px solid color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+		border-radius: 16px;
+		padding: 2.25rem 1.75rem 1.75rem;
+		box-shadow: 0 0 32px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.quiz-modal-close {
+		position: absolute;
+		top: 0.6rem;
+		right: 0.85rem;
+		border: none;
+		background: none;
+		color: var(--color-text-muted);
+		font-size: 1.6rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0.25rem 0.4rem;
+	}
+
+	.quiz-modal-close:hover {
+		color: var(--color-text);
+	}
+
+	/* A calm, unobtrusive running clock — no color/glow treatment, so it
+	   reads as informational rather than a countdown-pressure element. */
+	.quiz-timer {
+		margin: 0 0 0.6rem;
+		width: 100%;
+		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		color: var(--color-text-muted);
+	}
+
+	.quiz-timer[hidden] {
+		display: none;
+	}
+
+	.quiz-exit-confirm {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		padding: 1.75rem;
+		background: color-mix(in srgb, #14313a 95%, black);
+		border-radius: 16px;
+		text-align: center;
+	}
+
+	.quiz-exit-confirm[hidden] {
+		display: none;
+	}
+
+	.quiz-exit-confirm-text {
+		margin: 0;
+		max-width: 20rem;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.quiz-exit-confirm-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.quiz-exit-confirm-keep {
+		padding: 0.5rem 1.2rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+		transition:
+			background 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.quiz-exit-confirm-keep:hover {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+
+	.quiz-exit-confirm-keep:active {
+		transform: scale(0.95);
+	}
+
+	.quiz-exit-confirm-exit {
+		padding: 0.5rem 1.2rem;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.quiz-exit-confirm-exit:hover {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+	}
+
+	.quiz-exit-confirm-exit:active {
+		transform: scale(0.95);
+	}
+
+	.quiz-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+		margin: 0 auto;
+	}
+
+	.quiz-progress {
+		margin: 0;
+		width: 100%;
+		text-align: center;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.quiz-tiles {
+		display: flex;
+		width: 100%;
+		gap: 0.35rem;
+		justify-content: center;
+	}
+
+	.quiz-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1 1 0;
+		max-width: 3.2rem;
+		aspect-ratio: 1 / 1;
+		border-radius: 18%;
+		border: 1px solid color-mix(in srgb, var(--color-border) 55%, var(--color-text-muted) 20%);
+		background: var(--color-surface-alt);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(1rem, 4.2vw, 1.5rem);
+		color: var(--color-text);
+	}
+
+	.quiz-tile--on {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 65%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.quiz-hint-toggle {
+		padding: 0.3rem 0.7rem;
+		border-radius: 8px;
+		border: 1px dashed var(--color-border);
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-sans);
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.quiz-hint-toggle:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.quiz-hint {
+		margin: 0;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.5rem 0.75rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-size: 0.82rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	.quiz-options {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.quiz-option {
+		padding: 0.6rem 0.5rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1rem;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			opacity 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.quiz-option:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.quiz-option:active:not(:disabled) {
+		transform: scale(0.96);
+	}
+
+	.quiz-option:disabled {
+		cursor: not-allowed;
+	}
+
+	.quiz-option:disabled:not(.quiz-option--correct):not(.quiz-option--incorrect) {
+		opacity: 0.5;
+	}
+
+	.quiz-option--correct {
+		border-color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 16%, transparent);
+		color: var(--color-success);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-success) 30%, transparent);
+	}
+
+	.quiz-option--incorrect {
+		border-color: var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 16%, transparent);
+		color: var(--color-danger);
+	}
+
+	.quiz-explanation {
+		margin: 0;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.6rem 0.85rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		text-align: center;
+	}
+
+	.quiz-explanation--correct {
+		border-color: var(--color-success);
+		color: var(--color-success);
+	}
+
+	.quiz-explanation--incorrect {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+	}
+
+	.quiz-next {
+		padding: 0.4rem 1.2rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: var(--color-bg);
+		color: var(--color-accent);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 35%, transparent);
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.quiz-next:hover {
+		background: color-mix(in srgb, var(--color-accent) 22%, var(--color-bg));
+		color: #fff3d6;
+		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+
+	.quiz-next:active {
+		transform: scale(0.95);
+	}
+
+	.quiz-result {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		width: 100%;
+	}
+
+	.quiz-result-label {
+		margin: 0;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.quiz-result-score {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(1.8rem, 7vw, 2.4rem);
+		color: #fff3d6;
+		text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+
+	.quiz-result-message {
+		margin: 0 0 0.5rem;
+		max-width: 24rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	.quiz-restart {
+		padding: 0.45rem 1.4rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+		text-shadow: 0 0 6px var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.quiz-restart:hover {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 70%, transparent);
+	}
+
+	.quiz-restart:active {
+		transform: scale(0.95);
+	}
+</style>

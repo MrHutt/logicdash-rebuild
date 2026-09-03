@@ -30,6 +30,18 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		live: true,
 	},
 	{
+		title: "Reading a Byte",
+		href: "/learn/reading-a-byte",
+		blurb: "Turn any byte into a real number, step by step.",
+		live: true,
+	},
+	{
+		title: "Writing a Byte",
+		href: "/learn/writing-a-byte",
+		blurb: "Turn any number into binary, the way most people actually learn it.",
+		live: true,
+	},
+	{
 		title: "Error Correction, Explained",
 		href: "/learn/error-correction",
 		blurb: "How computers detect and fix mistakes in data.",

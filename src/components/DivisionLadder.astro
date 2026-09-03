@@ -1,0 +1,155 @@
+---
+// Static illustration of the "divide by 2, keep the remainder" method: one
+// row per division step, the remainder highlighted using the site's
+// established lit/unlit tile convention, and an upward arrow making the
+// bottom-to-top reading order explicit (the single most common mistake this
+// method invites).
+import { computeDivisionSteps, binaryFromSteps } from "../lib/decimalToBinary";
+
+interface Props {
+	value: number;
+}
+
+const { value } = Astro.props;
+const steps = computeDivisionSteps(value);
+const binary = binaryFromSteps(steps);
+---
+
+<div class="ladder">
+	<div class="ladder-rows">
+		{
+			steps.map((step) => (
+				<div class="ladder-row">
+					<span class="ladder-num">{step.dividend}</span>
+					<span class="ladder-op">÷ 2 =</span>
+					<span class="ladder-num">{step.quotient}</span>
+					<span class="ladder-rem-label">remainder</span>
+					<span class={`ladder-rem-tile ${step.remainder === 1 ? "ladder-rem-tile--on" : ""}`}>{step.remainder}</span>
+				</div>
+			))
+		}
+		<div class="ladder-arrow" aria-hidden="true">
+			<span class="ladder-arrow-head">▲</span>
+			<span class="ladder-arrow-line" />
+		</div>
+	</div>
+	<p class="ladder-direction-label">Read remainders bottom to top ↑</p>
+	<p class="ladder-result">
+		= <span class="ladder-result-value">{binary}</span> in binary
+	</p>
+</div>
+
+<style>
+	.ladder {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.ladder-rows {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		padding-right: 1.7rem;
+	}
+
+	.ladder-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+	}
+
+	.ladder-num {
+		min-width: 1.7rem;
+		text-align: right;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.ladder-op {
+		color: var(--color-text-muted);
+	}
+
+	.ladder-rem-label {
+		color: var(--color-text-muted);
+		font-size: 0.78rem;
+	}
+
+	.ladder-rem-tile {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.7rem;
+		height: 1.7rem;
+		border-radius: 22%;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.ladder-rem-tile--on {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 65%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.ladder-arrow {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		width: 1.4rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.ladder-arrow-head {
+		color: var(--color-accent);
+		font-size: 0.75rem;
+		line-height: 1;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+
+	.ladder-arrow-line {
+		flex: 1;
+		width: 2px;
+		margin-top: 0.15rem;
+		background: repeating-linear-gradient(
+			to bottom,
+			var(--color-accent) 0,
+			var(--color-accent) 4px,
+			transparent 4px,
+			transparent 8px
+		);
+		opacity: 0.7;
+	}
+
+	.ladder-direction-label {
+		margin: 0.1rem 0 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--color-accent);
+	}
+
+	.ladder-result {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-text-muted);
+	}
+
+	.ladder-result-value {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+</style>

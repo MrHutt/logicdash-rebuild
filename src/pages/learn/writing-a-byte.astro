@@ -1,0 +1,274 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import DivisionLadder from "../../components/DivisionLadder.astro";
+import ByteConverter from "../../components/ByteConverter.astro";
+import WritingPracticeQuiz from "../../components/WritingPracticeQuiz.astro";
+import { LEARN_TOPICS } from "../../lib/learnTopics";
+import { computeDivisionSteps, formatDivisionText } from "../../lib/decimalToBinary";
+
+const CURRENT_HREF = "/learn/writing-a-byte";
+const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+
+const steps13 = computeDivisionSteps(13);
+const steps41 = computeDivisionSteps(41);
+---
+
+<Layout title="Writing a Byte (Decimal to Binary)">
+	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+
+	<section class="hero">
+		<h1>Writing a Byte (Decimal to Binary)</h1>
+		<p class="hero-lead">
+			You can already read a byte. Now let's go the other way — turning an ordinary number into binary.
+		</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">The Method: Divide by 2, Keep the Remainders</p>
+			<p class="block-text">
+				To convert a decimal number into binary, repeatedly divide it by 2. Each time, write down the
+				remainder — it'll always be 0 or 1. Keep dividing the result until you reach 0. Then read the
+				remainders from bottom to top. That's your binary number.
+			</p>
+			<p class="block-text">
+				Grab a pencil and paper for this one — the examples below are much easier to follow if you work
+				through them alongside us, not just read them.
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">Example 1: Converting 13</p>
+			<pre class="division-block">{formatDivisionText(steps13)}</pre>
+			<p class="block-text">Reading the remainders bottom to top: <span class="mono-highlight">1101</span></p>
+			<DivisionLadder value={13} />
+			<p class="block-text">
+				Check it: <span class="mono-highlight">8 + 4 + 0 + 1 = 13</span>. ✓
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">Example 2: Converting 41</p>
+			<pre class="division-block">{formatDivisionText(steps41)}</pre>
+			<p class="block-text">Bottom to top: <span class="mono-highlight">101001</span></p>
+			<DivisionLadder value={41} />
+			<p class="block-text">
+				Check it: <span class="mono-highlight">32 + 8 + 1 = 41</span>. ✓
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">The Easiest Mistake to Make</p>
+			<p class="block-text">
+				It's tempting to read the remainders top-to-bottom, in the order you wrote them. Don't — binary
+				is built the other way around. The last remainder you calculate is actually the first digit of
+				your answer. This trips almost everyone up the first time.
+			</p>
+		</section>
+
+		<section id="try-it-yourself" class="block block--example">
+			<p class="block-title">Try It Yourself</p>
+			<ByteConverter />
+		</section>
+
+		<section class="block block--example block--practice">
+			<p class="block-title">Practice</p>
+			<WritingPracticeQuiz />
+		</section>
+
+		<section class="block">
+			<p class="block-title">Keep Going</p>
+			<ul class="keep-going-list">
+				<li>
+					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
+				</li>
+				<li>
+					Want to go the other direction? Review <a href="/learn/reading-a-byte">Reading a Byte</a>.
+				</li>
+				<li>
+					Ready to convert between binary, hex, and decimal automatically? Try the Binary ↔ Hex ↔
+					Decimal tool <span class="coming-soon">(coming soon)</span>.
+				</li>
+			</ul>
+
+			<div class="learn-pagination">
+				<a class="learn-pagination-link learn-pagination-prev" href="/learn/reading-a-byte">
+					← Reading a Byte
+				</a>
+				<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+					Binary ↔ Hex ↔ Decimal tool (coming soon)
+				</span>
+			</div>
+		</section>
+	</div>
+</Layout>
+
+<script>
+	// "Try It Yourself" would be a cheat vector while the Practice quiz below
+	// is active (a student could type the current question's number into it
+	// and read the answer off it), so hide the whole section rather than just
+	// disabling it. WritingPracticeQuiz.astro broadcasts this event when the
+	// quiz modal opens/closes — see setQuizActive() there.
+	const tryItYourselfSection = document.getElementById("try-it-yourself");
+	document.addEventListener("quiz:active-change", (event) => {
+		const active = (event as CustomEvent<{ active: boolean }>).detail?.active ?? false;
+		if (tryItYourselfSection) tryItYourselfSection.hidden = active;
+	});
+</script>
+
+<style>
+	.breadcrumb {
+		margin: 0 0 0.75rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.breadcrumb a {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 0.9rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.88rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.mono-highlight {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.block--example {
+		text-align: center;
+	}
+
+	.block--example .block-text {
+		text-align: left;
+	}
+
+	.division-block {
+		display: inline-block;
+		margin: 0 0 0.9rem;
+		padding: 0.75rem 1rem;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		line-height: 1.6;
+		color: var(--color-text);
+		text-align: left;
+		white-space: pre;
+		overflow-x: auto;
+		max-width: 100%;
+	}
+
+	.block--example :global(.ladder) {
+		margin: 0 0 0.9rem;
+	}
+
+	.block--example :global(.converter) {
+		margin-top: 0.2rem;
+	}
+
+	.block--practice {
+		background: #14313a;
+		border: 1px solid color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+		box-shadow: 0 0 28px -10px color-mix(in srgb, var(--color-accent) 45%, transparent);
+	}
+
+	.keep-going-list {
+		margin: 0;
+		padding-left: 1.2rem;
+		font-size: 0.88rem;
+	}
+
+	.keep-going-list li {
+		margin: 0.3rem 0;
+	}
+
+	.keep-going-list a {
+		color: #ffae2e;
+		font-weight: 600;
+	}
+
+	.coming-soon {
+		color: var(--color-text-muted);
+		font-style: italic;
+	}
+
+	.learn-pagination {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--color-border);
+		font-size: 0.85rem;
+	}
+
+	.learn-pagination-link {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-pagination-next {
+		margin-left: auto;
+		text-align: right;
+	}
+
+	.learn-pagination-soon {
+		color: var(--color-text-muted);
+		font-weight: 600;
+		font-style: italic;
+	}
+</style>
