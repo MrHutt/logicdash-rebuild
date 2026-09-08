@@ -1,0 +1,154 @@
+---
+// Side-by-side illustration of correct (pad-on-the-left) vs incorrect
+// (pad-on-the-right) zero-padding for a binary result shorter than 8 digits.
+// Static, server-rendered markup — same tile visual language as
+// PlaceValueChart.astro, but scoped locally since this is a one-off
+// comparison, not a shared chart.
+import { computeDivisionSteps, binaryFromSteps, decimalToBinary8 } from "../lib/decimalToBinary";
+
+interface Props {
+	value: number;
+}
+
+const { value } = Astro.props;
+const unpadded = binaryFromSteps(computeDivisionSteps(value));
+const padCount = 8 - unpadded.length;
+const correctBits = decimalToBinary8(value);
+const incorrectBits = unpadded + "0".repeat(Math.max(0, padCount));
+---
+
+<div class="padding-compare">
+	<div class="padding-col padding-col--correct">
+		<p class="padding-label padding-label--correct">✓ Correct</p>
+		<div class="padding-tiles">
+			{
+				correctBits.split("").map((bit, i) => (
+					<span
+						class={`padding-tile ${bit === "1" ? "padding-tile--on" : ""} ${i < padCount ? "padding-tile--added" : ""}`}
+					>
+						{bit}
+					</span>
+				))
+			}
+		</div>
+		<p class="padding-caption">Zeros added on the <strong>left</strong></p>
+	</div>
+
+	<div class="padding-col padding-col--incorrect">
+		<p class="padding-label padding-label--incorrect">✗ Incorrect</p>
+		<div class="padding-tiles">
+			{
+				incorrectBits.split("").map((bit, i) => (
+					<span
+						class={`padding-tile ${bit === "1" ? "padding-tile--on" : ""} ${
+							i >= incorrectBits.length - padCount ? "padding-tile--added-wrong" : ""
+						}`}
+					>
+						{bit}
+					</span>
+				))
+			}
+		</div>
+		<p class="padding-caption">Zeros added on the <strong>right</strong> — wrong</p>
+	</div>
+</div>
+
+<style>
+	.padding-compare {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 1rem;
+	}
+
+	.padding-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.85rem 1rem;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.padding-col--correct {
+		border-color: color-mix(in srgb, var(--color-success) 45%, var(--color-border));
+	}
+
+	.padding-col--incorrect {
+		border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+	}
+
+	.padding-label {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+
+	.padding-label--correct {
+		color: var(--color-success);
+	}
+
+	.padding-label--incorrect {
+		color: var(--color-danger);
+	}
+
+	.padding-tiles {
+		display: flex;
+		gap: 0.3rem;
+	}
+
+	.padding-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 18%;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.05rem;
+		color: var(--color-text-muted);
+	}
+
+	.padding-tile--on {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 65%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	/* The correctly-placed padding zeros — a subtle dashed ring marks them as
+	   "added", not part of the original division result. */
+	.padding-tile--added {
+		border-style: dashed;
+		border-color: color-mix(in srgb, var(--color-success) 55%, var(--color-border));
+		background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface));
+	}
+
+	/* The wrongly-placed padding zeros on the incorrect example — same idea,
+	   flagged in red instead. */
+	.padding-tile--added-wrong {
+		border-style: dashed;
+		border-color: color-mix(in srgb, var(--color-danger) 60%, var(--color-border));
+		background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
+	}
+
+	.padding-caption {
+		margin: 0;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	.padding-caption strong {
+		color: var(--color-text);
+	}
+</style>

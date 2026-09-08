@@ -1,0 +1,114 @@
+---
+// Digit cell for /tools/countdown-clock's "Dot Matrix" Display Style —
+// inspired by monochrome dot-matrix LCD phone screens from the late
+// 1990s/early 2000s (a generic look, not any specific branded device):
+// dark, visibly-square, LOW-RES "chunky pixels," no glow/filter/shadow —
+// just flat, saturated color at full opacity for the lit ones. (An earlier
+// pass tried a pale backlit-panel look instead, dark ink on a light
+// background — closer to a real LCD's material, but it never resolved to
+// clean contrast at this render size no matter how far the unlit dots were
+// pushed down; a dark panel with bright lit dots has far more contrast
+// headroom to work with.) Deliberately a coarser 4x6 bitmap (see
+// dotMatrixDigits.ts) than the Terminal style's rendering, which uses a
+// real high-detail bitmap-style font (VT323) instead of a manually-toggled
+// pixel grid — the two "dot matrix"-sounding styles used to share the exact
+// same 5x7 shapes with only a color swap; this is what makes them
+// genuinely different techniques/renderings, not a recolor of each other.
+import { DOT_MATRIX_COLS, DOT_MATRIX_ROWS, dotsFor } from "../lib/dotMatrixDigits";
+
+interface Props {
+	value: string;
+}
+
+const { value } = Astro.props;
+const active = dotsFor(value);
+---
+
+<span class="dmx-digit" data-dotmatrix-digit>
+	<span class="dmx-grid" style={`--dmx-cols: ${DOT_MATRIX_COLS}; --dmx-rows: ${DOT_MATRIX_ROWS}`}>
+		{active.map((on) => <span class={`dmx-dot ${on ? "is-on" : ""}`} />)}
+	</span>
+</span>
+
+<style>
+	.dmx-digit {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: clamp(2.2rem, 8vw, 3.6rem);
+		aspect-ratio: 3 / 5;
+		flex-shrink: 0;
+		overflow: hidden;
+		border-radius: 8%;
+		/* Solid dark panel — switched from a pale backlit-LCD look (previous
+		   attempts kept the background light and tried to darken the unlit
+		   dots enough to disappear into it, which never read as clean at
+		   this render size). A dark panel with unlit dots close to ITS OWN
+		   color, plus bright saturated lit dots, gives much more headroom
+		   for contrast between the two dot states. */
+		background: #1a2e1a;
+		border: 1px solid #142414;
+	}
+
+	.dmx-grid {
+		display: grid;
+		grid-template-columns: repeat(var(--dmx-cols), 1fr);
+		grid-template-rows: repeat(var(--dmx-rows), 1fr);
+		/* Only 4x6 cells now (vs. Terminal's much higher-detail font glyph),
+		   so each pixel that IS lit reads as a distinctly large, chunky
+		   square block — the coarse, low-res look real dot-matrix LCD phone
+		   screens had, not a fine-grained approximation of a font. Height
+		   is 71% (not a rounder-looking number) because that's what was
+		   actually measured to match LED's digit-ink height: "8" lights
+		   every row in this bitmap font, so the grid's own rendered height
+		   IS effectively its ink height, and 71% is what made that equal
+		   LED's measured ink height at the same tile height (a first pass
+		   at 80% rendered noticeably taller than LED's digits). */
+		/* row-gap/column-gap kept separate (not a single "gap" shorthand)
+		   because CSS grid resolves percentage gap against the FULL
+		   container size on each axis independently, before laying out
+		   tracks — with 6 rows (5 row-gaps) a shared 26% gap demanded
+		   5*26%=130% of the grid's height for gaps alone, which is over
+		   100%, so every 1fr row track collapsed to 0px and most lit dots
+		   silently disappeared (verified via getComputedStyle: rows
+		   rendered as literal "0px 0px 0px 0px 0px 0px"). These smaller,
+		   per-axis values leave real, visible track sizes on both axes
+		   (~5.5px columns, ~6.7px rows before the .is-on scale below) —
+		   confirmed via measured getComputedStyle().gridTemplateRows. */
+		column-gap: 14%;
+		row-gap: 8%;
+		width: 68%;
+		height: 71%;
+	}
+
+	.dmx-dot {
+		/* Unlit "pixels": a color close to the panel (#1a2e1a) — only about
+		   6% brighter, well within the requested 5-10% band — at 18% opacity
+		   on top of that. Two independent knobs (near-matching color AND
+		   low opacity) rather than relying on either alone. Left exactly as
+		   last confirmed correct — only the LIT dots changed this round. */
+		background: #223a22;
+		opacity: 0.18;
+		border-radius: 1px;
+	}
+
+	.dmx-dot.is-on {
+		/* Bright, saturated, fully opaque — deliberately the opposite
+		   material logic from the pale-panel version (this reads as a
+		   small self-lit LED, not reflected ink), chosen because it's what
+		   actually produces strong contrast at this render size. Scaled up
+		   from each dot's own natural (now correctly non-zero) track size
+		   so lit dots read as noticeably bigger, bolder blocks at a glance/
+		   projector distance, not just a color difference —1.4 rather than
+		   an even larger factor because the track sizes above are already
+		   much bigger than the previous broken layout, so less scale-up is
+		   needed to reach a bold, legible result, leaving comfortable
+		   margin against the gap before dots would touch their neighbors.
+		   transform (not width/height) so it grows from the dot's own
+		   center without disturbing the grid's layout. */
+		background: #4ade80;
+		opacity: 1;
+		transform: scale(1.4);
+	}
+</style>

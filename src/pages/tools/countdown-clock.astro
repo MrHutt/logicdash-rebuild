@@ -1,0 +1,2261 @@
+---
+// Unpublished classroom tool — reachable only by direct URL. Deliberately not
+// linked from Header.astro, Footer.astro, or anywhere else in the site, and
+// excluded from the sitemap (see the sitemap() filter in astro.config.mjs)
+// and from robots.txt. Remove those exclusions when this is ready to launch.
+import Layout from "../../layouts/Layout.astro";
+import SegmentDigit from "../../components/SegmentDigit.astro";
+import SplitFlapDigit from "../../components/SplitFlapDigit.astro";
+import NixieGlyphDigit from "../../components/NixieGlyphDigit.astro";
+import TerminalDigit from "../../components/TerminalDigit.astro";
+import ChaosModeDigit from "../../components/ChaosModeDigit.astro";
+import DotMatrixDigit from "../../components/DotMatrixDigit.astro";
+import RefinedDigit from "../../components/RefinedDigit.astro";
+---
+
+<Layout
+	title="Countdown Clock"
+	description="A retro-style classroom countdown timer and clock, with six authentic display styles."
+>
+	<div class="clock-tool" data-clock-root>
+		<div class="display-shell">
+			<div class="display-stage" data-display-stage data-style="nixie">
+				<div class="nixieglyph-display" data-nixieglyph-display hidden>
+					<NixieGlyphDigit value="0" />
+					<NixieGlyphDigit value="0" />
+					<span class="nixie-glyph-colon" aria-hidden="true">
+						<span class="nixie-glyph-colon-dot" />
+						<span class="nixie-glyph-colon-dot" />
+					</span>
+					<NixieGlyphDigit value="0" />
+					<NixieGlyphDigit value="0" />
+					<span class="nixie-glyph-colon" aria-hidden="true">
+						<span class="nixie-glyph-colon-dot" />
+						<span class="nixie-glyph-colon-dot" />
+					</span>
+					<NixieGlyphDigit value="0" />
+					<NixieGlyphDigit value="0" />
+				</div>
+
+				<div class="segment-display" data-segment-display hidden>
+					<SegmentDigit value="0" />
+					<SegmentDigit value="0" />
+					<span class="segment-colon" aria-hidden="true">
+						<span class="segment-colon-dot" />
+						<span class="segment-colon-dot" />
+					</span>
+					<SegmentDigit value="0" />
+					<SegmentDigit value="0" />
+					<span class="segment-colon" aria-hidden="true">
+						<span class="segment-colon-dot" />
+						<span class="segment-colon-dot" />
+					</span>
+					<SegmentDigit value="0" />
+					<SegmentDigit value="0" />
+				</div>
+
+				<div class="terminal-display" data-terminal-display hidden>
+					<TerminalDigit value="0" />
+					<TerminalDigit value="0" />
+					<span class="term-colon" aria-hidden="true">
+						<span class="term-colon-dot" />
+						<span class="term-colon-dot" />
+					</span>
+					<TerminalDigit value="0" />
+					<TerminalDigit value="0" />
+					<span class="term-colon" aria-hidden="true">
+						<span class="term-colon-dot" />
+						<span class="term-colon-dot" />
+					</span>
+					<TerminalDigit value="0" />
+					<TerminalDigit value="0" />
+				</div>
+
+				<div class="splitflap-display" data-splitflap-display hidden>
+					<SplitFlapDigit value="0" />
+					<SplitFlapDigit value="0" />
+					<span class="flap-colon" aria-hidden="true">
+						<span class="flap-colon-dot" />
+						<span class="flap-colon-dot" />
+					</span>
+					<SplitFlapDigit value="0" />
+					<SplitFlapDigit value="0" />
+					<span class="flap-colon" aria-hidden="true">
+						<span class="flap-colon-dot" />
+						<span class="flap-colon-dot" />
+					</span>
+					<SplitFlapDigit value="0" />
+					<SplitFlapDigit value="0" />
+				</div>
+
+				<div class="chaos-display" data-chaos-display hidden>
+					<span class="chaos-star chaos-star--tl" aria-hidden="true">★</span>
+					<span class="chaos-star chaos-star--br" aria-hidden="true">★</span>
+					<ChaosModeDigit value="0" colorIndex={0} />
+					<ChaosModeDigit value="0" colorIndex={1} />
+					<span class="chaos-colon" aria-hidden="true">
+						<span class="chaos-colon-dot" style="--chaos-color: #ff8c00" />
+						<span class="chaos-colon-dot" style="--chaos-color: #00e5ff" />
+					</span>
+					<ChaosModeDigit value="0" colorIndex={2} />
+					<ChaosModeDigit value="0" colorIndex={3} />
+					<span class="chaos-colon" aria-hidden="true">
+						<span class="chaos-colon-dot" style="--chaos-color: #ff8c00" />
+						<span class="chaos-colon-dot" style="--chaos-color: #00e5ff" />
+					</span>
+					<ChaosModeDigit value="0" colorIndex={0} />
+					<ChaosModeDigit value="0" colorIndex={1} />
+				</div>
+
+				<div class="dotmatrix-display" data-dotmatrix-display hidden>
+					<DotMatrixDigit value="0" />
+					<DotMatrixDigit value="0" />
+					<span class="dmx-colon" aria-hidden="true">
+						<span class="dmx-colon-dot" />
+						<span class="dmx-colon-dot" />
+					</span>
+					<DotMatrixDigit value="0" />
+					<DotMatrixDigit value="0" />
+					<span class="dmx-colon" aria-hidden="true">
+						<span class="dmx-colon-dot" />
+						<span class="dmx-colon-dot" />
+					</span>
+					<DotMatrixDigit value="0" />
+					<DotMatrixDigit value="0" />
+				</div>
+
+				<div class="refined-display" data-refined-display hidden>
+					<RefinedDigit value="0" />
+					<RefinedDigit value="0" />
+					<span class="refined-colon" aria-hidden="true">
+						<span class="refined-colon-dot" />
+						<span class="refined-colon-dot" />
+					</span>
+					<RefinedDigit value="0" />
+					<RefinedDigit value="0" />
+					<span class="refined-colon" aria-hidden="true">
+						<span class="refined-colon-dot" />
+						<span class="refined-colon-dot" />
+					</span>
+					<RefinedDigit value="0" />
+					<RefinedDigit value="0" />
+				</div>
+
+				<div class="crt-overlay" aria-hidden="true" />
+				<div class="tint-overlay" aria-hidden="true" />
+			</div>
+
+			<p class="ampm-label" data-ampm hidden></p>
+
+			<!-- Not-in-fullscreen controls — sits below the clock like
+			     everything else on this page now, rather than at the top of
+			     the screen, which can be an awkward reach on a large
+			     wall-mounted display or projector in classroom use. -->
+			<div class="tool-bar">
+				<button
+					type="button"
+					class="icon-btn settings-btn"
+					data-settings-btn
+					aria-label="Show controls"
+					aria-expanded="false"
+				>
+					⚙
+				</button>
+				<button type="button" class="icon-btn fullscreen-btn" data-fullscreen-btn aria-label="Enter fullscreen">
+					⛶
+				</button>
+			</div>
+
+			<!-- Fullscreen-only controls, as one row directly under the
+			     clock — same reasoning as the tool-bar above, and the same
+			     small/dim/hover-to-brighten treatment throughout. -->
+			<div class="fullscreen-controls">
+				<button
+					type="button"
+					class="fullscreen-pause-btn"
+					data-fullscreen-pause
+					hidden
+					aria-label="Pause"
+				>
+					⏸
+				</button>
+
+				<button type="button" class="exit-fullscreen-btn" data-exit-fullscreen aria-label="Exit fullscreen">
+					×
+				</button>
+			</div>
+		</div>
+
+		<div class="controls-drawer" data-controls-drawer hidden>
+			<div class="mode-toggle" data-mode-toggle>
+				<button type="button" class="mode-btn" data-mode-btn="countdown" aria-selected="true">Countdown</button>
+				<button type="button" class="mode-btn" data-mode-btn="current" aria-selected="false">Current Time</button>
+			</div>
+
+			<div class="control-panel" data-countdown-panel>
+				<div class="time-input-row">
+					<label class="time-input-field">
+						<span class="time-input-label">Hours</span>
+						<input type="number" inputmode="numeric" min="0" max="23" value="0" data-input="hours" class="time-input" />
+					</label>
+					<label class="time-input-field">
+						<span class="time-input-label">Minutes</span>
+						<input type="number" inputmode="numeric" min="0" max="59" value="5" data-input="minutes" class="time-input" />
+					</label>
+					<label class="time-input-field">
+						<span class="time-input-label">Seconds</span>
+						<input type="number" inputmode="numeric" min="0" max="59" value="0" data-input="seconds" class="time-input" />
+					</label>
+					<button type="button" class="btn btn--ghost set-btn" data-action="set">Set</button>
+				</div>
+
+				<div class="preset-row">
+					<button type="button" class="preset-btn" data-preset="1800">30 min</button>
+					<button type="button" class="preset-btn" data-preset="3000">50 min</button>
+					<button type="button" class="preset-btn" data-preset="3600">1 hour</button>
+					<button type="button" class="preset-btn" data-preset="5400">90 min</button>
+				</div>
+
+				<div class="control-row">
+					<button type="button" class="btn" data-action="start">Start</button>
+					<button type="button" class="btn btn--ghost" data-action="pause">Pause</button>
+					<button type="button" class="btn btn--ghost btn--muted" data-action="reset">Reset</button>
+				</div>
+
+				<label class="chime-toggle">
+					<input type="checkbox" data-chime-toggle />
+					<span>Chime when countdown ends</span>
+				</label>
+			</div>
+
+			<div class="control-panel" data-current-time-panel hidden>
+				<label class="chime-toggle">
+					<input type="checkbox" data-hour-format-toggle />
+					<span>12-hour clock</span>
+				</label>
+			</div>
+
+			<!-- Cosmetic, not functional — deliberately last in the drawer
+			     (and visually compact/secondary, see .style-options'/.style-btn's
+			     smaller sizing) so the timer controls above it, which is what a
+			     classroom user actually needs first, aren't pushed below a
+			     10-option style picker on first open. -->
+			<div class="style-picker" data-style-picker role="group" aria-label="Display style">
+				<div class="style-picker-header">
+					<p class="drawer-section-label">Display Style</p>
+					<button
+						type="button"
+						class="info-toggle"
+						data-info-toggle
+						aria-label="About this display style"
+						aria-expanded="false"
+					>
+						i
+					</button>
+				</div>
+				<!-- Ordered to reflect the real chronological sequence of these
+				     display technologies (Nixie tubes first in the 1950s,
+				     through to 1990s/2000s dot-matrix LCDs) — except Chaos
+				     Mode, which isn't a real technology and always stays
+				     last regardless of any date logic. A fixed 5-column grid
+				     (10 styles = 5x2) rather than the previous auto-fit/2-col
+				     layout, sized compactly since this section is now
+				     secondary to the timer controls above it. -->
+				<div class="style-options">
+					<button type="button" class="style-btn" data-style-btn="nixie" aria-pressed="true">
+						<span class="style-swatch style-swatch--nixie" aria-hidden="true" />
+						Nixie Tube
+					</button>
+					<button type="button" class="style-btn" data-style-btn="splitflap" aria-pressed="false">
+						<span class="style-swatch style-swatch--splitflap" aria-hidden="true" />
+						Split-Flap
+					</button>
+					<button type="button" class="style-btn" data-style-btn="terminal" aria-pressed="false">
+						<span class="style-swatch style-swatch--terminal" aria-hidden="true" />
+						Terminal
+					</button>
+					<button type="button" class="style-btn" data-style-btn="led" aria-pressed="false">
+						<span class="style-swatch style-swatch--led" aria-hidden="true" />
+						LED
+					</button>
+					<button type="button" class="style-btn" data-style-btn="sinclair" aria-pressed="false">
+						<span class="style-swatch style-swatch--sinclair" aria-hidden="true" />
+						Sinclair Purple
+					</button>
+					<button type="button" class="style-btn" data-style-btn="vfd" aria-pressed="false">
+						<span class="style-swatch style-swatch--vfd" aria-hidden="true" />
+						VFD
+					</button>
+					<button type="button" class="style-btn" data-style-btn="lcd" aria-pressed="false">
+						<span class="style-swatch style-swatch--lcd" aria-hidden="true" />
+						LCD
+					</button>
+					<button type="button" class="style-btn" data-style-btn="dotmatrix" aria-pressed="false">
+						<span class="style-swatch style-swatch--dotmatrix" aria-hidden="true" />
+						Dot Matrix
+					</button>
+					<button type="button" class="style-btn" data-style-btn="refined" aria-pressed="false">
+						<span class="style-swatch style-swatch--refined" aria-hidden="true" />
+						Refined
+					</button>
+					<button type="button" class="style-btn" data-style-btn="chaos" aria-pressed="false">
+						<span class="style-swatch style-swatch--chaos" aria-hidden="true" />
+						Chaos Mode
+					</button>
+				</div>
+				<p class="style-caption" data-style-caption hidden></p>
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<script>
+	import { applySegmentDigit, padTwo } from "../../lib/segmentDigits";
+	import { applySplitFlapDigit, setSplitFlapDigitInstant } from "../../lib/splitFlap";
+	import { dotsFor } from "../../lib/dotMatrixDigits";
+
+	const root = document.querySelector<HTMLElement>("[data-clock-root]")!;
+	const segmentCells = Array.from(root.querySelectorAll<HTMLElement>("[data-segment-digit]"));
+	const flapCells = Array.from(root.querySelectorAll<HTMLElement>("[data-flap-digit]"));
+	const nixieGlyphCells = Array.from(root.querySelectorAll<HTMLElement>("[data-nixie-glyph-digit]"));
+	const terminalCells = Array.from(root.querySelectorAll<HTMLElement>("[data-terminal-digit]"));
+	const chaosCells = Array.from(root.querySelectorAll<HTMLElement>("[data-chaos-digit]"));
+	const dotmatrixCells = Array.from(root.querySelectorAll<HTMLElement>("[data-dotmatrix-digit]"));
+	const refinedCells = Array.from(root.querySelectorAll<HTMLElement>("[data-refined-digit]"));
+	const displayStage = root.querySelector<HTMLElement>("[data-display-stage]")!;
+	const segmentDisplayEl = root.querySelector<HTMLElement>("[data-segment-display]")!;
+	const splitflapDisplayEl = root.querySelector<HTMLElement>("[data-splitflap-display]")!;
+	const nixieglyphDisplayEl = root.querySelector<HTMLElement>("[data-nixieglyph-display]")!;
+	const terminalDisplayEl = root.querySelector<HTMLElement>("[data-terminal-display]")!;
+	const chaosDisplayEl = root.querySelector<HTMLElement>("[data-chaos-display]")!;
+	const dotmatrixDisplayEl = root.querySelector<HTMLElement>("[data-dotmatrix-display]")!;
+	const refinedDisplayEl = root.querySelector<HTMLElement>("[data-refined-display]")!;
+	const ampmLabel = root.querySelector<HTMLElement>("[data-ampm]")!;
+
+	const modeButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-mode-btn]"));
+	const countdownPanel = root.querySelector<HTMLElement>("[data-countdown-panel]")!;
+	const currentTimePanel = root.querySelector<HTMLElement>("[data-current-time-panel]")!;
+
+	const hoursInput = root.querySelector<HTMLInputElement>('[data-input="hours"]')!;
+	const minutesInput = root.querySelector<HTMLInputElement>('[data-input="minutes"]')!;
+	const secondsInput = root.querySelector<HTMLInputElement>('[data-input="seconds"]')!;
+	const setBtn = root.querySelector<HTMLButtonElement>('[data-action="set"]')!;
+	const startBtn = root.querySelector<HTMLButtonElement>('[data-action="start"]')!;
+	const pauseBtn = root.querySelector<HTMLButtonElement>('[data-action="pause"]')!;
+	const resetBtn = root.querySelector<HTMLButtonElement>('[data-action="reset"]')!;
+	const presetButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-preset]"));
+	const chimeToggle = root.querySelector<HTMLInputElement>("[data-chime-toggle]")!;
+	const hourFormatToggle = root.querySelector<HTMLInputElement>("[data-hour-format-toggle]")!;
+
+	const fullscreenBtn = root.querySelector<HTMLButtonElement>("[data-fullscreen-btn]")!;
+	const exitFullscreenBtn = root.querySelector<HTMLButtonElement>("[data-exit-fullscreen]")!;
+	const fullscreenPauseBtn = root.querySelector<HTMLButtonElement>("[data-fullscreen-pause]")!;
+	const settingsBtn = root.querySelector<HTMLButtonElement>("[data-settings-btn]")!;
+	const controlsDrawer = root.querySelector<HTMLElement>("[data-controls-drawer]")!;
+
+	// --- Display style ---------------------------------------------------
+
+	type DisplayStyle =
+		| "nixie"
+		| "vfd"
+		| "led"
+		| "lcd"
+		| "splitflap"
+		| "terminal"
+		| "sinclair"
+		| "dotmatrix"
+		| "refined"
+		| "chaos";
+	// Rendering engines, one per genuinely distinct digit geometry:
+	// segment-based (VFD/LED/LCD/Sinclair Purple, sharing SegmentDigit.astro
+	// since they're the same real 7-segment technology differing only in
+	// material/glow/filter — Sinclair Purple is literally LED's red segments
+	// with a translucent color-filter overlay layered on top, nothing about
+	// the segment geometry itself changes), nixieGlyph (Nixie's real
+	// numeral-glyph rendering), dotMatrix (Terminal's — a real bitmap-style
+	// font, VT323, lit like emitted CRT phosphor), dotMatrixPhone (the
+	// separate "Dot Matrix" style's manually-toggled, deliberately coarser
+	// LCD phone-screen pixel grid — these two used to share the exact same
+	// 5x7 bitmap shapes with only a color swap, which is why they're kept
+	// as two clearly distinct engines/components now, not variants of one),
+	// refined (the calm, glow-minimal "Refined" style — the deliberate
+	// opposite of chaos), chaos (the "Chaos Mode" style), and splitflap
+	// (the flip-card rendering).
+	type Engine = "segment" | "nixieGlyph" | "dotMatrix" | "dotMatrixPhone" | "refined" | "chaos" | "splitflap";
+
+	// Short captions shown via the (i) info toggle next to the style picker
+	// — historical for the real display technologies, a joke for the one
+	// style that isn't real, and a plain statement of intent for Refined
+	// (which isn't trying to evoke any particular era at all). Purely
+	// flavor text, doesn't affect rendering.
+	const STYLE_INFO: Record<DisplayStyle, string> = {
+		nixie: "Invented in 1954 by Haydu Brothers Laboratories, later sold by Burroughs as the ‘Nixie’ — short for Numeric Indicator eXperimental #1. Ten digit-shaped wires glow inside a neon-filled glass tube, each at a different depth.",
+		led: "The first LED displays were tiny, hidden behind molded plastic lenses. Later, bigger red segments took over alarm clocks and calculators everywhere — usually shown through a dark red filter to make them glow from within.",
+		vfd: "Same segment-based idea as LED, different physics — VFDs glow a soft blue-green, and were common in calculators and later VCRs and microwaves. Many real VFDs used 14 or even 16 segments per digit rather than just 7, so they could display letters as well as numbers.",
+		lcd: "Unglamorous, low-contrast, and grey — but LCDs sip almost no power, letting a watch or calculator run for months on a tiny battery. Practicality won over beauty.",
+		splitflap:
+			"No electronics glow here — just real printed numerals on mechanical flip-cards, the same tech used on old airport and train departure boards.",
+		terminal: "The classic look of early computer terminals — blocky green text glowing on a black screen.",
+		sinclair:
+			"Some Sinclair calculators viewed their red LED segments through a deep purple filter — considered by some the prettiest version of this display ever made.",
+		chaos: "You've been warned.",
+		dotmatrix:
+			"The look of countless pocket screens from the dot-matrix era — small, blocky, and impossible to mistake for anything else.",
+		refined: "No history lesson here — just clean, considered design.",
+	};
+
+	const styleButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-style-btn]"));
+	const infoToggle = root.querySelector<HTMLButtonElement>("[data-info-toggle]")!;
+	const styleCaption = root.querySelector<HTMLElement>("[data-style-caption]")!;
+	let currentStyle: DisplayStyle = "nixie";
+	let currentEngine: Engine = "nixieGlyph";
+
+	function engineFor(style: DisplayStyle): Engine {
+		switch (style) {
+			case "splitflap":
+				return "splitflap";
+			case "nixie":
+				return "nixieGlyph";
+			case "terminal":
+				return "dotMatrix";
+			case "dotmatrix":
+				return "dotMatrixPhone";
+			case "refined":
+				return "refined";
+			case "chaos":
+				return "chaos";
+			default:
+				return "segment";
+		}
+	}
+
+	function applyNixieGlyphDigit(cell: HTMLElement, value: string, instant = false) {
+		const glyph = cell.querySelector<HTMLElement>("[data-nixie-glyph-value]");
+		if (!glyph) return;
+		const previous = glyph.textContent;
+		if (previous === value) return;
+		// Briefly show the outgoing digit as a fading "ghost" at a slightly
+		// different depth/scale before it fully dissolves — see the
+		// .nixie-glyph-transition-ghost comment in NixieGlyphDigit.astro for
+		// why (real Nixie tubes have physically separate, differently-depth
+		// wire cathodes per digit, so switching which one is lit isn't a
+		// flat instant swap). Skipped when `instant`, same as
+		// setSplitFlapDigitInstant() — switching *to* this style shouldn't
+		// play a "digit changed" animation for a value that was simply stale
+		// while this engine was hidden.
+		if (!instant) {
+			const ghost = cell.querySelector<HTMLElement>("[data-nixie-glyph-transition-ghost]");
+			if (ghost && previous !== null) {
+				ghost.textContent = previous;
+				ghost.classList.remove("is-fading");
+				// Force a reflow so re-adding the class restarts the fade even
+				// if the digit changes again before the previous one finished.
+				void ghost.offsetWidth;
+				ghost.classList.add("is-fading");
+			}
+		}
+		glyph.textContent = value;
+	}
+
+	function applyTerminalGlyphDigit(cell: HTMLElement, value: string) {
+		const glyph = cell.querySelector<HTMLElement>("[data-terminal-value]");
+		if (glyph) glyph.textContent = value;
+	}
+
+	function applyChaosModeDigit(cell: HTMLElement, value: string) {
+		const glyph = cell.querySelector<HTMLElement>("[data-chaos-value]");
+		if (glyph) glyph.textContent = value;
+	}
+
+	function applyDotMatrixPhoneDigit(cell: HTMLElement, value: string) {
+		const active = dotsFor(value);
+		cell.querySelectorAll<HTMLElement>(".dmx-dot").forEach((dot, i) => {
+			dot.classList.toggle("is-on", active[i] ?? false);
+		});
+	}
+
+	// The one style where the CHANGE itself is animated (a quiet
+	// crossfade+drift), rather than the digit constantly animating at rest
+	// the way every other lit style here does (flicker, wobble, blink).
+	// Skipped when `instant`, same reasoning as the other restartable
+	// transitions on this page — switching *to* this style shouldn't play
+	// a "digit changed" animation for a value that was simply stale while
+	// this engine was hidden.
+	function applyRefinedDigit(cell: HTMLElement, value: string, instant = false) {
+		const main = cell.querySelector<HTMLElement>("[data-refined-value]");
+		if (!main) return;
+		const previous = main.textContent;
+		if (previous === value) return;
+		if (!instant) {
+			const ghost = cell.querySelector<HTMLElement>("[data-refined-ghost]");
+			if (ghost && previous !== null) {
+				ghost.textContent = previous;
+				ghost.classList.remove("is-animating");
+				void ghost.offsetWidth;
+				ghost.classList.add("is-animating");
+			}
+			main.classList.remove("is-animating");
+		}
+		main.textContent = value;
+		if (!instant) {
+			void main.offsetWidth;
+			main.classList.add("is-animating");
+		}
+	}
+
+	function setStyle(next: DisplayStyle) {
+		currentStyle = next;
+		currentEngine = engineFor(next);
+		displayStage.dataset.style = next;
+		// Mirrored onto <body> too (not just .display-stage) so the
+		// fullscreen ambient-glow rules below — which tint the whole
+		// viewport background behind the display, not just the display
+		// card itself — can select by style without needing :has().
+		document.body.dataset.style = next;
+		segmentDisplayEl.hidden = currentEngine !== "segment";
+		nixieglyphDisplayEl.hidden = currentEngine !== "nixieGlyph";
+		terminalDisplayEl.hidden = currentEngine !== "dotMatrix";
+		dotmatrixDisplayEl.hidden = currentEngine !== "dotMatrixPhone";
+		refinedDisplayEl.hidden = currentEngine !== "refined";
+		chaosDisplayEl.hidden = currentEngine !== "chaos";
+		splitflapDisplayEl.hidden = currentEngine !== "splitflap";
+		styleButtons.forEach((btn) => btn.setAttribute("aria-pressed", btn.dataset.styleBtn === next ? "true" : "false"));
+		// Keep the caption text current even while the panel is closed, so
+		// whenever it's next opened it already matches the active style
+		// instead of showing a stale one from before the switch.
+		styleCaption.textContent = STYLE_INFO[next];
+		// Snap the newly-visible engine to the correct value instantly — it
+		// may not have been kept up to date while hidden (the split-flap
+		// engine in particular only renders while it's the active one, so a
+		// prior value could otherwise be stale until the next real tick).
+		renderDigits(computeDisplaySeconds(), true);
+	}
+
+	styleButtons.forEach((btn) => {
+		btn.addEventListener("click", () => setStyle(btn.dataset.styleBtn as DisplayStyle));
+	});
+
+	// --- Style info caption --------------------------------------------------
+	// Collapsed by default so it doesn't clutter the picker — a click reveals
+	// a short historical blurb about whichever style is currently selected.
+
+	function setCaptionOpen(open: boolean) {
+		styleCaption.hidden = !open;
+		infoToggle.setAttribute("aria-expanded", String(open));
+		infoToggle.classList.toggle("is-active", open);
+	}
+
+	infoToggle.addEventListener("click", (event) => {
+		event.stopPropagation();
+		setCaptionOpen(styleCaption.hidden);
+	});
+
+	// --- Rendering ---------------------------------------------------------
+
+	function renderDigits(totalSeconds: number, instant = false) {
+		const clamped = Math.max(0, Math.floor(totalSeconds));
+		const h = Math.min(99, Math.floor(clamped / 3600));
+		const m = Math.floor((clamped % 3600) / 60);
+		const s = clamped % 60;
+		const str = `${padTwo(h)}${padTwo(m)}${padTwo(s)}`;
+
+		if (currentEngine === "segment") {
+			str.split("").forEach((digit, i) => {
+				const cell = segmentCells[i];
+				if (cell) applySegmentDigit(cell, digit);
+			});
+		} else if (currentEngine === "nixieGlyph") {
+			str.split("").forEach((digit, i) => {
+				const cell = nixieGlyphCells[i];
+				if (cell) applyNixieGlyphDigit(cell, digit, instant);
+			});
+		} else if (currentEngine === "dotMatrix") {
+			str.split("").forEach((digit, i) => {
+				const cell = terminalCells[i];
+				if (cell) applyTerminalGlyphDigit(cell, digit);
+			});
+		} else if (currentEngine === "dotMatrixPhone") {
+			str.split("").forEach((digit, i) => {
+				const cell = dotmatrixCells[i];
+				if (cell) applyDotMatrixPhoneDigit(cell, digit);
+			});
+		} else if (currentEngine === "refined") {
+			str.split("").forEach((digit, i) => {
+				const cell = refinedCells[i];
+				if (cell) applyRefinedDigit(cell, digit, instant);
+			});
+		} else if (currentEngine === "chaos") {
+			str.split("").forEach((digit, i) => {
+				const cell = chaosCells[i];
+				if (cell) applyChaosModeDigit(cell, digit);
+			});
+		} else {
+			str.split("").forEach((digit, i) => {
+				const cell = flapCells[i];
+				if (!cell) return;
+				if (instant) setSplitFlapDigitInstant(cell, digit);
+				else applySplitFlapDigit(cell, digit);
+			});
+		}
+	}
+
+	// --- Mode switching -----------------------------------------------------
+
+	type Mode = "countdown" | "current";
+	let mode: Mode = "countdown";
+
+	function setMode(next: Mode) {
+		mode = next;
+		modeButtons.forEach((btn) => btn.setAttribute("aria-selected", btn.dataset.modeBtn === next ? "true" : "false"));
+		countdownPanel.hidden = next !== "countdown";
+		currentTimePanel.hidden = next !== "current";
+		ampmLabel.hidden = next !== "current" || hourFormatToggle.checked === false;
+		// Read by the body.clock-fullscreen[data-clock-mode="countdown"] CSS
+		// selector — the fullscreen Pause/Resume control only ever appears
+		// in Countdown mode, Current Time fullscreen stays untouched.
+		document.body.dataset.clockMode = next;
+		renderDigits(computeDisplaySeconds());
+	}
+
+	modeButtons.forEach((btn) => {
+		btn.addEventListener("click", () => setMode(btn.dataset.modeBtn as Mode));
+	});
+
+	// --- Controls drawer -----------------------------------------------------
+	// Everything except the clock face itself lives behind this — the display
+	// is meant to be the whole point, with controls tucked away rather than
+	// permanently on screen.
+
+	function setDrawerOpen(open: boolean) {
+		controlsDrawer.hidden = !open;
+		settingsBtn.setAttribute("aria-expanded", String(open));
+		settingsBtn.setAttribute("aria-label", open ? "Hide controls" : "Show controls");
+		settingsBtn.classList.toggle("is-active", open);
+	}
+
+	settingsBtn.addEventListener("click", (event) => {
+		event.stopPropagation();
+		setDrawerOpen(controlsDrawer.hidden);
+	});
+
+	// Clicking anywhere outside the drawer (or its own toggle) closes it —
+	// but a click *inside* the drawer while it's open shouldn't propagate up
+	// and immediately re-close it, hence stopPropagation() above.
+	document.addEventListener("click", (event) => {
+		if (controlsDrawer.hidden) return;
+		const target = event.target as Node;
+		if (controlsDrawer.contains(target) || settingsBtn.contains(target)) return;
+		setDrawerOpen(false);
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && !controlsDrawer.hidden) setDrawerOpen(false);
+	});
+
+	// --- Countdown state -----------------------------------------------------
+
+	let remainingSeconds = 5 * 60;
+	let configuredSeconds = 5 * 60;
+	let running = false;
+	let finished = false;
+
+	function readInputsAsSeconds(): number {
+		const h = Number(hoursInput.value) || 0;
+		const m = Number(minutesInput.value) || 0;
+		const s = Number(secondsInput.value) || 0;
+		return Math.max(0, h * 3600 + m * 60 + s);
+	}
+
+	function writeSecondsToInputs(totalSeconds: number) {
+		const h = Math.floor(totalSeconds / 3600);
+		const m = Math.floor((totalSeconds % 3600) / 60);
+		const s = totalSeconds % 60;
+		hoursInput.value = String(h);
+		minutesInput.value = String(m);
+		secondsInput.value = String(s);
+	}
+
+	function clearFinished() {
+		finished = false;
+		displayStage.classList.remove("is-finished");
+	}
+
+	function applyConfiguredTime(totalSeconds: number) {
+		configuredSeconds = totalSeconds;
+		remainingSeconds = totalSeconds;
+		clearFinished();
+		if (mode === "countdown") renderDigits(remainingSeconds);
+	}
+
+	function setInputsDisabled(disabled: boolean) {
+		hoursInput.disabled = disabled;
+		minutesInput.disabled = disabled;
+		secondsInput.disabled = disabled;
+		setBtn.disabled = disabled;
+		presetButtons.forEach((btn) => (btn.disabled = disabled));
+	}
+
+	setBtn.addEventListener("click", () => applyConfiguredTime(readInputsAsSeconds()));
+
+	presetButtons.forEach((btn) => {
+		btn.addEventListener("click", () => {
+			const seconds = Number(btn.dataset.preset) || 0;
+			writeSecondsToInputs(seconds);
+			applyConfiguredTime(seconds);
+		});
+	});
+
+	// A soft two-tone chime synthesized with the Web Audio API — no bundled
+	// audio asset to source/host, and it stays trivially "off by default"
+	// since it only ever runs from an explicit user gesture (Start) having
+	// already unlocked audio, or here, from a countdown genuinely finishing.
+	let audioCtx: AudioContext | null = null;
+
+	function playChime() {
+		try {
+			audioCtx ??= new AudioContext();
+			const ctx = audioCtx;
+			const now = ctx.currentTime;
+			const notes = [880, 1318.5]; // A5, E6 — a gentle open fifth, not a jarring alarm
+			notes.forEach((freq, i) => {
+				const osc = ctx.createOscillator();
+				const gain = ctx.createGain();
+				osc.type = "sine";
+				osc.frequency.value = freq;
+				const start = now + i * 0.12;
+				gain.gain.setValueAtTime(0, start);
+				gain.gain.linearRampToValueAtTime(0.16, start + 0.05);
+				gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.4);
+				osc.connect(gain);
+				gain.connect(ctx.destination);
+				osc.start(start);
+				osc.stop(start + 1.5);
+			});
+		} catch {
+			// Web Audio unavailable/blocked — the visual pulse alone still
+			// communicates that the countdown finished.
+		}
+	}
+
+	function onCountdownFinish() {
+		running = false;
+		finished = true;
+		displayStage.classList.add("is-finished");
+		setInputsDisabled(false);
+		startBtn.disabled = false;
+		pauseBtn.disabled = true;
+		updateFullscreenPauseButton();
+		if (chimeToggle.checked) playChime();
+	}
+
+	// Mirrors the settings-panel Start/Pause buttons' own disabled state and
+	// icon/label onto the single fullscreen control, which toggles between
+	// the two rather than showing them separately (there's only room, and
+	// only need, for one button in fullscreen).
+	function updateFullscreenPauseButton() {
+		fullscreenPauseBtn.textContent = running ? "⏸" : "▶";
+		fullscreenPauseBtn.setAttribute("aria-label", running ? "Pause" : "Resume");
+		fullscreenPauseBtn.disabled = running ? pauseBtn.disabled : startBtn.disabled;
+	}
+
+	function computeDisplaySeconds(): number {
+		if (mode === "current") {
+			const now = new Date();
+			let h = now.getHours();
+			if (hourFormatToggle.checked) {
+				ampmLabel.hidden = false;
+				ampmLabel.textContent = h >= 12 ? "PM" : "AM";
+				h = h % 12;
+				if (h === 0) h = 12;
+			} else {
+				ampmLabel.hidden = true;
+			}
+			return h * 3600 + now.getMinutes() * 60 + now.getSeconds();
+		}
+		return remainingSeconds;
+	}
+
+	let intervalId: number | undefined;
+
+	function startHeartbeat() {
+		if (intervalId !== undefined) return;
+		intervalId = window.setInterval(tick, 1000);
+	}
+
+	function tick() {
+		if (mode === "countdown" && running) {
+			remainingSeconds = Math.max(0, remainingSeconds - 1);
+		}
+		renderDigits(computeDisplaySeconds());
+		if (mode === "countdown" && running && remainingSeconds === 0) {
+			onCountdownFinish();
+		}
+	}
+
+	startBtn.addEventListener("click", () => {
+		if (remainingSeconds <= 0) return;
+		clearFinished();
+		running = true;
+		setInputsDisabled(true);
+		startBtn.disabled = true;
+		pauseBtn.disabled = false;
+		updateFullscreenPauseButton();
+	});
+
+	pauseBtn.addEventListener("click", () => {
+		running = false;
+		setInputsDisabled(false);
+		startBtn.disabled = false;
+		pauseBtn.disabled = true;
+		updateFullscreenPauseButton();
+	});
+
+	resetBtn.addEventListener("click", () => {
+		running = false;
+		remainingSeconds = configuredSeconds;
+		clearFinished();
+		setInputsDisabled(false);
+		startBtn.disabled = false;
+		pauseBtn.disabled = true;
+		renderDigits(remainingSeconds);
+		updateFullscreenPauseButton();
+	});
+
+	// Toggles between the settings panel's own Start and Pause buttons
+	// rather than duplicating their logic — reuses every existing guard
+	// (the remainingSeconds <= 0 no-op, setInputsDisabled, clearFinished,
+	// etc.) exactly as-is.
+	fullscreenPauseBtn.addEventListener("click", () => {
+		if (running) pauseBtn.click();
+		else startBtn.click();
+	});
+
+	hourFormatToggle.addEventListener("change", () => {
+		ampmLabel.hidden = mode !== "current" || !hourFormatToggle.checked;
+		renderDigits(computeDisplaySeconds());
+	});
+
+	// --- Fullscreen ------------------------------------------------------
+
+	function enterFullscreen() {
+		setDrawerOpen(false);
+		document.body.classList.add("clock-fullscreen");
+		exitFullscreenBtn.hidden = false;
+		updateFullscreenPauseButton();
+		document.documentElement.requestFullscreen?.().catch(() => {
+			// Native fullscreen denied/unsupported (sandboxed context, no user
+			// gesture chain, etc.) — the CSS "fullscreen look" above still
+			// applies, so the tool remains usable for projecting either way.
+		});
+	}
+
+	function exitFullscreen() {
+		document.body.classList.remove("clock-fullscreen");
+		exitFullscreenBtn.hidden = true;
+		if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+	}
+
+	fullscreenBtn.addEventListener("click", enterFullscreen);
+	exitFullscreenBtn.addEventListener("click", exitFullscreen);
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && document.body.classList.contains("clock-fullscreen")) exitFullscreen();
+	});
+
+	// The browser's own fullscreen exit (its own Esc handling, or an F11
+	// toggle) fires this event too — keep our CSS class in sync either way.
+	document.addEventListener("fullscreenchange", () => {
+		if (!document.fullscreenElement) {
+			document.body.classList.remove("clock-fullscreen");
+			exitFullscreenBtn.hidden = true;
+		}
+	});
+
+	// --- Init ------------------------------------------------------------
+
+	pauseBtn.disabled = true;
+	writeSecondsToInputs(configuredSeconds);
+	setStyle("nixie");
+	// Sets body[data-clock-mode] (read by the fullscreen Pause/Resume
+	// control's CSS) to match the "countdown" default without replaying
+	// setMode()'s other side effects unnecessarily.
+	document.body.dataset.clockMode = mode;
+	updateFullscreenPauseButton();
+	startHeartbeat();
+</script>
+
+<style>
+	.clock-tool {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.25rem;
+		padding: 1rem 0 2rem;
+	}
+
+	/* --- Tool bar / icon buttons ------------------------------------------ */
+
+	.tool-bar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		width: 100%;
+		max-width: 42rem;
+	}
+
+	.icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		padding: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.icon-btn:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.settings-btn.is-active {
+		border-color: var(--color-accent);
+		color: #fff3d6;
+		background: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	/*
+	 * All of this page's controls — the tool-bar above and the fullscreen
+	 * row below — live in NORMAL document flow near the clock rather than
+	 * fixed at the top of the screen: on a large wall-mounted display or
+	 * projector in classroom use, the top edge can be an awkward reach,
+	 * while controls right next to (or under) the thing you're already
+	 * looking at are easy to find and use. .fullscreen-controls is hidden
+	 * outside fullscreen and shown as a centered row via the
+	 * body.clock-fullscreen override further down; each button inside it
+	 * keeps the same small/dim/brightens-on-hover treatment either way, so
+	 * neither one competes with the clock for attention.
+	 */
+	.fullscreen-controls {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+	}
+
+	.exit-fullscreen-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 3rem;
+		height: 3rem;
+		flex-shrink: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+		color: var(--color-text-muted);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		opacity: 0.55;
+		transition:
+			opacity 0.15s ease,
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.exit-fullscreen-btn:hover {
+		opacity: 1;
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	/*
+	 * Same treatment as the exit button, but ALSO gated on Countdown mode
+	 * (see the body[data-clock-mode] selector further down) — Current Time
+	 * fullscreen stays exactly as before, just the display and the exit
+	 * control. Deliberately just Pause/Resume, not Reset — a reset is a
+	 * more consequential, deliberate action that stays behind the
+	 * settings panel.
+	 */
+	.fullscreen-pause-btn {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 3rem;
+		height: 3rem;
+		flex-shrink: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+		color: var(--color-text-muted);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		opacity: 0.55;
+		transition:
+			opacity 0.15s ease,
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.fullscreen-pause-btn:hover {
+		opacity: 1;
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.fullscreen-pause-btn:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	/* --- Display stage ------------------------------------------------------ */
+
+	.display-shell {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		width: 100%;
+	}
+
+	.display-stage {
+		position: relative;
+		width: 100%;
+		max-width: 42rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		/* An "invisible container": reserves enough vertical room for the
+		   tallest style's natural tile — currently Nixie's glass-tube shape
+		   (NixieGlyphDigit.astro's own width clamp, doubled for its 1:2
+		   aspect-ratio) plus the shared display-tree padding below — so
+		   switching styles never shifts the settings drawer/mode toggle/etc.
+		   underneath. Every style's tree is simply centered within this
+		   fixed-height frame; shorter styles just leave empty space above
+		   and below instead of the frame itself resizing to hug whichever
+		   one happens to be active. */
+		min-height: calc(clamp(5.4rem, 19.6vw, 8.8rem) + 2 * clamp(1.25rem, 5vw, 2.25rem));
+	}
+
+	.display-stage.is-finished .segment-display,
+	.display-stage.is-finished .nixieglyph-display,
+	.display-stage.is-finished .terminal-display,
+	.display-stage.is-finished .dotmatrix-display,
+	.display-stage.is-finished .refined-display,
+	.display-stage.is-finished .chaos-display,
+	.display-stage.is-finished .splitflap-display {
+		animation: display-finish-pulse 1.6s ease-in-out infinite;
+	}
+
+	@keyframes display-finish-pulse {
+		0%,
+		100% {
+			box-shadow:
+				inset 0 0 50px rgba(0, 0, 0, 0.65),
+				0 0 30px rgba(255, 174, 46, 0.25);
+		}
+		50% {
+			box-shadow:
+				inset 0 0 50px rgba(0, 0, 0, 0.65),
+				0 0 75px rgba(255, 174, 46, 0.6);
+		}
+	}
+
+	.segment-display,
+	.nixieglyph-display,
+	.terminal-display,
+	.dotmatrix-display,
+	.refined-display,
+	.chaos-display,
+	.splitflap-display {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: clamp(0.3rem, 1.2vw, 0.6rem);
+		width: 100%;
+		padding: clamp(1.25rem, 5vw, 2.25rem) clamp(1rem, 4vw, 2rem);
+		border-radius: 22px;
+		box-sizing: border-box;
+	}
+
+	/* An unconditional `display: flex` above otherwise beats the browser's
+	   default `[hidden] { display: none }` — see the .control-panel[hidden]
+	   comment further down for the full explanation. */
+	.segment-display[hidden],
+	.nixieglyph-display[hidden],
+	.terminal-display[hidden],
+	.dotmatrix-display[hidden],
+	.refined-display[hidden],
+	.chaos-display[hidden],
+	.splitflap-display[hidden] {
+		display: none;
+	}
+
+	/* Segment-display's own background is only ever seen for the three
+	   styles that still share this element (VFD/LED/LCD) — each has its own
+	   background override further down (see the is:global block), so this
+	   base value is never actually painted, but is kept as a sane fallback. */
+	.segment-display {
+		background:
+			radial-gradient(ellipse at center, rgba(255, 174, 46, 0.08) 0%, transparent 60%),
+			radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%),
+			#0a0705;
+		box-shadow:
+			inset 0 0 50px rgba(0, 0, 0, 0.65),
+			0 10px 30px -10px rgba(0, 0, 0, 0.6);
+		transition:
+			background 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	/* Nixie's own dark amber vignette — its own dedicated display tree now,
+	   not shared with any other style. */
+	.nixieglyph-display {
+		background:
+			radial-gradient(ellipse at center, rgba(255, 174, 46, 0.08) 0%, transparent 60%),
+			radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%),
+			#0a0705;
+		box-shadow:
+			inset 0 0 50px rgba(0, 0, 0, 0.65),
+			0 10px 30px -10px rgba(0, 0, 0, 0.6);
+	}
+
+	.terminal-display {
+		background: #010601;
+		box-shadow:
+			inset 0 0 40px rgba(0, 0, 0, 0.8),
+			0 10px 30px -10px rgba(0, 0, 0, 0.6);
+	}
+
+	/* Dot Matrix: flat dark panel, matching the tiles' own background —
+	   switched from a pale backlit-LCD look to a dark one so the bright
+	   lit dots have real contrast headroom (see DotMatrixDigit.astro's own
+	   comment for why the pale version never resolved). Still no gradient
+	   or inset vignette — flat color either way. */
+	.dotmatrix-display {
+		background: #1a2e1a;
+		box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+	}
+
+	/* Refined: a calm, near-black field — no vignette, no texture, nothing
+	   competing with the typography. "Generous spacing" is the one thing
+	   that actually distinguishes its layout from every other style here:
+	   a noticeably wider gap between digits than the shared default. */
+	.refined-display {
+		/* True black, not the near-black #0d0d0f other styles' cards use —
+		   matches this style's own fullscreen background exactly (see
+		   body.clock-fullscreen[data-style="refined"] further down, which
+		   is a radial tint over #000), so entering/exiting fullscreen
+		   doesn't visibly shift the background shade. */
+		background: #000;
+		gap: clamp(0.6rem, 2.6vw, 1.3rem);
+		box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+	}
+
+	/* Chaos Mode: deliberately loud, not a considered "dark vignette" —
+	   the whole point is that it looks wrong. The actual rainbow border
+	   lives on ::before below, since a plain `border` can't follow this
+	   element's border-radius the way a gradient background can. */
+	.chaos-display {
+		position: relative;
+		background: #170a2e;
+		box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+	}
+
+	/* Registered so the browser can smoothly interpolate it as an angle in
+	   the @keyframes below — an unregistered custom property can't be
+	   animated (the browser has no way to know it's numeric/interpolatable
+	   rather than an arbitrary token), it would just snap between values. */
+	@property --chaos-rainbow-angle {
+		syntax: "<angle>";
+		inherits: false;
+		initial-value: 0deg;
+	}
+
+	.chaos-display::before {
+		content: "";
+		position: absolute;
+		inset: -7px;
+		z-index: -1;
+		border-radius: 28px;
+		background: conic-gradient(
+			from var(--chaos-rainbow-angle),
+			#ff2fd4,
+			#ff2f2f,
+			#fff700,
+			#39ff14,
+			#00e5ff,
+			#7a2fff,
+			#ff2fd4
+		);
+		animation: chaos-rainbow-spin 5s linear infinite;
+	}
+
+	/* Animates the gradient's own angle instead of rotating the element
+	   with `transform: rotate()` — this element is wide and short (it
+	   traces the whole digit row), so rotating its actual box swung its
+	   bounding box up to ~2.5x taller at the diagonal, overflowing the
+	   page and forcing a scrollbar in both normal and Fullscreen view. The
+	   box itself never moves now — only the colors sweep — so there's
+	   nothing left that can overflow, while the spinning-rainbow look is
+	   identical. */
+	@keyframes chaos-rainbow-spin {
+		to {
+			--chaos-rainbow-angle: 360deg;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.chaos-display::before {
+			animation: none;
+		}
+	}
+
+	/* A pair of small spinning stars in opposite corners — pure early-2000s
+	   "sparkle gif" noise, no functional purpose, just more visual chaos.
+	   Spinning in opposite directions so they don't read as one synced
+	   effect. */
+	.chaos-star {
+		position: absolute;
+		z-index: 6;
+		font-size: clamp(1rem, 3vw, 1.5rem);
+		line-height: 1;
+		color: #fff700;
+		text-shadow:
+			0 0 4px #fff700,
+			0 0 10px #ff2fd4;
+		pointer-events: none;
+		animation: chaos-star-spin 1.4s linear infinite;
+	}
+
+	.chaos-star--tl {
+		top: 0.5rem;
+		left: 0.7rem;
+	}
+
+	.chaos-star--br {
+		bottom: 0.5rem;
+		right: 0.7rem;
+		color: #00e5ff;
+		text-shadow:
+			0 0 4px #00e5ff,
+			0 0 10px #39ff14;
+		animation-direction: reverse;
+		animation-duration: 1.8s;
+	}
+
+	@keyframes chaos-star-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.chaos-star {
+			animation: none;
+		}
+	}
+
+	.splitflap-display {
+		background: #05070c;
+		box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+	}
+
+	.segment-colon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.5rem, 2.5vw, 1rem);
+		align-self: stretch;
+	}
+
+	.segment-colon-dot {
+		width: clamp(0.32rem, 1.3vw, 0.5rem);
+		height: clamp(0.32rem, 1.3vw, 0.5rem);
+		border-radius: 50%;
+		background: #fff3d6;
+		box-shadow:
+			0 0 2px #fff3d6,
+			0 0 6px #ffae2e,
+			0 0 14px color-mix(in srgb, #ffae2e 60%, transparent);
+		animation: segment-colon-flicker 4.5s ease-in-out infinite;
+	}
+
+	.segment-colon-dot:nth-child(2) {
+		animation-delay: -2.2s;
+	}
+
+	@keyframes segment-colon-flicker {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		18% {
+			opacity: 0.9;
+		}
+		34% {
+			opacity: 1;
+		}
+		60% {
+			opacity: 0.94;
+		}
+		82% {
+			opacity: 1;
+		}
+	}
+
+	/* Flat, static colon for the Split-Flap style — no glow, matching the
+	   mechanical-board aesthetic (see the brief: "No glow effects"). */
+	.flap-colon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.5rem, 2.5vw, 1rem);
+		align-self: stretch;
+	}
+
+	.flap-colon-dot {
+		width: clamp(0.3rem, 1.2vw, 0.45rem);
+		height: clamp(0.3rem, 1.2vw, 0.45rem);
+		border-radius: 2px;
+		background: #e8e6df;
+	}
+
+	/* Nixie's colon — same glowing-dot look as before, now living on its own
+	   dedicated display tree instead of the shared segment one. */
+	.nixie-glyph-colon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.5rem, 2.5vw, 1rem);
+		align-self: stretch;
+	}
+
+	.nixie-glyph-colon-dot {
+		width: clamp(0.32rem, 1.3vw, 0.5rem);
+		height: clamp(0.32rem, 1.3vw, 0.5rem);
+		border-radius: 50%;
+		background: #ff6a1a;
+		box-shadow:
+			0 0 2px #ff8a3d,
+			0 0 6px #ff5000,
+			0 0 14px rgba(255, 90, 0, 0.6);
+		animation: nixie-glyph-colon-flicker 4.5s ease-in-out infinite;
+	}
+
+	.nixie-glyph-colon-dot:nth-child(2) {
+		animation-delay: -2.2s;
+	}
+
+	@keyframes nixie-glyph-colon-flicker {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		18% {
+			opacity: 0.9;
+		}
+		34% {
+			opacity: 1;
+		}
+		60% {
+			opacity: 0.94;
+		}
+		82% {
+			opacity: 1;
+		}
+	}
+
+	/* Terminal's colon — small glowing green squares, matching
+	   TerminalDigit.astro's own phosphor-glow treatment. */
+	.term-colon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.5rem, 2.5vw, 1rem);
+		align-self: stretch;
+	}
+
+	.term-colon-dot {
+		width: clamp(0.3rem, 1.2vw, 0.45rem);
+		height: clamp(0.3rem, 1.2vw, 0.45rem);
+		border-radius: 1px;
+		background: #33ff33;
+		filter:
+			drop-shadow(0 0 1.5px #33ff33)
+			drop-shadow(0 0 4px rgba(51, 255, 51, 0.6));
+	}
+
+	/* Dot Matrix's colon — same blocky dark-on-backlight material as its
+	   digit tiles, no glow. */
+	.dmx-colon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.5rem, 2.5vw, 1rem);
+		align-self: stretch;
+	}
+
+	.dmx-colon-dot {
+		width: clamp(0.3rem, 1.2vw, 0.45rem);
+		height: clamp(0.3rem, 1.2vw, 0.45rem);
+		border-radius: 1px;
+		/* Matches the digit tiles' new bright "lit" color, not the old dark
+		   ink color — the colon should read as "on" the same way a lit
+		   pixel does. */
+		background: #4ade80;
+	}
+
+	/* Refined's colon — small, quiet, round dots in the same ivory as the
+	   digits, no pulse/blink/flicker of any kind — this style holds
+	   perfectly still except when a digit actually changes. */
+	.refined-colon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.6rem, 3vw, 1.2rem);
+		align-self: stretch;
+	}
+
+	.refined-colon-dot {
+		width: clamp(0.28rem, 1.1vw, 0.4rem);
+		height: clamp(0.28rem, 1.1vw, 0.4rem);
+		border-radius: 50%;
+		background: #f2ede2;
+		opacity: 0.7;
+	}
+
+	/* Chaos Mode's colon — each dot gets its own clashing neon color via
+	   an inline --chaos-color, same as the digit tiles, plus a silly pulse. */
+	.chaos-colon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.5rem, 2.5vw, 1rem);
+		align-self: stretch;
+	}
+
+	.chaos-colon-dot {
+		width: clamp(0.36rem, 1.4vw, 0.55rem);
+		height: clamp(0.36rem, 1.4vw, 0.55rem);
+		border-radius: 50%;
+		background: var(--chaos-color, #ff2fd4);
+		box-shadow: 0 0 8px var(--chaos-color, #ff2fd4);
+		animation: chaos-colon-pulse 1.4s ease-in-out infinite;
+	}
+
+	.chaos-colon-dot:nth-child(2) {
+		animation-delay: -0.7s;
+	}
+
+	@keyframes chaos-colon-pulse {
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.35);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.chaos-colon-dot {
+			animation: none;
+		}
+	}
+
+	/* CRT scanline + vignette overlay — only visible for the Terminal style
+	   (see the [data-style="terminal"] override further down). Sized to
+	   match .segment-display/.splitflap-display exactly since it's an
+	   absolutely-positioned sibling covering whichever one is showing. */
+	.crt-overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 10;
+		pointer-events: none;
+		opacity: 0;
+		border-radius: 22px;
+		background:
+			repeating-linear-gradient(
+				to bottom,
+				rgba(0, 0, 0, 0) 0px,
+				rgba(0, 0, 0, 0) 2px,
+				rgba(0, 0, 0, 0.22) 3px,
+				rgba(0, 0, 0, 0.22) 4px
+			),
+			radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.55) 100%);
+		transition: opacity 0.2s ease;
+	}
+
+	/* Translucent color-filter overlay — only visible for Sinclair Purple
+	   (see the [data-style="sinclair"] override further down). A real
+	   physical filter placed in front of the display, not a change to the
+	   segments themselves, so this sits above everything as its own layer.
+	   Plain alpha compositing (no mix-blend-mode) rather than multiply —
+	   multiply can only ever darken a channel, so laying a purple over an
+	   already-saturated red (255,43,43) barely shifted its hue, just dimmed
+	   it. Normal blending actually mixes in the overlay's blue channel,
+	   pushing the red segments toward the magenta/pink-red the real filter
+	   is known for, while the dark background between them reads as a
+	   deep plum/purple instead of black. */
+	.tint-overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 11;
+		pointer-events: none;
+		opacity: 0;
+		border-radius: 22px;
+		background:
+			radial-gradient(ellipse at center, rgba(168, 51, 219, 0.42) 0%, rgba(107, 24, 161, 0.5) 100%);
+		transition: opacity 0.2s ease;
+	}
+
+	.ampm-label {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		letter-spacing: 0.1em;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Controls drawer ---------------------------------------------------- */
+
+	.controls-drawer {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.1rem;
+		width: 100%;
+		animation: drawer-in 0.18s ease;
+	}
+
+	@keyframes drawer-in {
+		from {
+			opacity: 0;
+			transform: translateY(-6px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Same reasoning as .control-panel[hidden] below: an unconditional
+	   `display: flex` beats the browser's own `[hidden] { display: none }`. */
+	.controls-drawer[hidden] {
+		display: none;
+	}
+
+	.drawer-section-label {
+		margin: 0;
+		text-align: center;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.style-picker {
+		width: 100%;
+		max-width: 30rem;
+		padding: 1rem 1.1rem;
+		border-radius: 16px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.style-picker-header {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.info-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.05rem;
+		height: 1.05rem;
+		padding: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: Georgia, "Times New Roman", serif;
+		font-style: italic;
+		font-size: 0.65rem;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.info-toggle:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.info-toggle.is-active {
+		border-color: var(--color-accent);
+		color: #fff3d6;
+		background: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+	}
+
+	.style-caption {
+		margin: 0.7rem 0 0;
+		padding: 0.65rem 0.8rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text-muted);
+		font-size: 0.78rem;
+		line-height: 1.55;
+		text-align: left;
+	}
+
+	.style-options {
+		/* 10 options: auto-fit at this panel's width was landing on 3
+		   columns, which doesn't divide evenly into 10 and left a lonely
+		   last row (3/3/3/1). Fixed at 5 columns (10 = 5x2) — the compact
+		   rectangle this now-secondary section should read as, distinct
+		   from the wider single-column stack of the functional controls
+		   above it. */
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 0.35rem;
+	}
+
+	.style-btn {
+		/* Icon-over-label (not the previous icon-beside-label row) — at 5
+		   columns there isn't enough width per cell for a swatch plus a
+		   label like "Sinclair Purple" on one line; centered text is free
+		   to wrap to a second line instead, which reads fine at this
+		   smaller, secondary scale. */
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.3rem;
+		padding: 0.4rem 0.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-bg);
+		color: var(--color-text-muted);
+		font-family: var(--font-sans);
+		font-size: 0.62rem;
+		font-weight: 600;
+		line-height: 1.15;
+		text-align: center;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.style-btn:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.style-btn[aria-pressed="true"] {
+		border-color: var(--color-accent);
+		color: #fff3d6;
+		background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg));
+		box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.style-swatch {
+		width: 0.75rem;
+		height: 0.75rem;
+		border-radius: 4px;
+		flex-shrink: 0;
+	}
+
+	.style-swatch--nixie {
+		background: #ffae2e;
+		box-shadow: 0 0 6px rgba(255, 174, 46, 0.6);
+	}
+
+	.style-swatch--vfd {
+		background: #4dffea;
+		box-shadow: 0 0 6px rgba(77, 255, 234, 0.6);
+	}
+
+	.style-swatch--led {
+		background: #ff2b2b;
+		box-shadow: 0 0 4px rgba(255, 43, 43, 0.5);
+	}
+
+	.style-swatch--lcd {
+		background: #8a8f98;
+		border: 1px solid #5f6469;
+	}
+
+	.style-swatch--splitflap {
+		background: #11172a;
+		border: 1px solid #e8e6df;
+	}
+
+	.style-swatch--terminal {
+		background: #33ff33;
+		box-shadow: 0 0 6px rgba(51, 255, 51, 0.6);
+	}
+
+	.style-swatch--sinclair {
+		background: linear-gradient(135deg, #ff2b2b 45%, #7a1fa8 55%);
+		box-shadow: 0 0 6px rgba(122, 31, 168, 0.65);
+	}
+
+	.style-swatch--chaos {
+		background: conic-gradient(from 0deg, #ff2fd4, #fff700, #39ff14, #00e5ff, #ff2fd4);
+	}
+
+	.style-swatch--dotmatrix {
+		background: linear-gradient(180deg, #1a2e1a, #4ade80 65%);
+		border: 1px solid #142414;
+	}
+
+	.style-swatch--refined {
+		background: #0d0d0f;
+		border: 1px solid #f2ede2;
+	}
+
+	.mode-toggle {
+		display: inline-flex;
+		gap: 0.2rem;
+		padding: 0.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-surface);
+	}
+
+	.mode-btn {
+		padding: 0.45rem 1.2rem;
+		border: none;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.mode-btn[aria-selected="true"] {
+		background: color-mix(in srgb, var(--color-accent) 24%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.mode-btn:not([aria-selected="true"]):hover {
+		color: var(--color-text);
+	}
+
+	.control-panel {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+		max-width: 30rem;
+		padding: 1.1rem 1.25rem;
+		border-radius: 16px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	/* An unconditional `display: flex` above otherwise beats the browser's
+	   default `[hidden] { display: none }` (author styles win over the UA
+	   stylesheet) — without this, the mode-switching JS setting `.hidden`
+	   would have no visible effect. */
+	.control-panel[hidden] {
+		display: none;
+	}
+
+	.time-input-row {
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
+
+	.time-input-field {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+	}
+
+	.time-input-label {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+	}
+
+	.time-input {
+		width: 4rem;
+		padding: 0.45rem 0.4rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1rem;
+		text-align: center;
+	}
+
+	.time-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.time-input:disabled {
+		opacity: 0.5;
+	}
+
+	.time-input::-webkit-inner-spin-button,
+	.time-input::-webkit-outer-spin-button {
+		appearance: none;
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	.preset-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+	}
+
+	.preset-btn {
+		padding: 0.35rem 0.9rem;
+		border: 1px dashed var(--color-border);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.preset-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.preset-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.control-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.6rem;
+	}
+
+	.btn {
+		padding: 0.5rem 1.4rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		text-shadow: 0 0 6px var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.15s ease,
+			background 0.15s ease,
+			opacity 0.15s ease;
+	}
+
+	.btn:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 70%, transparent);
+	}
+
+	.btn:active:not(:disabled) {
+		transform: scale(0.95);
+	}
+
+	.btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost {
+		background: transparent;
+		color: var(--color-accent);
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.btn--muted {
+		border-color: var(--color-border);
+		color: var(--color-text-muted);
+	}
+
+	.btn--muted:hover:not(:disabled) {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.set-btn {
+		align-self: center;
+	}
+
+	.chime-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.chime-toggle input[type="checkbox"] {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-accent);
+		cursor: pointer;
+	}
+</style>
+
+<style is:global>
+	/*
+	 * Fullscreen mode hides the site chrome (Header.astro/Footer.astro) and
+	 * lets the clock fill the viewport — those two components render outside
+	 * this page's own DOM subtree (Layout.astro places them as siblings), so
+	 * they can only be reached with a global, body-scoped rule like this.
+	 */
+	/* Overrides Layout.astro's body background (a color plus the site-wide
+	   circuit-pattern SVG tile) — fullscreen should be nothing but the
+	   digits and the exit control, not the page's own background bleeding
+	   in around the clock. Higher specificity than that plain `body { }`
+	   rule wins regardless of stylesheet order, so no !important needed. */
+	body.clock-fullscreen {
+		background: #000;
+	}
+
+	/* Ambient per-style glow, fullscreen only: a soft radial bleed behind
+	   the (centered) clock, tinted to each style's own characteristic
+	   color at low opacity — "the display is lighting the room," not a
+	   colored background. Selecting by body[data-style] (mirrored from
+	   .display-stage's own attribute in setStyle()) rather than
+	   :has(.display-stage[data-style=...]) — both would work, but this
+	   avoids relying on :has() for something this central to the page.
+	   Higher specificity than the plain body.clock-fullscreen rule above
+	   wins on its own, no !important needed. LCD, Dot Matrix, and
+	   Split-Flap get no rule here at all — those are non-emissive
+	   technologies in real life, so they correctly fall through to the
+	   plain black background above; same for Chaos Mode, which is
+	   deliberately excluded since it's already loud enough without a
+	   tinted backdrop working against it. */
+	body.clock-fullscreen[data-style="nixie"] {
+		background: radial-gradient(ellipse at center, rgba(255, 174, 46, 0.1) 0%, transparent 60%), #000;
+	}
+
+	body.clock-fullscreen[data-style="vfd"] {
+		background: radial-gradient(ellipse at center, rgba(143, 216, 204, 0.08) 0%, transparent 60%), #000;
+	}
+
+	body.clock-fullscreen[data-style="led"] {
+		background: radial-gradient(ellipse at center, rgba(255, 43, 43, 0.08) 0%, transparent 60%), #000;
+	}
+
+	body.clock-fullscreen[data-style="sinclair"] {
+		background: radial-gradient(ellipse at center, rgba(122, 31, 168, 0.1) 0%, transparent 60%), #000;
+	}
+
+	body.clock-fullscreen[data-style="terminal"] {
+		background: radial-gradient(ellipse at center, rgba(51, 255, 51, 0.07) 0%, transparent 60%), #000;
+	}
+
+	/* Refined's own accent is a near-white ivory, not a saturated color —
+	   kept far more subtle than the others (0.035 vs. 0.07-0.1) so it
+	   reads as "a faint warmth," in keeping with this style's whole
+	   quiet, restrained character rather than an emissive material. */
+	body.clock-fullscreen[data-style="refined"] {
+		background: radial-gradient(ellipse at center, rgba(242, 237, 226, 0.035) 0%, transparent 60%), #000;
+	}
+
+	body.clock-fullscreen .site-header,
+	body.clock-fullscreen .site-footer {
+		display: none;
+	}
+
+	body.clock-fullscreen main {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		max-width: none;
+		min-height: 100vh;
+		padding: 2rem 1rem;
+	}
+
+	body.clock-fullscreen .clock-tool {
+		width: 100%;
+	}
+
+	body.clock-fullscreen .display-stage {
+		max-width: 64rem;
+	}
+
+	body.clock-fullscreen .segment-display,
+	body.clock-fullscreen .nixieglyph-display,
+	body.clock-fullscreen .terminal-display,
+	body.clock-fullscreen .dotmatrix-display,
+	body.clock-fullscreen .refined-display,
+	body.clock-fullscreen .chaos-display,
+	body.clock-fullscreen .splitflap-display {
+		padding: clamp(2rem, 6vw, 4rem) clamp(1.5rem, 6vw, 3rem);
+	}
+
+	/*
+	 * Fullscreen shows only the clock face and the small fullscreen control
+	 * row underneath it — no tool-bar (settings/fullscreen icons), no
+	 * drawer, even if the drawer happened to be open when Fullscreen was
+	 * pressed (see enterFullscreen()'s setDrawerOpen(false) call, which
+	 * this backs up).
+	 */
+	body.clock-fullscreen .tool-bar,
+	body.clock-fullscreen .controls-drawer {
+		display: none;
+	}
+
+	body.clock-fullscreen .fullscreen-controls {
+		display: flex;
+	}
+
+	/* The Pause/Resume button additionally only ever appears in Countdown
+	   mode — set via setMode()'s body[data-clock-mode] attribute, not the
+	   .hidden attribute alone, so this can't accidentally show up in
+	   Current Time fullscreen (which stays exactly as it was: just the
+	   display and Exit). */
+	body.clock-fullscreen[data-clock-mode="countdown"] .fullscreen-pause-btn {
+		display: flex;
+	}
+
+	/* ======================================================================
+	 * Per-style theming for the three styles that still share SegmentDigit.astro's
+	 * geometry — VFD, LED, and LCD are the same real 7-segment technology,
+	 * differing only in material/glow, so each block re-themes the same
+	 * shared classes (.segment / .segment.is-on / .segment-digit /
+	 * .segment-glass-highlight / .segment-colon-dot) rather than swapping in
+	 * different markup. Nixie and Terminal have their own dedicated
+	 * components/display trees now (NixieGlyphDigit.astro, TerminalDigit.astro)
+	 * since they're structurally different technologies, so they don't need
+	 * an override block here at all — only Terminal's CRT overlay does, at
+	 * the end of this block. Scoped by the ancestor's data-style attribute,
+	 * set by setStyle() in the script above. is:global is required here
+	 * because SegmentDigit.astro's own elements carry *its* scope attribute,
+	 * not this page's — a scoped selector here couldn't reach them at all.
+	 * ==================================================================== */
+
+	/* --- VFD: cool cyan-green, soft hazy glow — real VFDs read as a gentle
+	   vintage glow, not a neon-bright bloom, so both the base color's
+	   saturation and the glow's blur radii are dialed well back from an
+	   earlier, much punchier pass (#4dffea at up to 22px blur — closer to a
+	   neon sign than a phosphor tube). --- */
+	.display-stage[data-style="vfd"] .segment-display {
+		background:
+			radial-gradient(ellipse at center, rgba(143, 216, 204, 0.06) 0%, transparent 60%),
+			radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%),
+			#04100e;
+	}
+
+	.display-stage[data-style="vfd"] .segment {
+		fill: #123b38;
+	}
+
+	.display-stage[data-style="vfd"] .segment.is-on {
+		fill: #8fd8cc;
+		animation-duration: 5.2s;
+		/* Smaller, lower-opacity blur stages than the old 3/9/22px spread —
+		   still a soft-edged bloom (not LED's tight, minimal glow), just a
+		   hazy one instead of a bright one. */
+		filter:
+			drop-shadow(0 0 1px #d5f0ea)
+			drop-shadow(0 0 3px rgba(143, 216, 204, 0.55))
+			drop-shadow(0 0 7px rgba(111, 194, 178, 0.3));
+	}
+
+	/* Faint 14-segment-style accent traces (diagonals + split vertical
+	   middle) — the extra segments a real VFD tube has beyond the 7 used for
+	   plain numerals, visible here as unlit-but-present etched lines for a
+	   more authentic period look. LED/LCD don't get these; they're plain
+	   7-segment displays. */
+	.display-stage[data-style="vfd"] .segment-accent {
+		stroke: rgba(143, 216, 204, 0.16);
+		stroke-width: 1.5;
+		opacity: 1;
+	}
+
+	.display-stage[data-style="vfd"] .segment-colon-dot {
+		background: #d5f0ea;
+		box-shadow:
+			0 0 1px #d5f0ea,
+			0 0 3px rgba(143, 216, 204, 0.5),
+			0 0 7px rgba(111, 194, 178, 0.3);
+	}
+
+	/* --- LED: bright flat red, minimal glow, stable (no flicker) ---------
+	   Sinclair Purple shares every one of these rules — it's the exact same
+	   red LED segment geometry/glow, just viewed through an added translucent
+	   purple filter overlay (see .tint-overlay further up and its reveal
+	   rule at the end of this style's block). Nothing about the segments
+	   themselves changes for Sinclair, hence the combined selectors. */
+	.display-stage[data-style="led"] .segment-display,
+	.display-stage[data-style="sinclair"] .segment-display {
+		background: #0a0505;
+		box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
+	}
+
+	.display-stage[data-style="led"] .segment-digit,
+	.display-stage[data-style="sinclair"] .segment-digit {
+		background: #0c0808;
+		box-shadow: none;
+	}
+
+	.display-stage[data-style="led"] .segment-glass-highlight,
+	.display-stage[data-style="sinclair"] .segment-glass-highlight {
+		display: none;
+	}
+
+	.display-stage[data-style="led"] .segment,
+	.display-stage[data-style="sinclair"] .segment {
+		fill: rgba(120, 20, 20, 0.5);
+	}
+
+	.display-stage[data-style="led"] .segment.is-on,
+	.display-stage[data-style="sinclair"] .segment.is-on {
+		fill: #ff2b2b;
+		animation: none;
+		filter: drop-shadow(0 0 2px rgba(255, 43, 43, 0.55));
+	}
+
+	.display-stage[data-style="led"] .segment-colon-dot,
+	.display-stage[data-style="sinclair"] .segment-colon-dot {
+		background: #ff2b2b;
+		box-shadow: 0 0 2px rgba(255, 43, 43, 0.55);
+		animation: none;
+	}
+
+	/* The one thing that's actually different about Sinclair Purple: the
+	   translucent color-filter layer, revealed only for this style. */
+	.display-stage[data-style="sinclair"] .tint-overlay {
+		opacity: 1;
+	}
+
+	/* --- LCD: muted grey-on-grey, no glow at all, gapped segments --------
+	   "Muted/low-contrast" describes the *material* (matte, no backlight
+	   bloom) relative to the glowing styles, not poor legibility — a real
+	   calculator LCD is flat and unglowing but still reads clearly thanks to
+	   near-black ink against a pale screen. The on/off segment colors below
+	   are deliberately far apart in lightness for that reason, while the
+	   off/ghost segments stay a subtle near-background tint rather than
+	   disappearing outright. */
+	.display-stage[data-style="lcd"] .segment-display {
+		background: #45484b;
+		box-shadow: none;
+	}
+
+	.display-stage[data-style="lcd"] .segment-digit {
+		background: #aeb2ae;
+		border-color: #888c88;
+		box-shadow: none;
+	}
+
+	.display-stage[data-style="lcd"] .segment-glass-highlight {
+		display: none;
+	}
+
+	.display-stage[data-style="lcd"] .segment {
+		fill: #999d99;
+		transform-box: fill-box;
+		transform-origin: center;
+		transform: scale(0.82);
+	}
+
+	.display-stage[data-style="lcd"] .segment.is-on {
+		fill: #1b1d1c;
+		animation: none;
+		filter: none;
+	}
+
+	.display-stage[data-style="lcd"] .segment-colon-dot {
+		background: #1b1d1c;
+		box-shadow: none;
+		animation: none;
+	}
+
+	/* --- Terminal: monochrome green phosphor, CRT scanlines + vignette --
+	   Terminal has its own dedicated dot-matrix display tree/component now
+	   (TerminalDigit.astro), so there's no shared .segment-* geometry left
+	   to re-theme here — only the CRT overlay, which sits above whichever
+	   display tree is active as a plain absolutely-positioned sibling. */
+	.display-stage[data-style="terminal"] .crt-overlay {
+		opacity: 1;
+	}
+</style>

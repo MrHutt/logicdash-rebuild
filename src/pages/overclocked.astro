@@ -3,12 +3,24 @@ import Layout from "../layouts/Layout.astro";
 import HammingGame from "../components/HammingGame.astro";
 ---
 
-<Layout title="OverClocked">
+<Layout
+	title="OverClocked"
+	description="Play LogicDash OverClocked: guess the secret 6-bit binary pattern in 6 tries — tighter odds and sharper focus than the 5-bit Classic mode."
+>
 	<div class="page-intro">
 		<h1>OverClocked</h1>
 		<p>Guess the 6-bit secret. Each guess shows how many bits differ from the answer.</p>
 	</div>
 	<HammingGame bitLength={6} maxAttempts={6} />
+
+	<img
+		class="game-art"
+		src="/logicdash-runners.png"
+		alt="Two cartoon figures shaped like a running &quot;0&quot; and &quot;1&quot;, sprinting side by side"
+		width="904"
+		height="319"
+		loading="lazy"
+	/>
 </Layout>
 
 <style>
@@ -24,5 +36,14 @@ import HammingGame from "../components/HammingGame.astro";
 	.page-intro p {
 		margin: 0;
 		font-size: 0.85rem;
+	}
+
+	.game-art {
+		display: block;
+		width: 100%;
+		max-width: 6rem;
+		height: auto;
+		margin: 1.5rem auto 0;
+		opacity: 0.85;
 	}
 </style>

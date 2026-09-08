@@ -1,0 +1,363 @@
+---
+// Reusable binary decoder challenge: renders a hidden word as one 8-bit tile
+// chunk per letter (no labels — that would give the answer away), lets the
+// reader submit a guess (checked trimmed and case-insensitively), and offers
+// a Reveal for the answer plus a step-by-step per-chunk decode (binary →
+// decimal → character) for anyone stuck. Two instances of this same
+// component are used on the page (a short warm-up, then the main
+// challenge) — see how-computers-store-text.astro.
+interface Props {
+	word: string;
+	label: string;
+}
+
+const { word, label } = Astro.props;
+
+const chunks = word.split("").map((char) => ({
+	char,
+	code: char.charCodeAt(0),
+	bits: char.charCodeAt(0).toString(2).padStart(8, "0"),
+}));
+
+const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+---
+
+<div class="decoder" data-decoder data-answer={word.toUpperCase()}>
+	<p class="decoder-label">{label}</p>
+
+	<div class="decoder-message" aria-label="Encoded binary message">
+		{
+			chunks.map((chunk) => (
+				<div class="decoder-chunk">
+					{chunk.bits.split("").map((bit) => (
+						<span class={`decoder-tile ${bit === "1" ? "decoder-tile--on" : ""}`}>{bit}</span>
+					))}
+				</div>
+			))
+		}
+	</div>
+
+	<form class="decoder-form" data-decoder-form>
+		<label class="decoder-input-label" for={`decoder-${slug}-input`}>Your guess</label>
+		<div class="decoder-input-row">
+			<input
+				type="text"
+				id={`decoder-${slug}-input`}
+				class="decoder-input"
+				autocomplete="off"
+				autocapitalize="off"
+				spellcheck="false"
+				data-decoder-input
+			/>
+			<button type="submit" class="decoder-submit">Submit</button>
+		</div>
+	</form>
+
+	<p class="decoder-feedback" data-decoder-feedback hidden></p>
+
+	<button type="button" class="decoder-reveal-toggle" data-decoder-reveal-toggle>Reveal answer</button>
+
+	<div class="decoder-reveal" data-decoder-reveal hidden>
+		<p class="decoder-reveal-answer">
+			Answer: <span class="decoder-reveal-answer-value">{word.toUpperCase()}</span>
+		</p>
+		<div class="decoder-steps">
+			{
+				chunks.map((chunk) => (
+					<div class="decoder-step">
+						<span class="decoder-step-bits">{chunk.bits}</span>
+						<span class="decoder-step-arrow">→</span>
+						<span class="decoder-step-dec">{chunk.code}</span>
+						<span class="decoder-step-arrow">→</span>
+						<span class="decoder-step-char">"{chunk.char}"</span>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</div>
+
+<script>
+	document.querySelectorAll<HTMLElement>("[data-decoder]").forEach((root) => {
+		const answer = (root.dataset.answer ?? "").trim().toUpperCase();
+		const form = root.querySelector<HTMLFormElement>("[data-decoder-form]");
+		const input = root.querySelector<HTMLInputElement>("[data-decoder-input]");
+		const feedbackEl = root.querySelector<HTMLElement>("[data-decoder-feedback]");
+		const revealToggle = root.querySelector<HTMLButtonElement>("[data-decoder-reveal-toggle]");
+		const revealEl = root.querySelector<HTMLElement>("[data-decoder-reveal]");
+
+		let solved = false;
+
+		form?.addEventListener("submit", (event) => {
+			event.preventDefault();
+			if (solved) return;
+
+			const guess = (input?.value ?? "").trim().toUpperCase();
+			if (!guess) return;
+
+			const correct = guess === answer;
+
+			if (feedbackEl) {
+				feedbackEl.hidden = false;
+				feedbackEl.textContent = correct ? "Cracked it." : "Not quite — try again.";
+				feedbackEl.classList.toggle("decoder-feedback--correct", correct);
+				feedbackEl.classList.toggle("decoder-feedback--incorrect", !correct);
+			}
+
+			if (correct) {
+				solved = true;
+				if (input) input.disabled = true;
+			}
+		});
+
+		revealToggle?.addEventListener("click", () => {
+			if (!revealEl) return;
+			revealEl.hidden = !revealEl.hidden;
+			revealToggle.textContent = revealEl.hidden ? "Reveal answer" : "Hide answer";
+		});
+	});
+</script>
+
+<style>
+	.decoder {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	.decoder-label {
+		margin: 0;
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+	}
+
+	.decoder-message {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-content: flex-start;
+		gap: 0.9rem;
+		width: 100%;
+		padding: 1rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	/*
+	 * Each byte is its own bordered group (not just a spacing gap) so it
+	 * reads as one visually distinct unit even after wrapping to a new
+	 * line — a gap alone looked identical to the row-wrap gap once the
+	 * message spanned multiple lines, making byte boundaries impossible to
+	 * spot. flex-shrink: 0 plus flex-wrap: nowrap keeps a chunk's own 8
+	 * tiles from ever splitting across two lines.
+	 */
+	.decoder-chunk {
+		display: flex;
+		flex-wrap: nowrap;
+		flex-shrink: 0;
+		gap: 0.15rem;
+		padding: 0.3rem;
+		border-radius: 10px;
+		background: var(--color-surface-alt);
+		border: 1px solid var(--color-border);
+	}
+
+	.decoder-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		flex-shrink: 0;
+		border-radius: 18%;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.68rem;
+		color: var(--color-text-muted);
+	}
+
+	.decoder-tile--on {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 4px color-mix(in srgb, var(--color-accent) 65%, transparent);
+	}
+
+	.decoder-form {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.decoder-input-label {
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+	}
+
+	.decoder-input-row {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.decoder-input {
+		width: 10rem;
+		padding: 0.5rem 0.7rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+		text-align: center;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+
+	.decoder-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.decoder-input:disabled {
+		opacity: 0.6;
+	}
+
+	.decoder-submit {
+		padding: 0.5rem 1.2rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+		transition:
+			background 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.decoder-submit:hover {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+
+	.decoder-submit:active {
+		transform: scale(0.95);
+	}
+
+	.decoder-feedback {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.decoder-feedback--correct {
+		color: var(--color-success);
+	}
+
+	.decoder-feedback--incorrect {
+		color: var(--color-danger);
+	}
+
+	.decoder-reveal-toggle {
+		padding: 0.3rem 0.7rem;
+		border-radius: 8px;
+		border: 1px dashed var(--color-border);
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-sans);
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.decoder-reveal-toggle:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.decoder-reveal {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0.75rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	/* The unconditional `display: flex` above otherwise beats the browser's
+	   own `[hidden] { display: none }` default (author styles always win
+	   over the UA stylesheet), which is why toggling the `hidden` property
+	   from script alone did nothing — this restores it. */
+	.decoder-reveal[hidden] {
+		display: none;
+	}
+
+	.decoder-reveal-answer {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.decoder-reveal-answer-value {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		color: #fff3d6;
+	}
+
+	.decoder-steps {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.decoder-step {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+	}
+
+	.decoder-step-bits {
+		min-width: 5.6rem;
+		color: var(--color-text-muted);
+	}
+
+	.decoder-step-arrow {
+		color: var(--color-accent);
+	}
+
+	.decoder-step-dec {
+		min-width: 1.6rem;
+		color: var(--color-text);
+		font-weight: 700;
+	}
+
+	.decoder-step-char {
+		color: #fff3d6;
+		font-weight: 700;
+	}
+</style>

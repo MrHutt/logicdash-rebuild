@@ -91,10 +91,16 @@ export function distanceColor(distance: number, bitLength: number): string {
 	// Stay within the site's amber hue rather than rotating through the rainbow: farther
 	// guesses get a duller, darker amber; closer guesses get a brighter, richer one. The
 	// range is deliberately wide so adjacent distances don't blur into each other.
+	//
+	// The lightness floor (46%, was 32%) is load-bearing for WCAG AA: this color is used
+	// as both the badge's text color and its border/fill, and the farthest-guess end of
+	// the old range (hsl(36 45% 32%)) contrast-checked at only ~2.8:1 against the badge's
+	// own background — a real, common failure, since a wide first guess is the most
+	// frequent case. 46% is the minimum that clears 4.5:1 at this saturation.
 	const t = distanceCloseness(distance, bitLength);
 	const hue = 36;
 	const saturation = 45 + t * 50;
-	const lightness = 32 + t * 36;
+	const lightness = 46 + t * 24;
 	return `hsl(${hue}deg ${saturation}% ${lightness}%)`;
 }
 

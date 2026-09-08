@@ -1,0 +1,377 @@
+---
+// Small decorative icon shown at the top of each card on the /learn hub —
+// built entirely from the site's tile visual language plus simple CSS/SVG
+// lines, one bespoke arrangement per topic. Purely cosmetic (no links or
+// interactivity), so this stays a plain server-rendered component — unlike
+// ByteBuilder/PracticeQuiz, nothing here is built via client-side innerHTML,
+// so ordinary Astro-scoped styles apply fine.
+interface Props {
+	href: string;
+}
+
+const { href } = Astro.props;
+---
+
+<div class="topic-icon" aria-hidden="true">
+	{
+		href === "/learn/what-is-binary" && (
+			<span class="ti-flip">
+				<span class="ti-tile ti-flip-face ti-flip-face--a">0</span>
+				<span class="ti-tile ti-tile--on ti-flip-face ti-flip-face--b">1</span>
+			</span>
+		)
+	}
+	{
+		href === "/learn/counting-in-binary" && (
+			<div class="ti-rollover">
+				<div class="ti-row">
+					<span class="ti-tile">0</span>
+					<span class="ti-tile ti-tile--on">1</span>
+					<span class="ti-tile ti-tile--on">1</span>
+				</div>
+				<span class="ti-rollover-arrow">↓</span>
+				<div class="ti-row">
+					<span class="ti-tile ti-tile--on">1</span>
+					<span class="ti-tile">0</span>
+					<span class="ti-tile">0</span>
+				</div>
+			</div>
+		)
+	}
+	{
+		href === "/learn/hamming-distance" && (
+			<div class="ti-hamming">
+				<div class="ti-row">
+					<span class="ti-tile ti-tile--on">1</span>
+					<span class="ti-tile">0</span>
+					<span class="ti-tile ti-tile--on">1</span>
+					<span class="ti-tile">0</span>
+				</div>
+				<div class="ti-row">
+					<span class="ti-tile ti-tile--on">1</span>
+					<span class="ti-tile">0</span>
+					<span class="ti-tile ti-tile--diff">0</span>
+					<span class="ti-tile">0</span>
+				</div>
+			</div>
+		)
+	}
+	{
+		href === "/learn/bits-and-bytes" && (
+			<div class="ti-row ti-row--byte">
+				<span class="ti-tile ti-tile--on">1</span>
+				<span class="ti-tile">0</span>
+				<span class="ti-tile">0</span>
+				<span class="ti-tile ti-tile--on">1</span>
+				<span class="ti-tile">0</span>
+				<span class="ti-tile ti-tile--on">1</span>
+				<span class="ti-tile">0</span>
+				<span class="ti-tile">0</span>
+			</div>
+		)
+	}
+	{
+		href === "/learn/reading-a-byte" && (
+			<div class="ti-place-values">
+				<div class="ti-pv-col">
+					<span class="ti-pv-label">4</span>
+					<span class="ti-tile ti-tile--on">1</span>
+				</div>
+				<div class="ti-pv-col">
+					<span class="ti-pv-label">2</span>
+					<span class="ti-tile">0</span>
+				</div>
+				<div class="ti-pv-col">
+					<span class="ti-pv-label">1</span>
+					<span class="ti-tile ti-tile--on">1</span>
+				</div>
+			</div>
+		)
+	}
+	{
+		href === "/learn/writing-a-byte" && (
+			<div class="ti-division">
+				<span class="ti-division-num">13</span>
+				<span class="ti-division-arrow">↓</span>
+				<span class="ti-division-num">6</span>
+			</div>
+		)
+	}
+	{
+		href === "/learn/error-correction" && (
+			<div class="ti-row">
+				<span class="ti-tile ti-tile--on">1</span>
+				<span class="ti-tile">0</span>
+				<span class="ti-tile ti-tile--flagged">1</span>
+				<span class="ti-tile">0</span>
+				<span class="ti-tile ti-tile--on">1</span>
+			</div>
+		)
+	}
+	{
+		href === "/learn/how-computers-store-text" && (
+			<div class="ti-text-map">
+				<span class="ti-tile ti-tile--on">1</span>
+				<span class="ti-text-glyph">A</span>
+			</div>
+		)
+	}
+	{
+		href === "/learn/ipv4-vs-ipv6" && (
+			<div class="ti-ip-scale">
+				<span class="ti-tile ti-tile--label ti-ip-tile--32">32-bit</span>
+				<span class="ti-tile ti-tile--label ti-tile--on ti-ip-tile--128">128-bit</span>
+			</div>
+		)
+	}
+	{
+		href === "/learn/binary-hex-decimal" && (
+			<div class="ti-convert-row">
+				<div class="ti-convert-col">
+					<span class="ti-convert-label">DEC</span>
+					<span class="ti-tile ti-tile--label">10</span>
+				</div>
+				<span class="ti-convert-arrow">⇄</span>
+				<div class="ti-convert-col">
+					<span class="ti-convert-label">HEX</span>
+					<span class="ti-tile ti-tile--label">A</span>
+				</div>
+				<span class="ti-convert-arrow">⇄</span>
+				<div class="ti-convert-col">
+					<span class="ti-convert-label">BIN</span>
+					<span class="ti-tile ti-tile--label">1010</span>
+				</div>
+			</div>
+		)
+	}
+</div>
+
+<style>
+	.topic-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 3.6rem;
+		margin-bottom: 0.4rem;
+	}
+
+	.ti-tile {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		flex-shrink: 0;
+		border-radius: 22%;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.ti-tile--on {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
+		color: #fff3d6;
+		box-shadow: 0 0 4px color-mix(in srgb, var(--color-accent) 45%, transparent);
+	}
+
+	.ti-tile--diff,
+	.ti-tile--flagged {
+		border-color: var(--color-danger);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-danger) 35%, transparent);
+	}
+
+	.ti-row {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.ti-row--byte .ti-tile {
+		width: 1.05rem;
+		height: 1.05rem;
+		font-size: 0.55rem;
+	}
+
+	.ti-hamming {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	/* Counting in Binary: 011 rolling over to 100 — the exact moment the
+	   page's whole "rollover" idea is about, shown as a single before/after
+	   snapshot rather than the hamming icon's static comparison. */
+	.ti-rollover {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.1rem;
+	}
+
+	.ti-rollover-arrow {
+		color: var(--color-accent);
+		font-size: 0.85rem;
+		line-height: 1;
+	}
+
+	.ti-place-values {
+		display: flex;
+		gap: 0.5rem;
+		align-items: flex-end;
+	}
+
+	.ti-pv-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.2rem;
+	}
+
+	.ti-pv-label {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.ti-division {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.1rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.1rem;
+		color: var(--color-text);
+	}
+
+	.ti-division-arrow {
+		color: var(--color-accent);
+		font-size: 1.1rem;
+		line-height: 1;
+	}
+
+	.ti-text-map {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.ti-text-glyph {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 4px;
+		border: 1px solid var(--color-border);
+		font-family: var(--font-sans);
+		font-weight: 700;
+		font-size: 1rem;
+		color: var(--color-text);
+	}
+
+	.ti-convert-row {
+		display: flex;
+		align-items: flex-end;
+		gap: 0.4rem;
+	}
+
+	.ti-convert-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.15rem;
+	}
+
+	.ti-convert-label {
+		font-family: var(--font-mono);
+		font-size: 0.5rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		color: var(--color-text-muted);
+	}
+
+	.ti-tile--label {
+		width: auto;
+		min-width: 1.6rem;
+		padding: 0 0.25rem;
+	}
+
+	.ti-convert-arrow {
+		margin-bottom: 0.4rem;
+		color: var(--color-accent);
+		font-size: 1rem;
+	}
+
+	/* IPv4 vs IPv6: two size-labeled tiles, the second deliberately larger
+	   than the first — suggests the address-space jump without needing an
+	   actual number in the icon itself. */
+	.ti-ip-scale {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.ti-ip-tile--32 {
+		font-size: 0.5rem;
+		height: 1.3rem;
+	}
+
+	.ti-ip-tile--128 {
+		font-size: 0.68rem;
+		height: 2rem;
+		padding: 0 0.4rem;
+	}
+
+	/* What is Binary?: two stacked tiles perpetually crossfading between 0 and
+	   1 — a plain opacity loop rather than a 3D flip, since a flip depends on
+	   perspective/backface-visibility support and is fragile to verify; opacity
+	   is trivial to confirm at any point in the cycle via computed style. */
+	.ti-flip {
+		position: relative;
+		display: inline-flex;
+		width: 1.6rem;
+		height: 1.6rem;
+	}
+
+	.ti-flip-face {
+		position: absolute;
+		inset: 0;
+		animation: ti-crossfade 5s ease-in-out infinite;
+	}
+
+	.ti-flip-face--a {
+		animation-delay: 0s;
+	}
+
+	.ti-flip-face--b {
+		animation-delay: -2.5s;
+	}
+
+	@keyframes ti-crossfade {
+		0%,
+		40% {
+			opacity: 1;
+		}
+		50%,
+		90% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ti-flip-face {
+			animation: none;
+		}
+
+		.ti-flip-face--b {
+			opacity: 0;
+		}
+	}
+</style>

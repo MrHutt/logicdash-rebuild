@@ -2,7 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Contact">
+<Layout
+	title="Contact"
+	description="Have feedback, found a bug, or have an idea for LogicDash? Send a message directly from this page — I'd like to hear from you."
+>
 	<section class="hero">
 		<h1>Contact</h1>
 		<p class="hero-lead">Got ideas, bugs, or feedback? I'd like to hear them.</p>
@@ -75,7 +78,7 @@ import Layout from "../layouts/Layout.astro";
 
 	.hero-lead {
 		margin: 0 auto;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 
 	.blocks {
@@ -129,7 +132,7 @@ import Layout from "../layouts/Layout.astro";
 		padding: 0.55rem 0.7rem;
 		color: var(--color-text);
 		font-family: var(--font-sans);
-		font-size: 0.9rem;
+		font-size: 1rem;
 		transition:
 			border-color 0.15s ease,
 			box-shadow 0.15s ease;

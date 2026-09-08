@@ -3,7 +3,10 @@ import Layout from "../layouts/Layout.astro";
 import HammingBoard from "../components/HammingBoard.astro";
 ---
 
-<Layout title="Today's Quick Byte">
+<Layout
+	title="Today's Quick Byte"
+	description="LogicDash's daily challenge: three 5-bit binary puzzles back-to-back, the same for everyone each day. Solve them and share your score."
+>
 	<div class="page-intro">
 		<h1>Today's Quick Byte</h1>
 		<p>Three 5-bit rounds. Same puzzles for everyone today — come back tomorrow for new ones.</p>
@@ -19,10 +22,18 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<p class="quick-byte-results-label">Today's result</p>
 		<p class="quick-byte-sequence"></p>
 		<p class="quick-byte-total"></p>
-		<p class="quick-byte-badge" hidden></p>
 		<button type="button" class="quick-byte-share">Share Result</button>
 		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte.</p>
 	</div>
+
+	<img
+		class="game-art"
+		src="/logicdash-runners.png"
+		alt="Two cartoon figures shaped like a running &quot;0&quot; and &quot;1&quot;, sprinting side by side"
+		width="904"
+		height="319"
+		loading="lazy"
+	/>
 
 	<div class="share-modal-overlay" hidden>
 		<div class="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
@@ -30,8 +41,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 			<p id="share-modal-title" class="share-modal-title">Share Your Result</p>
 			<div class="share-preview">
 				<p class="share-preview-date"></p>
-				<div class="share-preview-squares"></div>
-				<p class="share-preview-phrase" hidden></p>
 				<p class="share-preview-sequence"></p>
 				<p class="share-preview-site">logicdash.io</p>
 			</div>
@@ -61,6 +70,15 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.page-intro p {
 		margin: 0;
 		font-size: 0.85rem;
+	}
+
+	.game-art {
+		display: block;
+		width: 100%;
+		max-width: 6rem;
+		height: auto;
+		margin: 1.5rem auto 0;
+		opacity: 0.85;
 	}
 
 	.quick-byte-play {
@@ -163,18 +181,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 		font-weight: 700;
 		font-size: 1rem;
 		color: var(--color-text);
-	}
-
-	.quick-byte-badge {
-		margin: 0.4rem 0 0;
-		font-size: 0.85rem;
-		font-weight: 600;
-		color: #fff3d6;
-		text-shadow: 0 0 6px #ffae2e;
-	}
-
-	.quick-byte-badge[hidden] {
-		display: none;
 	}
 
 	.quick-byte-return-note {
@@ -285,45 +291,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 		color: var(--color-text);
 	}
 
-	.share-preview-phrase[hidden] {
-		display: none;
-	}
-
-	.share-preview-squares {
-		display: flex;
-		gap: 0.3rem;
-		margin: 0.35rem 0;
-	}
-
-	/*
-	 * Rendered as real CSS-colored squares rather than the 🟩🟧🟥 emoji used in the
-	 * actual copyable/shareable text — emoji square colors are fixed by the platform's
-	 * font and can't be restyled, and on some platforms the "orange" one reads closer
-	 * to coral than the site's amber. This preview shows the exact on-brand colors;
-	 * squareColorClass() below maps each score to the matching emoji for the real text.
-	 */
-	.share-square {
-		display: inline-block;
-		width: 1.2rem;
-		height: 1.2rem;
-		border-radius: 22%;
-	}
-
-	.share-square--green {
-		background: var(--color-success);
-		box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 60%, transparent);
-	}
-
-	.share-square--amber {
-		background: #ffae2e;
-		box-shadow: 0 0 8px color-mix(in srgb, #ffae2e 60%, transparent);
-	}
-
-	.share-square--red {
-		background: #ef4444;
-		box-shadow: 0 0 8px color-mix(in srgb, #ef4444 60%, transparent);
-	}
-
 	.share-actions {
 		display: flex;
 		align-items: center;
@@ -425,11 +392,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 	import {
 		roundScore,
 		formatResultSequence,
+		formatTotalLine,
 		totalScore,
-		findResultBadge,
 		buildShareText,
-		shareSpecialPhrase,
-		squareColor,
+		type RoundResult,
 	} from "../lib/quickByteScoring";
 
 	// Result storage is browser-local only for now (no accounts yet), keyed by the
@@ -442,8 +408,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const ROUND_COUNT = 3;
 
 	interface QuickByteResult {
-		perRound: number[];
-		total: number;
+		perRound: RoundResult[];
+		total: number | null;
 		completedAt: string;
 	}
 
@@ -452,7 +418,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	// same guess history, same attempts remaining. Cleared once the day is fully complete.
 	interface QuickByteProgress {
 		roundIndex: number;
-		completedRounds: number[];
+		completedRounds: RoundResult[];
 		guessesThisRound: string[];
 	}
 
@@ -466,13 +432,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const resultsSection = document.querySelector<HTMLElement>(".quick-byte-results")!;
 	const sequenceEl = document.querySelector<HTMLElement>(".quick-byte-sequence")!;
 	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
-	const badgeEl = document.querySelector<HTMLElement>(".quick-byte-badge")!;
 	const shareButton = document.querySelector<HTMLButtonElement>(".quick-byte-share")!;
 	const shareOverlay = document.querySelector<HTMLElement>(".share-modal-overlay")!;
 	const shareModalCloseBtn = document.querySelector<HTMLButtonElement>(".share-modal-close")!;
 	const sharePreviewDate = document.querySelector<HTMLElement>(".share-preview-date")!;
-	const sharePreviewSquares = document.querySelector<HTMLElement>(".share-preview-squares")!;
-	const sharePreviewPhrase = document.querySelector<HTMLElement>(".share-preview-phrase")!;
 	const sharePreviewSequence = document.querySelector<HTMLElement>(".share-preview-sequence")!;
 	const shareCopyBtn = document.querySelector<HTMLButtonElement>(".share-copy-btn")!;
 	const shareCopiedNote = document.querySelector<HTMLElement>(".share-copied-note")!;
@@ -482,45 +445,11 @@ import HammingBoard from "../components/HammingBoard.astro";
 
 	// Set whenever results are shown (either just now, or on revisiting an already-completed
 	// day), so the share button always has the right scores regardless of which path ran.
-	let resultScores: number[] = [];
+	let resultScores: RoundResult[] = [];
 
-	// squareColor() names the tier "orange" (matching the 🟧 emoji used in the real
-	// shareable text), but the on-page preview swatch is styled in the site's actual
-	// amber accent rather than a coral/orange tone — hence the different class name here.
-	const SQUARE_CLASS_BY_COLOR = {
-		green: "share-square--green",
-		orange: "share-square--amber",
-		red: "share-square--red",
-	} as const;
-
-	// Elements written directly in this file's markup get Astro's scoped-style attribute
-	// automatically, but ones created here via document.createElement don't — without
-	// stamping it on manually, none of this component's scoped CSS would match them.
-	function getScopeAttr(el: Element): string | null {
-		for (const attr of el.attributes) {
-			if (attr.name.startsWith("data-astro-cid-")) return attr.name;
-		}
-		return null;
-	}
-
-	const scopeAttr = getScopeAttr(sharePreviewSquares);
-
-	function renderSharePreview(scores: number[]) {
+	function renderSharePreview(scores: RoundResult[]) {
 		sharePreviewDate.textContent = `Quick Byte — ${dateString.replaceAll("-", ".")}`;
-
-		sharePreviewSquares.innerHTML = "";
-		for (const score of scores) {
-			const square = document.createElement("span");
-			square.className = `share-square ${SQUARE_CLASS_BY_COLOR[squareColor(score)]}`;
-			if (scopeAttr) square.setAttribute(scopeAttr, "");
-			sharePreviewSquares.appendChild(square);
-		}
-
-		const phrase = shareSpecialPhrase(scores);
-		sharePreviewPhrase.textContent = phrase ?? "";
-		sharePreviewPhrase.hidden = phrase === null;
-
-		sharePreviewSequence.textContent = `${formatResultSequence(scores)}   Total: ${totalScore(scores)}`;
+		sharePreviewSequence.textContent = `${formatResultSequence(scores)}   ${formatTotalLine(scores)}`;
 	}
 
 	function openShareModal() {
@@ -614,16 +543,12 @@ import HammingBoard from "../components/HammingBoard.astro";
 		}
 	}
 
-	function showResults(perRound: number[]) {
+	function showResults(perRound: RoundResult[]) {
 		resultScores = perRound;
 		playSection.hidden = true;
 		resultsSection.hidden = false;
 		sequenceEl.textContent = formatResultSequence(perRound);
-		totalEl.textContent = `Total: ${totalScore(perRound)}`;
-
-		const badge = findResultBadge(perRound);
-		badgeEl.textContent = badge ?? "";
-		badgeEl.hidden = badge === null;
+		totalEl.textContent = formatTotalLine(perRound);
 	}
 
 	const alreadyPlayed = readStoredResult();
@@ -634,7 +559,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		const secrets = generateDailySecrets(dateString, BIT_LENGTH, ROUND_COUNT);
 		const savedProgress = readProgress();
 
-		const perRound: number[] = savedProgress?.completedRounds ?? [];
+		const perRound: RoundResult[] = savedProgress?.completedRounds ?? [];
 		let roundIndex = Math.min(Math.max(savedProgress?.roundIndex ?? 0, 0), ROUND_COUNT - 1);
 		let guessesThisRound: string[] = savedProgress ? [...savedProgress.guessesThisRound] : [];
 

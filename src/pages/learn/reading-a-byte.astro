@@ -3,13 +3,18 @@ import Layout from "../../layouts/Layout.astro";
 import PlaceValueChart from "../../components/PlaceValueChart.astro";
 import ByteBuilder from "../../components/ByteBuilder.astro";
 import PracticeQuiz from "../../components/PracticeQuiz.astro";
-import { LEARN_TOPICS } from "../../lib/learnTopics";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
 
 const CURRENT_HREF = "/learn/reading-a-byte";
 const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 ---
 
-<Layout title="Reading a Byte (Binary to Decimal)">
+<Layout
+	title="Reading a Byte (Binary to Decimal)"
+	description="Learn to convert an 8-bit binary byte into its decimal value step by step, with worked examples and an interactive practice quiz."
+	ogType="article"
+>
 	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
 
 	<section class="hero">
@@ -66,6 +71,13 @@ const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
 			</p>
 		</section>
 
+		<section class="block">
+			<p class="block-text">
+				Converting the other way? See how to pad a short result correctly in{" "}
+				<a href="/learn/writing-a-byte#dont-forget-to-pad">Writing a Byte</a>.
+			</p>
+		</section>
+
 		<section id="try-it-yourself" class="block block--example">
 			<p class="block-title">Try It Yourself</p>
 			<ByteBuilder />
@@ -86,28 +98,26 @@ const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
 		</section>
 
 		<section class="block">
-			<p class="block-title">Keep Going</p>
-			<ul class="keep-going-list">
-				<li>
-					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
-				</li>
-				<li>
-					Want to count upward step by step instead? Try Counting in Binary{" "}
-					<span class="coming-soon">(coming soon)</span>.
-				</li>
-				<li>
-					Ready to convert between binary, hex, and decimal automatically? Try the Binary ↔ Hex ↔
-					Decimal tool <span class="coming-soon">(coming soon)</span>.
-				</li>
-			</ul>
-
 			<div class="learn-pagination">
-				<span class="learn-pagination-link learn-pagination-prev learn-pagination-soon">
-					← Counting in Binary (coming soon)
-				</span>
-				<a class="learn-pagination-link learn-pagination-next" href="/learn/writing-a-byte">
-					Writing a Byte →
-				</a>
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
+							</a>
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
 			</div>
 		</section>
 	</div>
@@ -158,7 +168,7 @@ const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
 	.hero-lead {
 		margin: 0 auto;
 		max-width: 34rem;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 
 	.blocks {
@@ -184,7 +194,7 @@ const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
 
 	.block-text {
 		margin: 0 0 0.6rem;
-		font-size: 0.88rem;
+		font-size: 1rem;
 	}
 
 	.block-text:last-child {
@@ -232,33 +242,10 @@ const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
 		box-shadow: 0 0 28px -10px color-mix(in srgb, var(--color-accent) 45%, transparent);
 	}
 
-	.keep-going-list {
-		margin: 0;
-		padding-left: 1.2rem;
-		font-size: 0.88rem;
-	}
-
-	.keep-going-list li {
-		margin: 0.3rem 0;
-	}
-
-	.keep-going-list a {
-		color: #ffae2e;
-		font-weight: 600;
-	}
-
-	.coming-soon {
-		color: var(--color-text-muted);
-		font-style: italic;
-	}
-
 	.learn-pagination {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--color-border);
 		font-size: 0.85rem;
 	}
 
@@ -268,9 +255,12 @@ const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
 		text-decoration: none;
 	}
 
+	.learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
 	.learn-pagination-next {
 		margin-left: auto;
-		text-align: right;
 	}
 
 	.learn-pagination-soon {

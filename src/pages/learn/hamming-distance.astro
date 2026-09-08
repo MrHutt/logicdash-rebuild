@@ -21,7 +21,11 @@ const comparisons = patternA.split("").map((bit, i) => ({
 }));
 ---
 
-<Layout title="Hamming Distance, Explained">
+<Layout
+	title="Hamming Distance, Explained"
+	description="What Hamming distance is and how it powers every guess in LogicDash — the real computer-science concept behind the game's scoring."
+	ogType="article"
+>
 	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
 
 	<section class="hero">
@@ -105,39 +109,27 @@ const comparisons = patternA.split("").map((bit, i) => ({
 		</section>
 
 		<section class="block">
-			<p class="block-title">Keep Going</p>
-			<ul class="keep-going-list">
-				<li>
-					New to binary? Start with <a href="/learn/what-is-binary">What is Binary?</a>
-				</li>
-				<li>
-					Want to see the real-world error-correcting codes this idea leads to? Read Error
-					Correction, Explained <span class="coming-soon">(coming soon)</span>.
-				</li>
-				<li>Or <a href="/learn">browse all Learn topics</a>.</li>
-			</ul>
-
-			{
-				(prev || next) && (
-					<div class="learn-pagination">
-						{prev && (
-							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-								← Back to {prev.title}
+			<div class="learn-pagination">
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
 							</a>
-						)}
-						{next &&
-							(next.live ? (
-								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-									{next.title} →
-								</a>
-							) : (
-								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-									{next.title} (coming soon)
-								</span>
-							))}
-					</div>
-				)
-			}
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
+			</div>
 		</section>
 	</div>
 </Layout>
@@ -173,7 +165,7 @@ const comparisons = patternA.split("").map((bit, i) => ({
 	.hero-lead {
 		margin: 0 auto;
 		max-width: 34rem;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 
 	.blocks {
@@ -199,7 +191,7 @@ const comparisons = patternA.split("").map((bit, i) => ({
 
 	.block-text {
 		margin: 0 0 0.6rem;
-		font-size: 0.88rem;
+		font-size: 1rem;
 	}
 
 	.block-text:last-child {
@@ -264,7 +256,7 @@ const comparisons = patternA.split("").map((bit, i) => ({
 	}
 
 	.compare-tile:not(.compare-tile--on) .compare-segment.is-on {
-		fill: #7a5c3a;
+		fill: #a8804f;
 	}
 
 	.compare-tile--on .compare-segment.is-on {
@@ -296,33 +288,10 @@ const comparisons = patternA.split("").map((bit, i) => ({
 		margin: 0.15rem 0;
 	}
 
-	.keep-going-list {
-		margin: 0;
-		padding-left: 1.2rem;
-		font-size: 0.88rem;
-	}
-
-	.keep-going-list li {
-		margin: 0.3rem 0;
-	}
-
-	.keep-going-list a {
-		color: #ffae2e;
-		font-weight: 600;
-	}
-
-	.coming-soon {
-		color: var(--color-text-muted);
-		font-style: italic;
-	}
-
 	.learn-pagination {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--color-border);
 		font-size: 0.85rem;
 	}
 

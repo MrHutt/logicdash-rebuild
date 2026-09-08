@@ -58,7 +58,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		--led-off-bg: #1c140d;
 		--led-off-border: #4a3826;
 		--seg-ghost: #241a10;
-		--seg-dim: #7a5c3a;
+		--seg-dim: #a8804f;
 		display: flex;
 		flex-direction: column;
 		gap: 0.6rem;
@@ -386,12 +386,20 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 		margin-left: auto;
 		display: flex;
 		flex-direction: column;
-		gap: 0.2rem;
-		min-width: 6.5rem;
-		padding: 0.25rem 0.6rem;
+		gap: 0.25rem;
+		min-width: 7.5rem;
+		padding: 0.3rem 0.7rem;
 		border-radius: 8px;
 		border: 1px solid var(--badge-color, var(--color-border));
-		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 18%, transparent);
+		/*
+		 * Mixed onto a solid --color-bg rather than transparent: a transparent
+		 * mix let whatever page background sat behind it show through, which
+		 * at the low-lightness end of the old distanceColor() range collapsed
+		 * the badge's text-to-background contrast well below AA. Mixing onto
+		 * an opaque dark base instead keeps the badge's own background
+		 * reliably dark regardless of context.
+		 */
+		background: color-mix(in srgb, var(--badge-color, var(--color-text-muted)) 22%, var(--color-bg));
 		white-space: nowrap;
 		box-sizing: border-box;
 	}
@@ -399,7 +407,7 @@ const bitIndices = Array.from({ length: bitLength }, (_, i) => i);
 	.distance-badge-label {
 		font-family: var(--font-sans);
 		font-weight: 700;
-		font-size: 0.75rem;
+		font-size: 0.9rem;
 		color: var(--badge-color, var(--color-text-muted));
 	}
 

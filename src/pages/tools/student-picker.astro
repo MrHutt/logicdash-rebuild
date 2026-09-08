@@ -1,0 +1,1349 @@
+---
+// Unpublished classroom tool — reachable only by direct URL, same treatment
+// as /tools/countdown-clock: not linked from Header.astro/Footer.astro, and
+// excluded from the sitemap (see the sitemap() filter in astro.config.mjs).
+// /tools/ is also disallowed wholesale in public/robots.txt already, so no
+// robots.txt change was needed for this page specifically.
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+	title="Student Picker"
+	description="A classroom random student/group picker — pick a random student, split a roster into groups or pairs, project it fullscreen."
+>
+	<div class="picker-tool" data-picker-root>
+		<h1 class="picker-title">Student Picker</h1>
+
+		<div class="tool-bar">
+			<button type="button" class="icon-btn fullscreen-btn" data-fullscreen-btn aria-label="Enter fullscreen" hidden>
+				⛶
+			</button>
+		</div>
+
+		<div class="mode-toggle" data-mode-toggle>
+			<button type="button" class="mode-btn" data-mode-btn="roster" aria-selected="true">Roster</button>
+			<button type="button" class="mode-btn" data-mode-btn="pick" aria-selected="false">Pick One</button>
+			<button type="button" class="mode-btn" data-mode-btn="groups" aria-selected="false">Groups</button>
+			<button type="button" class="mode-btn" data-mode-btn="pairs" aria-selected="false">Pairs</button>
+		</div>
+
+		<!-- ================= Roster ================= -->
+		<section class="panel" data-panel="roster">
+			<div class="panel-card">
+				<p class="panel-title">Saved Rosters</p>
+				<div class="roster-select-row">
+					<select class="select-input" data-roster-select aria-label="Saved rosters"></select>
+					<button type="button" class="btn btn--ghost" data-new-roster>New</button>
+					<button type="button" class="btn btn--ghost btn--muted" data-delete-roster>Delete</button>
+				</div>
+				<label class="field-label-row">
+					<span class="field-label">Roster name</span>
+					<input type="text" class="text-input" data-roster-name-input placeholder="e.g. Period 3" />
+				</label>
+			</div>
+
+			<div class="panel-card">
+				<p class="panel-title">Paste Names</p>
+				<p class="panel-hint">One name per line — quick way to bulk-add a whole class.</p>
+				<textarea class="bulk-textarea" data-bulk-textarea rows="6" placeholder={"Alicia\nBen\nCarlos\n…"}
+				></textarea>
+				<button type="button" class="btn" data-add-bulk>Add Names</button>
+			</div>
+
+			<div class="panel-card">
+				<p class="panel-title">Students (<span data-roster-count>0</span>)</p>
+				<div class="add-single-row">
+					<input type="text" class="text-input" data-add-name-input placeholder="Add one student" />
+					<button type="button" class="btn btn--ghost" data-add-name>Add</button>
+				</div>
+				<ul class="roster-list" data-roster-list></ul>
+				<p class="empty-hint" data-roster-empty>No students yet — paste a list above to get started.</p>
+			</div>
+		</section>
+
+		<!-- ================= Pick One ================= -->
+		<section class="panel" data-panel="pick" hidden>
+			<div class="panel-card panel-card--stage" data-pick-stage>
+				<label class="norepeat-toggle">
+					<input type="checkbox" data-norepeat-toggle checked />
+					<span>No-repeat mode</span>
+				</label>
+
+				<div class="reel-viewport" data-reel-viewport>
+					<div class="reel-track" data-reel-track>
+						<span class="reel-tile reel-tile--placeholder">?</span>
+					</div>
+					<span class="reel-marker reel-marker--top" aria-hidden="true"></span>
+					<span class="reel-marker reel-marker--bottom" aria-hidden="true"></span>
+				</div>
+
+				<p class="pick-result" data-pick-result></p>
+				<p class="empty-hint" data-pick-empty hidden>Add some students on the Roster tab first.</p>
+
+				<button type="button" class="btn" data-pick-btn disabled>Pick a Student</button>
+			</div>
+
+			<div class="panel-card">
+				<div class="panel-header-row">
+					<p class="panel-title">Session History</p>
+					<button type="button" class="btn btn--ghost btn--muted" data-reset-history>Reset History</button>
+				</div>
+				<ul class="history-list" data-history-list></ul>
+				<p class="empty-hint" data-history-empty>Nobody's been picked yet this session.</p>
+			</div>
+		</section>
+
+		<!-- ================= Groups ================= -->
+		<section class="panel" data-panel="groups" hidden>
+			<div class="panel-card panel-card--stage panel-card--wide" data-groups-stage>
+				<div class="grouping-controls">
+					<div class="grouping-field">
+						<label for="groups-count-input">Split into</label>
+						<input
+							type="number"
+							id="groups-count-input"
+							class="number-input"
+							min="2"
+							max="50"
+							value="4"
+							data-groups-count-input
+						/>
+						<span>groups</span>
+						<button type="button" class="btn btn--ghost" data-make-groups-count>Go</button>
+					</div>
+					<div class="grouping-field">
+						<label for="groups-size-input">Groups of</label>
+						<input
+							type="number"
+							id="groups-size-input"
+							class="number-input"
+							min="2"
+							max="50"
+							value="4"
+							data-groups-size-input
+						/>
+						<span>students</span>
+						<button type="button" class="btn btn--ghost" data-make-groups-size>Go</button>
+					</div>
+				</div>
+				<p class="empty-hint" data-groups-empty hidden>Add some students on the Roster tab first.</p>
+				<div class="results-grid" data-groups-result></div>
+			</div>
+		</section>
+
+		<!-- ================= Pairs ================= -->
+		<section class="panel" data-panel="pairs" hidden>
+			<div class="panel-card panel-card--stage panel-card--wide" data-pairs-stage>
+				<button type="button" class="btn" data-make-pairs>Make Pairs</button>
+				<p class="empty-hint" data-pairs-empty hidden>Add some students on the Roster tab first.</p>
+				<div class="results-grid" data-pairs-result></div>
+			</div>
+		</section>
+
+		<div class="fullscreen-controls" data-fullscreen-controls>
+			<button type="button" class="exit-fullscreen-btn" data-exit-fullscreen hidden aria-label="Exit fullscreen">
+				×
+			</button>
+		</div>
+	</div>
+</Layout>
+
+<script>
+	import {
+		loadRosters,
+		saveRoster,
+		deleteRoster as deleteRosterFromStorage,
+		loadActiveRosterName,
+		saveActiveRosterName,
+		distributeIntoGroups,
+		groupsOfSize,
+		makePairs,
+		type Roster,
+	} from "../../lib/studentPicker";
+
+	const root = document.querySelector<HTMLElement>("[data-picker-root]")!;
+
+	// --- Element refs ------------------------------------------------------
+
+	const fullscreenBtn = root.querySelector<HTMLButtonElement>("[data-fullscreen-btn]")!;
+	const exitFullscreenBtn = root.querySelector<HTMLButtonElement>("[data-exit-fullscreen]")!;
+	const modeButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-mode-btn]"));
+	const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-panel]"));
+
+	const rosterSelect = root.querySelector<HTMLSelectElement>("[data-roster-select]")!;
+	const newRosterBtn = root.querySelector<HTMLButtonElement>("[data-new-roster]")!;
+	const deleteRosterBtn = root.querySelector<HTMLButtonElement>("[data-delete-roster]")!;
+	const rosterNameInput = root.querySelector<HTMLInputElement>("[data-roster-name-input]")!;
+	const bulkTextarea = root.querySelector<HTMLTextAreaElement>("[data-bulk-textarea]")!;
+	const addBulkBtn = root.querySelector<HTMLButtonElement>("[data-add-bulk]")!;
+	const rosterCountEl = root.querySelector<HTMLElement>("[data-roster-count]")!;
+	const addNameInput = root.querySelector<HTMLInputElement>("[data-add-name-input]")!;
+	const addNameBtn = root.querySelector<HTMLButtonElement>("[data-add-name]")!;
+	const rosterListEl = root.querySelector<HTMLElement>("[data-roster-list]")!;
+	const rosterEmptyEl = root.querySelector<HTMLElement>("[data-roster-empty]")!;
+
+	const norepeatToggle = root.querySelector<HTMLInputElement>("[data-norepeat-toggle]")!;
+	const reelViewport = root.querySelector<HTMLElement>("[data-reel-viewport]")!;
+	const reelTrack = root.querySelector<HTMLElement>("[data-reel-track]")!;
+	const pickResultEl = root.querySelector<HTMLElement>("[data-pick-result]")!;
+	const pickEmptyEl = root.querySelector<HTMLElement>("[data-pick-empty]")!;
+	const pickBtn = root.querySelector<HTMLButtonElement>("[data-pick-btn]")!;
+	const resetHistoryBtn = root.querySelector<HTMLButtonElement>("[data-reset-history]")!;
+	const historyListEl = root.querySelector<HTMLElement>("[data-history-list]")!;
+	const historyEmptyEl = root.querySelector<HTMLElement>("[data-history-empty]")!;
+
+	const groupsCountInput = root.querySelector<HTMLInputElement>("[data-groups-count-input]")!;
+	const groupsSizeInput = root.querySelector<HTMLInputElement>("[data-groups-size-input]")!;
+	const makeGroupsCountBtn = root.querySelector<HTMLButtonElement>("[data-make-groups-count]")!;
+	const makeGroupsSizeBtn = root.querySelector<HTMLButtonElement>("[data-make-groups-size]")!;
+	const groupsEmptyEl = root.querySelector<HTMLElement>("[data-groups-empty]")!;
+	const groupsResultEl = root.querySelector<HTMLElement>("[data-groups-result]")!;
+
+	const makePairsBtn = root.querySelector<HTMLButtonElement>("[data-make-pairs]")!;
+	const pairsEmptyEl = root.querySelector<HTMLElement>("[data-pairs-empty]")!;
+	const pairsResultEl = root.querySelector<HTMLElement>("[data-pairs-result]")!;
+
+	// --- State ---------------------------------------------------------
+
+	let currentRoster: Roster = { name: "Untitled Roster", students: [] };
+	// Names already picked in the current no-repeat "round" — cleared
+	// automatically once everyone's been picked, NOT the same as the
+	// teacher-facing session history below (see resetHistory()).
+	let pickedThisRound = new Set<string>();
+	// The visible, growing log shown in the Session History card — persists
+	// across automatic no-repeat resets until the teacher explicitly clears
+	// it, per the spec's "easy reset history button".
+	let sessionHistory: string[] = [];
+	let isSpinning = false;
+
+	function escapeHtml(value: string): string {
+		return value.replace(
+			/[&<>"']/g,
+			(char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!,
+		);
+	}
+
+	function eligibleNames(): string[] {
+		return currentRoster.students.filter((s) => !s.absent).map((s) => s.name);
+	}
+
+	// --- Roster persistence -------------------------------------------
+
+	function persistCurrentRoster() {
+		saveRoster(currentRoster);
+		saveActiveRosterName(currentRoster.name);
+		renderRosterSelect();
+	}
+
+	function loadRosterByName(name: string) {
+		const all = loadRosters();
+		currentRoster = all[name] ? JSON.parse(JSON.stringify(all[name])) : { name, students: [] };
+		saveActiveRosterName(currentRoster.name);
+		renderAll();
+	}
+
+	// --- Rendering -------------------------------------------------------
+
+	function renderRosterSelect() {
+		const all = loadRosters();
+		const names = Object.keys(all).sort((a, b) => a.localeCompare(b));
+		if (!names.includes(currentRoster.name)) names.unshift(currentRoster.name);
+		rosterSelect.innerHTML = names
+			.map(
+				(name) =>
+					`<option value="${escapeHtml(name)}" ${name === currentRoster.name ? "selected" : ""}>${escapeHtml(name)}</option>`,
+			)
+			.join("");
+	}
+
+	function renderRosterList() {
+		rosterCountEl.textContent = String(currentRoster.students.length);
+		rosterEmptyEl.hidden = currentRoster.students.length > 0;
+		rosterListEl.innerHTML = currentRoster.students
+			.map(
+				(student, i) => `
+			<li class="roster-row ${student.absent ? "roster-row--absent" : ""}" data-index="${i}">
+				<span class="roster-row-name">${escapeHtml(student.name)}</span>
+				<label class="absent-toggle">
+					<input type="checkbox" data-absent-checkbox ${student.absent ? "checked" : ""} />
+					<span>Absent</span>
+				</label>
+				<button type="button" class="remove-btn" data-remove-student aria-label="Remove ${escapeHtml(student.name)}">×</button>
+			</li>
+		`,
+			)
+			.join("");
+	}
+
+	function renderHistory() {
+		historyListEl.innerHTML = sessionHistory
+			.map((name, i) => `<li><span class="history-index">${i + 1}.</span> ${escapeHtml(name)}</li>`)
+			.join("");
+		historyEmptyEl.hidden = sessionHistory.length > 0;
+	}
+
+	function updatePickAvailability() {
+		const eligible = eligibleNames();
+		const noneEligible = eligible.length === 0;
+		pickBtn.disabled = noneEligible || isSpinning;
+		pickEmptyEl.hidden = !noneEligible;
+	}
+
+	function updateGroupsPairsAvailability() {
+		const noneEligible = eligibleNames().length === 0;
+		groupsEmptyEl.hidden = !noneEligible;
+		makeGroupsCountBtn.disabled = noneEligible;
+		makeGroupsSizeBtn.disabled = noneEligible;
+		pairsEmptyEl.hidden = !noneEligible;
+		makePairsBtn.disabled = noneEligible;
+	}
+
+	function renderAll() {
+		rosterNameInput.value = currentRoster.name;
+		renderRosterSelect();
+		renderRosterList();
+		updatePickAvailability();
+		updateGroupsPairsAvailability();
+	}
+
+	function renderResultsGrid(container: HTMLElement, groups: string[][], labelPrefix: string) {
+		container.innerHTML = groups
+			.map(
+				(group, i) => `
+			<div class="result-card">
+				<p class="result-card-title">${labelPrefix} ${i + 1}</p>
+				<ul class="result-card-list">
+					${group.map((name) => `<li>${escapeHtml(name)}</li>`).join("")}
+				</ul>
+			</div>
+		`,
+			)
+			.join("");
+	}
+
+	// --- Roster panel events -----------------------------------------------
+
+	rosterSelect.addEventListener("change", () => loadRosterByName(rosterSelect.value));
+
+	newRosterBtn.addEventListener("click", () => {
+		const all = loadRosters();
+		const base = "Untitled Roster";
+		let name = base;
+		let suffix = 2;
+		while (all[name]) name = `${base} ${suffix++}`;
+		currentRoster = { name, students: [] };
+		persistCurrentRoster();
+		renderAll();
+		rosterNameInput.focus();
+		rosterNameInput.select();
+	});
+
+	deleteRosterBtn.addEventListener("click", () => {
+		if (!window.confirm(`Delete the roster "${currentRoster.name}"? This can't be undone.`)) return;
+		deleteRosterFromStorage(currentRoster.name);
+		const remaining = Object.keys(loadRosters()).sort((a, b) => a.localeCompare(b));
+		if (remaining.length > 0) {
+			loadRosterByName(remaining[0]);
+		} else {
+			currentRoster = { name: "Untitled Roster", students: [] };
+			renderAll();
+		}
+	});
+
+	rosterNameInput.addEventListener("change", () => {
+		const newName = rosterNameInput.value.trim() || "Untitled Roster";
+		if (newName !== currentRoster.name) {
+			deleteRosterFromStorage(currentRoster.name);
+			currentRoster.name = newName;
+		}
+		persistCurrentRoster();
+	});
+
+	addBulkBtn.addEventListener("click", () => {
+		const lines = bulkTextarea.value
+			.split("\n")
+			.map((line) => line.trim())
+			.filter(Boolean);
+		if (lines.length === 0) return;
+		const existing = new Set(currentRoster.students.map((s) => s.name.toLowerCase()));
+		for (const line of lines) {
+			if (existing.has(line.toLowerCase())) continue;
+			currentRoster.students.push({ name: line, absent: false });
+			existing.add(line.toLowerCase());
+		}
+		bulkTextarea.value = "";
+		persistCurrentRoster();
+		renderRosterList();
+		updatePickAvailability();
+		updateGroupsPairsAvailability();
+	});
+
+	function addSingleName() {
+		const name = addNameInput.value.trim();
+		if (!name) return;
+		currentRoster.students.push({ name, absent: false });
+		addNameInput.value = "";
+		persistCurrentRoster();
+		renderRosterList();
+		updatePickAvailability();
+		updateGroupsPairsAvailability();
+		addNameInput.focus();
+	}
+
+	addNameBtn.addEventListener("click", addSingleName);
+	addNameInput.addEventListener("keydown", (event) => {
+		if (event.key === "Enter") addSingleName();
+	});
+
+	rosterListEl.addEventListener("click", (event) => {
+		const target = event.target as HTMLElement;
+		const row = target.closest<HTMLElement>("[data-index]");
+		if (!row || !target.closest("[data-remove-student]")) return;
+		const index = Number(row.dataset.index);
+		currentRoster.students.splice(index, 1);
+		persistCurrentRoster();
+		renderRosterList();
+		updatePickAvailability();
+		updateGroupsPairsAvailability();
+	});
+
+	rosterListEl.addEventListener("change", (event) => {
+		const target = event.target as HTMLElement;
+		if (!target.matches("[data-absent-checkbox]")) return;
+		const row = target.closest<HTMLElement>("[data-index]");
+		if (!row) return;
+		const index = Number(row.dataset.index);
+		currentRoster.students[index].absent = (target as HTMLInputElement).checked;
+		persistCurrentRoster();
+		row.classList.toggle("roster-row--absent", currentRoster.students[index].absent);
+		updatePickAvailability();
+		updateGroupsPairsAvailability();
+	});
+
+	// --- Mode / tab switching -----------------------------------------
+
+	function setMode(mode: string) {
+		modeButtons.forEach((btn) => btn.setAttribute("aria-selected", btn.dataset.modeBtn === mode ? "true" : "false"));
+		panels.forEach((panel) => {
+			panel.hidden = panel.dataset.panel !== mode;
+		});
+		// Fullscreen is for projecting a result (pick/groups/pairs), not for
+		// editing the roster, so the control simply isn't offered there.
+		fullscreenBtn.hidden = mode === "roster";
+	}
+
+	modeButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.modeBtn!)));
+
+	// --- Pick One: reel spin -----------------------------------------
+
+	const REEL_FILLER_LENGTH = 44;
+	const SPIN_DURATION_MS = 2400;
+
+	function spinReel(winner: string, fillerPool: string[], onSettled: () => void) {
+		isSpinning = true;
+		pickBtn.disabled = true;
+		pickResultEl.textContent = "";
+
+		const names = Array.from(
+			{ length: REEL_FILLER_LENGTH },
+			() => fillerPool[Math.floor(Math.random() * fillerPool.length)],
+		);
+		names.push(winner);
+
+		reelTrack.innerHTML = names.map((name) => `<span class="reel-tile">${escapeHtml(name)}</span>`).join("");
+		const tiles = Array.from(reelTrack.querySelectorAll<HTMLElement>(".reel-tile"));
+		const winnerTile = tiles[tiles.length - 1];
+
+		// Reset to the start with no transition before measuring/animating —
+		// same reflow-restart pattern used throughout this site's other
+		// retriggerable animations (Nixie's ghost-fade, Split-Flap's flip,
+		// etc.): remove/read/re-add so a fresh spin never inherits any of the
+		// previous one's in-flight transform or transition.
+		reelTrack.style.transition = "none";
+		reelTrack.style.transform = "translateX(0)";
+		void reelTrack.offsetWidth;
+
+		// offsetLeft (not getBoundingClientRect) deliberately — it reflects
+		// the tile's natural flex-row position, unaffected by the transform
+		// we're about to apply, so this math stays correct regardless of
+		// where the track currently sits.
+		const viewportWidth = reelViewport.clientWidth;
+		const targetX = -winnerTile.offsetLeft + (viewportWidth / 2 - winnerTile.offsetWidth / 2);
+
+		requestAnimationFrame(() => {
+			// cubic-bezier(0.16, 1, 0.3, 1): a hard-decelerating "ease-out
+			// expo" curve — fast right out of the gate, then a long, smooth
+			// slowdown into the landing. That shape (not a linear scroll, not
+			// a gentle ease) is what actually reads as "case-opening" rather
+			// than "a spinner."
+			reelTrack.style.transition = `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+			reelTrack.style.transform = `translateX(${targetX}px)`;
+		});
+
+		// A plain timer (matching this codebase's established preference —
+		// see splitFlap.ts — over a transitionend listener) fires the "hit"
+		// moment right as the transform finishes settling.
+		window.setTimeout(() => {
+			winnerTile.classList.add("reel-tile--winner", "reel-tile--hit");
+			isSpinning = false;
+			onSettled();
+		}, SPIN_DURATION_MS + 30);
+	}
+
+	pickBtn.addEventListener("click", () => {
+		if (isSpinning) return;
+		const eligible = eligibleNames();
+		if (eligible.length === 0) return;
+
+		let pool = eligible;
+		if (norepeatToggle.checked) {
+			let remaining = eligible.filter((name) => !pickedThisRound.has(name));
+			if (remaining.length === 0) {
+				pickedThisRound.clear();
+				remaining = eligible;
+			}
+			pool = remaining;
+		}
+
+		const winner = pool[Math.floor(Math.random() * pool.length)];
+		spinReel(winner, eligible, () => {
+			if (norepeatToggle.checked) pickedThisRound.add(winner);
+			sessionHistory.push(winner);
+			renderHistory();
+			pickResultEl.textContent = winner;
+			updatePickAvailability();
+		});
+	});
+
+	resetHistoryBtn.addEventListener("click", () => {
+		sessionHistory = [];
+		pickedThisRound.clear();
+		renderHistory();
+	});
+
+	// --- Groups & Pairs --------------------------------------------------
+
+	makeGroupsCountBtn.addEventListener("click", () => {
+		const eligible = eligibleNames();
+		if (eligible.length === 0) return;
+		const requested = Math.round(Number(groupsCountInput.value));
+		const numGroups = Math.max(2, Math.min(50, Number.isFinite(requested) ? requested : 2));
+		renderResultsGrid(groupsResultEl, distributeIntoGroups(eligible, numGroups), "Group");
+	});
+
+	makeGroupsSizeBtn.addEventListener("click", () => {
+		const eligible = eligibleNames();
+		if (eligible.length === 0) return;
+		const requested = Math.round(Number(groupsSizeInput.value));
+		const targetSize = Math.max(1, Math.min(50, Number.isFinite(requested) ? requested : 1));
+		renderResultsGrid(groupsResultEl, groupsOfSize(eligible, targetSize), "Group");
+	});
+
+	makePairsBtn.addEventListener("click", () => {
+		const eligible = eligibleNames();
+		if (eligible.length === 0) return;
+		renderResultsGrid(pairsResultEl, makePairs(eligible), "Pair");
+	});
+
+	// --- Fullscreen --------------------------------------------------------
+	// Same pattern as /tools/countdown-clock: a body class drives the CSS
+	// "fullscreen look" regardless of whether the real Fullscreen API
+	// actually grants (it can silently fail without a user-gesture chain, or
+	// simply be unsupported), so the tool stays usable for projecting either
+	// way.
+
+	function enterFullscreen() {
+		document.body.classList.add("picker-fullscreen");
+		exitFullscreenBtn.hidden = false;
+		document.documentElement.requestFullscreen?.().catch(() => {});
+	}
+
+	function exitFullscreen() {
+		document.body.classList.remove("picker-fullscreen");
+		exitFullscreenBtn.hidden = true;
+		if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+	}
+
+	fullscreenBtn.addEventListener("click", enterFullscreen);
+	exitFullscreenBtn.addEventListener("click", exitFullscreen);
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && document.body.classList.contains("picker-fullscreen")) exitFullscreen();
+	});
+
+	document.addEventListener("fullscreenchange", () => {
+		if (!document.fullscreenElement) {
+			document.body.classList.remove("picker-fullscreen");
+			exitFullscreenBtn.hidden = true;
+		}
+	});
+
+	// --- Init ------------------------------------------------------------
+
+	(function init() {
+		const activeName = loadActiveRosterName();
+		const all = loadRosters();
+		if (activeName && all[activeName]) {
+			currentRoster = all[activeName];
+		} else {
+			const names = Object.keys(all).sort((a, b) => a.localeCompare(b));
+			currentRoster = names.length > 0 ? all[names[0]] : { name: "Untitled Roster", students: [] };
+		}
+		setMode("roster");
+		renderAll();
+		renderHistory();
+	})();
+</script>
+
+<!--
+  is:global (not scoped) — most of this page's content (roster rows, reel
+  tiles, history entries, group/pair cards) is built client-side via
+  innerHTML rather than rendered by Astro's own template (there's nothing
+  for Astro to render ahead of time — a roster row doesn't exist until a
+  name is added, a reel tile doesn't exist until a pick is spinning), so
+  none of it ever receives Astro's scope attribute. A scoped <style> here
+  would compile its selectors to require that attribute and silently fail
+  to match any of this dynamic content — the exact pitfall already documented
+  in ByteConverter.astro/PracticeQuiz.astro for the same reason.
+-->
+<style is:global>
+	.picker-tool {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.25rem;
+		padding: 1rem 0 2rem;
+	}
+
+	.picker-title {
+		margin: 0;
+		font-size: clamp(1.4rem, 4.5vw, 1.8rem);
+		text-align: center;
+	}
+
+	/* --- Tool bar / mode toggle (same visual language as the countdown
+	   clock's own tool-bar and mode-toggle) ------------------------------ */
+
+	.tool-bar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.2rem;
+	}
+
+	.icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		padding: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.icon-btn:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.icon-btn[hidden] {
+		display: none;
+	}
+
+	.mode-toggle {
+		display: inline-flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.2rem;
+		padding: 0.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-surface);
+	}
+
+	.mode-btn {
+		padding: 0.45rem 1.1rem;
+		border: none;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.mode-btn[aria-selected="true"] {
+		background: color-mix(in srgb, var(--color-accent) 24%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.mode-btn:not([aria-selected="true"]):hover {
+		color: var(--color-text);
+	}
+
+	/* --- Panels / cards -------------------------------------------------- */
+
+	.panel {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+	}
+
+	.panel[hidden] {
+		display: none;
+	}
+
+	.panel-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.7rem;
+		width: 100%;
+		max-width: 30rem;
+		padding: 1.1rem 1.25rem;
+		border-radius: 16px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.panel-card--wide {
+		max-width: 48rem;
+	}
+
+	.panel-title {
+		margin: 0;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+		text-align: center;
+	}
+
+	.panel-hint {
+		margin: -0.3rem 0 0;
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	.panel-header-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	.empty-hint {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	/* --- Form controls (matches contact.astro's .form-field input styling,
+	   and countdown-clock's .time-input for the number spinners) --------- */
+
+	.text-input,
+	.select-input {
+		padding: 0.55rem 0.7rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 0.95rem;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.text-input:focus,
+	.select-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.select-input {
+		width: 100%;
+	}
+
+	.roster-select-row {
+		display: flex;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.roster-select-row .select-input {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.field-label-row {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		width: 100%;
+	}
+
+	.field-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.field-label-row .text-input {
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.bulk-textarea {
+		width: 100%;
+		min-height: 7rem;
+		padding: 0.6rem 0.75rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		line-height: 1.5;
+		resize: vertical;
+		box-sizing: border-box;
+	}
+
+	.bulk-textarea:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.add-single-row {
+		display: flex;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.add-single-row .text-input {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	/* --- Buttons (identical visual language to the countdown clock's
+	   .btn/.btn--ghost/.btn--muted) ---------------------------------------- */
+
+	.btn {
+		padding: 0.5rem 1.2rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		text-shadow: 0 0 6px var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.15s ease,
+			background 0.15s ease,
+			opacity 0.15s ease;
+	}
+
+	.btn:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 70%, transparent);
+	}
+
+	.btn:active:not(:disabled) {
+		transform: scale(0.95);
+	}
+
+	.btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost {
+		background: transparent;
+		color: var(--color-accent);
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.btn--muted {
+		border-color: var(--color-border);
+		color: var(--color-text-muted);
+	}
+
+	.btn--muted:hover:not(:disabled) {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.number-input {
+		width: 4rem;
+		padding: 0.45rem 0.4rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1rem;
+		text-align: center;
+	}
+
+	.number-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.number-input::-webkit-inner-spin-button,
+	.number-input::-webkit-outer-spin-button {
+		appearance: none;
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	/* --- Roster list ------------------------------------------------------ */
+
+	.roster-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		max-height: 20rem;
+		overflow-y: auto;
+	}
+
+	.roster-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.5rem 0.6rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.roster-row--absent {
+		opacity: 0.5;
+	}
+
+	.roster-row-name {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 0.95rem;
+	}
+
+	.roster-row--absent .roster-row-name {
+		text-decoration: line-through;
+	}
+
+	.absent-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-shrink: 0;
+		font-size: 0.72rem;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.absent-toggle input[type="checkbox"] {
+		width: 0.95rem;
+		height: 0.95rem;
+		accent-color: var(--color-danger);
+		cursor: pointer;
+	}
+
+	.remove-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		flex-shrink: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.remove-btn:hover {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+	}
+
+	/* --- Pick One: no-repeat toggle, reel, result, history ---------------- */
+
+	.norepeat-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.norepeat-toggle input[type="checkbox"] {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-accent);
+		cursor: pointer;
+	}
+
+	.reel-viewport {
+		position: relative;
+		width: 100%;
+		height: 4.2rem;
+		overflow: hidden;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.reel-track {
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0 0.5rem;
+		will-change: transform;
+	}
+
+	.reel-tile {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 7rem;
+		height: 3rem;
+		padding: 0 0.5rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-align: center;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.reel-tile--placeholder {
+		opacity: 0.4;
+	}
+
+	/* The "hit" moment: a bright flash that decays into the tile's resting
+	   amber glow, plus a quick scale pop — brief and punchy on purpose, the
+	   opposite of every other slow/quiet transition on this site, because
+	   this ONE moment is meant to feel like a reward, not a calm settle. */
+	.reel-tile--winner {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 70%, transparent);
+	}
+
+	.reel-tile--hit {
+		animation: reel-hit-flash 0.5s ease-out;
+	}
+
+	@keyframes reel-hit-flash {
+		0% {
+			transform: scale(1.22);
+			box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 90%, transparent);
+		}
+		100% {
+			transform: scale(1);
+			box-shadow: 0 0 22px 6px color-mix(in srgb, var(--color-accent) 0%, transparent);
+		}
+	}
+
+	.reel-marker {
+		position: absolute;
+		left: 50%;
+		width: 0;
+		height: 0;
+		border-left: 6px solid transparent;
+		border-right: 6px solid transparent;
+		transform: translateX(-50%);
+		pointer-events: none;
+	}
+
+	.reel-marker--top {
+		top: 0;
+		border-top: 7px solid var(--color-accent);
+		filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 70%, transparent));
+	}
+
+	.reel-marker--bottom {
+		bottom: 0;
+		border-bottom: 7px solid var(--color-accent);
+		filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 70%, transparent));
+	}
+
+	.pick-result {
+		margin: 0;
+		min-height: 1.6em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.3rem;
+		color: #fff3d6;
+		text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 60%, transparent);
+		text-align: center;
+	}
+
+	.history-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		max-height: 12rem;
+		overflow-y: auto;
+		font-size: 0.88rem;
+	}
+
+	.history-list li {
+		padding: 0.3rem 0.5rem;
+		border-radius: 6px;
+		background: var(--color-bg);
+	}
+
+	.history-index {
+		display: inline-block;
+		min-width: 1.6rem;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Groups & Pairs ---------------------------------------------------- */
+
+	.grouping-controls {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 1.5rem;
+		width: 100%;
+	}
+
+	.grouping-field {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.grouping-field label {
+		white-space: nowrap;
+	}
+
+	.results-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+		gap: 0.6rem;
+		width: 100%;
+	}
+
+	.result-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		padding: 0.75rem 0.85rem;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.result-card-title {
+		margin: 0;
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+	}
+
+	.result-card-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		font-size: 0.9rem;
+	}
+
+	/* --- Fullscreen controls (identical treatment to the countdown clock's
+	   exit button: small, dim, brightens on hover) ------------------------ */
+
+	.fullscreen-controls {
+		display: none;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.exit-fullscreen-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 3rem;
+		height: 3rem;
+		flex-shrink: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+		color: var(--color-text-muted);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		opacity: 0.55;
+		transition:
+			opacity 0.15s ease,
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.exit-fullscreen-btn:hover {
+		opacity: 1;
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+</style>
+
+<style is:global>
+	/*
+	 * Fullscreen mode hides the site chrome and everything except whichever
+	 * presentation panel (Pick One / Groups / Pairs) is currently active —
+	 * the Roster panel is deliberately never shown here (its fullscreen
+	 * button is hidden while that tab is active, see setMode() above).
+	 * Global + body-scoped for the same reason as countdown-clock.astro:
+	 * Header.astro/Footer.astro render outside this page's own DOM subtree.
+	 */
+	body.picker-fullscreen {
+		background: radial-gradient(ellipse at center, rgba(255, 174, 46, 0.08) 0%, transparent 60%), #000;
+	}
+
+	body.picker-fullscreen .site-header,
+	body.picker-fullscreen .site-footer,
+	body.picker-fullscreen .mode-toggle,
+	body.picker-fullscreen .tool-bar,
+	body.picker-fullscreen .picker-title,
+	body.picker-fullscreen [data-panel="roster"] {
+		display: none;
+	}
+
+	body.picker-fullscreen main {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		max-width: none;
+		min-height: 100vh;
+		padding: 2rem 1rem;
+	}
+
+	body.picker-fullscreen .picker-tool {
+		width: 100%;
+	}
+
+	body.picker-fullscreen .panel-card,
+	body.picker-fullscreen .panel-card--wide {
+		max-width: 64rem;
+		padding: 2.5rem 3rem;
+	}
+
+	body.picker-fullscreen .reel-viewport {
+		height: 7rem;
+	}
+
+	body.picker-fullscreen .reel-tile {
+		width: 10rem;
+		height: 5rem;
+		font-size: 1.3rem;
+	}
+
+	body.picker-fullscreen .pick-result {
+		font-size: 2.2rem;
+	}
+
+	body.picker-fullscreen .result-card-title {
+		font-size: 0.9rem;
+	}
+
+	body.picker-fullscreen .result-card-list {
+		font-size: 1.3rem;
+	}
+
+	body.picker-fullscreen [data-panel="pick"] .panel-card:last-child {
+		/* The session-history card stays available, just far less prominent
+		   than the reel it sits below — this is meant to be glanceable, not
+		   the thing the class is looking at on the projector. */
+		max-width: 30rem;
+		padding: 1.1rem 1.25rem;
+	}
+
+	body.picker-fullscreen [data-panel="pick"] .panel-card:last-child .history-list {
+		font-size: 0.88rem;
+	}
+
+	body.picker-fullscreen .fullscreen-controls {
+		display: flex;
+	}
+</style>

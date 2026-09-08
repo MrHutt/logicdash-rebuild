@@ -1,6 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import BitChip from "../../components/BitChip.astro";
+import BaseConverter from "../../components/BaseConverter.astro";
+import BaseConversionQuiz from "../../components/BaseConversionQuiz.astro";
 import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
 
 const CURRENT_HREF = "/learn/binary-hex-decimal";
@@ -15,7 +17,11 @@ const nibbles = [byte.slice(0, 4), byte.slice(4)].map((nibble) => ({
 const hexValue = nibbles.map((n) => n.hex).join("");
 ---
 
-<Layout title="Binary ↔ Hex ↔ Decimal">
+<Layout
+	title="Binary ↔ Hex ↔ Decimal"
+	description="Convert between binary, hexadecimal, and decimal with a live three-way converter, worked examples, and a mixed-practice quiz."
+	ogType="article"
+>
 	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
 
 	<section class="hero">
@@ -93,43 +99,54 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 			</p>
 		</section>
 
-		<section class="block">
-			<p class="block-title">Keep Going</p>
-			<ul class="keep-going-list">
-				<li>
-					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
-				</li>
-				<li>
-					Curious what these values could represent as data?{" "}
-					<a href="/learn/bits-and-bytes">Bits, Bytes, and Beyond</a>
-				</li>
-				<li>Or <a href="/learn">browse all Learn topics</a>.</li>
-			</ul>
+		<section id="try-it-yourself" class="block block--example">
+			<p class="block-title">Try It Yourself</p>
+			<BaseConverter />
+		</section>
 
-			{
-				(prev || next) && (
-					<div class="learn-pagination">
-						{prev && (
-							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-								← Back to {prev.title}
+		<section class="block block--example block--practice">
+			<p class="block-title">Practice</p>
+			<BaseConversionQuiz />
+		</section>
+
+		<section class="block">
+			<div class="learn-pagination">
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
 							</a>
-						)}
-						{next &&
-							(next.live ? (
-								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-									{next.title} →
-								</a>
-							) : (
-								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-									{next.title} (coming soon)
-								</span>
-							))}
-					</div>
-				)
-			}
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
+			</div>
 		</section>
 	</div>
 </Layout>
+
+<script>
+	// "Try It Yourself" would be a cheat vector while the Practice quiz below
+	// is active (a student could type the current question's value into it
+	// and read the other two bases straight off it), so hide the whole
+	// section rather than just disabling it. BaseConversionQuiz.astro
+	// broadcasts this event when the quiz modal opens/closes.
+	const tryItYourselfSection = document.getElementById("try-it-yourself");
+	document.addEventListener("quiz:active-change", (event) => {
+		const active = (event as CustomEvent<{ active: boolean }>).detail?.active ?? false;
+		if (tryItYourselfSection) tryItYourselfSection.hidden = active;
+	});
+</script>
 
 <style>
 	.breadcrumb {
@@ -162,7 +179,7 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 	.hero-lead {
 		margin: 0 auto;
 		max-width: 34rem;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 
 	.blocks {
@@ -188,7 +205,7 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 
 	.block-text {
 		margin: 0 0 0.6rem;
-		font-size: 0.88rem;
+		font-size: 1rem;
 	}
 
 	.block-text:last-child {
@@ -233,13 +250,13 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 	.nibble-demo-label {
 		font-family: var(--font-mono);
 		font-weight: 700;
-		font-size: 0.9rem;
+		font-size: 1rem;
 		color: #fff3d6;
 		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 60%, transparent);
 	}
 
 	.nibble-demo-equals {
-		font-size: 0.9rem;
+		font-size: 1rem;
 		color: var(--color-text-muted);
 	}
 
@@ -251,28 +268,16 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 60%, transparent);
 	}
 
-	.keep-going-list {
-		margin: 0;
-		padding-left: 1.2rem;
-		font-size: 0.88rem;
-	}
-
-	.keep-going-list li {
-		margin: 0.3rem 0;
-	}
-
-	.keep-going-list a {
-		color: #ffae2e;
-		font-weight: 600;
+	.block--practice {
+		background: #14313a;
+		border: 1px solid color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+		box-shadow: 0 0 28px -10px color-mix(in srgb, var(--color-accent) 45%, transparent);
 	}
 
 	.learn-pagination {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--color-border);
 		font-size: 0.85rem;
 	}
 

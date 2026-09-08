@@ -17,7 +17,11 @@ const units = [
 ];
 ---
 
-<Layout title="Bits, Bytes, and Beyond">
+<Layout
+	title="Bits, Bytes, and Beyond"
+	description="What a byte actually is, how 8 bits combine into 256 values, and how kilobytes, megabytes, and gigabytes measure data."
+	ogType="article"
+>
 	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
 
 	<section class="hero">
@@ -99,42 +103,27 @@ const units = [
 		</section>
 
 		<section class="block">
-			<p class="block-title">Keep Going</p>
-			<ul class="keep-going-list">
-				<li>
-					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
-				</li>
-				<li>
-					See how bits are compared and scored in LogicDash:{" "}
-					<a href="/learn/hamming-distance">Hamming Distance, Explained</a>
-				</li>
-				<li>
-					Curious how computers catch and fix mistakes in all that data? Error Correction, Explained{" "}
-					<span class="coming-soon">(coming soon)</span>.
-				</li>
-			</ul>
-
-			{
-				(prev || next) && (
-					<div class="learn-pagination">
-						{prev && (
-							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-								← Back to {prev.title}
+			<div class="learn-pagination">
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
 							</a>
-						)}
-						{next &&
-							(next.live ? (
-								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-									{next.title} →
-								</a>
-							) : (
-								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-									{next.title} (coming soon)
-								</span>
-							))}
-					</div>
-				)
-			}
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
+			</div>
 		</section>
 	</div>
 </Layout>
@@ -170,7 +159,7 @@ const units = [
 	.hero-lead {
 		margin: 0 auto;
 		max-width: 34rem;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 
 	.blocks {
@@ -196,7 +185,7 @@ const units = [
 
 	.block-text {
 		margin: 0 0 0.6rem;
-		font-size: 0.88rem;
+		font-size: 1rem;
 	}
 
 	.block-text:last-child {
@@ -269,33 +258,10 @@ const units = [
 		color: var(--color-text);
 	}
 
-	.keep-going-list {
-		margin: 0;
-		padding-left: 1.2rem;
-		font-size: 0.88rem;
-	}
-
-	.keep-going-list li {
-		margin: 0.3rem 0;
-	}
-
-	.keep-going-list a {
-		color: #ffae2e;
-		font-weight: 600;
-	}
-
-	.coming-soon {
-		color: var(--color-text-muted);
-		font-style: italic;
-	}
-
 	.learn-pagination {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--color-border);
 		font-size: 0.85rem;
 	}
 

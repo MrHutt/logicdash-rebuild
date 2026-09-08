@@ -1,0 +1,168 @@
+---
+// Segment-based decimal digit cell for /tools/countdown-clock, shared by
+// three of its six Display Style options: VFD, LED, and LCD. Those three are
+// deliberately the same real 7-segment technology, differing only in
+// material/glow — Nixie tube (NixieGlyphDigit.astro, real numeral glyphs)
+// and green-phosphor Terminal (TerminalDigit.astro, dot-matrix bitmap) are
+// structurally different technologies and don't reuse this geometry at all,
+// same as Split-Flap. The page's global stylesheet re-themes the colors/
+// glow/flicker/gaps for each of the three styles that do share this file by
+// targeting the same classes under `.segment-display[data-style="..."]`,
+// which is why the classes below stay generic (.segment, .segment-digit)
+// rather than style-specific names.
+//
+// Segments are toggled client-side via applySegmentDigit() (see
+// segmentDigits.ts) every clock tick, so this component only needs to render
+// the correct *initial* on/off state.
+import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../lib/segmentDigits";
+
+interface Props {
+	value: string;
+}
+
+const { value } = Astro.props;
+const active = new Set(SEGMENTS_BY_DIGIT[value] ?? []);
+
+// Each digit gets its own small random phase offset for the flicker
+// animation, computed once at render time — so the six digits don't all
+// "breathe" in perfect unison, which would read as a mechanical pulse
+// instead of an imperfect tube glow.
+const flickerDelay = (Math.random() * -6).toFixed(2);
+---
+
+<span class="segment-digit" data-segment-digit style={`--flicker-delay: ${flickerDelay}s`}>
+	<span class="segment-glass-highlight" aria-hidden="true" />
+	<svg class="segment-svg" viewBox="0 0 60 100" aria-hidden="true">
+		{
+			Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
+				<polygon class={`segment ${active.has(seg) ? "is-on" : ""}`} data-seg={seg} points={points} />
+			))
+		}
+		<g class="segment-accents-14" aria-hidden="true">
+			<line class="segment-accent" x1="10" y1="10" x2="28" y2="42" />
+			<line class="segment-accent" x1="50" y1="10" x2="32" y2="42" />
+			<line class="segment-accent" x1="10" y1="90" x2="28" y2="58" />
+			<line class="segment-accent" x1="50" y1="90" x2="32" y2="58" />
+			<line class="segment-accent" x1="30" y1="16" x2="30" y2="42" />
+			<line class="segment-accent" x1="30" y1="58" x2="30" y2="84" />
+		</g>
+	</svg>
+</span>
+
+<style>
+	.segment-digit {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		/* This tile's own natural size is the reference every other Display
+		   Style's GLYPH height is tuned to match — see --clock-tile-height's
+		   comment in Layout.astro. It's a reference for other styles' font
+		   sizing, not a shared constraint on this one — this is just its
+		   plain original box. */
+		width: clamp(2.2rem, 8vw, 3.6rem);
+		aspect-ratio: 3 / 5;
+		flex-shrink: 0;
+		overflow: hidden;
+		border-radius: 14%;
+		background: radial-gradient(ellipse at 50% 30%, #241a12 0%, #0d0a07 78%);
+		border: 1px solid #3a2a1a;
+		/* Faint ambient spill even from unlit segments — real Nixie tubes never
+		   look fully dark, there's always some warm light in the glass. */
+		box-shadow:
+			inset 0 0 10px rgba(255, 174, 46, 0.06),
+			0 0 10px rgba(255, 174, 46, 0.05);
+	}
+
+	/* Soft highlight near the top of the cell, hinting at curved glass
+	   catching ambient light — sits above the segments, ignores pointer
+	   events, and never affects legibility since it's very low-opacity. */
+	.segment-glass-highlight {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		background: radial-gradient(ellipse 70% 35% at 50% 8%, rgba(255, 255, 255, 0.16), transparent 70%);
+		pointer-events: none;
+	}
+
+	.segment-svg {
+		position: relative;
+		z-index: 1;
+		width: 74%;
+		height: 74%;
+		overflow: visible;
+	}
+
+	.segment {
+		fill: #2a1608;
+		transition: fill 0.2s ease;
+	}
+
+	/* Extra diagonal/split-vertical traces suggesting a 14-segment tube's
+	   additional (numerically unused) segments — invisible by default; the
+	   VFD style override further down (see countdown-clock.astro) is the
+	   only one that reveals them, faintly, for a more authentic period look. */
+	.segment-accent {
+		stroke: none;
+		opacity: 0;
+	}
+
+	.segment.is-on {
+		fill: #fff3d6;
+		animation: segment-flicker 4.5s ease-in-out infinite;
+		animation-delay: var(--flicker-delay, 0s);
+		/* Three stacked shadows (tight core, mid bloom, wide ambient halo)
+		   rather than one blur — a single drop-shadow reads as flat colored
+		   text with a blur filter; layering different radii/opacities is what
+		   actually reads as a glowing light source. */
+		filter:
+			drop-shadow(0 0 2px #fff3d6)
+			drop-shadow(0 0 7px #ffae2e)
+			drop-shadow(0 0 18px color-mix(in srgb, #ffae2e 65%, transparent));
+	}
+
+	/* An irregular multi-stop cycle (uneven percentages/amounts) instead of a
+	   clean sine pulse — meant to read as an imperfect tube's flicker, not a
+	   deliberate "breathing" animation. Combined with each digit's own
+	   negative animation-delay (set inline, above), the six digits drift out
+	   of phase with each other. */
+	@keyframes segment-flicker {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		7% {
+			opacity: 0.95;
+		}
+		13% {
+			opacity: 1;
+		}
+		21% {
+			opacity: 0.92;
+		}
+		29% {
+			opacity: 1;
+		}
+		44% {
+			opacity: 0.97;
+		}
+		52% {
+			opacity: 1;
+		}
+		68% {
+			opacity: 0.94;
+		}
+		77% {
+			opacity: 1;
+		}
+		91% {
+			opacity: 0.98;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.segment.is-on {
+			animation: none;
+		}
+	}
+</style>

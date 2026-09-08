@@ -1,0 +1,154 @@
+---
+// Joke digit cell for /tools/countdown-clock's "Chaos Mode" Display Style —
+// deliberately garish and silly, not meant to look "good": Comic Sans-alike
+// glyph, a flat SOLID clashing color per tile background (not a gradient —
+// think old <table bgcolor> cells) paired with a DIFFERENT clashing solid
+// text color, a thick border that hard-blinks through the whole neon
+// palette instead of sitting still, and a jittery steps()-timed wobble
+// instead of a smooth oscillation. The spinning rainbow border/corner
+// accents live at the display-tree level in countdown-clock.astro's own
+// styles (they wrap the whole row of tiles, not one tile), not here.
+interface Props {
+	value: string;
+	colorIndex: number;
+}
+
+const { value, colorIndex } = Astro.props;
+
+// Deliberately clashing, not a tasteful palette — that's the joke.
+const NEON_PALETTE = ["#ff2fd4", "#39ff14", "#00e5ff", "#ff8c00"];
+const textColor = NEON_PALETTE[colorIndex % NEON_PALETTE.length];
+// Offset by two positions (not adjacent/random) so the background is
+// always a DIFFERENT palette color than the text, never the same hue at a
+// different tint — that's what actually reads as "clashing" rather than
+// "monochrome."
+const bgColor = NEON_PALETTE[(colorIndex + 2) % NEON_PALETTE.length];
+
+// Per-tile random phases so the six digits don't wobble/blink in unison —
+// synchronized motion reads as "deliberate animation," out-of-sync reads as
+// "chaotic," which is the actual goal here.
+const wobbleDelay = (Math.random() * -2.2).toFixed(2);
+const blinkDelay = (Math.random() * -1.2).toFixed(2);
+---
+
+<span
+	class="chaos-digit"
+	data-chaos-digit
+	style={`--chaos-color: ${textColor}; --chaos-bg: ${bgColor}; --wobble-delay: ${wobbleDelay}s; --blink-delay: ${blinkDelay}s`}
+>
+	<span class="chaos-main" data-chaos-value>{value}</span>
+</span>
+
+<style>
+	.chaos-digit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		/* Widened slightly past the other 3:5-ratio styles' clamp so Comic
+		   Neue's glyph at the larger font-size below has a bit of breathing
+		   room (measured ~57px wide for the widest digit, "0", right at
+		   the edge of the original ~58px-wide tile) — see that comment for
+		   the full derivation. Height simply follows from the unchanged
+		   3:5 aspect-ratio. */
+		width: clamp(2.57rem, 9.33vw, 4.2rem);
+		aspect-ratio: 3 / 5;
+		flex-shrink: 0;
+		overflow: visible;
+		border-radius: 18%;
+		/* Flat solid color block — no gradient — deliberately clashing
+		   against the text color set below. */
+		background: var(--chaos-bg, #1a1330);
+		border-width: 5px;
+		border-style: solid;
+		/* Hard-cut (steps(1), not eased) color changes — a genuine blink
+		   through the whole palette, not a subtle dashed outline. */
+		animation: chaos-border-blink 1.2s steps(1, end) infinite;
+		animation-delay: var(--blink-delay, 0s);
+	}
+
+	@keyframes chaos-border-blink {
+		0%,
+		24% {
+			border-color: #ff2fd4;
+		}
+		25%,
+		49% {
+			border-color: #39ff14;
+		}
+		50%,
+		74% {
+			border-color: #00e5ff;
+		}
+		75%,
+		100% {
+			border-color: #ff8c00;
+		}
+	}
+
+	.chaos-main {
+		display: inline-block;
+		font-family: var(--font-comic);
+		font-weight: 700;
+		line-height: 1;
+		/* Tied to --clock-tile-height — LED's reference tile height, not
+		   this tile's own — so the rendered GLYPH matches LED's digit size.
+		   Factor measured directly in-browser: canvas measureText's
+		   actualBoundingBoxAscent/Descent on "8" at a 100px probe size (at
+		   this font's actual 700 weight) gives Comic Neue an ink height of
+		   67px (0.67 of font-size), against LED's measured ink height of
+		   66.8px at its own ~96px tile height (0.696 of tile height) — so
+		   0.696 / 0.67 ≈ 1.038 is the font-size factor that makes Comic
+		   Neue's rendered ink height match LED's. */
+		font-size: calc(var(--clock-tile-height) * 1.038);
+		color: var(--chaos-color, #ff2fd4);
+		/* A cartoonish outline (hard black + white offsets) on top of the
+		   neon color/glow — not a realistic light source, a comic-book
+		   sticker effect, on purpose, and also what keeps the digit
+		   legible sitting on top of an equally-loud solid background. */
+		text-shadow:
+			0 0 8px var(--chaos-color, #ff2fd4),
+			2px 2px 0 #000,
+			-1px -1px 0 rgba(255, 255, 255, 0.6);
+		animation: chaos-wobble 2.1s steps(8, end) infinite;
+		animation-delay: var(--wobble-delay, 0s);
+	}
+
+	/* Irregular, jerky steps() timing rather than a smooth ease — "silly,"
+	   not "polished." */
+	@keyframes chaos-wobble {
+		0% {
+			transform: rotate(-4deg) scale(1);
+		}
+		15% {
+			transform: rotate(3deg) scale(1.08);
+		}
+		30% {
+			transform: rotate(-6deg) scale(0.95);
+		}
+		45% {
+			transform: rotate(5deg) scale(1.04);
+		}
+		60% {
+			transform: rotate(-2deg) scale(1);
+		}
+		75% {
+			transform: rotate(6deg) scale(1.09);
+		}
+		90% {
+			transform: rotate(-5deg) scale(0.96);
+		}
+		100% {
+			transform: rotate(-4deg) scale(1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.chaos-main {
+			animation: none;
+		}
+		.chaos-digit {
+			animation: none;
+			border-color: var(--chaos-color, #ff2fd4);
+		}
+	}
+</style>

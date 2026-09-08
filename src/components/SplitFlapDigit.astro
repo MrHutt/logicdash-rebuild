@@ -1,0 +1,190 @@
+---
+// Split-flap (airport/train departure board) digit cell for
+// /tools/countdown-clock's "Split-Flap" Display Style — structurally
+// unrelated to SegmentDigit.astro's glowing 7-segment approach. A real
+// split-flap digit is two static half-cards (what you see at rest) plus two
+// animated "leaf" half-cards that flip over in sequence when the digit
+// changes: the front leaf (showing the old top half) falls forward and
+// away, then the back leaf (already showing the new bottom half, starting
+// edge-on) unfolds down to complete the reveal. See splitFlap.ts for the
+// animation sequencing — this component only renders the resting markup.
+interface Props {
+	value: string;
+}
+
+const { value } = Astro.props;
+---
+
+<span class="flap-digit" data-flap-digit data-value={value}>
+	<span class="flap-half flap-half--top" data-flap-static-top>
+		<span class="flap-num">{value}</span>
+	</span>
+	<span class="flap-half flap-half--bottom" data-flap-static-bottom>
+		<span class="flap-num">{value}</span>
+	</span>
+	<span class="flap-leaf flap-leaf--front" data-flap-front>
+		<span class="flap-num">{value}</span>
+	</span>
+	<span class="flap-leaf flap-leaf--back" data-flap-back>
+		<span class="flap-num">{value}</span>
+	</span>
+	<span class="flap-hinge" aria-hidden="true" />
+</span>
+
+<style>
+	.flap-digit {
+		position: relative;
+		display: inline-block;
+		/* Width and height set independently here rather than via
+		   aspect-ratio — the card's HEIGHT doesn't need to change to fit a
+		   bigger glyph (the flip mechanism's text sizing is already
+		   independent of card height, via .flap-num's own 200%-height
+		   trick below), only its WIDTH does, to comfortably fit Archivo
+		   Black's glyph at the larger font-size below (measured ~63px wide
+		   for the widest digit, "0", vs. the original ~58px-wide card) —
+		   see that font-size comment for the full derivation. Height keeps
+		   the exact numbers the original width-clamp + 3:5 aspect-ratio
+		   produced, so the card itself is no taller than it always was. */
+		width: clamp(2.75rem, 10vw, 4.5rem);
+		height: clamp(3.667rem, 13.333vw, 6rem);
+		flex-shrink: 0;
+		border-radius: 10%;
+		perspective: 240px;
+		background: #050810;
+		border: 1px solid #050810;
+		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45);
+	}
+
+	.flap-half,
+	.flap-leaf {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 50%;
+		overflow: hidden;
+		backface-visibility: hidden;
+	}
+
+	.flap-half--top,
+	.flap-leaf--front {
+		top: 0;
+		border-radius: 10% 10% 0 0;
+		background: linear-gradient(to bottom, #161d36, #111730);
+	}
+
+	.flap-half--bottom,
+	.flap-leaf--back {
+		bottom: 0;
+		border-radius: 0 0 10% 10%;
+		background: linear-gradient(to bottom, #0d1226, #0a0e1e);
+	}
+
+	.flap-num {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 200%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-industrial);
+		font-weight: 400;
+		/* Tied to --clock-tile-height — LED's reference tile height, not
+		   this card's own (unrelated) height — so the rendered GLYPH
+		   matches LED's digit size. Factor measured directly in-browser:
+		   canvas measureText's actualBoundingBoxAscent/Descent on "8" at a
+		   100px probe size gives Archivo Black an ink height of 71px (0.71
+		   of font-size), against LED's measured ink height of 66.8px at its
+		   own ~96px tile height (0.696 of tile height) — so
+		   0.696 / 0.71 ≈ 0.980 is the font-size factor that makes Archivo
+		   Black's rendered ink height match LED's. */
+		font-size: calc(var(--clock-tile-height) * 0.98);
+		color: #e8e6df;
+	}
+
+	.flap-half--top .flap-num,
+	.flap-leaf--front .flap-num {
+		top: 0;
+	}
+
+	.flap-half--bottom .flap-num,
+	.flap-leaf--back .flap-num {
+		bottom: 0;
+	}
+
+	.flap-leaf {
+		z-index: 2;
+	}
+
+	.flap-leaf--front {
+		z-index: 3;
+		transform-origin: bottom;
+	}
+
+	.flap-leaf--back {
+		transform-origin: top;
+		transform: rotateX(90deg);
+	}
+
+	.flap-leaf--front.is-flipping-front {
+		animation: flap-front-fall 0.32s cubic-bezier(0.4, 0, 0.7, 1) forwards;
+	}
+
+	.flap-leaf--back.is-flipping-back {
+		animation: flap-back-reveal 0.32s cubic-bezier(0.3, 0, 0.6, 1) forwards;
+	}
+
+	/* A slight brightness dip mid-fold (rather than a plain rotate) suggests
+	   the leaf catching a shadow as it turns edge-on, the way a real card's
+	   matte surface darkens at a glancing angle. */
+	@keyframes flap-front-fall {
+		0% {
+			transform: rotateX(0deg);
+			filter: brightness(1);
+		}
+		60% {
+			filter: brightness(0.7);
+		}
+		100% {
+			transform: rotateX(-90deg);
+			filter: brightness(0.7);
+		}
+	}
+
+	@keyframes flap-back-reveal {
+		0% {
+			transform: rotateX(90deg);
+			filter: brightness(0.7);
+		}
+		40% {
+			filter: brightness(0.7);
+		}
+		100% {
+			transform: rotateX(0deg);
+			filter: brightness(1);
+		}
+	}
+
+	/* The seam line down the card's horizontal centerline, always visible
+	   (not just during a flip) — real split-flap cards always show this
+	   gap between their two physical leaves. */
+	.flap-hinge {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 50%;
+		height: 2px;
+		margin-top: -1px;
+		background: rgba(0, 0, 0, 0.6);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+		z-index: 5;
+		pointer-events: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.flap-leaf--front.is-flipping-front,
+		.flap-leaf--back.is-flipping-back {
+			animation: none;
+		}
+	}
+</style>

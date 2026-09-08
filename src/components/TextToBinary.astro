@@ -1,0 +1,213 @@
+---
+// Interactive character-to-binary lookup: type any single character and its
+// ASCII decimal value and 8-bit binary update live on every keystroke — no
+// submit step, since there's nothing here worth waiting on. Values outside
+// the single-byte range (0-255) can't be shown as one byte, so those show an
+// explanatory note instead of a result.
+const bitCount = 8;
+---
+
+<div class="text-to-binary">
+	<label class="ttb-label" for="ttb-input">Type a character</label>
+	<input
+		type="text"
+		id="ttb-input"
+		class="ttb-input"
+		maxlength="1"
+		autocomplete="off"
+		autocapitalize="off"
+		spellcheck="false"
+		placeholder="A"
+		data-ttb-input
+	/>
+
+	<div class="ttb-result" data-ttb-result>
+		<div class="ttb-tiles" data-ttb-tiles>
+			{Array.from({ length: bitCount }).map(() => <span class="ttb-tile">0</span>)}
+		</div>
+		<p class="ttb-decimal">
+			<span class="ttb-decimal-label">Decimal value</span>
+			<span class="ttb-decimal-value" data-ttb-decimal>—</span>
+		</p>
+	</div>
+
+	<p class="ttb-note" data-ttb-note hidden></p>
+</div>
+
+<script>
+	document.querySelectorAll<HTMLElement>(".text-to-binary").forEach((root) => {
+		const input = root.querySelector<HTMLInputElement>("[data-ttb-input]");
+		const resultEl = root.querySelector<HTMLElement>("[data-ttb-result]");
+		const noteEl = root.querySelector<HTMLElement>("[data-ttb-note]");
+		const tiles = Array.from(root.querySelectorAll<HTMLElement>(".ttb-tile"));
+		const decimalEl = root.querySelector<HTMLElement>("[data-ttb-decimal]");
+
+		function showEmpty() {
+			tiles.forEach((tile) => {
+				tile.textContent = "0";
+				tile.classList.remove("ttb-tile--on");
+			});
+			if (decimalEl) decimalEl.textContent = "—";
+			if (resultEl) resultEl.hidden = false;
+			if (noteEl) noteEl.hidden = true;
+		}
+
+		function update() {
+			const char = input?.value ?? "";
+
+			if (!char) {
+				showEmpty();
+				return;
+			}
+
+			const code = char.codePointAt(0) ?? 0;
+
+			if (code > 255) {
+				if (resultEl) resultEl.hidden = true;
+				if (noteEl) {
+					noteEl.hidden = false;
+					noteEl.textContent = `"${char}" needs more than one byte to store (it's Unicode code point U+${code
+						.toString(16)
+						.toUpperCase()
+						.padStart(4, "0")}) — try a basic keyboard character instead.`;
+				}
+				return;
+			}
+
+			if (noteEl) noteEl.hidden = true;
+			if (resultEl) resultEl.hidden = false;
+
+			const bits = code.toString(2).padStart(8, "0");
+			bits.split("").forEach((bit, i) => {
+				const tile = tiles[i];
+				if (!tile) return;
+				tile.textContent = bit;
+				tile.classList.toggle("ttb-tile--on", bit === "1");
+			});
+			if (decimalEl) decimalEl.textContent = String(code);
+		}
+
+		input?.addEventListener("input", update);
+		showEmpty();
+	});
+</script>
+
+<style>
+	.text-to-binary {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.ttb-label {
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+	}
+
+	.ttb-input {
+		width: 4rem;
+		padding: 0.5rem 0;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 1.3rem;
+		font-weight: 700;
+		text-align: center;
+	}
+
+	.ttb-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.ttb-result {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		width: 100%;
+		padding: 1rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	/* An unconditional `display: flex` otherwise beats the browser's default
+	   `[hidden] { display: none }` (author styles win over the UA
+	   stylesheet), which would leave this visible even when JS sets
+	   `.hidden = true` for an out-of-range character. */
+	.ttb-result[hidden] {
+		display: none;
+	}
+
+	.ttb-tiles {
+		display: flex;
+		width: 100%;
+		max-width: 26rem;
+		gap: 0.3rem;
+		justify-content: center;
+	}
+
+	.ttb-tile {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1 1 0;
+		max-width: 3rem;
+		aspect-ratio: 1 / 1;
+		border-radius: 18%;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(0.95rem, 4vw, 1.4rem);
+		color: var(--color-text-muted);
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.ttb-tile--on {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 65%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.ttb-decimal {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.15rem;
+	}
+
+	.ttb-decimal-label {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.ttb-decimal-value {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(1.4rem, 5vw, 1.8rem);
+		color: #fff3d6;
+		text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+
+	.ttb-note {
+		margin: 0;
+		max-width: 26rem;
+		font-size: 0.82rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+</style>

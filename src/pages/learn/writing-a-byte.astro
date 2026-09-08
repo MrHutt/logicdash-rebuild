@@ -1,19 +1,25 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import DivisionLadder from "../../components/DivisionLadder.astro";
+import PaddingComparison from "../../components/PaddingComparison.astro";
 import ByteConverter from "../../components/ByteConverter.astro";
 import WritingPracticeQuiz from "../../components/WritingPracticeQuiz.astro";
-import { LEARN_TOPICS } from "../../lib/learnTopics";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
 import { computeDivisionSteps, formatDivisionText } from "../../lib/decimalToBinary";
 
 const CURRENT_HREF = "/learn/writing-a-byte";
 const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 
 const steps13 = computeDivisionSteps(13);
 const steps41 = computeDivisionSteps(41);
 ---
 
-<Layout title="Writing a Byte (Decimal to Binary)">
+<Layout
+	title="Writing a Byte (Decimal to Binary)"
+	description="Learn to convert a decimal number into 8-bit binary using the divide-by-2 method, with worked examples, padding rules, and practice."
+	ogType="article"
+>
 	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
 
 	<section class="hero">
@@ -66,6 +72,22 @@ const steps41 = computeDivisionSteps(41);
 			</p>
 		</section>
 
+		<section id="dont-forget-to-pad" class="block block--example">
+			<p class="block-title">Don't Forget to Pad</p>
+			<p class="block-text">
+				Your result won't always be 8 digits. <span class="mono-highlight">41</span> converts to{" "}
+				<span class="mono-highlight">101001</span> — only 6 digits. To write it as a full byte, add
+				zeros to the FRONT (the left side) until you have 8 digits:{" "}
+				<span class="mono-highlight">00101001</span>.
+			</p>
+			<p class="block-text">
+				Padding on the wrong side changes the number completely. Adding zeros to the end instead would
+				give you <span class="mono-highlight">10100100</span> — a totally different value. Always pad
+				on the left.
+			</p>
+			<PaddingComparison value={41} />
+		</section>
+
 		<section id="try-it-yourself" class="block block--example">
 			<p class="block-title">Try It Yourself</p>
 			<ByteConverter />
@@ -77,27 +99,26 @@ const steps41 = computeDivisionSteps(41);
 		</section>
 
 		<section class="block">
-			<p class="block-title">Keep Going</p>
-			<ul class="keep-going-list">
-				<li>
-					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
-				</li>
-				<li>
-					Want to go the other direction? Review <a href="/learn/reading-a-byte">Reading a Byte</a>.
-				</li>
-				<li>
-					Ready to convert between binary, hex, and decimal automatically? Try the Binary ↔ Hex ↔
-					Decimal tool <span class="coming-soon">(coming soon)</span>.
-				</li>
-			</ul>
-
 			<div class="learn-pagination">
-				<a class="learn-pagination-link learn-pagination-prev" href="/learn/reading-a-byte">
-					← Reading a Byte
-				</a>
-				<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-					Binary ↔ Hex ↔ Decimal tool (coming soon)
-				</span>
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
+							</a>
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
 			</div>
 		</section>
 	</div>
@@ -147,7 +168,7 @@ const steps41 = computeDivisionSteps(41);
 	.hero-lead {
 		margin: 0 auto;
 		max-width: 34rem;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 
 	.blocks {
@@ -173,7 +194,7 @@ const steps41 = computeDivisionSteps(41);
 
 	.block-text {
 		margin: 0 0 0.6rem;
-		font-size: 0.88rem;
+		font-size: 1rem;
 	}
 
 	.block-text:last-child {
@@ -225,33 +246,10 @@ const steps41 = computeDivisionSteps(41);
 		box-shadow: 0 0 28px -10px color-mix(in srgb, var(--color-accent) 45%, transparent);
 	}
 
-	.keep-going-list {
-		margin: 0;
-		padding-left: 1.2rem;
-		font-size: 0.88rem;
-	}
-
-	.keep-going-list li {
-		margin: 0.3rem 0;
-	}
-
-	.keep-going-list a {
-		color: #ffae2e;
-		font-weight: 600;
-	}
-
-	.coming-soon {
-		color: var(--color-text-muted);
-		font-style: italic;
-	}
-
 	.learn-pagination {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--color-border);
 		font-size: 0.85rem;
 	}
 
@@ -261,9 +259,12 @@ const steps41 = computeDivisionSteps(41);
 		text-decoration: none;
 	}
 
+	.learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
 	.learn-pagination-next {
 		margin-left: auto;
-		text-align: right;
 	}
 
 	.learn-pagination-soon {

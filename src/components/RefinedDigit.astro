@@ -1,0 +1,137 @@
+---
+// Digit cell for /tools/countdown-clock's "Refined" Display Style — the
+// deliberate opposite of Chaos Mode: no history, no novelty, no glow-heavy
+// retro material at all. Just a clean geometric sans (Outfit, at a light
+// weight for a delicate, considered feel) on a calm dark field, with no
+// tile chrome whatsoever — no border, no background box, no colon dots
+// styled like hardware. The only motion is a single quiet vertical roll
+// when a digit actually changes (see .refined-main/.refined-ghost below);
+// there's no idle flicker, wobble, or blink anywhere in this style, which
+// is itself the point — every other style on this page animates
+// constantly even at rest; this one holds still until something actually
+// changes.
+interface Props {
+	value: string;
+}
+
+const { value } = Astro.props;
+---
+
+<span class="refined-digit" data-refined-digit>
+	<span class="refined-ghost" data-refined-ghost aria-hidden="true"></span>
+	<span class="refined-main" data-refined-value>{value}</span>
+</span>
+
+<style>
+	.refined-digit {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		height: var(--clock-tile-height);
+		/* A FIXED width, not auto/aspect-ratio-derived — Outfit at weight
+		   300 isn't tabular, so "0"/"2"/"4"/"6" measure visibly wider than
+		   "1"/"3"/"5"/"7"/"8"/"9" (60.7px vs. 56.5px at a 96px tile
+		   height). With width:auto, this box was resizing to fit whichever
+		   digit it currently held, which nudged every digit/colon to its
+		   right sideways on almost every tick — exactly the "shifting
+		   baseline" a precise, premium-feeling transition can't have.
+		   Fixed at the widest digit's measured width (plus a hair of
+		   headroom) so the box never resizes, no matter which digit is
+		   inside it. */
+		width: calc(var(--clock-tile-height) * 0.64);
+		flex-shrink: 0;
+		overflow: hidden;
+	}
+
+	.refined-main,
+	.refined-ghost {
+		font-family: var(--font-refined);
+		font-weight: 300;
+		line-height: 1;
+		/* Measured in-browser the same way as every other font-based style
+		   here: canvas measureText's actualBoundingBoxAscent/Descent on "8"
+		   at Outfit weight 300 gave an ink height of 50.0px at a 69.12px
+		   font-size (a 0.7234 ink-to-font-size ratio), against LED's
+		   measured ink height of 66.8px at its own 96px tile height — so
+		   0.72 * (66.8 / 50.0) ≈ 0.962 is the corrected font-size factor
+		   that makes Outfit's rendered ink height match LED's. */
+		font-size: calc(var(--clock-tile-height) * 0.962);
+		color: #f2ede2;
+		/* A single soft, understated shadow — not the multi-layer stacked
+		   glow every other lit style here uses. Barely perceptible; this
+		   is refinement, not a light source. */
+		filter: drop-shadow(0 0 10px rgba(242, 237, 226, 0.18));
+	}
+
+	.refined-ghost {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	/* A single continuous vertical roll, like a mechanical odometer wheel
+	   glimpsed through the fixed-width window above: the outgoing digit
+	   rises and fades on its way out, the incoming digit rises in from
+	   below it and fades in — same direction, same distance, one
+	   uninterrupted motion rather than two separate effects. Both share
+	   ONE easing curve and duration (an asymmetric ease-out/ease-in pair
+	   here previously met mid-transition at two different rates of
+	   change, which read as a snap rather than a glide) — Material
+	   Design's "standard" curve, cubic-bezier(0.4, 0, 0.2, 1): smooth,
+	   symmetric acceleration and deceleration, no linear stretch, no
+	   overshoot. 350ms is brisk enough not to feel sluggish but long
+	   enough to actually read as a roll rather than a blink. The travel
+	   distance (42% of the digit's own height) is deliberately more than
+	   a "drift" — enough to look like real vertical motion through a
+	   window, not just a fade with a nudge — while still reading as
+	   "slightly," not a full flip like Split-Flap's. The incoming digit
+	   also eases its own weight down from 350 to its resting 300 across
+	   the same motion (only possible because Outfit is now loaded as an
+	   actual variable range, wght@300..500, not two fixed static
+	   instances — see Layout.astro) — a barely-conscious "settling into
+	   focus" a static weight can't produce, which is most of what
+	   separates this from merely "a fade with a nudge." */
+	.refined-main.is-animating {
+		animation: refined-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.refined-ghost.is-animating {
+		animation: refined-out 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	@keyframes refined-in {
+		0% {
+			opacity: 0;
+			transform: translateY(42%);
+			font-weight: 350;
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+			font-weight: 300;
+		}
+	}
+
+	@keyframes refined-out {
+		0% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(-42%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.refined-main.is-animating,
+		.refined-ghost.is-animating {
+			animation: none;
+		}
+	}
+</style>

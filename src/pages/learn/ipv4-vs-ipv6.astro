@@ -1,0 +1,562 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import BitChip from "../../components/BitChip.astro";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
+
+const CURRENT_HREF = "/learn/ipv4-vs-ipv6";
+const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
+const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
+
+const ipv4Octets = "192.168.1.1".split(".").map((octet) => ({
+	decimal: octet,
+	bits: Number(octet).toString(2).padStart(8, "0"),
+}));
+
+const comparisonRows = [
+	{ standard: "IPv4", bits: "32", addresses: "~4.3 billion" },
+	{ standard: "IPv6", bits: "128", addresses: "~340 undecillion (340 followed by 36 zeros)" },
+];
+
+const fullIpv6Example = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+const hexSegment = "8a2e";
+const hexNibbles = hexSegment.split("").map((char) => ({
+	hex: char.toUpperCase(),
+	bits: parseInt(char, 16).toString(2).padStart(4, "0"),
+}));
+---
+
+<Layout
+	title="IPv4 vs IPv6"
+	description="Why the internet needed a bigger address space: IPv4's 32-bit limit, IPv6's 128-bit fix, and what scalability means in computing."
+	ogType="article"
+>
+	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+
+	<section class="hero">
+		<h1>IPv4 vs IPv6</h1>
+		<p class="hero-lead">
+			Every device on the internet needs an address. Here's why we had to invent a second kind.
+		</p>
+	</section>
+
+	<div class="blocks">
+		<section class="block">
+			<p class="block-title">What Is an IP Address?</p>
+			<p class="block-text">
+				Every device connected to the internet — your phone, your laptop, a server halfway across
+				the world — needs a unique address, the same way every house needs a unique street address
+				for mail to find it. This is called an IP address (Internet Protocol address). Underneath,
+				like everything else in computing, it's just binary.
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">IPv4: The Original Design</p>
+			<p class="block-text">
+				When the modern internet's addressing system was designed in the early 1980s, each address
+				was made of 32 bits. You've already seen what that means: 32 bits gives you 2 to the power
+				of 32 possible values.
+			</p>
+			<p class="block-text">
+				That's <span class="mono-highlight">4,294,967,296</span> — about 4.3 billion possible
+				addresses.
+			</p>
+			<p class="block-text">
+				An IPv4 address is usually written as four numbers separated by dots — like{" "}
+				<span class="mono-highlight">192.168.1.1</span>. Each of those numbers is actually one byte
+				(8 bits), so the whole address is really just 32 bits in a more readable form. That's also
+				why each number is always between 0 and 255 — the exact range a single byte can hold, as you
+				saw back in <a href="/learn/reading-a-byte">Reading a Byte</a>.
+			</p>
+
+			<div class="octet-demo">
+				{
+					ipv4Octets.map((octet) => (
+						<div class="octet-demo-group">
+							<span class="octet-demo-label">{octet.decimal}</span>
+							<div class="octet-demo-tiles">
+								{octet.bits.split("").map((bit) => (
+									<BitChip value={bit as "0" | "1"} />
+								))}
+							</div>
+						</div>
+					))
+				}
+			</div>
+
+			<p class="block-text">
+				In 1981, 4.3 billion felt limitless. Computers were rare and expensive, confined mostly to
+				universities, governments, and large companies. Nobody was imagining a future where a
+				lightbulb, a doorbell, or a wristwatch might need its own address.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">The Problem: Running Out of Room</p>
+			<p class="block-text">
+				Fast forward a few decades. Personal computers, then smartphones, then smart TVs, doorbells,
+				fitness trackers, and countless other devices all needed their own address to join the
+				internet. 4.3 billion addresses — once unthinkably large — started running out.
+			</p>
+			<p class="block-text">
+				This is the same doubling principle you've already seen: every extra bit doubles how many
+				values you can represent. 32 bits sounded huge, but it's still a fixed number. Once the
+				number of devices in the world caught up to it, there was nowhere left to grow.
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">IPv6: Solving It With Scale</p>
+			<p class="block-text">
+				The fix wasn't to add a few more bits — it was to add a lot more. IPv6 addresses use 128
+				bits instead of 32.
+			</p>
+			<p class="block-text">
+				Because each extra bit doubles the address space, jumping from 32 bits to 128 bits doesn't
+				just make the space bigger — it makes it almost incomprehensibly larger:
+			</p>
+
+			<div class="compare-table-wrap">
+				<table class="compare-table">
+					<thead>
+						<tr>
+							<th>Standard</th>
+							<th>Bits</th>
+							<th>Possible Addresses</th>
+						</tr>
+					</thead>
+					<tbody>
+						{
+							comparisonRows.map((row) => (
+								<tr>
+									<td class="compare-standard">{row.standard}</td>
+									<td class="compare-bits">{row.bits}</td>
+									<td class="compare-addresses">{row.addresses}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+
+			<div class="scale-bar">
+				<div class="scale-row">
+					<span class="scale-label">IPv4</span>
+					<div class="scale-track">
+						<div class="scale-fill scale-fill--v4" style="width: 3%" />
+					</div>
+					<span class="scale-value">~4.3 billion</span>
+				</div>
+				<div class="scale-row">
+					<span class="scale-label">IPv6</span>
+					<div class="scale-track">
+						<div class="scale-fill scale-fill--v6" style="width: 100%" />
+					</div>
+					<span class="scale-value">~340 undecillion</span>
+				</div>
+			</div>
+			<p class="scale-caption">Illustrative, not to scale — IPv4's true share would be far too small to see.</p>
+
+			<p class="block-text">
+				To put 340 undecillion in perspective: it's roughly enough to assign a unique address to
+				every grain of sand on Earth — many times over — with room to spare.
+			</p>
+		</section>
+
+		<section class="block block--example">
+			<p class="block-title">Written Differently, Too</p>
+			<p class="block-text">
+				128 bits is a lot to write out in binary — 128 digits long. So IPv6 addresses are written in
+				hexadecimal instead, the same shorthand you met on the{" "}
+				<a href="/learn/binary-hex-decimal">Binary ↔ Hex ↔ Decimal</a> page. A real IPv6 address looks
+				like this:
+			</p>
+
+			<p class="ipv6-address-display">{fullIpv6Example}</p>
+
+			<p class="block-text">
+				Take just one group from that address, <span class="mono-highlight">{hexSegment}</span> —
+				each of its hex digits is still just a 4-bit binary nibble underneath:
+			</p>
+
+			<div class="hexbit-demo">
+				{
+					hexNibbles.map((nibble) => (
+						<div class="hexbit-demo-group">
+							<span class="hexbit-demo-label">{nibble.hex}</span>
+							<div class="hexbit-demo-tiles">
+								{nibble.bits.split("").map((bit) => (
+									<BitChip value={bit as "0" | "1"} />
+								))}
+							</div>
+						</div>
+					))
+				}
+			</div>
+
+			<p class="block-text">
+				Each group of four hex digits represents 16 bits — exactly the kind of hex-to-binary
+				relationship you've already seen, just applied at a much larger scale.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Why This Matters: Designing for Growth</p>
+			<p class="block-text">
+				This is a good example of a much bigger idea in computing: <em>scalability</em> — designing
+				a system so it can keep working well even as it grows far beyond what its creators
+				originally expected.
+			</p>
+			<p class="block-text">
+				The early internet's designers weren't wrong to use 32 bits — it was more than enough for
+				what existed at the time. But a truly scalable system has to plan for growth it can't fully
+				predict. IPv6 exists because the internet's open, standardized design let new devices keep
+				joining for decades — and eventually, that same openness meant it needed a fundamentally
+				bigger address space to keep up.
+			</p>
+			<p class="block-text">
+				This same idea — building room to grow before you desperately need it — shows up everywhere
+				in computing: databases, network infrastructure, even the way software is architected from
+				day one.
+			</p>
+		</section>
+
+		<section class="block">
+			<div class="learn-pagination">
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
+							</a>
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
+			</div>
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.breadcrumb {
+		margin: 0 0 0.75rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.breadcrumb a {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.hero-lead {
+		margin: 0 auto;
+		max-width: 34rem;
+		font-size: 1rem;
+	}
+
+	.blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+	}
+
+	.block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #ffae2e;
+	}
+
+	.block-text {
+		margin: 0 0 0.6rem;
+		font-size: 1rem;
+	}
+
+	.block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.block-text em {
+		color: var(--color-text);
+		font-style: normal;
+		font-weight: 700;
+	}
+
+	.mono-highlight {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.block--example {
+		text-align: center;
+	}
+
+	/* --- IPv4 octet visual: same "grouped tiles + label" language as the
+	   byte-demo/nibble-demo patterns on other Learn pages, but with the
+	   label above the tiles instead of below — reads more like an
+	   annotation pointing down at the bits it decodes to. */
+	.octet-demo {
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 1.1rem;
+		margin: 0.9rem 0 0.3rem;
+		padding: 1rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.octet-demo-group {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.octet-demo-label {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1rem;
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 60%, transparent);
+	}
+
+	.octet-demo-tiles {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	/* --- IPv4 vs IPv6 comparison table — same conventions as the ASCII
+	   quick-reference table on the How Computers Store Text page. */
+	.compare-table-wrap {
+		margin: 0.9rem 0 0;
+		overflow-x: auto;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.compare-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+	}
+
+	.compare-table th {
+		padding: 0.5rem 0.9rem;
+		text-align: left;
+		font-family: var(--font-sans);
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.compare-table td {
+		padding: 0.5rem 0.9rem;
+		line-height: 1.4;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+	}
+
+	.compare-table tbody tr:last-child td {
+		border-bottom: none;
+	}
+
+	.compare-standard {
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.compare-bits {
+		color: var(--color-text-muted);
+	}
+
+	.compare-addresses {
+		color: color-mix(in srgb, var(--color-accent) 70%, var(--color-text-muted));
+	}
+
+	/* --- Scale bar: a bespoke two-row comparison, not a literal proportion
+	   (rendering IPv4's true ~0.00000001% share would be an invisible
+	   sliver) — the caption underneath says so explicitly. */
+	.scale-bar {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		margin: 1rem auto 0;
+		max-width: 26rem;
+	}
+
+	.scale-row {
+		display: grid;
+		grid-template-columns: 3rem 1fr 6.5rem;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.scale-label {
+		text-align: right;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.scale-track {
+		height: 0.9rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-border) 60%, transparent);
+		border: 1px solid var(--color-border);
+		overflow: hidden;
+	}
+
+	.scale-fill {
+		height: 100%;
+		border-radius: 999px;
+	}
+
+	.scale-fill--v4 {
+		min-width: 4px;
+		background: color-mix(in srgb, #ffae2e 55%, var(--color-text-muted));
+	}
+
+	.scale-fill--v6 {
+		background: linear-gradient(90deg, #ffae2e, #fff3d6);
+		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 55%, transparent);
+	}
+
+	.scale-value {
+		text-align: left;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+		white-space: nowrap;
+	}
+
+	.scale-caption {
+		margin: 0.5rem 0 0;
+		font-size: 0.75rem;
+		font-style: italic;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Full IPv6 address, shown like a code block. */
+	.ipv6-address-display {
+		margin: 0.9rem auto 0.3rem;
+		padding: 0.7rem 1rem;
+		max-width: 28rem;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95rem;
+		letter-spacing: 0.03em;
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 50%, transparent);
+		word-break: break-all;
+	}
+
+	/* --- Hex-to-binary tie-in visual: same grouped-tiles-with-label
+	   language as the octet demo above, hex digit on top this time since
+	   the reader is starting from the hex and looking underneath it. */
+	.hexbit-demo {
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.9rem;
+		margin: 0.9rem 0 0.3rem;
+		padding: 1rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.hexbit-demo-group {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.hexbit-demo-label {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.1rem;
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 60%, transparent);
+	}
+
+	.hexbit-demo-tiles {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.learn-pagination {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		font-size: 0.85rem;
+	}
+
+	.learn-pagination-link {
+		color: #ffae2e;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
+	.learn-pagination-next {
+		margin-left: auto;
+	}
+
+	.learn-pagination-soon {
+		color: var(--color-text-muted);
+		font-weight: 600;
+		font-style: italic;
+	}
+</style>

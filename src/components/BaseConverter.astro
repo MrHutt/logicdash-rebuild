@@ -1,0 +1,185 @@
+---
+// Interactive three-way converter: type into Decimal, Binary, or Hex and the
+// other two update instantly to match. Each field only accepts its own
+// character set (binary: 0/1, hex: 0-9/A-F, decimal: digits) — filtered as
+// you type — and every value is capped to a single byte (0-255). Binary and
+// hex get that cap for free via maxlength (8 bits / 2 hex digits both top
+// out at 255 exactly); decimal is the one field that needs an explicit
+// clamp, since 3 digits can still overshoot (e.g. 256-999).
+---
+
+<div class="base-converter">
+	<div class="bc-field">
+		<label class="bc-label" for="bc-decimal">Decimal</label>
+		<input
+			type="text"
+			id="bc-decimal"
+			class="bc-input"
+			inputmode="numeric"
+			maxlength="3"
+			autocomplete="off"
+			data-bc-decimal
+		/>
+	</div>
+
+	<span class="bc-arrow" aria-hidden="true">⇄</span>
+
+	<div class="bc-field">
+		<label class="bc-label" for="bc-binary">Binary</label>
+		<input
+			type="text"
+			id="bc-binary"
+			class="bc-input bc-input--wide"
+			inputmode="numeric"
+			maxlength="8"
+			autocomplete="off"
+			data-bc-binary
+		/>
+	</div>
+
+	<span class="bc-arrow" aria-hidden="true">⇄</span>
+
+	<div class="bc-field">
+		<label class="bc-label" for="bc-hex">Hex</label>
+		<input
+			type="text"
+			id="bc-hex"
+			class="bc-input"
+			maxlength="2"
+			autocomplete="off"
+			spellcheck="false"
+			data-bc-hex
+		/>
+	</div>
+</div>
+
+<script>
+	import { decimalToBinary8, decimalToHex2 } from "../lib/numberBases";
+
+	// Reassigning `.value` on the field the user is actively typing in (to
+	// strip an invalid character, force hex uppercase, or clamp decimal)
+	// would otherwise snap the cursor to the end — this keeps it in place.
+	function setValuePreservingCursor(input: HTMLInputElement, value: string) {
+		if (input.value === value) return;
+		const pos = input.selectionStart;
+		input.value = value;
+		if (pos !== null) {
+			const clamped = Math.min(pos, value.length);
+			input.setSelectionRange(clamped, clamped);
+		}
+	}
+
+	document.querySelectorAll<HTMLElement>(".base-converter").forEach((root) => {
+		const decEl = root.querySelector<HTMLInputElement>("[data-bc-decimal]");
+		const binEl = root.querySelector<HTMLInputElement>("[data-bc-binary]");
+		const hexEl = root.querySelector<HTMLInputElement>("[data-bc-hex]");
+		if (!decEl || !binEl || !hexEl) return;
+
+		function syncFromDecimal() {
+			const filtered = decEl!.value.replace(/[^0-9]/g, "");
+			let n = filtered === "" ? 0 : parseInt(filtered, 10);
+			if (n > 255) {
+				n = 255;
+				setValuePreservingCursor(decEl!, "255");
+			} else {
+				setValuePreservingCursor(decEl!, filtered);
+			}
+			binEl!.value = decimalToBinary8(n);
+			hexEl!.value = decimalToHex2(n);
+		}
+
+		function syncFromBinary() {
+			const filtered = binEl!.value.replace(/[^01]/g, "").slice(0, 8);
+			setValuePreservingCursor(binEl!, filtered);
+			const n = filtered === "" ? 0 : parseInt(filtered, 2);
+			decEl!.value = String(n);
+			hexEl!.value = decimalToHex2(n);
+		}
+
+		function syncFromHex() {
+			const filtered = hexEl!.value
+				.replace(/[^0-9a-fA-F]/g, "")
+				.toUpperCase()
+				.slice(0, 2);
+			setValuePreservingCursor(hexEl!, filtered);
+			const n = filtered === "" ? 0 : parseInt(filtered, 16);
+			decEl!.value = String(n);
+			binEl!.value = decimalToBinary8(n);
+		}
+
+		decEl.addEventListener("input", syncFromDecimal);
+		binEl.addEventListener("input", syncFromBinary);
+		hexEl.addEventListener("input", syncFromHex);
+
+		// Starts in sync with the byte already used in the worked example
+		// above (10110010 = 178 = B2) rather than an arbitrary zero.
+		decEl.value = "178";
+		syncFromDecimal();
+	});
+</script>
+
+<style>
+	.base-converter {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: center;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	.bc-field {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.bc-label {
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.bc-input {
+		width: 5.5rem;
+		padding: 0.55rem 0.4rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.15rem;
+		text-align: center;
+		letter-spacing: 0.05em;
+	}
+
+	.bc-input--wide {
+		width: 8rem;
+	}
+
+	.bc-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.bc-arrow {
+		margin-bottom: 0.85rem;
+		color: var(--color-accent);
+		font-size: 1.1rem;
+	}
+
+	@media (max-width: 480px) {
+		.base-converter {
+			flex-direction: column;
+		}
+
+		.bc-arrow {
+			margin-bottom: 0;
+			transform: rotate(90deg);
+		}
+	}
+</style>

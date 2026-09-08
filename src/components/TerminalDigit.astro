@@ -1,0 +1,125 @@
+---
+// Green-phosphor terminal digit cell for /tools/countdown-clock's
+// "Terminal" Display Style. Renders each digit as a real monospace
+// bitmap-style font glyph — VT323, a free Google Font built specifically to
+// emulate classic VT100/DOS-era terminal character-ROM shapes — rather than
+// a manually-toggled square-pixel grid. That grid technique belongs to the
+// separate "Dot Matrix" style instead (see DotMatrixDigit.astro/
+// dotMatrixDigits.ts), deliberately a coarser, flatter, glow-free
+// technique: the two styles used to share the exact same 5x7 bitmap shapes
+// with only a color swap, which is what made them not-actually-distinct.
+// This is genuinely different — a real font's fine character detail, lit
+// like emitted CRT phosphor light (glow + scanlines + a hint of screen
+// curvature) instead of reflected/backlit LCD ink.
+interface Props {
+	value: string;
+}
+
+const { value } = Astro.props;
+
+// Same per-digit random flicker phase as the other glowing styles, so all
+// six digits don't pulse in perfect unison.
+const flickerDelay = (Math.random() * -6).toFixed(2);
+---
+
+<span class="term-digit" data-terminal-digit style={`--flicker-delay: ${flickerDelay}s`}>
+	<span class="term-curvature" aria-hidden="true" />
+	<span class="term-main" data-terminal-value>{value}</span>
+</span>
+
+<style>
+	.term-digit {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: clamp(2.2rem, 8vw, 3.6rem);
+		aspect-ratio: 3 / 5;
+		flex-shrink: 0;
+		overflow: hidden;
+		border-radius: 10%;
+		background: radial-gradient(ellipse at 50% 40%, #041604 0%, #010601 82%);
+		border: 1px solid #0a2a0a;
+	}
+
+	/* A soft, off-center highlight suggesting the slight convex curvature of
+	   a real CRT's glass face — not a flat panel. Distinct from the CRT
+	   scanline+vignette overlay in countdown-clock.astro, which covers the
+	   whole display, not one tile. */
+	.term-curvature {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		background: radial-gradient(ellipse 60% 32% at 36% 20%, rgba(255, 255, 255, 0.09), transparent 65%);
+		pointer-events: none;
+	}
+
+	.term-main {
+		position: relative;
+		z-index: 1;
+		font-family: var(--font-terminal);
+		font-weight: 400;
+		line-height: 1;
+		/* Tied to --clock-tile-height — LED's reference tile height, not
+		   this tile's own (identically-sized, coincidentally) box — so the
+		   rendered GLYPH matches LED's digit size. Factor measured directly
+		   in-browser: canvas measureText's actualBoundingBoxAscent/Descent
+		   on "8" at a 100px probe size gives VT323 an ink height of 56px
+		   (0.56 of font-size), against LED's measured ink height of 66.8px
+		   at its own ~96px tile height (0.696 of tile height) — so
+		   0.696 / 0.56 ≈ 1.242 is the font-size factor that makes VT323's
+		   rendered ink height match LED's. VT323 also renders narrow enough
+		   at that size (measured widest digit "0" ≈ 48px) to comfortably
+		   fit this tile's existing width with no widening needed. */
+		font-size: calc(var(--clock-tile-height) * 1.242);
+		color: #33ff33;
+		animation: term-flicker 4.5s ease-in-out infinite;
+		animation-delay: var(--flicker-delay, 0s);
+		/* Same three-stacked-shadow technique as the site's other glowing
+		   styles — a tight bright core out to a wider soft phosphor bloom. */
+		filter:
+			drop-shadow(0 0 1.5px #c8ffc8)
+			drop-shadow(0 0 4px #33ff33)
+			drop-shadow(0 0 11px rgba(51, 255, 51, 0.65));
+	}
+
+	@keyframes term-flicker {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		8% {
+			opacity: 0.92;
+		}
+		15% {
+			opacity: 1;
+		}
+		24% {
+			opacity: 0.9;
+		}
+		33% {
+			opacity: 1;
+		}
+		47% {
+			opacity: 0.95;
+		}
+		55% {
+			opacity: 1;
+		}
+		70% {
+			opacity: 0.91;
+		}
+		80% {
+			opacity: 1;
+		}
+		92% {
+			opacity: 0.96;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.term-main {
+			animation: none;
+		}
+	}
+</style>

@@ -36,6 +36,8 @@
 	import { computeDivisionSteps, decimalToBinary8, type DivisionStep } from "../lib/decimalToBinary";
 
 	const STEP_DELAY_MS = 450;
+	const PAUSE_BEFORE_REVEAL_MS = 500;
+	const TRAVEL_STEP_MS = 150;
 
 	function wait(ms: number): Promise<void> {
 		return new Promise((resolve) => setTimeout(resolve, ms));
@@ -66,6 +68,96 @@
 			return row;
 		}
 
+		// The vertical center of a row's remainder tile, relative to `stepsEl`
+		// (which must be position:relative) — used to place the traveling
+		// connector exactly on each tile regardless of font size or spacing.
+		function remainderTileCenterY(containerRect: DOMRect, rowEl: HTMLElement): number {
+			const tile = rowEl.querySelector<HTMLElement>(".converter-rem-tile");
+			if (!tile) return 0;
+			const tileRect = tile.getBoundingClientRect();
+			return tileRect.top - containerRect.top + tileRect.height / 2;
+		}
+
+		// After every division step is on screen, this traces the "read bottom
+		// to top" rule visually: a connector travels from the bottom row's
+		// remainder up to the top row's, and — in that same bottom-to-top
+		// order — lights up the Binary Result tiles one at a time. Because the
+		// bottom-most (last-calculated) remainder is the *first* digit of the
+		// answer, that's also the first result tile to light, even though the
+		// result row itself reads left to right as usual.
+		//
+		// The connector is left in place at the top once the reveal finishes
+		// (matching the static arrow on the worked examples above), rather
+		// than fading out — the next submission clears it along with
+		// everything else in `stepsEl`.
+		async function revealResultBottomToTop(
+			stepRows: HTMLElement[],
+			bits: string,
+			token: number,
+		): Promise<void> {
+			if (!stepsEl || !resultEl || !tilesEl) return;
+
+			const padCount = bits.length - stepRows.length;
+			tilesEl.innerHTML = bits
+				.split("")
+				.map((bit, i) => {
+					const isPadding = i < padCount;
+					const settledClass = bit === "1" ? "converter-tile converter-tile--on" : "converter-tile";
+					return `<span class="${isPadding ? settledClass : "converter-tile converter-tile--pending"}" data-bit="${bit}">${bit}</span>`;
+				})
+				.join("");
+			resultEl.hidden = false;
+
+			const resultTiles = Array.from(tilesEl.querySelectorAll<HTMLElement>(".converter-tile"));
+			const orderedRows = [...stepRows].reverse(); // bottom row (last calculated) first
+
+			const line = document.createElement("div");
+			line.className = "converter-travel-line";
+			const arrow = document.createElement("div");
+			arrow.className = "converter-travel-arrow";
+			arrow.textContent = "▲";
+			stepsEl.appendChild(line);
+			stepsEl.appendChild(arrow);
+
+			function cleanupConnector() {
+				line.remove();
+				arrow.remove();
+			}
+
+			const containerRect = stepsEl.getBoundingClientRect();
+			const startY = remainderTileCenterY(containerRect, orderedRows[0]);
+			line.style.bottom = `${containerRect.height - startY}px`;
+			line.style.top = `${startY}px`;
+			arrow.style.top = `${startY}px`;
+
+			// Let the connector's starting position paint before the first move.
+			await wait(30);
+
+			for (let i = 0; i < orderedRows.length; i++) {
+				if (token !== runToken) {
+					cleanupConnector();
+					return;
+				}
+
+				const row = orderedRows[i];
+				const y = remainderTileCenterY(containerRect, row);
+				line.style.top = `${y}px`;
+				arrow.style.top = `${y}px`;
+				row.querySelector(".converter-rem-tile")?.classList.add("converter-rem-tile--visited");
+
+				const resultTile = resultTiles[padCount + i];
+				if (resultTile) {
+					resultTile.classList.remove("converter-tile--pending");
+					resultTile.classList.add("converter-tile--reveal");
+					if (resultTile.dataset.bit === "1") resultTile.classList.add("converter-tile--on");
+				}
+
+				await wait(TRAVEL_STEP_MS);
+			}
+
+			if (token !== runToken) cleanupConnector();
+		}
+
 		async function runConversion(value: number) {
 			const token = ++runToken;
 
@@ -74,23 +166,23 @@
 			if (resultEl) resultEl.hidden = true;
 
 			const steps = computeDivisionSteps(value);
+			const stepRows: HTMLElement[] = [];
 
 			for (const step of steps) {
 				if (token !== runToken || !stepsEl) return;
-				stepsEl.appendChild(buildStepRow(step));
+				const row = buildStepRow(step);
+				stepsEl.appendChild(row);
+				stepRows.push(row);
 				await wait(STEP_DELAY_MS);
 			}
 
 			if (token !== runToken) return;
 
+			await wait(PAUSE_BEFORE_REVEAL_MS);
+			if (token !== runToken) return;
+
 			const bits = decimalToBinary8(value);
-			if (tilesEl) {
-				tilesEl.innerHTML = bits
-					.split("")
-					.map((bit) => `<span class="converter-tile ${bit === "1" ? "converter-tile--on" : ""}">${bit}</span>`)
-					.join("");
-			}
-			if (resultEl) resultEl.hidden = false;
+			await revealResultBottomToTop(stepRows, bits, token);
 		}
 
 		form?.addEventListener("submit", (event) => {
@@ -151,6 +243,16 @@
 		font-family: var(--font-mono);
 		font-size: 1rem;
 		text-align: center;
+		/* Just let them type — no click-to-increment spinner UI. */
+		appearance: textfield;
+		-moz-appearance: textfield;
+	}
+
+	.converter-input::-webkit-inner-spin-button,
+	.converter-input::-webkit-outer-spin-button {
+		appearance: none;
+		-webkit-appearance: none;
+		margin: 0;
 	}
 
 	.converter-input:focus {
@@ -196,10 +298,55 @@
 	}
 
 	.converter-steps {
+		/* Shrink to the widest row's own content (matching DivisionLadder's
+		   .ladder-rows) rather than stretching to the card's full width —
+		   otherwise the connector, anchored to this container's right edge,
+		   ends up floating far from the (centered, narrower) rows instead of
+		   sitting right next to them like the static arrow above. */
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
-		width: 100%;
+		padding-right: 1.4rem;
+		box-sizing: border-box;
+	}
+
+	/*
+	 * The traveling connector that plays once all steps are on screen: a
+	 * dashed line anchored at the bottom remainder tile, growing upward one
+	 * row at a time (via the `top` transition below), with an arrowhead
+	 * leading the way — tracing the same "read bottom to top" idea, and
+	 * sitting at the same distance from the tiles, as the static arrow on
+	 * the worked examples above (DivisionLadder.astro's `.ladder-arrow`),
+	 * just animated instead of drawn all at once. It's left in place once
+	 * the reveal finishes rather than fading out.
+	 */
+	.converter-travel-line {
+		position: absolute;
+		right: 0.7rem;
+		width: 2px;
+		background: repeating-linear-gradient(
+			to bottom,
+			var(--color-accent) 0,
+			var(--color-accent) 4px,
+			transparent 4px,
+			transparent 8px
+		);
+		opacity: 0.85;
+		transition: top 0.15s ease;
+		pointer-events: none;
+	}
+
+	.converter-travel-arrow {
+		position: absolute;
+		right: 0.7rem;
+		transform: translate(50%, -100%);
+		color: var(--color-accent);
+		font-size: 0.75rem;
+		line-height: 1;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 65%, transparent);
+		transition: top 0.15s ease;
+		pointer-events: none;
 	}
 
 	.converter-step-row {
@@ -261,6 +408,20 @@
 		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
 	}
 
+	/* Brief pulse as the traveling connector passes each remainder tile. */
+	.converter-rem-tile--visited {
+		animation: converter-visited-pulse 0.4s ease-out;
+	}
+
+	@keyframes converter-visited-pulse {
+		0% {
+			box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 75%, transparent);
+		}
+		100% {
+			box-shadow: 0 0 14px 4px color-mix(in srgb, var(--color-accent) 0%, transparent);
+		}
+	}
+
 	.converter-result {
 		display: flex;
 		flex-direction: column;
@@ -310,5 +471,30 @@
 		color: #fff3d6;
 		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 65%, transparent);
 		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	/* Not-yet-revealed result tile, waiting for the connector to reach its
+	   source remainder — barely visible so the reveal reads as "arriving". */
+	.converter-tile--pending {
+		opacity: 0.2;
+	}
+
+	.converter-tile--reveal {
+		animation: converter-tile-reveal 0.3s ease;
+	}
+
+	@keyframes converter-tile-reveal {
+		0% {
+			opacity: 0.2;
+			transform: scale(0.75);
+		}
+		60% {
+			opacity: 1;
+			transform: scale(1.15);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
 	}
 </style>

@@ -34,7 +34,11 @@ const realWorldExamples = [
 ];
 ---
 
-<Layout title="Error Correction, Explained">
+<Layout
+	title="Error Correction, Explained"
+	description="How computers detect and fix corrupted data using Hamming distance and check bits — the same idea behind every LogicDash guess."
+	ogType="article"
+>
 	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
 
 	<section class="hero">
@@ -129,40 +133,27 @@ const realWorldExamples = [
 		</section>
 
 		<section class="block">
-			<p class="block-title">Keep Going</p>
-			<ul class="keep-going-list">
-				<li>
-					New here? Start with <a href="/learn/what-is-binary">What is Binary?</a>
-				</li>
-				<li>
-					Refresh the core mechanic: <a href="/learn/hamming-distance">Hamming Distance, Explained</a>
-				</li>
-				<li>
-					See how bits scale up: <a href="/learn/bits-and-bytes">Bits, Bytes, and Beyond</a>
-				</li>
-			</ul>
-
-			{
-				(prev || next) && (
-					<div class="learn-pagination">
-						{prev && (
-							<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-								← Back to {prev.title}
+			<div class="learn-pagination">
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
 							</a>
-						)}
-						{next &&
-							(next.live ? (
-								<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-									{next.title} →
-								</a>
-							) : (
-								<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-									{next.title} (coming soon)
-								</span>
-							))}
-					</div>
-				)
-			}
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
+			</div>
 		</section>
 	</div>
 </Layout>
@@ -198,7 +189,7 @@ const realWorldExamples = [
 	.hero-lead {
 		margin: 0 auto;
 		max-width: 34rem;
-		font-size: 0.9rem;
+		font-size: 1rem;
 	}
 
 	.blocks {
@@ -224,7 +215,7 @@ const realWorldExamples = [
 
 	.block-text {
 		margin: 0 0 0.6rem;
-		font-size: 0.88rem;
+		font-size: 1rem;
 	}
 
 	.block-text:last-child {
@@ -300,7 +291,7 @@ const realWorldExamples = [
 	}
 
 	.compare-tile:not(.compare-tile--on) .compare-segment.is-on {
-		fill: #7a5c3a;
+		fill: #a8804f;
 	}
 
 	.compare-tile--on .compare-segment.is-on {
@@ -337,28 +328,10 @@ const realWorldExamples = [
 		font-weight: 700;
 	}
 
-	.keep-going-list {
-		margin: 0;
-		padding-left: 1.2rem;
-		font-size: 0.88rem;
-	}
-
-	.keep-going-list li {
-		margin: 0.3rem 0;
-	}
-
-	.keep-going-list a {
-		color: #ffae2e;
-		font-weight: 600;
-	}
-
 	.learn-pagination {
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--color-border);
 		font-size: 0.85rem;
 	}
 

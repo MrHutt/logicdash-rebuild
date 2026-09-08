@@ -4,45 +4,54 @@ import Footer from "../components/Footer.astro";
 
 interface Props {
 	title: string;
+	/** Shown as <meta name="description">, og:description, and in search results — keep under ~160 characters. */
+	description: string;
+	/** Path to a page-specific share image (relative to the site root). Defaults to the site's amber illustration. */
+	image?: string;
+	/** Open Graph type — "article" suits the Learn section's standalone lessons better than the default "website". */
+	ogType?: "website" | "article";
 }
 
-const { title } = Astro.props;
+const { title, description, image = "/logicdash-runners.png", ogType = "website" } = Astro.props;
 const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
+
+// Astro.site (set in astro.config.mjs) plus the current path gives a canonical
+// URL that's correct on every page without each one computing it by hand.
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = new URL(image, Astro.site);
 ---
 
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+		<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+		<link rel="apple-touch-icon" href="/favicon-192.png" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<meta name="description" content="Binary logic puzzles: guess the bits, beat the distance." />
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content="LogicDash" />
-		<meta property="og:description" content="Binary logic puzzles: guess the bits, beat the distance." />
-		<meta property="og:url" content="https://logicdash.io" />
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		<meta property="og:type" content={ogType} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={ogImageURL} />
+		<meta property="og:url" content={canonicalURL} />
 		<title>{pageTitle}</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&family=Archivo+Black&family=Nixie+One&family=Comic+Neue:wght@400;700&family=VT323&family=Outfit:wght@300..500&display=swap"
 			rel="stylesheet"
 		/>
 		<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1GLCD506S"></script>
 		<script>
-			declare global {
-				interface Window {
-					dataLayer: unknown[][];
-				}
-			}
-
 			window.dataLayer = window.dataLayer || [];
-			function gtag(...args: unknown[]) {
-				window.dataLayer.push(args);
-			}
-			gtag("js", new Date());
-			gtag("config", "G-Q1GLCD506S");
+			function gtag(){ dataLayer.push(arguments); }
+			gtag('js', new Date());
+			gtag('config', 'G-Q1GLCD506S');
 		</script>
 	</head>
 	<body>
@@ -69,6 +78,24 @@ const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 		--color-danger: #fb7185;
 		--font-sans: "Space Grotesk", system-ui, sans-serif;
 		--font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+		--font-industrial: "Archivo Black", "Arial Black", sans-serif;
+		--font-nixie: "Nixie One", "Space Grotesk", system-ui, sans-serif;
+		--font-comic: "Comic Neue", "Comic Sans MS", cursive;
+		--font-refined: "Outfit", "Space Grotesk", system-ui, sans-serif;
+		/* /tools/countdown-clock only: the Seven-segment LED style's own
+		   tile height (width clamp(2.2rem, 8vw, 3.6rem) at its 3:5
+		   aspect-ratio, i.e. height = width * 5/3) — NOT applied as a
+		   shared container size. Tile/container sizes are still allowed to
+		   vary per style (borders, glow padding, Nixie's taller glass-tube
+		   shape, etc. all legitimately need different container
+		   proportions). What this variable actually standardizes is the
+		   rendered DIGIT GLYPH height: every font-based style's font-size,
+		   and Dot Matrix's dot-grid fill percentage, are expressed relative
+		   to this constant (see each component's own comment) so the
+		   visible numeral itself — not its surrounding frame — reads as the
+		   same size as LED's at every viewport width. */
+		--clock-tile-height: clamp(3.667rem, 13.333vw, 6rem);
+		--font-terminal: "VT323", var(--font-mono);
 	}
 
 	* {
@@ -79,7 +106,7 @@ const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 		margin: 0;
 		font-family: var(--font-sans);
 		background-color: var(--color-bg);
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23ffae2e' stroke-width='1' stroke-opacity='0.05'%3E%3Cpath d='M0 40 H50 V80 H120 V110'/%3E%3Cpath d='M160 125 H100 V60 H70 V0'/%3E%3Cpath d='M20 160 V132 H90 V145'/%3E%3Cpath d='M0 100 H25'/%3E%3C/g%3E%3Cg fill='%23ffae2e' fill-opacity='0.06'%3E%3Ccircle cx='50' cy='40' r='2.5'/%3E%3Ccircle cx='120' cy='80' r='2.5'/%3E%3Ccircle cx='100' cy='125' r='2.5'/%3E%3Ccircle cx='70' cy='60' r='2.5'/%3E%3Ccircle cx='90' cy='132' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23ffae2e' stroke-width='1' stroke-opacity='0.09'%3E%3Cpath d='M0 40 H50 V80 H120 V110'/%3E%3Cpath d='M160 125 H100 V60 H70 V0'/%3E%3Cpath d='M20 160 V132 H90 V145'/%3E%3Cpath d='M0 100 H25'/%3E%3C/g%3E%3Cg fill='%23ffae2e' fill-opacity='0.1'%3E%3Ccircle cx='50' cy='40' r='2.5'/%3E%3Ccircle cx='120' cy='80' r='2.5'/%3E%3Ccircle cx='100' cy='125' r='2.5'/%3E%3Ccircle cx='70' cy='60' r='2.5'/%3E%3Ccircle cx='90' cy='132' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
 		background-repeat: repeat;
 		background-size: 160px 160px;
 		color: var(--color-text);

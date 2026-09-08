@@ -1,0 +1,272 @@
+---
+// Nixie tube digit cell for /tools/countdown-clock's "Nixie Tube" Display
+// Style — deliberately NOT segment-based. A real Nixie tube lights an actual
+// wire numeral shaped like the digit itself (not an approximation built from
+// straight bars), and because all ten wire digits are stacked one behind
+// another inside the same glass envelope, the unlit ones are still faintly
+// visible behind whichever one is glowing. This renders the active digit as
+// a real font glyph, with two faint, slightly offset ghost glyphs behind it
+// to suggest that stack. See segmentDigits.ts/SegmentDigit.astro for the
+// unrelated 7-segment approach shared by VFD/LED/LCD.
+interface Props {
+	value: string;
+}
+
+const { value } = Astro.props;
+
+// Same per-digit random flicker phase as the segment styles, so all six
+// digits don't pulse in perfect unison.
+const flickerDelay = (Math.random() * -6).toFixed(2);
+---
+
+<span class="nixie-glyph-digit" data-nixie-glyph-digit style={`--flicker-delay: ${flickerDelay}s`}>
+	<span class="nixie-glyph-ghost-stack" aria-hidden="true">
+		<span class="nixie-glyph-ghost nixie-glyph-ghost--a">8</span>
+		<span class="nixie-glyph-ghost nixie-glyph-ghost--b">3</span>
+	</span>
+	<span class="nixie-glyph-main" data-nixie-glyph-value>{value}</span>
+	<span class="nixie-glyph-transition-ghost" data-nixie-glyph-transition-ghost aria-hidden="true"></span>
+	<span class="nixie-glyph-mesh" aria-hidden="true" />
+	<span class="nixie-glyph-reflection" aria-hidden="true" />
+	<span class="nixie-glyph-highlight" aria-hidden="true" />
+</span>
+
+<style>
+	/* Taller than the other five styles' tiles (1:2 vs. their 3:5) and domed
+	   at the top, tapering to a near-flat base — a squat rounded-rectangle
+	   "app card" reads nothing like a Nixie tube's tall glass cylinder,
+	   which is rounded almost like a bulb at the top and sits on a narrower
+	   flat foot. The elliptical border-radius shorthand below
+	   (horizontal-radii / vertical-radii) is what makes the top corners
+	   read as a curve rather than a clipped rectangle corner. */
+	.nixie-glyph-digit {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		/* This tile's own box is intentionally NOT tied to the other
+		   styles' size — a Nixie tube is genuinely taller/narrower than a
+		   flat segment tile at the same width (1:2 vs. their 3:5), and
+		   forcing this box to match their height would either crush the
+		   tube's proportions or (as tried previously) leave barely any
+		   headroom for a correctly-sized glyph. What actually needs to
+		   match across styles is the GLYPH height, handled below via
+		   --clock-tile-height, independently of this box. */
+		/* Widened past the other styles' clamp specifically to comfortably
+		   fit Nixie One's glyph at the larger font-size below (measured
+		   ~61px wide for the widest digit, "0") — see that comment for the
+		   full derivation. Height still simply follows from the 1:2
+		   aspect-ratio, so this tube ends up both wider AND taller than a
+		   flat segment tile, not just taller. */
+		width: clamp(2.7rem, 9.8vw, 4.4rem);
+		aspect-ratio: 1 / 2;
+		flex-shrink: 0;
+		overflow: hidden;
+		border-radius: 50% 50% 12% 12% / 30% 30% 8% 8%;
+		background: radial-gradient(ellipse at 50% 24%, #241a12 0%, #0d0a07 78%);
+		border: 1px solid #3a2a1a;
+		box-shadow:
+			inset 0 0 10px rgba(255, 174, 46, 0.06),
+			0 0 10px rgba(255, 174, 46, 0.05);
+	}
+
+	/* Faint wire-mesh anode grid, physically in front of the glowing
+	   cathode in a real tube — a few evenly-spaced 1px lines are enough to
+	   read as a texture; going much stronger would fight the digit's own
+	   legibility, which is why this sits at both a low base opacity and
+	   uses multiply blending (only ever darkens, never adds a flat tint). */
+	.nixie-glyph-mesh {
+		position: absolute;
+		inset: 0;
+		z-index: 4;
+		pointer-events: none;
+		background: repeating-linear-gradient(
+			to bottom,
+			rgba(0, 0, 0, 0.3) 0px,
+			rgba(0, 0, 0, 0.3) 1px,
+			transparent 1px,
+			transparent 4px
+		);
+		mix-blend-mode: multiply;
+		opacity: 0.4;
+	}
+
+	/* A narrow vertical streak standing in for a cylinder's specular
+	   highlight — real curved glass catches ambient light in a thin band
+	   down one side, not evenly across the whole face the way the existing
+	   top-down radial highlight (below) reads on its own. */
+	.nixie-glyph-reflection {
+		position: absolute;
+		top: 6%;
+		bottom: 10%;
+		left: 20%;
+		width: 13%;
+		border-radius: 50%;
+		background: linear-gradient(to bottom, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04) 55%, transparent 85%);
+		filter: blur(1.5px);
+		pointer-events: none;
+		z-index: 5;
+	}
+
+	.nixie-glyph-highlight {
+		position: absolute;
+		inset: 0;
+		z-index: 6;
+		background: radial-gradient(ellipse 70% 30% at 50% 6%, rgba(255, 255, 255, 0.14), transparent 70%);
+		pointer-events: none;
+	}
+
+	/* The other nine wire digits, unlit but still physically present behind
+	   the glowing one — real Nixie tubes always show faint traces of them. */
+	.nixie-glyph-ghost-stack {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.nixie-glyph-ghost {
+		position: absolute;
+		font-family: var(--font-nixie);
+		font-weight: 400;
+		/* Same glyph-height-matching factor as .nixie-glyph-main below. */
+		font-size: calc(var(--clock-tile-height) * 0.966);
+		line-height: 1;
+		color: transparent;
+		-webkit-text-stroke: 1px rgba(255, 110, 26, 0.14);
+	}
+
+	.nixie-glyph-ghost--a {
+		transform: translate(3%, -4%) scale(0.97);
+	}
+
+	.nixie-glyph-ghost--b {
+		transform: translate(-4%, 5%) scale(0.92);
+		-webkit-text-stroke-color: rgba(255, 110, 26, 0.08);
+	}
+
+	.nixie-glyph-main {
+		position: relative;
+		z-index: 2;
+		font-family: var(--font-nixie);
+		font-weight: 400;
+		line-height: 1;
+		/* Tied to --clock-tile-height — LED's reference tile height, NOT
+		   this tile's own (much taller) box — so the rendered GLYPH matches
+		   LED's digit size regardless of how the surrounding tube is
+		   shaped. Factor measured directly in-browser: canvas measureText's
+		   actualBoundingBoxAscent/Descent on "8" at a 100px probe size gives
+		   Nixie One an ink height of 72px (0.72 of font-size), against
+		   LED's measured ink height of 66.8px at its own ~96px tile height
+		   (0.696 of tile height) — so 0.696 / 0.72 ≈ 0.966 is the font-size
+		   factor that makes Nixie One's rendered ink height match LED's.
+		   Widest digit ("0") at that size measures ~61px, which is why this
+		   tile's own width (below) was widened past the other styles'. */
+		font-size: calc(var(--clock-tile-height) * 0.966);
+		/* Authentic Nixie neon-orange glow — real tubes burn a warm
+		   orange-red, not a pale white/cream. */
+		color: #ff6a1a;
+		animation: nixie-glyph-flicker 4.5s ease-in-out infinite;
+		animation-delay: var(--flicker-delay, 0s);
+		/* Tight, closely-stacked radii (1/3/6px) rather than the old
+		   2/7/18px spread — drop-shadow already traces the glyph's actual
+		   alpha shape rather than its box, but a mid-to-large outer radius
+		   still reads as "the whole tile is glowing" once it's wide enough
+		   to bleed past the stroke into the surrounding cell. Keeping every
+		   layer tight makes the glow hug the numeral's contours instead. */
+		filter:
+			drop-shadow(0 0 1px #ffb27a)
+			drop-shadow(0 0 3px #ff8a3d)
+			drop-shadow(0 0 6px rgba(255, 90, 0, 0.7));
+	}
+
+	/* The outgoing digit, held for one frame at the moment of a change and
+	   then faded out at a slightly different apparent depth/scale — real
+	   Nixie tubes have all ten digit-shaped cathodes stacked at different
+	   depths in the same glass envelope, so switching which one is lit reads
+	   as a brief, slightly parallaxed cross-fade rather than an instant swap.
+	   Sits above the new (already-updated) main glyph so it visibly
+	   dissolves away to reveal the settled new digit, driven by
+	   applyNixieGlyphDigit() in countdown-clock.astro's script. */
+	.nixie-glyph-transition-ghost {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-nixie);
+		font-weight: 400;
+		line-height: 1;
+		/* Same glyph-height-matching factor as .nixie-glyph-main above. */
+		font-size: calc(var(--clock-tile-height) * 0.966);
+		color: #ff5000;
+		opacity: 0;
+		pointer-events: none;
+		filter: drop-shadow(0 0 3px rgba(255, 90, 0, 0.6));
+	}
+
+	.nixie-glyph-transition-ghost.is-fading {
+		animation: nixie-glyph-ghost-fade 0.55s ease-out forwards;
+	}
+
+	/* Starts slightly larger/higher (as if a shade closer to the front of
+	   the glass) and sinks back while fading, suggesting it's a physically
+	   different cathode than the one now lit. */
+	@keyframes nixie-glyph-ghost-fade {
+		0% {
+			opacity: 0.6;
+			transform: scale(1.06) translateY(-3%);
+		}
+		100% {
+			opacity: 0;
+			transform: scale(0.88) translateY(4%);
+		}
+	}
+
+	@keyframes nixie-glyph-flicker {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		7% {
+			opacity: 0.95;
+		}
+		13% {
+			opacity: 1;
+		}
+		21% {
+			opacity: 0.92;
+		}
+		29% {
+			opacity: 1;
+		}
+		44% {
+			opacity: 0.97;
+		}
+		52% {
+			opacity: 1;
+		}
+		68% {
+			opacity: 0.94;
+		}
+		77% {
+			opacity: 1;
+		}
+		91% {
+			opacity: 0.98;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nixie-glyph-main {
+			animation: none;
+		}
+		.nixie-glyph-transition-ghost.is-fading {
+			animation: none;
+		}
+	}
+</style>
