@@ -9,7 +9,10 @@ export default defineConfig({
 		sitemap({
 			// Unpublished, direct-URL-only pages — keep them out of the
 			// generated sitemap until they're ready to launch.
-			filter: (page) => !page.includes('/tools/countdown-clock') && !page.includes('/tools/student-picker'),
+			filter: (page) =>
+				!page.includes('/tools/countdown-clock') &&
+				!page.includes('/tools/student-picker') &&
+				!page.includes('/tools/seating-chart'),
 		}),
 	],
 });

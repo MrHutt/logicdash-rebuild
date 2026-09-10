@@ -1,0 +1,1153 @@
+---
+// Unpublished classroom tool — reachable only by direct URL, same treatment
+// as /tools/countdown-clock and /tools/student-picker: not linked from
+// Header.astro/Footer.astro, and excluded from the sitemap (see the
+// sitemap() filter in astro.config.mjs). /tools/ is also disallowed
+// wholesale in public/robots.txt already, so no robots.txt change was
+// needed for this page specifically.
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+	title="Seating Chart"
+	description="A classroom seating chart generator — four layout templates, exam/group/general modes, keep-apart/keep-together/pinned rules, and no-repeat-neighbor tracking."
+>
+	<div class="seating-tool" data-seating-root>
+		<h1 class="seating-title">Seating Chart</h1>
+
+		<section class="setup-panel">
+			<div class="panel-card">
+				<p class="panel-title">Layout Template</p>
+				<div class="template-grid" data-template-grid>
+					<button type="button" class="template-btn" data-template-btn="rows" aria-pressed="true">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+							<rect x="3" y="4.5" width="18" height="4" rx="1"></rect>
+							<rect x="3" y="10" width="18" height="4" rx="1"></rect>
+							<rect x="3" y="15.5" width="18" height="4" rx="1"></rect>
+						</svg>
+						<span>Rows</span>
+					</button>
+					<button type="button" class="template-btn" data-template-btn="pods" aria-pressed="false">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+							<rect x="3.5" y="3.5" width="7" height="7" rx="1"></rect>
+							<rect x="13.5" y="3.5" width="7" height="7" rx="1"></rect>
+							<rect x="3.5" y="13.5" width="7" height="7" rx="1"></rect>
+							<rect x="13.5" y="13.5" width="7" height="7" rx="1"></rect>
+						</svg>
+						<span>Pods</span>
+					</button>
+					<button type="button" class="template-btn" data-template-btn="pairs" aria-pressed="false">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+							<rect x="2.5" y="8" width="8" height="8" rx="1"></rect>
+							<rect x="13.5" y="8" width="8" height="8" rx="1"></rect>
+						</svg>
+						<span>Pairs</span>
+					</button>
+					<button type="button" class="template-btn" data-template-btn="u-shape" aria-pressed="false">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+							<path d="M5 4 V16 H9 V8 H15 V16 H19 V4"></path>
+						</svg>
+						<span>U-Shape</span>
+					</button>
+				</div>
+				<div class="param-fields" data-param-fields></div>
+			</div>
+
+			<div class="panel-card">
+				<p class="panel-title">Mode</p>
+				<div class="mode-toggle" data-mode-toggle>
+					<button type="button" class="mode-btn" data-mode-btn="exam" aria-selected="false">Exam</button>
+					<button type="button" class="mode-btn" data-mode-btn="group" aria-selected="false">Group</button>
+					<button type="button" class="mode-btn" data-mode-btn="general" aria-selected="true">General</button>
+				</div>
+			</div>
+
+			<div class="panel-card">
+				<p class="panel-title">Roster</p>
+				<select class="select-input" data-roster-select aria-label="Roster"></select>
+				<p class="panel-hint">
+					Rosters are shared with <a href="/tools/student-picker">Student Picker</a> — add students there.
+				</p>
+				<p class="empty-hint" data-roster-empty hidden>No rosters yet.</p>
+			</div>
+
+			<div class="panel-card">
+				<p class="panel-title">Rules (<span data-rule-count>0</span>)</p>
+				<div class="rule-form" data-rule-form>
+					<label class="field-label-row">
+						<span class="field-label">Rule type</span>
+						<select class="select-input" data-rule-type-select>
+							<option value="keep-apart">Keep Apart</option>
+							<option value="keep-together">Keep Together</option>
+							<option value="pinned">Pinned Seat</option>
+							<option value="skill-balance">Skill Tier</option>
+						</select>
+					</label>
+					<div class="rule-fields" data-rule-fields></div>
+					<p class="rule-error" data-rule-error hidden></p>
+					<button type="button" class="btn btn--ghost" data-add-rule>Add Rule</button>
+				</div>
+				<ul class="rule-list" data-rule-list></ul>
+				<p class="empty-hint" data-rule-empty>No rules added yet.</p>
+			</div>
+
+			<div class="panel-card">
+				<label class="norepeat-toggle">
+					<input type="checkbox" data-avoid-repeat-toggle />
+					<span>Avoid repeat neighbors across generations</span>
+				</label>
+			</div>
+
+			<div class="generate-row">
+				<button type="button" class="btn" data-generate-btn>Generate Seating Chart</button>
+				<button type="button" class="btn btn--ghost" data-regenerate-btn disabled>Regenerate</button>
+			</div>
+		</section>
+
+		<section class="chart-section">
+			<p class="violation-warning" data-violation-warning hidden>
+				Some constraints couldn't all be satisfied this time.
+			</p>
+			<p class="capacity-hint" data-capacity-hint hidden></p>
+			<div class="chart-stage" data-chart-stage></div>
+			<p class="empty-hint" data-chart-empty>Set up your roster and rules above, then generate a chart.</p>
+		</section>
+	</div>
+</Layout>
+
+<script>
+	import { loadRosters, loadActiveRosterName, type Roster } from "../../lib/rosterStore";
+	import {
+		buildLayout,
+		defaultParams,
+		PARAM_FIELDS,
+		uShapeArms,
+		type LayoutTemplate,
+		type LayoutConfig,
+		type SeatLayout,
+	} from "../../lib/layoutEngine";
+	import {
+		generateSeatingChart,
+		recentAdjacencySet,
+		pushAdjacencyHistory,
+		type Rule,
+		type RuleType,
+		type Mode,
+	} from "../../lib/seatingChart";
+
+	const root = document.querySelector<HTMLElement>("[data-seating-root]")!;
+
+	// --- Element refs ------------------------------------------------------
+
+	const templateButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-template-btn]"));
+	const paramFieldsEl = root.querySelector<HTMLElement>("[data-param-fields]")!;
+	const modeButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-mode-btn]"));
+
+	const rosterSelect = root.querySelector<HTMLSelectElement>("[data-roster-select]")!;
+	const rosterEmptyEl = root.querySelector<HTMLElement>("[data-roster-empty]")!;
+
+	const ruleTypeSelect = root.querySelector<HTMLSelectElement>("[data-rule-type-select]")!;
+	const ruleFieldsEl = root.querySelector<HTMLElement>("[data-rule-fields]")!;
+	const ruleErrorEl = root.querySelector<HTMLElement>("[data-rule-error]")!;
+	const addRuleBtn = root.querySelector<HTMLButtonElement>("[data-add-rule]")!;
+	const ruleListEl = root.querySelector<HTMLElement>("[data-rule-list]")!;
+	const ruleEmptyEl = root.querySelector<HTMLElement>("[data-rule-empty]")!;
+	const ruleCountEl = root.querySelector<HTMLElement>("[data-rule-count]")!;
+
+	const avoidRepeatToggle = root.querySelector<HTMLInputElement>("[data-avoid-repeat-toggle]")!;
+	const generateBtn = root.querySelector<HTMLButtonElement>("[data-generate-btn]")!;
+	const regenerateBtn = root.querySelector<HTMLButtonElement>("[data-regenerate-btn]")!;
+
+	const violationWarningEl = root.querySelector<HTMLElement>("[data-violation-warning]")!;
+	const capacityHintEl = root.querySelector<HTMLElement>("[data-capacity-hint]")!;
+	const chartStageEl = root.querySelector<HTMLElement>("[data-chart-stage]")!;
+	const chartEmptyEl = root.querySelector<HTMLElement>("[data-chart-empty]")!;
+
+	// --- State ---------------------------------------------------------
+
+	let currentRoster: Roster = { name: "", students: [] };
+	let template: LayoutTemplate = "rows";
+	let params: Record<string, number> = defaultParams("rows");
+	let mode: Mode = "general";
+	let rules: Rule[] = [];
+	let ruleIdCounter = 0;
+
+	// Snapshot captured on Generate — Regenerate re-runs the algorithm
+	// against exactly this, without re-reading the live form state (so
+	// fiddling with fields after generating doesn't silently change what
+	// Regenerate produces).
+	let lastGenerate: { layout: SeatLayout; config: LayoutConfig; students: string[]; mode: Mode; rules: Rule[]; avoidRepeatNeighbors: boolean } | null = null;
+
+	function escapeHtml(value: string): string {
+		return value.replace(
+			/[&<>"']/g,
+			(char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!,
+		);
+	}
+
+	function eligibleStudents(): string[] {
+		return currentRoster.students.filter((s) => !s.absent).map((s) => s.name);
+	}
+
+	function currentLayoutConfig(): LayoutConfig {
+		return { template, params: { ...params } };
+	}
+
+	// --- Roster ------------------------------------------------------------
+
+	function renderRosterSelect() {
+		const all = loadRosters();
+		const names = Object.keys(all).sort((a, b) => a.localeCompare(b));
+		rosterEmptyEl.hidden = names.length > 0;
+		rosterSelect.hidden = names.length === 0;
+		if (names.length === 0) {
+			currentRoster = { name: "", students: [] };
+			rosterSelect.innerHTML = "";
+			return;
+		}
+		if (!names.includes(currentRoster.name)) {
+			const active = loadActiveRosterName();
+			currentRoster = all[active && all[active] ? active : names[0]];
+		}
+		rosterSelect.innerHTML = names
+			.map(
+				(name) =>
+					`<option value="${escapeHtml(name)}" ${name === currentRoster.name ? "selected" : ""}>${escapeHtml(name)}</option>`,
+			)
+			.join("");
+	}
+
+	rosterSelect.addEventListener("change", () => {
+		const all = loadRosters();
+		currentRoster = all[rosterSelect.value] ?? { name: rosterSelect.value, students: [] };
+		// Rules referencing a student no longer on the selected roster (or now
+		// absent) no longer make sense — drop them rather than leave a rule
+		// silently pointing at nobody.
+		const eligible = new Set(eligibleStudents());
+		rules = rules.filter((rule) => rule.studentNames.every((name) => eligible.has(name)));
+		renderRuleFields();
+		renderRuleList();
+		updateGenerateAvailability();
+	});
+
+	// --- Template & params ---------------------------------------------------
+
+	function renderParamFields() {
+		const fields = PARAM_FIELDS[template];
+		paramFieldsEl.innerHTML = fields
+			.map(
+				(field) => `
+			<label class="field-label-row" data-param-field="${field.key}">
+				<span class="field-label">${field.label}</span>
+				<input
+					type="number"
+					class="number-input"
+					min="${field.min}"
+					max="${field.max}"
+					value="${params[field.key] ?? field.min}"
+					data-param-input="${field.key}"
+				/>
+			</label>
+		`,
+			)
+			.join("");
+	}
+
+	paramFieldsEl.addEventListener("change", (event) => {
+		const target = event.target as HTMLInputElement;
+		const key = target.dataset.paramInput;
+		if (!key) return;
+		const field = PARAM_FIELDS[template].find((f) => f.key === key)!;
+		const value = Math.round(Number(target.value));
+		params[key] = Number.isFinite(value) ? Math.min(field.max, Math.max(field.min, value)) : field.min;
+		target.value = String(params[key]);
+		renderRuleFields();
+	});
+
+	function setTemplate(next: LayoutTemplate) {
+		template = next;
+		params = defaultParams(next);
+		templateButtons.forEach((btn) => btn.setAttribute("aria-pressed", btn.dataset.templateBtn === next ? "true" : "false"));
+		renderParamFields();
+		// A pinned rule's seat index only makes sense for the layout it was
+		// created under — switching templates invalidates any pinned seats.
+		rules = rules.filter((rule) => rule.type !== "pinned");
+		renderRuleFields();
+		renderRuleList();
+	}
+
+	templateButtons.forEach((btn) => btn.addEventListener("click", () => setTemplate(btn.dataset.templateBtn as LayoutTemplate)));
+
+	// --- Mode ------------------------------------------------------------
+
+	function setMode(next: Mode) {
+		mode = next;
+		modeButtons.forEach((btn) => btn.setAttribute("aria-selected", btn.dataset.modeBtn === next ? "true" : "false"));
+	}
+
+	modeButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.modeBtn as Mode)));
+
+	// --- Rule form -----------------------------------------------------------
+
+	function studentOptions(selectedIndex = 0): string {
+		const students = eligibleStudents();
+		return students
+			.map((name, i) => `<option value="${escapeHtml(name)}" ${i === selectedIndex ? "selected" : ""}>${escapeHtml(name)}</option>`)
+			.join("");
+	}
+
+	function seatOptions(): string {
+		const layout = buildLayout(currentLayoutConfig());
+		return Array.from({ length: layout.seatCount }, (_, i) => `<option value="${i}">Seat ${i + 1}</option>`).join("");
+	}
+
+	function renderRuleFields() {
+		const type = ruleTypeSelect.value as RuleType;
+		const students = eligibleStudents();
+		ruleErrorEl.hidden = true;
+
+		if (students.length === 0) {
+			ruleFieldsEl.innerHTML = `<p class="panel-hint">Add students to this roster first.</p>`;
+			addRuleBtn.disabled = true;
+			return;
+		}
+
+		if (type === "keep-apart" || type === "keep-together") {
+			ruleFieldsEl.innerHTML = `
+				<label class="field-label-row">
+					<span class="field-label">Student A</span>
+					<select class="select-input" data-rule-student="0">${studentOptions(0)}</select>
+				</label>
+				<label class="field-label-row">
+					<span class="field-label">Student B</span>
+					<select class="select-input" data-rule-student="1">${studentOptions(Math.min(1, students.length - 1))}</select>
+				</label>
+			`;
+			addRuleBtn.disabled = students.length < 2;
+		} else if (type === "pinned") {
+			ruleFieldsEl.innerHTML = `
+				<label class="field-label-row">
+					<span class="field-label">Student</span>
+					<select class="select-input" data-rule-student="0">${studentOptions(0)}</select>
+				</label>
+				<label class="field-label-row">
+					<span class="field-label">Seat</span>
+					<select class="select-input" data-rule-seat>${seatOptions()}</select>
+				</label>
+			`;
+			addRuleBtn.disabled = false;
+		} else {
+			ruleFieldsEl.innerHTML = `
+				<label class="field-label-row">
+					<span class="field-label">Student</span>
+					<select class="select-input" data-rule-student="0">${studentOptions(0)}</select>
+				</label>
+				<label class="field-label-row">
+					<span class="field-label">Skill tier</span>
+					<select class="select-input" data-rule-tier>
+						<option value="1">Tier 1</option>
+						<option value="2">Tier 2</option>
+						<option value="3">Tier 3</option>
+					</select>
+				</label>
+			`;
+			addRuleBtn.disabled = false;
+		}
+	}
+
+	ruleTypeSelect.addEventListener("change", renderRuleFields);
+
+	function ruleSummary(rule: Rule): string {
+		if (rule.type === "keep-apart") return `Keep apart: ${rule.studentNames[0]} &amp; ${rule.studentNames[1]}`;
+		if (rule.type === "keep-together") return `Keep together: ${rule.studentNames[0]} &amp; ${rule.studentNames[1]}`;
+		if (rule.type === "pinned") return `Pinned: ${rule.studentNames[0]} → Seat ${(rule.seatIndex ?? 0) + 1}`;
+		return `Skill tier ${rule.skillTier}: ${rule.studentNames[0]}`;
+	}
+
+	function renderRuleList() {
+		ruleCountEl.textContent = String(rules.length);
+		ruleEmptyEl.hidden = rules.length > 0;
+		ruleListEl.innerHTML = rules
+			.map(
+				(rule) => `
+			<li class="rule-row" data-rule-id="${rule.id}">
+				<span class="rule-summary">${ruleSummary(rule)}</span>
+				<button type="button" class="remove-btn" data-remove-rule aria-label="Remove rule">×</button>
+			</li>
+		`,
+			)
+			.join("");
+	}
+
+	function showRuleError(message: string) {
+		ruleErrorEl.textContent = message;
+		ruleErrorEl.hidden = false;
+	}
+
+	addRuleBtn.addEventListener("click", () => {
+		const type = ruleTypeSelect.value as RuleType;
+		ruleErrorEl.hidden = true;
+
+		if (type === "keep-apart" || type === "keep-together") {
+			const a = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="0"]')!.value;
+			const b = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="1"]')!.value;
+			if (!a || !b || a === b) {
+				showRuleError("Pick two different students.");
+				return;
+			}
+			rules.push({ id: `rule-${++ruleIdCounter}`, type, studentNames: [a, b] });
+		} else if (type === "pinned") {
+			const name = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="0"]')!.value;
+			const seatIndex = Number(ruleFieldsEl.querySelector<HTMLSelectElement>("[data-rule-seat]")!.value);
+			if (!name) {
+				showRuleError("Pick a student.");
+				return;
+			}
+			// Only one pin per student, and only one student per seat — a new
+			// pin replaces any earlier one that conflicts with it.
+			rules = rules.filter(
+				(rule) => !(rule.type === "pinned" && (rule.studentNames[0] === name || rule.seatIndex === seatIndex)),
+			);
+			rules.push({ id: `rule-${++ruleIdCounter}`, type, studentNames: [name], seatIndex });
+		} else {
+			const name = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="0"]')!.value;
+			const skillTier = Number(ruleFieldsEl.querySelector<HTMLSelectElement>("[data-rule-tier]")!.value) as 1 | 2 | 3;
+			if (!name) {
+				showRuleError("Pick a student.");
+				return;
+			}
+			rules = rules.filter((rule) => !(rule.type === "skill-balance" && rule.studentNames[0] === name));
+			rules.push({ id: `rule-${++ruleIdCounter}`, type, studentNames: [name], skillTier });
+		}
+
+		renderRuleList();
+	});
+
+	ruleListEl.addEventListener("click", (event) => {
+		const target = event.target as HTMLElement;
+		const row = target.closest<HTMLElement>("[data-rule-id]");
+		if (!row || !target.closest("[data-remove-rule]")) return;
+		rules = rules.filter((rule) => rule.id !== row.dataset.ruleId);
+		renderRuleList();
+		renderRuleFields();
+	});
+
+	// --- Chart rendering -------------------------------------------------
+
+	function seatCellHtml(index: number, name: string | null, pinned: boolean, revealIndex: number): string {
+		const classes = ["seat-cell"];
+		if (!name) classes.push("seat-cell--empty");
+		if (pinned) classes.push("seat-cell--pinned");
+		return `
+			<div class="${classes.join(" ")}" style="--seat-i: ${Math.min(revealIndex, 40)}">
+				<span class="seat-index">${index + 1}</span>
+				<span class="seat-name">${name ? escapeHtml(name) : "—"}</span>
+			</div>
+		`;
+	}
+
+	function renderChart(config: LayoutConfig, layout: SeatLayout, assignments: (string | null)[], pinnedSeats: Set<number>) {
+		let html = "";
+		let revealIndex = 0;
+
+		if (config.template === "rows") {
+			const cols = config.params.cols;
+			html = `<div class="rows-grid" style="--cols: ${cols}">${assignments
+				.map((name, i) => seatCellHtml(i, name, pinnedSeats.has(i), revealIndex++))
+				.join("")}</div>`;
+		} else if (config.template === "pods") {
+			const podSize = config.params.podSize;
+			const podCount = config.params.podCount;
+			const pods: string[] = [];
+			for (let p = 0; p < podCount; p++) {
+				const seats = Array.from({ length: podSize }, (_, k) => p * podSize + k);
+				pods.push(
+					`<div class="pod-box">${seats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}</div>`,
+				);
+			}
+			html = `<div class="pods-grid">${pods.join("")}</div>`;
+		} else if (config.template === "pairs") {
+			const pairCount = config.params.pairCount;
+			const pairs: string[] = [];
+			for (let p = 0; p < pairCount; p++) {
+				const seats = [p * 2, p * 2 + 1];
+				pairs.push(
+					`<div class="pair-box">${seats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}</div>`,
+				);
+			}
+			html = `<div class="pairs-grid">${pairs.join("")}</div>`;
+		} else {
+			const { left, top, right } = uShapeArms(config.params.seatCount);
+			const leftSeats = Array.from({ length: left }, (_, i) => i);
+			const topSeats = Array.from({ length: top }, (_, i) => left + i);
+			const rightSeats = Array.from({ length: right }, (_, i) => left + top + i);
+			html = `
+				<div class="ushape-layout">
+					<div class="ushape-top">
+						${topSeats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}
+					</div>
+					<div class="ushape-arms">
+						<div class="ushape-left">
+							${[...leftSeats]
+								.reverse()
+								.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++))
+								.join("")}
+						</div>
+						<div class="ushape-right">
+							${rightSeats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		chartStageEl.innerHTML = html;
+		chartStageEl.classList.remove("is-revealing");
+		void chartStageEl.offsetWidth;
+		chartStageEl.classList.add("is-revealing");
+		chartEmptyEl.hidden = true;
+		chartStageEl.hidden = false;
+	}
+
+	// --- Generate / Regenerate -----------------------------------------------
+
+	function updateGenerateAvailability() {
+		generateBtn.disabled = eligibleStudents().length === 0;
+	}
+
+	function runGenerate(layout: SeatLayout, config: LayoutConfig, students: string[], useMode: Mode, useRules: Rule[], avoidRepeat: boolean) {
+		const recentAdjacency = recentAdjacencySet(currentRoster.name);
+		const result = generateSeatingChart({
+			layout,
+			students,
+			mode: useMode,
+			rules: useRules,
+			avoidRepeatNeighbors: avoidRepeat,
+			recentAdjacency,
+		});
+		pushAdjacencyHistory(currentRoster.name, result.adjacencyPairs);
+
+		const pinnedSeats = new Set(
+			useRules.filter((r) => r.type === "pinned" && r.seatIndex !== undefined).map((r) => r.seatIndex!),
+		);
+		renderChart(config, layout, result.assignments, pinnedSeats);
+
+		violationWarningEl.hidden = result.satisfied;
+
+		const seatedCount = result.assignments.filter(Boolean).length;
+		const unseated = students.length - seatedCount;
+		if (unseated > 0) {
+			capacityHintEl.hidden = false;
+			capacityHintEl.textContent = `${students.length} students, ${layout.seatCount} seats — ${unseated} student${unseated === 1 ? "" : "s"} won't be seated.`;
+		} else {
+			capacityHintEl.hidden = true;
+		}
+
+		regenerateBtn.disabled = false;
+	}
+
+	generateBtn.addEventListener("click", () => {
+		const students = eligibleStudents();
+		if (students.length === 0) return;
+		const config = currentLayoutConfig();
+		const layout = buildLayout(config);
+		const avoidRepeat = avoidRepeatToggle.checked;
+		const ruleSnapshot = rules.map((r) => ({ ...r, studentNames: [...r.studentNames] }));
+		lastGenerate = { layout, config, students, mode, rules: ruleSnapshot, avoidRepeatNeighbors: avoidRepeat };
+		runGenerate(layout, config, students, mode, ruleSnapshot, avoidRepeat);
+	});
+
+	regenerateBtn.addEventListener("click", () => {
+		if (!lastGenerate) return;
+		runGenerate(
+			lastGenerate.layout,
+			lastGenerate.config,
+			lastGenerate.students,
+			lastGenerate.mode,
+			lastGenerate.rules,
+			lastGenerate.avoidRepeatNeighbors,
+		);
+	});
+
+	// --- Init ------------------------------------------------------------
+
+	(function init() {
+		renderRosterSelect();
+		renderParamFields();
+		renderRuleFields();
+		renderRuleList();
+		updateGenerateAvailability();
+	})();
+</script>
+
+<!--
+  is:global (not scoped) — like student-picker.astro, most of this page's
+  content (param fields, rule list rows, seat cells) is built client-side via
+  innerHTML rather than rendered by Astro's own template, so none of it ever
+  receives Astro's scope attribute. A scoped <style> here would compile its
+  selectors to require that attribute and silently fail to match any of this
+  dynamic content.
+-->
+<style is:global>
+	.seating-tool {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.25rem;
+		padding: 1rem 0 2rem;
+	}
+
+	.seating-title {
+		margin: 0;
+		font-size: clamp(1.4rem, 4.5vw, 1.8rem);
+		text-align: center;
+	}
+
+	/* Custom focus-visible ring across every interactive element on this
+	   page — buttons/selects/inputs otherwise rely on inconsistent
+	   browser defaults, and the spec calls for clearly visible keyboard
+	   focus. */
+	.seating-tool button:focus-visible,
+	.seating-tool select:focus-visible,
+	.seating-tool input:focus-visible,
+	.seating-tool a:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.setup-panel {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+	}
+
+	.panel-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.7rem;
+		width: 100%;
+		max-width: 32rem;
+		padding: 1.1rem 1.25rem;
+		border-radius: 16px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.panel-title {
+		margin: 0;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+		text-align: center;
+	}
+
+	.panel-hint {
+		margin: -0.3rem 0 0;
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	.panel-hint a {
+		color: var(--color-accent);
+	}
+
+	.empty-hint {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	/* --- Template picker ---------------------------------------------------- */
+
+	.template-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.6rem;
+		width: 100%;
+	}
+
+	.template-btn {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.75rem 0.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		background: var(--color-bg);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			background 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.template-btn svg {
+		width: 1.8rem;
+		height: 1.8rem;
+	}
+
+	.template-btn:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.template-btn[aria-pressed="true"] {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+	}
+
+	/* --- Form controls (shared visual language with student-picker.astro) -- */
+
+	.field-label-row {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		width: 100%;
+	}
+
+	.field-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.param-fields {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	.param-fields .field-label-row {
+		flex: 1 1 8rem;
+	}
+
+	.select-input,
+	.number-input {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.55rem 0.7rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.select-input:focus,
+	.number-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
+	}
+
+	.number-input::-webkit-inner-spin-button,
+	.number-input::-webkit-outer-spin-button {
+		appearance: none;
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	/* --- Mode tabs (identical pattern to student-picker's mode-toggle) ------ */
+
+	.mode-toggle {
+		display: inline-flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.2rem;
+		padding: 0.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg);
+	}
+
+	.mode-btn {
+		padding: 0.45rem 1.1rem;
+		border: none;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.mode-btn[aria-selected="true"] {
+		background: color-mix(in srgb, var(--color-accent) 24%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.mode-btn:not([aria-selected="true"]):hover {
+		color: var(--color-text);
+	}
+
+	/* --- Rules --------------------------------------------------------------- */
+
+	.rule-form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		width: 100%;
+	}
+
+	.rule-fields {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
+
+	.rule-fields .field-label-row {
+		flex: 1 1 9rem;
+	}
+
+	.rule-error {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--color-danger);
+	}
+
+	.rule-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		max-height: 14rem;
+		overflow-y: auto;
+	}
+
+	.rule-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6rem;
+		padding: 0.5rem 0.6rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.rule-summary {
+		font-size: 0.85rem;
+	}
+
+	.remove-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		flex-shrink: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.remove-btn:hover {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+	}
+
+	/* --- Avoid-repeat toggle -------------------------------------------------- */
+
+	.norepeat-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.norepeat-toggle input[type="checkbox"] {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-accent);
+		cursor: pointer;
+	}
+
+	/* --- Generate / Regenerate ------------------------------------------------ */
+
+	.generate-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.6rem;
+	}
+
+	.btn {
+		padding: 0.5rem 1.2rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		text-shadow: 0 0 6px var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.15s ease,
+			background 0.15s ease,
+			opacity 0.15s ease;
+	}
+
+	.btn:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 70%, transparent);
+	}
+
+	.btn:active:not(:disabled) {
+		transform: scale(0.96);
+	}
+
+	.btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost {
+		background: transparent;
+		color: var(--color-accent);
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	/* --- Chart stage ----------------------------------------------------------- */
+
+	.chart-section {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	.violation-warning {
+		margin: 0;
+		padding: 0.5rem 0.9rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+		color: var(--color-danger);
+		font-size: 0.85rem;
+		text-align: center;
+	}
+
+	.capacity-hint {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	.chart-stage {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	.chart-stage[hidden] {
+		display: none;
+	}
+
+	.seat-cell {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.15rem;
+		min-width: 4.5rem;
+		min-height: 3.2rem;
+		padding: 0.4rem 0.5rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		box-sizing: border-box;
+	}
+
+	.seat-index {
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		color: var(--color-text-muted);
+	}
+
+	.seat-name {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		color: var(--color-text);
+		text-align: center;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		max-width: 100%;
+	}
+
+	.seat-cell--empty .seat-name {
+		color: var(--color-text-muted);
+	}
+
+	/* Pinned seats get an amber glow, matching the approved mockup's
+	   "pinned-seat glow" treatment. */
+	.seat-cell--pinned {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 55%, transparent);
+	}
+
+	.seat-cell--pinned .seat-name {
+		color: #fff3d6;
+	}
+
+	/* Reveal animation for a freshly (re)generated chart — a quick staggered
+	   fade/scale-in per seat. Skipped entirely under prefers-reduced-motion. */
+	.chart-stage.is-revealing .seat-cell {
+		animation: seat-reveal 0.3s ease-out backwards;
+		animation-delay: calc(var(--seat-i, 0) * 12ms);
+	}
+
+	@keyframes seat-reveal {
+		from {
+			opacity: 0;
+			transform: scale(0.85);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.chart-stage.is-revealing .seat-cell {
+			animation: none;
+		}
+	}
+
+	/* Rows */
+	.rows-grid {
+		display: grid;
+		grid-template-columns: repeat(var(--cols, 6), minmax(4rem, 1fr));
+		gap: 0.5rem;
+		width: 100%;
+		max-width: 48rem;
+	}
+
+	/* Pods */
+	.pods-grid {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 1rem;
+		width: 100%;
+		max-width: 48rem;
+	}
+
+	.pod-box {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.4rem;
+		padding: 0.6rem;
+		border-radius: 14px;
+		border: 1px dashed var(--color-border);
+	}
+
+	/* Pairs */
+	.pairs-grid {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.75rem;
+		width: 100%;
+		max-width: 48rem;
+	}
+
+	.pair-box {
+		display: flex;
+		gap: 0.3rem;
+		padding: 0.4rem;
+		border-radius: 12px;
+		border: 1px dashed var(--color-border);
+	}
+
+	/* U-Shape — a horseshoe formed from a top row plus two arms hanging
+	   below it, open at the bottom-center (the "gap in the middle front"
+	   the spec describes). */
+	.ushape-layout {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+		max-width: 48rem;
+	}
+
+	.ushape-top {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+	}
+
+	.ushape-arms {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+		gap: 1.5rem;
+	}
+
+	.ushape-left,
+	.ushape-right {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+</style>

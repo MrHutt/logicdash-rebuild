@@ -1,76 +1,13 @@
-// Pure logic + localStorage persistence for /tools/student-picker — an
-// unpublished classroom tool. Kept separate from the page's own <script> so
-// the roster CRUD, shuffling, and grouping math can be reasoned about (and
-// unit-tested, if that's ever added) without the DOM/animation code around
-// them.
+// Pure logic for /tools/student-picker — an unpublished classroom tool.
+// Kept separate from the page's own <script> so the shuffling and grouping
+// math can be reasoned about (and unit-tested, if that's ever added) without
+// the DOM/animation code around them. Roster persistence itself now lives in
+// rosterStore.ts (shared with /tools/seating-chart, which reads the same
+// rosters) — re-exported here so this file's existing imports elsewhere
+// don't need to change.
 
-export interface Student {
-	name: string;
-	/** Temporarily excluded from picks/groups/pairs without removing them
-	 *  from the roster — a sick or pulled-out-of-class student, say. */
-	absent: boolean;
-}
-
-export interface Roster {
-	name: string;
-	students: Student[];
-}
-
-const ROSTERS_KEY = "logicdash-student-picker-rosters";
-const ACTIVE_ROSTER_KEY = "logicdash-student-picker-active";
-
-/** All saved rosters, keyed by name. Corrupt/missing storage just yields no
- *  saved rosters rather than throwing — this is a convenience feature, not
- *  something that should ever break the page. */
-export function loadRosters(): Record<string, Roster> {
-	try {
-		const raw = localStorage.getItem(ROSTERS_KEY);
-		if (!raw) return {};
-		const parsed = JSON.parse(raw);
-		return typeof parsed === "object" && parsed !== null ? parsed : {};
-	} catch {
-		return {};
-	}
-}
-
-export function saveRoster(roster: Roster): void {
-	try {
-		const all = loadRosters();
-		all[roster.name] = roster;
-		localStorage.setItem(ROSTERS_KEY, JSON.stringify(all));
-	} catch {
-		// Storage full/unavailable (private browsing, quota, etc.) — the
-		// roster still works for the rest of this session, it just won't
-		// survive a reload. Not worth surfacing an error for a convenience
-		// feature on a classroom tool.
-	}
-}
-
-export function deleteRoster(name: string): void {
-	try {
-		const all = loadRosters();
-		delete all[name];
-		localStorage.setItem(ROSTERS_KEY, JSON.stringify(all));
-	} catch {
-		// See saveRoster().
-	}
-}
-
-export function loadActiveRosterName(): string | null {
-	try {
-		return localStorage.getItem(ACTIVE_ROSTER_KEY);
-	} catch {
-		return null;
-	}
-}
-
-export function saveActiveRosterName(name: string): void {
-	try {
-		localStorage.setItem(ACTIVE_ROSTER_KEY, name);
-	} catch {
-		// See saveRoster().
-	}
-}
+export type { Student, Roster } from "./rosterStore";
+export { loadRosters, saveRoster, deleteRoster, loadActiveRosterName, saveActiveRosterName } from "./rosterStore";
 
 /** Fisher-Yates — every permutation equally likely, unlike a naive
  *  sort-by-random-comparator shuffle. Returns a new array; never mutates. */
