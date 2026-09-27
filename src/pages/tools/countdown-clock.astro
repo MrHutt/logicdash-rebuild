@@ -1,8 +1,7 @@
 ---
-// Unpublished classroom tool — reachable only by direct URL. Deliberately not
-// linked from Header.astro, Footer.astro, or anywhere else in the site, and
-// excluded from the sitemap (see the sitemap() filter in astro.config.mjs)
-// and from robots.txt. Remove those exclusions when this is ready to launch.
+// Published classroom tool — linked from the /tools hub page (src/pages/
+// tools/index.astro) and reachable from the main nav's Tools link. Indexable:
+// included in the sitemap (see astro.config.mjs) and allowed in robots.txt.
 import Layout from "../../layouts/Layout.astro";
 import SegmentDigit from "../../components/SegmentDigit.astro";
 import SplitFlapDigit from "../../components/SplitFlapDigit.astro";
@@ -15,9 +14,18 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 
 <Layout
 	title="Countdown Clock"
-	description="A retro-style classroom countdown timer and clock, with six authentic display styles."
+	description="A retro-style classroom countdown timer and clock with ten authentic display styles — Nixie tube, VFD, LED, split-flap, and more — ready to project fullscreen."
 >
 	<div class="clock-tool" data-clock-root>
+		<div class="clock-header">
+			<h1 class="clock-title">Countdown Clock</h1>
+			<p class="clock-subtitle">
+				A classroom countdown timer and clock with ten retro display styles modeled on real historical
+				technology — Nixie tubes, VFDs, split-flap boards, and more. Set a time, project it fullscreen, and
+				run warm-ups, timed activities, or tests without anyone squinting at a phone.
+			</p>
+		</div>
+
 		<div class="display-shell">
 			<div class="display-stage" data-display-stage data-style="nixie">
 				<div class="nixieglyph-display" data-nixieglyph-display hidden>
@@ -891,6 +899,27 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		align-items: center;
 		gap: 1.25rem;
 		padding: 1rem 0 2rem;
+	}
+
+	.clock-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		max-width: 34rem;
+		text-align: center;
+	}
+
+	.clock-title {
+		margin: 0;
+		font-size: 1.4rem;
+	}
+
+	.clock-subtitle {
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--color-text-muted);
 	}
 
 	/* --- Tool bar / icon buttons ------------------------------------------ */
@@ -2041,7 +2070,8 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 	}
 
 	body.clock-fullscreen .site-header,
-	body.clock-fullscreen .site-footer {
+	body.clock-fullscreen .site-footer,
+	body.clock-fullscreen .clock-header {
 		display: none;
 	}
 

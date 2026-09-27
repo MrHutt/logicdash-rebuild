@@ -1,9 +1,7 @@
 ---
-// Unpublished classroom tool — reachable only by direct URL, same treatment
-// as /tools/countdown-clock: not linked from Header.astro/Footer.astro, and
-// excluded from the sitemap (see the sitemap() filter in astro.config.mjs).
-// /tools/ is also disallowed wholesale in public/robots.txt already, so no
-// robots.txt change was needed for this page specifically.
+// Published classroom tool — linked from the /tools hub page (src/pages/
+// tools/index.astro) and reachable from the main nav's Tools link. Indexable:
+// included in the sitemap (see astro.config.mjs) and allowed in robots.txt.
 import Layout from "../../layouts/Layout.astro";
 ---
 
@@ -12,84 +10,105 @@ import Layout from "../../layouts/Layout.astro";
 	description="A classroom random student/group picker — pick a random student, split a roster into groups or pairs, project it fullscreen."
 >
 	<div class="picker-tool" data-picker-root>
-		<h1 class="picker-title">Student Picker</h1>
+		<div class="picker-header">
+			<h1 class="picker-title">Student Picker</h1>
+			<p class="picker-subtitle">
+				A fair, no-repeat random picker for calling on students, splitting the class into groups or pairs,
+				or revealing the whole roster in random order — built to project fullscreen at the front of the
+				room.
+			</p>
+		</div>
 
-		<div class="tool-bar">
+		<div class="header-row">
+			<div class="mode-toggle" data-mode-toggle>
+				<button type="button" class="mode-btn" data-mode-btn="roster" aria-selected="true">Roster</button>
+				<button type="button" class="mode-btn" data-mode-btn="pick" aria-selected="false">Pick One</button>
+				<button type="button" class="mode-btn" data-mode-btn="groups" aria-selected="false">Groups</button>
+				<button type="button" class="mode-btn" data-mode-btn="pairs" aria-selected="false">Pairs</button>
+			</div>
 			<button type="button" class="icon-btn fullscreen-btn" data-fullscreen-btn aria-label="Enter fullscreen" hidden>
 				⛶
 			</button>
 		</div>
 
-		<div class="mode-toggle" data-mode-toggle>
-			<button type="button" class="mode-btn" data-mode-btn="roster" aria-selected="true">Roster</button>
-			<button type="button" class="mode-btn" data-mode-btn="pick" aria-selected="false">Pick One</button>
-			<button type="button" class="mode-btn" data-mode-btn="groups" aria-selected="false">Groups</button>
-			<button type="button" class="mode-btn" data-mode-btn="pairs" aria-selected="false">Pairs</button>
-		</div>
-
 		<!-- ================= Roster ================= -->
 		<section class="panel" data-panel="roster">
-			<div class="panel-card">
-				<p class="panel-title">Saved Rosters</p>
-				<div class="roster-select-row">
+			<div class="roster-columns">
+				<div class="panel-card">
+					<p class="panel-title">Saved Rosters</p>
 					<select class="select-input" data-roster-select aria-label="Saved rosters"></select>
-					<button type="button" class="btn btn--ghost" data-new-roster>New</button>
-					<button type="button" class="btn btn--ghost btn--muted" data-delete-roster>Delete</button>
+					<div class="roster-select-row">
+						<button type="button" class="btn btn--ghost" data-new-roster>New</button>
+						<button type="button" class="btn btn--ghost btn--muted" data-delete-roster>Delete</button>
+					</div>
+					<label class="field-label-row">
+						<span class="field-label">Roster name</span>
+						<input type="text" class="text-input" data-roster-name-input placeholder="e.g. Period 3" />
+					</label>
 				</div>
-				<label class="field-label-row">
-					<span class="field-label">Roster name</span>
-					<input type="text" class="text-input" data-roster-name-input placeholder="e.g. Period 3" />
-				</label>
-			</div>
 
-			<div class="panel-card">
-				<p class="panel-title">Paste Names</p>
-				<p class="panel-hint">One name per line — quick way to bulk-add a whole class.</p>
-				<textarea class="bulk-textarea" data-bulk-textarea rows="6" placeholder={"Alicia\nBen\nCarlos\n…"}
-				></textarea>
-				<button type="button" class="btn" data-add-bulk>Add Names</button>
-			</div>
-
-			<div class="panel-card">
-				<p class="panel-title">Students (<span data-roster-count>0</span>)</p>
-				<div class="add-single-row">
-					<input type="text" class="text-input" data-add-name-input placeholder="Add one student" />
-					<button type="button" class="btn btn--ghost" data-add-name>Add</button>
+				<div class="panel-card">
+					<p class="panel-title">Paste Names</p>
+					<p class="panel-hint">One name per line — quick way to bulk-add a whole class.</p>
+					<textarea class="bulk-textarea" data-bulk-textarea rows="6" placeholder={"Alicia\nBen\nCarlos\n…"}
+					></textarea>
+					<button type="button" class="btn" data-add-bulk>Add Names</button>
 				</div>
-				<ul class="roster-list" data-roster-list></ul>
-				<p class="empty-hint" data-roster-empty>No students yet — paste a list above to get started.</p>
+
+				<div class="panel-card">
+					<p class="panel-title">Students (<span data-roster-count>0</span>)</p>
+					<div class="add-single-row">
+						<input type="text" class="text-input" data-add-name-input placeholder="Add one student" />
+						<button type="button" class="btn btn--ghost" data-add-name>Add</button>
+					</div>
+					<ul class="roster-list" data-roster-list></ul>
+					<p class="empty-hint" data-roster-empty>No students yet — paste a list above to get started.</p>
+				</div>
 			</div>
 		</section>
 
 		<!-- ================= Pick One ================= -->
 		<section class="panel" data-panel="pick" hidden>
-			<div class="panel-card panel-card--stage" data-pick-stage>
-				<label class="norepeat-toggle">
-					<input type="checkbox" data-norepeat-toggle checked />
-					<span>No-repeat mode</span>
-				</label>
-
-				<div class="reel-viewport" data-reel-viewport>
-					<div class="reel-track" data-reel-track>
-						<span class="reel-tile reel-tile--placeholder">?</span>
+			<div class="pick-columns">
+				<div class="panel-card panel-card--stage" data-pick-stage>
+					<div class="pick-tool-row">
+						<button
+							type="button"
+							class="icon-btn settings-btn"
+							data-settings-btn
+							aria-label="Pick settings"
+							aria-expanded="false"
+						>
+							⚙
+						</button>
 					</div>
-					<span class="reel-marker reel-marker--top" aria-hidden="true"></span>
-					<span class="reel-marker reel-marker--bottom" aria-hidden="true"></span>
+					<div class="controls-drawer" data-controls-drawer hidden>
+						<label class="norepeat-toggle">
+							<input type="checkbox" data-sound-toggle />
+							<span>Sound</span>
+						</label>
+					</div>
+
+					<div class="pick-tiles-row" data-pick-tiles></div>
+
+					<div class="pick-roller" data-pick-roller>
+						<span class="pick-roller-ghost" data-pick-roller-ghost aria-hidden="true"></span>
+						<span class="pick-roller-main" data-pick-roller-main></span>
+					</div>
+					<p class="empty-hint" data-pick-empty hidden>Add some students on the Roster tab first.</p>
+
+					<button type="button" class="btn" data-pick-btn disabled>Pick a Student</button>
 				</div>
 
-				<p class="pick-result" data-pick-result></p>
-				<p class="empty-hint" data-pick-empty hidden>Add some students on the Roster tab first.</p>
-
-				<button type="button" class="btn" data-pick-btn disabled>Pick a Student</button>
-			</div>
-
-			<div class="panel-card">
-				<div class="panel-header-row">
-					<p class="panel-title">Session History</p>
-					<button type="button" class="btn btn--ghost btn--muted" data-reset-history>Reset History</button>
+				<div class="panel-card panel-card--history">
+					<button type="button" class="btn btn--ghost" data-pick-whole-class disabled>Pick Whole Class</button>
+					<div class="panel-header-row">
+						<p class="panel-title">Session History</p>
+						<button type="button" class="btn btn--ghost btn--muted" data-reset-history>Reset</button>
+					</div>
+					<ul class="history-list" data-history-list></ul>
+					<p class="empty-hint" data-history-empty>Nobody's been picked yet this session.</p>
 				</div>
-				<ul class="history-list" data-history-list></ul>
-				<p class="empty-hint" data-history-empty>Nobody's been picked yet this session.</p>
 			</div>
 		</section>
 
@@ -158,6 +177,7 @@ import Layout from "../../layouts/Layout.astro";
 		distributeIntoGroups,
 		groupsOfSize,
 		makePairs,
+		shuffle,
 		type Roster,
 	} from "../../lib/studentPicker";
 
@@ -182,12 +202,16 @@ import Layout from "../../layouts/Layout.astro";
 	const rosterListEl = root.querySelector<HTMLElement>("[data-roster-list]")!;
 	const rosterEmptyEl = root.querySelector<HTMLElement>("[data-roster-empty]")!;
 
-	const norepeatToggle = root.querySelector<HTMLInputElement>("[data-norepeat-toggle]")!;
-	const reelViewport = root.querySelector<HTMLElement>("[data-reel-viewport]")!;
-	const reelTrack = root.querySelector<HTMLElement>("[data-reel-track]")!;
-	const pickResultEl = root.querySelector<HTMLElement>("[data-pick-result]")!;
+	const settingsBtn = root.querySelector<HTMLButtonElement>("[data-settings-btn]")!;
+	const controlsDrawer = root.querySelector<HTMLElement>("[data-controls-drawer]")!;
+	const soundToggle = root.querySelector<HTMLInputElement>("[data-sound-toggle]")!;
+	const pickTilesEl = root.querySelector<HTMLElement>("[data-pick-tiles]")!;
+	const pickRollerEl = root.querySelector<HTMLElement>("[data-pick-roller]")!;
+	const pickRollerMainEl = root.querySelector<HTMLElement>("[data-pick-roller-main]")!;
+	const pickRollerGhostEl = root.querySelector<HTMLElement>("[data-pick-roller-ghost]")!;
 	const pickEmptyEl = root.querySelector<HTMLElement>("[data-pick-empty]")!;
 	const pickBtn = root.querySelector<HTMLButtonElement>("[data-pick-btn]")!;
+	const pickWholeClassBtn = root.querySelector<HTMLButtonElement>("[data-pick-whole-class]")!;
 	const resetHistoryBtn = root.querySelector<HTMLButtonElement>("[data-reset-history]")!;
 	const historyListEl = root.querySelector<HTMLElement>("[data-history-list]")!;
 	const historyEmptyEl = root.querySelector<HTMLElement>("[data-history-empty]")!;
@@ -215,6 +239,12 @@ import Layout from "../../layouts/Layout.astro";
 	// it, per the spec's "easy reset history button".
 	let sessionHistory: string[] = [];
 	let isSpinning = false;
+	// True from the moment a reveal lands until the NEXT pick starts —
+	// distinct from isSpinning (which goes false right at landing, so the
+	// pick button re-enables immediately). Guards updatePickAvailability()
+	// against rebuilding the tile row and erasing the just-revealed winner
+	// the instant a roster-panel edit or any other update fires afterward.
+	let showingReveal = false;
 
 	function escapeHtml(value: string): string {
 		return value.replace(
@@ -260,9 +290,11 @@ import Layout from "../../layouts/Layout.astro";
 		rosterCountEl.textContent = String(currentRoster.students.length);
 		rosterEmptyEl.hidden = currentRoster.students.length > 0;
 		rosterListEl.innerHTML = currentRoster.students
-			.map(
-				(student, i) => `
+			.map((student, i) => {
+				const initial = student.name.trim().charAt(0).toUpperCase() || "?";
+				return `
 			<li class="roster-row ${student.absent ? "roster-row--absent" : ""}" data-index="${i}">
+				<span class="roster-avatar" aria-hidden="true">${escapeHtml(initial)}</span>
 				<span class="roster-row-name">${escapeHtml(student.name)}</span>
 				<label class="absent-toggle">
 					<input type="checkbox" data-absent-checkbox ${student.absent ? "checked" : ""} />
@@ -270,11 +302,17 @@ import Layout from "../../layouts/Layout.astro";
 				</label>
 				<button type="button" class="remove-btn" data-remove-student aria-label="Remove ${escapeHtml(student.name)}">×</button>
 			</li>
-		`,
-			)
+		`;
+			})
 			.join("");
 	}
 
+	/** Full rebuild of the single Picked/Session History list from
+	 *  sessionHistory — this list now does double duty as both the "who's
+	 *  been picked" status display and the permanent history log (see
+	 *  addHistoryEntry() below for the incremental, animated version of the
+	 *  same list used when a name is actually picked). Used for a plain,
+	 *  unanimated re-render: on reset, and at page load. */
 	function renderHistory() {
 		historyListEl.innerHTML = sessionHistory
 			.map((name, i) => `<li><span class="history-index">${i + 1}.</span> ${escapeHtml(name)}</li>`)
@@ -282,11 +320,32 @@ import Layout from "../../layouts/Layout.astro";
 		historyEmptyEl.hidden = sessionHistory.length > 0;
 	}
 
+	/** Appends a single entry to the Picked/Session History list — call
+	 *  after sessionHistory.push(name), so sessionHistory.length is already
+	 *  the correct 1-based position. `animationClass` picks the entrance
+	 *  motion: a single Pick One reveal uses the slow "drift-in" (this name
+	 *  just left the reveal spot), while Pick Whole Class's staggered
+	 *  reveal uses the quicker "enter" fade (there's no suspense left to
+	 *  play out, just a list filling in). */
+	function addHistoryEntry(name: string, animationClass: "history-item--drift-in" | "history-item--enter") {
+		historyEmptyEl.hidden = true;
+		const li = document.createElement("li");
+		li.className = animationClass;
+		li.innerHTML = `<span class="history-index">${sessionHistory.length}.</span> ${escapeHtml(name)}`;
+		historyListEl.appendChild(li);
+	}
+
 	function updatePickAvailability() {
 		const eligible = eligibleNames();
 		const noneEligible = eligible.length === 0;
 		pickBtn.disabled = noneEligible || isSpinning;
+		pickWholeClassBtn.disabled = noneEligible || isSpinning;
 		pickEmptyEl.hidden = !noneEligible;
+		// Never rebuild the tile row while a sequence is running, or while
+		// its result is still showing — either would blow away the
+		// just-revealed winner before the teacher's even had a chance to see
+		// it. Roster edits are the only thing that should refresh it at rest.
+		if (!isSpinning && !showingReveal) renderNameRow(eligible);
 	}
 
 	function updateGroupsPairsAvailability() {
@@ -434,60 +493,195 @@ import Layout from "../../layouts/Layout.astro";
 
 	modeButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.modeBtn!)));
 
-	// --- Pick One: reel spin -----------------------------------------
+	// --- Pick One: sweep reveal --------------------------------------
 
-	const REEL_FILLER_LENGTH = 44;
-	const SPIN_DURATION_MS = 2400;
+	// Lazily created on first use (inside the pick button's click handler,
+	// which is a genuine user gesture) rather than at page load — browsers
+	// block/suspend an AudioContext created without one.
+	let audioCtx: AudioContext | null = null;
 
-	function spinReel(winner: string, fillerPool: string[], onSettled: () => void) {
+	/** A short two-note "ding" synthesized with Web Audio — no audio asset to
+	 *  ship or fetch. Off by default (see the Sound toggle); only called when
+	 *  it's checked. Failure here (unsupported/blocked API) is silently
+	 *  swallowed — sound is a nice-to-have polish detail, never worth
+	 *  breaking the actual pick over. */
+	function playRevealChime() {
+		try {
+			const AudioContextCtor =
+				window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+			if (!AudioContextCtor) return;
+			audioCtx ??= new AudioContextCtor();
+			const now = audioCtx.currentTime;
+			const notes: Array<{ freq: number; start: number; dur: number }> = [
+				{ freq: 880, start: 0, dur: 0.09 },
+				{ freq: 1318.51, start: 0.08, dur: 0.24 },
+			];
+			for (const note of notes) {
+				const osc = audioCtx.createOscillator();
+				const gain = audioCtx.createGain();
+				osc.type = "sine";
+				osc.frequency.value = note.freq;
+				gain.gain.setValueAtTime(0, now + note.start);
+				gain.gain.linearRampToValueAtTime(0.22, now + note.start + 0.012);
+				gain.gain.exponentialRampToValueAtTime(0.0001, now + note.start + note.dur);
+				osc.connect(gain).connect(audioCtx.destination);
+				osc.start(now + note.start);
+				osc.stop(now + note.start + note.dur + 0.02);
+			}
+		} catch {
+			// See doc comment above.
+		}
+	}
+
+	function wait(ms: number): Promise<void> {
+		return new Promise((resolve) => window.setTimeout(resolve, ms));
+	}
+
+	/** Rebuilds the pool tile row from the current roster order, showing
+	 *  only students not yet picked this round (pickedThisRound — no-repeat
+	 *  is permanent now, there's no toggle to gate this on). Purely a status
+	 *  readout of who's still in the pool; it plays no part in the reveal
+	 *  animation itself, which lives entirely in the roller (see
+	 *  runRollReveal()) and, for the single winner on each pick, in
+	 *  removeTileFromPool() below. Never called while a sequence is running
+	 *  or its result is still on screen (see updatePickAvailability()) —
+	 *  that would wipe the reveal out from under the teacher the instant it
+	 *  landed. */
+	function renderNameRow(eligible: string[]) {
+		const remaining = eligible.filter((name) => !pickedThisRound.has(name));
+		pickTilesEl.innerHTML = remaining.map((name) => `<span class="pick-tile">${escapeHtml(name)}</span>`).join("");
+	}
+
+	/** Removes a single just-picked name's tile from the pool row — "already
+	 *  picked" now reads entirely through the Session History list (see
+	 *  addHistoryEntry()), which is where this name appears next, so the
+	 *  pool row simply loses it rather than showing a second, separate
+	 *  "picked" indicator. */
+	function removeTileFromPool(name: string) {
+		const tile = Array.from(pickTilesEl.children).find((el) => el.textContent === name);
+		tile?.remove();
+	}
+
+	/** Spreads `count` step durations across `totalMs` so each step is
+	 *  longer than the last — names swapping quickly at first, then
+	 *  settling into longer, more deliberate holds — rather than a flat,
+	 *  constant tempo. Never returns a duration below MIN_STEP_MS, so even
+	 *  the very first swaps read as distinct names appearing and
+	 *  disappearing rather than a blur. Raised slightly from an earlier 90ms
+	 *  floor — that let some early swaps retrigger the 0.42s roll well
+	 *  before it had actually finished, which read as choppy rather than
+	 *  smooth. */
+	const MIN_STEP_MS = 130;
+	function computeStepDurations(count: number, totalMs: number): number[] {
+		const weights = Array.from({ length: count }, (_, i) => Math.pow((i + 1) / count, 1.8));
+		const weightSum = weights.reduce((sum, w) => sum + w, 0);
+		return weights.map((w) => Math.max(MIN_STEP_MS, Math.round((w / weightSum) * totalMs)));
+	}
+
+	/** Picks a random name from `pool` to show next, other than `exclude` (so
+	 *  the roller never appears to "hold still" by showing the same name
+	 *  twice in a row) — falls back to `pool[0]` when there's nothing else
+	 *  to pick, i.e. exactly one candidate remains. */
+	function pickDisplayName(pool: string[], exclude: string | null): string {
+		if (pool.length <= 1) return pool[0];
+		let choice: string;
+		do {
+			choice = pool[Math.floor(Math.random() * pool.length)];
+		} while (choice === exclude);
+		return choice;
+	}
+
+	/** Swaps the roller's displayed name with a quiet vertical roll — the
+	 *  outgoing name rises and fades on its way out, the incoming name rises
+	 *  in from below and fades in, one continuous motion — the exact
+	 *  technique (and easing/duration) as the Refined countdown-clock
+	 *  style's digit transition (see RefinedDigit.astro's
+	 *  applyRefinedDigit()), just applied to a name instead of a digit. The
+	 *  reflow-restart (`classList.remove` → `void el.offsetWidth` →
+	 *  `classList.add`) is what lets this retrigger cleanly even if called
+	 *  again before the previous roll has finished. When `markWinner` is
+	 *  set (the final landing step), also fires a brief sparkle burst
+	 *  around the roller (`.pick-roller--landed`, purely a CSS animation on
+	 *  the container — see the stylesheet) so the winner clearly reads as
+	 *  chosen, not just another name mid-cycle. */
+	function rollRollerTo(name: string, markWinner: boolean) {
+		const previous = pickRollerMainEl.textContent;
+		if (previous) {
+			pickRollerGhostEl.textContent = previous;
+			pickRollerGhostEl.classList.remove("is-rolling");
+			void pickRollerGhostEl.offsetWidth;
+			pickRollerGhostEl.classList.add("is-rolling");
+		}
+		pickRollerMainEl.classList.remove("is-rolling", "pick-roller-main--winner");
+		pickRollerMainEl.textContent = name;
+		void pickRollerMainEl.offsetWidth;
+		pickRollerMainEl.classList.add("is-rolling");
+		pickRollerEl.classList.remove("pick-roller--landed");
+		if (markWinner) {
+			pickRollerMainEl.classList.add("pick-roller-main--winner");
+			void pickRollerEl.offsetWidth;
+			pickRollerEl.classList.add("pick-roller--landed");
+		}
+	}
+
+	const TOTAL_ROLL_MS = 2400;
+	// Extra hold on the final name, on top of its own step duration below —
+	// otherwise the very step that reveals the winner could be as short as
+	// MIN_STEP_MS, which isn't enough time to actually read the name before
+	// onSettled() fires and the rest of the UI updates around it.
+	const LANDING_HOLD_MS = 500;
+
+	/** Runs the reveal: the roller cycles through candidate names (several
+	 *  swaps, each hop slower than the last, for ~2.4s), each swap using the
+	 *  same quiet roll as the clock's digit transition, then lands on the
+	 *  real winner with a brief confirming glow. Only names still in the
+	 *  running (not in pickedThisRound) ever appear during the cycle; an
+	 *  already-picked name is never shown or landed on. A single continuous
+	 *  idea — decelerating motion, one clean landing — rather than a busy
+	 *  multi-effect sequence. */
+	async function runRollReveal(winner: string, eligible: string[], onSettled: () => void) {
 		isSpinning = true;
+		showingReveal = false;
 		pickBtn.disabled = true;
-		pickResultEl.textContent = "";
+		pickWholeClassBtn.disabled = true;
+		// Refresh the pool-status row for anyone picked in a previous round
+		// this call — updatePickAvailability() won't touch it again until
+		// the NEXT pick starts, since it skips rebuilding while a reveal is
+		// running or its result is still showing (see its own guard).
+		renderNameRow(eligible);
 
-		const names = Array.from(
-			{ length: REEL_FILLER_LENGTH },
-			() => fillerPool[Math.floor(Math.random() * fillerPool.length)],
-		);
-		names.push(winner);
+		// The pool the roller is allowed to cycle through — excludes anyone
+		// already picked this round, so an already-chosen name can never
+		// reappear mid-cycle, on this or any other step. With 2+ real
+		// candidates left this already naturally covers "exactly two
+		// remain" (both rotate, honestly, nobody picked reappears).
+		const cyclePool = eligible.filter((name) => !pickedThisRound.has(name));
 
-		reelTrack.innerHTML = names.map((name) => `<span class="reel-tile">${escapeHtml(name)}</span>`).join("");
-		const tiles = Array.from(reelTrack.querySelectorAll<HTMLElement>(".reel-tile"));
-		const winnerTile = tiles[tiles.length - 1];
+		if (cyclePool.length <= 1) {
+			// The true last pick of a no-repeat round — there's nobody else
+			// left to alternate with, and reintroducing an already-picked
+			// name here (the old behavior) is exactly the bug this avoids.
+			// Land directly; still gets the winner flash/glow/sparkle.
+			rollRollerTo(winner, true);
+			await wait(LANDING_HOLD_MS);
+		} else {
+			const stepCount = Math.max(8, Math.min(16, cyclePool.length * 3));
+			const durations = computeStepDurations(stepCount, TOTAL_ROLL_MS);
 
-		// Reset to the start with no transition before measuring/animating —
-		// same reflow-restart pattern used throughout this site's other
-		// retriggerable animations (Nixie's ghost-fade, Split-Flap's flip,
-		// etc.): remove/read/re-add so a fresh spin never inherits any of the
-		// previous one's in-flight transform or transition.
-		reelTrack.style.transition = "none";
-		reelTrack.style.transform = "translateX(0)";
-		void reelTrack.offsetWidth;
+			let lastShown: string | null = pickRollerMainEl.textContent || null;
+			for (let step = 0; step < stepCount; step++) {
+				const isLanding = step === stepCount - 1;
+				const name = isLanding ? winner : pickDisplayName(cyclePool, lastShown);
+				rollRollerTo(name, isLanding);
+				lastShown = name;
+				await wait(isLanding ? durations[step] + LANDING_HOLD_MS : durations[step]);
+			}
+		}
 
-		// offsetLeft (not getBoundingClientRect) deliberately — it reflects
-		// the tile's natural flex-row position, unaffected by the transform
-		// we're about to apply, so this math stays correct regardless of
-		// where the track currently sits.
-		const viewportWidth = reelViewport.clientWidth;
-		const targetX = -winnerTile.offsetLeft + (viewportWidth / 2 - winnerTile.offsetWidth / 2);
-
-		requestAnimationFrame(() => {
-			// cubic-bezier(0.16, 1, 0.3, 1): a hard-decelerating "ease-out
-			// expo" curve — fast right out of the gate, then a long, smooth
-			// slowdown into the landing. That shape (not a linear scroll, not
-			// a gentle ease) is what actually reads as "case-opening" rather
-			// than "a spinner."
-			reelTrack.style.transition = `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`;
-			reelTrack.style.transform = `translateX(${targetX}px)`;
-		});
-
-		// A plain timer (matching this codebase's established preference —
-		// see splitFlap.ts — over a transitionend listener) fires the "hit"
-		// moment right as the transform finishes settling.
-		window.setTimeout(() => {
-			winnerTile.classList.add("reel-tile--winner", "reel-tile--hit");
-			isSpinning = false;
-			onSettled();
-		}, SPIN_DURATION_MS + 30);
+		if (soundToggle.checked) playRevealChime();
+		isSpinning = false;
+		showingReveal = true;
+		onSettled();
 	}
 
 	pickBtn.addEventListener("click", () => {
@@ -495,30 +689,94 @@ import Layout from "../../layouts/Layout.astro";
 		const eligible = eligibleNames();
 		if (eligible.length === 0) return;
 
-		let pool = eligible;
-		if (norepeatToggle.checked) {
-			let remaining = eligible.filter((name) => !pickedThisRound.has(name));
-			if (remaining.length === 0) {
-				pickedThisRound.clear();
-				remaining = eligible;
-			}
-			pool = remaining;
+		// No-repeat is permanent now — always exclude anyone already picked
+		// this round, and once everyone has been (remaining is empty), start
+		// a fresh round rather than dead-ending the button.
+		let remaining = eligible.filter((name) => !pickedThisRound.has(name));
+		if (remaining.length === 0) {
+			pickedThisRound.clear();
+			remaining = eligible;
 		}
 
-		const winner = pool[Math.floor(Math.random() * pool.length)];
-		spinReel(winner, eligible, () => {
-			if (norepeatToggle.checked) pickedThisRound.add(winner);
+		const winner = remaining[Math.floor(Math.random() * remaining.length)];
+		runRollReveal(winner, eligible, () => {
+			pickedThisRound.add(winner);
+			removeTileFromPool(winner);
 			sessionHistory.push(winner);
-			renderHistory();
-			pickResultEl.textContent = winner;
+			addHistoryEntry(winner, "history-item--drift-in");
 			updatePickAvailability();
 		});
 	});
 
-	resetHistoryBtn.addEventListener("click", () => {
+	pickWholeClassBtn.addEventListener("click", async () => {
+		if (isSpinning) return;
+		const eligible = eligibleNames();
+		if (eligible.length === 0) return;
+
+		isSpinning = true;
+		pickBtn.disabled = true;
+		pickWholeClassBtn.disabled = true;
+
+		const order = shuffle(eligible);
+		// Whole Class reveals everyone at once, in this new random order —
+		// treat it as a fresh, fully-used round so a subsequent Pick One
+		// correctly starts over rather than reading everyone as available.
+		pickedThisRound.clear();
+		// Stagger scaled so the WHOLE reveal takes roughly the same couple
+		// of seconds regardless of class size, rather than a fixed per-name
+		// delay that would take minutes for a large roster.
+		const staggerMs = Math.max(20, Math.min(120, 1800 / order.length));
+		for (const name of order) {
+			pickedThisRound.add(name);
+			sessionHistory.push(name);
+			addHistoryEntry(name, "history-item--enter");
+			await wait(staggerMs);
+		}
+
+		isSpinning = false;
+		renderNameRow(eligible);
+		updatePickAvailability();
+	});
+
+	/** Clears the Session History list and the no-repeat "already picked"
+	 *  exclusion set back to a blank slate, and forces every on-screen trace
+	 *  of the previous state to clear with them — the roller's last-shown
+	 *  winner and the pool tile row. Used by the single Reset button and by
+	 *  the bfcache-restore guard below; both cases want the exact same
+	 *  "nothing has been picked yet" state, unconditionally, not just
+	 *  whichever of it the normal isSpinning/showingReveal-guarded render
+	 *  path happens to allow at that moment. */
+	function resetPickingSession() {
 		sessionHistory = [];
 		pickedThisRound.clear();
+		showingReveal = false;
+		pickRollerMainEl.textContent = "";
+		pickRollerMainEl.classList.remove("is-rolling", "pick-roller-main--winner");
+		pickRollerGhostEl.textContent = "";
+		pickRollerGhostEl.classList.remove("is-rolling");
+		pickRollerEl.classList.remove("pick-roller--landed");
 		renderHistory();
+		renderNameRow(eligibleNames());
+	}
+
+	resetHistoryBtn.addEventListener("click", () => {
+		// Don't interrupt a pick actively mid-animation — resetting out from
+		// under a running reveal would fight with runRollReveal()'s own
+		// in-flight DOM updates.
+		if (isSpinning) return;
+		resetPickingSession();
+	});
+
+	// A page restored from the browser's back/forward cache (e.g. the
+	// teacher tabbed away and came back, or hit Back after visiting another
+	// tool) fires `pageshow` with `persisted: true` and skips re-running
+	// this script from scratch — so pickedThisRound/sessionHistory would
+	// otherwise still hold the previous class period's picks instead of the
+	// clean slate a fresh-looking page load implies. A genuine first load
+	// already starts clean via this module's own initial state, so this
+	// only needs to act on the persisted (bfcache) case.
+	window.addEventListener("pageshow", (event) => {
+		if (event.persisted) resetPickingSession();
 	});
 
 	// --- Groups & Pairs --------------------------------------------------
@@ -545,6 +803,38 @@ import Layout from "../../layouts/Layout.astro";
 		renderResultsGrid(pairsResultEl, makePairs(eligible), "Pair");
 	});
 
+	// --- Pick settings drawer -----------------------------------------------
+	// Same collapsible-drawer pattern as /tools/countdown-clock's settings
+	// gear: a tiny popover for the one remaining Pick One setting (Sound),
+	// now that "No-repeat mode" is gone (it's permanent behavior, not a
+	// setting) and there's nothing left to justify an always-visible row.
+
+	function setDrawerOpen(open: boolean) {
+		controlsDrawer.hidden = !open;
+		settingsBtn.setAttribute("aria-expanded", String(open));
+		settingsBtn.setAttribute("aria-label", open ? "Hide pick settings" : "Pick settings");
+		settingsBtn.classList.toggle("is-active", open);
+	}
+
+	settingsBtn.addEventListener("click", (event) => {
+		// Without this, the same click would immediately reach the
+		// document-level outside-click listener below and close the drawer
+		// it just opened.
+		event.stopPropagation();
+		setDrawerOpen(controlsDrawer.hidden);
+	});
+
+	document.addEventListener("click", (event) => {
+		if (controlsDrawer.hidden) return;
+		const target = event.target as Node;
+		if (controlsDrawer.contains(target) || settingsBtn.contains(target)) return;
+		setDrawerOpen(false);
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && !controlsDrawer.hidden) setDrawerOpen(false);
+	});
+
 	// --- Fullscreen --------------------------------------------------------
 	// Same pattern as /tools/countdown-clock: a body class drives the CSS
 	// "fullscreen look" regardless of whether the real Fullscreen API
@@ -553,6 +843,7 @@ import Layout from "../../layouts/Layout.astro";
 	// way.
 
 	function enterFullscreen() {
+		setDrawerOpen(false);
 		document.body.classList.add("picker-fullscreen");
 		exitFullscreenBtn.hidden = false;
 		document.documentElement.requestFullscreen?.().catch(() => {});
@@ -596,39 +887,90 @@ import Layout from "../../layouts/Layout.astro";
 </script>
 
 <!--
-  is:global (not scoped) — most of this page's content (roster rows, reel
+  is:global (not scoped) — most of this page's content (roster rows, name
   tiles, history entries, group/pair cards) is built client-side via
   innerHTML rather than rendered by Astro's own template (there's nothing
   for Astro to render ahead of time — a roster row doesn't exist until a
-  name is added, a reel tile doesn't exist until a pick is spinning), so
-  none of it ever receives Astro's scope attribute. A scoped <style> here
-  would compile its selectors to require that attribute and silently fail
-  to match any of this dynamic content — the exact pitfall already documented
+  name is added, a tile doesn't exist until a pick is running), so none of
+  it ever receives Astro's scope attribute. A scoped <style> here would
+  compile its selectors to require that attribute and silently fail to
+  match any of this dynamic content — the exact pitfall already documented
   in ByteConverter.astro/PracticeQuiz.astro for the same reason.
 -->
 <style is:global>
+	/* This tool is meant to be projected — minimizing vertical scroll matters
+	   more than the site's usual narrow prose column, so it gets a
+	   deliberately wider content area than the ~960px default (see
+	   Layout.astro's own `main { max-width: 960px }`).
+	   Deliberately `body main`, not a bare `main` — both this rule and
+	   Layout's are is:global with identical specificity otherwise, so
+	   whichever stylesheet the build happens to link second would win the
+	   cascade tie. In `astro dev` that's this page's own styles, so the
+	   override appears to work — but a production `astro build` links this
+	   page's CSS before Layout's shared CSS, meaning Layout's narrower
+	   960px silently won instead, shrinking every layout on this page
+	   (the roster grid included) without any local-testing signal that it
+	   had happened. The extra `body` ancestor bumps specificity just enough
+	   to win regardless of link order, so this can't regress the same way
+	   again. */
+	body main {
+		max-width: 78rem;
+	}
+
 	.picker-tool {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 1.25rem;
-		padding: 1rem 0 2rem;
+		gap: 1rem;
+		padding: 0.5rem 0 2rem;
 	}
 
+	.picker-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		max-width: 34rem;
+	}
+
+	/* Matches the site's established hero-heading treatment exactly (see any
+	   Learn page's .hero h1). */
 	.picker-title {
 		margin: 0;
-		font-size: clamp(1.4rem, 4.5vw, 1.8rem);
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
 		text-align: center;
 	}
 
-	/* --- Tool bar / mode toggle (same visual language as the countdown
-	   clock's own tool-bar and mode-toggle) ------------------------------ */
+	.picker-subtitle {
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
 
-	.tool-bar {
+	/* --- Header row: mode tabs + fullscreen toggle ------------------------
+	   One row, not two — a fullscreen button in its own full-width bar above
+	   the tabs would leave a tall empty band whenever it's hidden (i.e. on
+	   the Roster tab, always). Absolutely positioning it within this row
+	   instead means it takes no layout space when hidden, and never pushes
+	   the (still visually centered, since centering is against THIS row's
+	   own width, not the button) mode-toggle off-center when it's shown. */
+	.header-row {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		width: 100%;
+		max-width: 42rem;
 		min-height: 2.2rem;
+	}
+
+	.header-row .fullscreen-btn {
+		position: absolute;
+		right: 0;
+		top: 50%;
+		transform: translateY(-50%);
 	}
 
 	.icon-btn {
@@ -672,14 +1014,14 @@ import Layout from "../../layouts/Layout.astro";
 	}
 
 	.mode-btn {
-		padding: 0.45rem 1.1rem;
+		padding: 0.45rem 1.2rem;
 		border: none;
 		border-radius: 999px;
 		background: transparent;
 		color: var(--color-text-muted);
 		font-family: var(--font-mono);
 		font-weight: 700;
-		font-size: 0.8rem;
+		font-size: 0.85rem;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		cursor: pointer;
@@ -727,7 +1069,68 @@ import Layout from "../../layouts/Layout.astro";
 	}
 
 	.panel-card--wide {
-		max-width: 48rem;
+		/* Groups/Pairs results only ever need a few result cards' worth of
+		   width (each is minmax(9.5rem, 1fr) in .results-grid below) — the
+		   old 68rem let the card sprawl across nearly the full page even
+		   with just a handful of small cards in it. */
+		max-width: 44rem;
+	}
+
+	/* Roster tab: Saved Rosters / Paste Names / Students side by side when
+	   there's room, wrapping down to fewer columns (eventually one, stacked)
+	   on narrower viewports — auto-fit handles the "if space allows" part on
+	   its own, no breakpoint logic needed. align-items is left at grid's
+	   default (stretch) so all three cards match the height of the tallest
+	   one in their row — whichever that is varies with roster size/content —
+	   instead of each column sizing to its own content and leaving a
+	   staggered, uneven-bottomed row.
+	   Columns are capped at 16rem rather than stretching to 1fr — with 1fr
+	   they'd fill however much width the page has (nearly 400px each on a
+	   typical desktop), which is what made an earlier "thinner" pass here
+	   invisible: shaving padding off a column that still stretches to fill
+	   the row doesn't change how wide it looks. A fixed max, with
+	   justify-content centering the row when there's leftover space, is
+	   what actually makes the columns read as narrower — height and
+	   internal padding are untouched (base .panel-card values), since
+	   "thinner" means less wide, not less tall. */
+	.roster-columns {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13.6rem, 21rem));
+		justify-content: center;
+		gap: 1rem;
+		width: 100%;
+	}
+
+	.roster-columns .panel-card {
+		max-width: none;
+		/* When stretched taller than its own content needs, center that
+		   content in the extra space rather than leaving it pinned to the
+		   top with dead air underneath — reads as a deliberate, balanced
+		   card rather than a short card stretched to fit. Has no visible
+		   effect on whichever card is naturally the tallest, since it has
+		   no extra space to center within. */
+		justify-content: center;
+	}
+
+	/* Pick One tab: the picker itself is the point of this tab, so it comes
+	   first and full-width; Session History stacks underneath it, smaller
+	   and secondary — a supporting log, not a co-equal column. */
+	.pick-columns {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		width: 100%;
+	}
+
+	.pick-columns .panel-card--stage {
+		width: 100%;
+		max-width: 42rem;
+	}
+
+	.pick-columns .panel-card--history {
+		width: 100%;
+		max-width: 30rem;
 	}
 
 	.panel-title {
@@ -787,17 +1190,45 @@ import Layout from "../../layouts/Layout.astro";
 
 	.select-input {
 		width: 100%;
+		/* The native dropdown arrow (and its own default sizing/background)
+		   is what read as "messy" — every browser draws it differently and
+		   none of them match the dark theme. appearance:none strips it, and
+		   this hand-drawn chevron (muted gray, same family as the site's
+		   other small icon accents) replaces it with something consistent. */
+		appearance: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		padding-right: 2.2rem;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239aa0b4' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.85rem center;
+		background-size: 0.65rem;
+		cursor: pointer;
 	}
 
+	.select-input:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+	}
+
+	/* Most Chromium/Firefox browsers respect author styling on <option> —
+	   without this the dropdown's own open list reverts to a plain white
+	   browser-native panel, clashing hard with everything around it. */
+	.select-input option {
+		background: var(--color-surface);
+		color: var(--color-text);
+	}
+
+	/* New/Delete, below the (now full-width, own-line) roster select —
+	   evenly split rather than sized to their own text, so the row reads as
+	   one deliberate control pair instead of two mismatched buttons. */
 	.roster-select-row {
 		display: flex;
 		gap: 0.5rem;
 		width: 100%;
 	}
 
-	.roster-select-row .select-input {
-		flex: 1 1 auto;
-		min-width: 0;
+	.roster-select-row .btn {
+		flex: 1 1 0;
 	}
 
 	.field-label-row {
@@ -964,6 +1395,22 @@ import Layout from "../../layouts/Layout.astro";
 		background: var(--color-bg);
 	}
 
+	.roster-avatar {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		flex-shrink: 0;
+		border-radius: 6px;
+		border: 1px solid var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.75rem;
+	}
+
 	.roster-row--absent {
 		opacity: 0.5;
 	}
@@ -1023,7 +1470,48 @@ import Layout from "../../layouts/Layout.astro";
 		color: var(--color-danger);
 	}
 
-	/* --- Pick One: no-repeat toggle, reel, result, history ---------------- */
+	/* --- Pick One: toggles, tiles, result, history ------------------------ */
+
+	.pick-tool-row {
+		display: flex;
+		justify-content: flex-end;
+		width: 100%;
+	}
+
+	.settings-btn.is-active {
+		border-color: var(--color-accent);
+		color: #fff3d6;
+		background: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	/* Same collapsible-drawer pattern (and drawer-in entrance) as
+	   /tools/countdown-clock's settings gear — just one setting to hold
+	   (Sound) now that no-repeat is permanent rather than a toggle. */
+	.controls-drawer {
+		display: flex;
+		justify-content: center;
+		width: 100%;
+		animation: drawer-in 0.18s ease;
+	}
+
+	/* An unconditional `display: flex` above would otherwise beat the
+	   browser's default `[hidden] { display: none }` rule — same gotcha
+	   called out repeatedly on /tools/countdown-clock. */
+	.controls-drawer[hidden] {
+		display: none;
+	}
+
+	@keyframes drawer-in {
+		from {
+			opacity: 0;
+			transform: translateY(-6px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
 
 	.norepeat-toggle {
 		display: flex;
@@ -1042,111 +1530,233 @@ import Layout from "../../layouts/Layout.astro";
 		cursor: pointer;
 	}
 
-	.reel-viewport {
-		position: relative;
+	/* The pool of students not yet picked this round — the only tile
+	   display left now that "already picked" lives solely in the Session
+	   History list below (see addHistoryEntry()/removeTileFromPool()), not
+	   as a second, separate tile zone here. */
+	.pick-tiles-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-content: center;
+		gap: 0.5rem;
 		width: 100%;
-		height: 4.2rem;
-		overflow: hidden;
+		min-height: 4.2rem;
+		padding: 0.9rem;
 		border-radius: 12px;
 		border: 1px solid var(--color-border);
 		background: var(--color-bg);
+		box-sizing: border-box;
 	}
 
-	.reel-track {
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0 0.5rem;
-		will-change: transform;
-	}
-
-	.reel-tile {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		width: 7rem;
-		height: 3rem;
-		padding: 0 0.5rem;
-		border-radius: 10px;
+	.pick-tile {
+		padding: 0.5rem 0.9rem;
+		border-radius: 8px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
 		color: var(--color-text-muted);
 		font-family: var(--font-mono);
 		font-weight: 700;
 		font-size: 0.85rem;
-		text-align: center;
+		transition: opacity 0.15s ease;
+	}
+
+	/* --- Pick One: the reveal itself — a single rolling name display, same
+	   technique as the Refined countdown-clock style's digit transition
+	   (see RefinedDigit.astro): the outgoing name rises and fades out while
+	   the incoming name rises in from below and fades in, one continuous
+	   motion rather than two separate effects. runRollReveal() drives this
+	   by swapping .pick-roller-main's text and retriggering .is-rolling,
+	   first rapidly through candidate names, gradually slowing, then
+	   landing on the real winner. ------------------------------------- */
+
+	.pick-roller {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 3.6em;
+		margin: 0.35rem 0;
 		overflow: hidden;
-		text-overflow: ellipsis;
+	}
+
+	/* Sparkle burst around the winner on landing — drawn as several small
+	   radial-gradient dots split across the roller's ::before/::after (no
+	   extra DOM needed), invisible at rest and only animated when
+	   runRollReveal() toggles .pick-roller--landed on the final step. Two
+	   layers, staggered slightly and mixing amber-accent dots in with the
+	   cream ones, read as a livelier twinkle than one flat burst would. */
+	.pick-roller::before,
+	.pick-roller::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		opacity: 0;
+		background-repeat: no-repeat;
+	}
+
+	.pick-roller::before {
+		background:
+			radial-gradient(circle, #fff3d6 0%, transparent 70%),
+			radial-gradient(circle, var(--color-accent) 0%, transparent 70%),
+			radial-gradient(circle, #fff3d6 0%, transparent 70%),
+			radial-gradient(circle, var(--color-accent) 0%, transparent 70%),
+			radial-gradient(circle, #fff3d6 0%, transparent 70%);
+		background-size:
+			12px 12px,
+			9px 9px,
+			10px 10px,
+			8px 8px,
+			11px 11px;
+		background-position:
+			15% 18%,
+			85% 14%,
+			8% 82%,
+			92% 78%,
+			50% 4%;
+	}
+
+	.pick-roller::after {
+		background:
+			radial-gradient(circle, var(--color-accent) 0%, transparent 70%),
+			radial-gradient(circle, #fff3d6 0%, transparent 70%),
+			radial-gradient(circle, #fff3d6 0%, transparent 70%);
+		background-size:
+			10px 10px,
+			13px 13px,
+			8px 8px;
+		background-position:
+			50% 96%,
+			26% 48%,
+			74% 52%;
+	}
+
+	.pick-roller--landed::before {
+		animation: pick-roller-sparkle 0.85s ease-out 0.05s;
+	}
+
+	.pick-roller--landed::after {
+		animation: pick-roller-sparkle 0.85s ease-out 0.22s;
+	}
+
+	@keyframes pick-roller-sparkle {
+		0% {
+			opacity: 0;
+			transform: scale(0.3) rotate(0deg);
+		}
+		30% {
+			opacity: 1;
+			transform: scale(1.35) rotate(10deg);
+		}
+		100% {
+			opacity: 0;
+			transform: scale(2) rotate(18deg);
+		}
+	}
+
+	.pick-roller-main,
+	.pick-roller-ghost {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 2.1rem;
+		color: #fff3d6;
+		text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 55%, transparent);
+		text-align: center;
 		white-space: nowrap;
 	}
 
-	.reel-tile--placeholder {
-		opacity: 0.4;
-	}
-
-	/* The "hit" moment: a bright flash that decays into the tile's resting
-	   amber glow, plus a quick scale pop — brief and punchy on purpose, the
-	   opposite of every other slow/quiet transition on this site, because
-	   this ONE moment is meant to feel like a reward, not a calm settle. */
-	.reel-tile--winner {
-		border-color: var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
-		color: #fff3d6;
-		text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 70%, transparent);
-	}
-
-	.reel-tile--hit {
-		animation: reel-hit-flash 0.5s ease-out;
-	}
-
-	@keyframes reel-hit-flash {
-		0% {
-			transform: scale(1.22);
-			box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 90%, transparent);
-		}
-		100% {
-			transform: scale(1);
-			box-shadow: 0 0 22px 6px color-mix(in srgb, var(--color-accent) 0%, transparent);
-		}
-	}
-
-	.reel-marker {
+	.pick-roller-ghost {
 		position: absolute;
-		left: 50%;
-		width: 0;
-		height: 0;
-		border-left: 6px solid transparent;
-		border-right: 6px solid transparent;
-		transform: translateX(-50%);
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
 		pointer-events: none;
 	}
 
-	.reel-marker--top {
-		top: 0;
-		border-top: 7px solid var(--color-accent);
-		filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 70%, transparent));
+	/* 0.42s, up slightly from the clock's own 0.35s — paired with a higher
+	   MIN_STEP_MS floor in the script, this gives most swaps enough room to
+	   actually finish gliding before the next one starts, reading as
+	   smoother rather than choppy. Same easing curve either way. */
+	.pick-roller-main.is-rolling {
+		animation: pick-roller-in 0.42s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
-	.reel-marker--bottom {
-		bottom: 0;
-		border-bottom: 7px solid var(--color-accent);
-		filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 70%, transparent));
+	.pick-roller-ghost.is-rolling {
+		animation: pick-roller-out 0.42s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
-	.pick-result {
-		margin: 0;
-		min-height: 1.6em;
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 1.3rem;
-		color: #fff3d6;
-		text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 60%, transparent);
-		text-align: center;
+	@keyframes pick-roller-in {
+		0% {
+			opacity: 0;
+			transform: translateY(42%);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes pick-roller-out {
+		0% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(-42%);
+		}
+	}
+
+	/* The winner's confirming flash + glow — combined into one rule (rather
+	   than layered as a second, separate .pick-roller-main--winner rule)
+	   since two same-specificity rules each setting `animation` don't
+	   merge, the second simply overrides the first; naming all three
+	   animations together here is what lets the roll-in motion, the
+	   brightness flash, and the glow play at once. Both keyframes settle
+	   back to the roller's own resting values at 100%, so nothing pops when
+	   the animations end and the element reverts to its un-animated style. */
+	.pick-roller-main.is-rolling.pick-roller-main--winner {
+		animation:
+			pick-roller-in 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+			pick-roller-winner-flash 0.5s ease-out 0.1s,
+			pick-roller-winner-glow 0.7s ease-out 0.1s;
+	}
+
+	@keyframes pick-roller-winner-flash {
+		0%,
+		100% {
+			filter: brightness(1);
+		}
+		20% {
+			filter: brightness(2.3);
+		}
+	}
+
+	@keyframes pick-roller-winner-glow {
+		0%,
+		100% {
+			text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 55%, transparent);
+		}
+		30% {
+			text-shadow:
+				0 0 14px color-mix(in srgb, var(--color-accent) 95%, transparent),
+				0 0 34px color-mix(in srgb, var(--color-accent) 60%, transparent);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pick-roller-main.is-rolling,
+		.pick-roller-ghost.is-rolling,
+		.pick-roller-main.is-rolling.pick-roller-main--winner,
+		.pick-roller--landed::before,
+		.history-item--drift-in,
+		.history-item--enter {
+			animation: none;
+		}
 	}
 
 	.history-list {
@@ -1172,6 +1782,47 @@ import Layout from "../../layouts/Layout.astro";
 		display: inline-block;
 		min-width: 1.6rem;
 		color: var(--color-text-muted);
+	}
+
+	/* The slow inward/aside drift a name plays only the moment it lands in
+	   this list from a single Pick One reveal (addHistoryEntry(), called
+	   right after the roller settles) — the "already picked" equivalent of
+	   the roller's own landing flourish, so the name visibly leaves the
+	   reveal spot rather than just quietly appearing in the log. Much
+	   slower than the roller's 0.42s swap or its 0.85s sparkle: this is a
+	   parting motion, not part of the suspense. */
+	.history-item--drift-in {
+		animation: history-item-drift-in 1s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	@keyframes history-item-drift-in {
+		0% {
+			opacity: 0;
+			transform: translate(-22px, -12px) scale(0.95);
+		}
+		100% {
+			opacity: 1;
+			transform: translate(0, 0) scale(1);
+		}
+	}
+
+	/* Quick fade + rise played once, on insert, by addHistoryEntry() —
+	   "Pick Whole Class"'s staggered reveal of an already-decided order,
+	   much faster than the drift-in above since there's no suspense left to
+	   play out, just a list filling in. */
+	.history-item--enter {
+		animation: history-item-in 0.3s ease-out;
+	}
+
+	@keyframes history-item-in {
+		0% {
+			opacity: 0;
+			transform: translateY(-6px);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 
 	/* --- Groups & Pairs ---------------------------------------------------- */
@@ -1283,9 +1934,8 @@ import Layout from "../../layouts/Layout.astro";
 
 	body.picker-fullscreen .site-header,
 	body.picker-fullscreen .site-footer,
-	body.picker-fullscreen .mode-toggle,
-	body.picker-fullscreen .tool-bar,
-	body.picker-fullscreen .picker-title,
+	body.picker-fullscreen .header-row,
+	body.picker-fullscreen .picker-header,
 	body.picker-fullscreen [data-panel="roster"] {
 		display: none;
 	}
@@ -1309,18 +1959,14 @@ import Layout from "../../layouts/Layout.astro";
 		padding: 2.5rem 3rem;
 	}
 
-	body.picker-fullscreen .reel-viewport {
-		height: 7rem;
-	}
-
-	body.picker-fullscreen .reel-tile {
-		width: 10rem;
-		height: 5rem;
+	body.picker-fullscreen .pick-tile {
+		padding: 0.75rem 1.4rem;
 		font-size: 1.3rem;
 	}
 
-	body.picker-fullscreen .pick-result {
-		font-size: 2.2rem;
+	body.picker-fullscreen .pick-roller-main,
+	body.picker-fullscreen .pick-roller-ghost {
+		font-size: 3.4rem;
 	}
 
 	body.picker-fullscreen .result-card-title {
@@ -1333,8 +1979,8 @@ import Layout from "../../layouts/Layout.astro";
 
 	body.picker-fullscreen [data-panel="pick"] .panel-card:last-child {
 		/* The session-history card stays available, just far less prominent
-		   than the reel it sits below — this is meant to be glanceable, not
-		   the thing the class is looking at on the projector. */
+		   than the tiles above it — this is meant to be glanceable, not the
+		   thing the class is looking at on the projector. */
 		max-width: 30rem;
 		padding: 1.1rem 1.25rem;
 	}

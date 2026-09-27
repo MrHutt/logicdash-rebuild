@@ -25,3 +25,8 @@ pnpm-debug.log*
 
 # local machine-specific dev server wiring
 .claude/
+
+# local deploy output / archives
+Live Deploy/
+/logicdash-deploy.zip
+/files.zip

@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /tools/
+Disallow: /tools/seating-chart
 
 Sitemap: https://logicdash.io/sitemap-index.xml
