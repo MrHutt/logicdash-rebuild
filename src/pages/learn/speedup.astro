@@ -105,6 +105,7 @@ const QUIZ: QuizQuestion[] = [
 						<li class="kitchen-row">
 							<span class="kitchen-label">
 								{k.cooks} {k.cooks === 1 ? "cook" : "cooks"}
+								<span class="sr-only">:</span>
 							</span>
 							<span class="kitchen-bar" aria-hidden="true">
 								<span class="kitchen-seg kitchen-seg--solo" style={`width: ${(SETUP / longest) * 100}%`} />

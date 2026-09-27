@@ -98,7 +98,10 @@ const QUIZ: QuizQuestion[] = [
 			{
 				layers.map((layer, i) => (
 					<li class="layer-row">
-						<span class="layer-name">{layer.name}</span>
+						<span class="layer-name">
+							{layer.name}
+							<span class="sr-only">:</span>
+						</span>
 						<span class="layer-detail">{layer.detail}</span>
 						{i < layers.length - 1 && <span class="layer-arrow" aria-hidden="true">↓</span>}
 					</li>
@@ -181,6 +184,15 @@ const QUIZ: QuizQuestion[] = [
 </LearnArticle>
 
 <style>
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+	}
+
 	.layer-stack {
 		list-style: none;
 		margin: 1rem auto 0.75rem;

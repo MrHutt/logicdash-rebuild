@@ -19,10 +19,12 @@ const { value } = Astro.props;
 			))
 		}
 	</svg>
+	<span class="bit-chip-text">{value}</span>
 </span>
 
 <style>
 	.bit-chip {
+		position: relative;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -33,6 +35,17 @@ const { value } = Astro.props;
 		border-radius: 22%;
 		border: 1px solid #4a3826;
 		background: #1c140d;
+	}
+
+	/* The digit is drawn as a picture; this gives screen readers (and
+	   copy-paste) the actual 0 or 1. */
+	.bit-chip-text {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
 	}
 
 	.bit-chip--on {

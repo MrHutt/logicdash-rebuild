@@ -300,7 +300,8 @@ const growth = [
 			if (!swappedThisPass || pass >= n - 1) {
 				finish();
 				if (!swappedThisPass && pass < n - 1) {
-					statusEl.textContent = `A whole pass with no swaps — so everything is already in order. Sorted with ${comparisons} comparisons and ${swaps} swaps.`;
+					const predicted = predictTotal ? ` You predicted ${predictRight} of ${predictTotal} steps correctly.` : "";
+					statusEl.textContent = `A whole pass with no swaps — so everything is already in order. Sorted with ${comparisons} comparisons and ${swaps} swaps.${predicted}`;
 				}
 				return;
 			}

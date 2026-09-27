@@ -83,3 +83,30 @@ UK spelling.
    so screenshots used fallback fonts. Font assignments in the code follow the
    rules (JetBrains Mono for code/data, Space Grotesk for headings). Worth a quick
    look on the live site.
+
+---
+
+## Round 2 — teacher feedback and review
+
+**Requested changes**
+
+| Request | What changed |
+|---|---|
+| Missing spaces in text | Cause: Astro drops the space when a line of text ends and the next line starts with a link or highlight. Fixed in 25 places with explicit `{" "}`. A browser-based text scan now finds no glued words. |
+| Robot questions need a grid | All 26 robot questions have one, including the facing-direction questions. The answer checker fails any robot question without a grid. |
+| 150 more questions, 3 levels | **197 questions:** 61 Easy (one idea), 76 Medium (two combined), 60 Challenging (several ideas, longer traces, "what does this do?", bug-spotting). A level picker is added; best streak is tracked per level; old saves migrate. All answers are checked by running the pseudocode; 14 conceptual ones were checked by hand. |
+| Relate to the course without naming it | "AP" is removed from all visible text, meta descriptions and structured data. Added: the parallel-time rule, reasonable vs unreasonable time and heuristics, malware / keyloggers / fake hotspots / multi-factor authentication, "network of networks", packets that may not arrive, distributed storage limits, parameters, and the bandwidth definition. |
+| 5-question quiz on concept pages | Added to Abstraction, Speedup, Scalability, Redundancy & Fault Tolerance, and Packets & Routing. Questions are scenario-based with explanations. |
+| Interactions valuable for students | Students now do something before they watch: <br>• Binary Search: a guessing game before the race demo. <br>• Sorting: predict each swap. <br>• Distributed Computing: predict the time. <br>• Encryption Basics: crack a secret message. <br>• Password Strength: example comparisons. <br>Password estimator fix: "P@ssw0rd!"-style swaps are now caught. |
+| Fullscreen must fit with no scrolling | DemoFrame automatically resizes the text to fit and re-fits whenever content changes. Quizzes show one question at a time in fullscreen. Pseudocode Practice and Phishing use two-column projector layouts. Tested: 14 demo states × 6 screen sizes (4K down to a portrait tablet), 0 scroll. |
+| Modern, balanced layout for all Learn pages | • Centered 1280px container. <br>• Sidebar with "On this page" and "In this section" (1100px and wider). <br>• 75-character text width. <br>• Previous/Next cards. <br>• 4px spacing scale (`--space-1` to `--space-8`); 354 values normalized. <br>• The 10 original pages now use the shared layout. <br>• Hub uses one grid aligned across sections. |
+
+**Found during the review and fixed**
+
+- The drawn 0/1 bit tiles on the original pages had no text for screen readers ("either a … or a …"). Hidden text added.
+- When bubble sort stopped early, its message hid the student's prediction score.
+- Error Correction's tile row overflowed a 320px phone.
+- Level buttons ignored the font size in fullscreen.
+- The phishing email's inline hotspots broke lines on phones.
+
+**End-to-end check (26 checks, all passing):** every demo and quiz was played start to finish in a real browser, with no JavaScript errors.
