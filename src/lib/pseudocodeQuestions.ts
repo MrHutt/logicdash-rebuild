@@ -1,5 +1,7 @@
-// Question bank for /learn/pseudocode-practice. Every question uses the AP
-// Computer Science Principles exam reference sheet's text-based pseudocode:
+// Question bank for /learn/pseudocode-practice (part 1 of 4 — see also
+// pseudocodeQuestionsEasy/Medium/Challenging.ts). Every question uses the
+// text-based pseudocode from the AP Computer Science Principles exam
+// reference sheet (the page itself deliberately doesn't name the exam):
 // ← for assignment, 1-based list indexes, REPEAT n TIMES / REPEAT UNTIL,
 // FOR EACH, PROCEDURE/RETURN, and the robot commands.
 //
@@ -7,6 +9,10 @@
 // shuffles options at display time, so authoring order doesn't matter).
 // IDs are stable keys for saved progress — never renumber them; add new
 // questions with new IDs instead.
+
+import { EASY_QUESTIONS } from "./pseudocodeQuestionsEasy";
+import { MEDIUM_QUESTIONS } from "./pseudocodeQuestionsMedium";
+import { CHALLENGING_QUESTIONS } from "./pseudocodeQuestionsChallenging";
 
 export type PseudoCategory =
 	| "Variables & display"
@@ -29,6 +35,9 @@ export const PSEUDO_CATEGORIES: PseudoCategory[] = [
 	"Robot",
 ];
 
+export type PseudoLevel = "easy" | "medium" | "challenging";
+export const PSEUDO_LEVELS: PseudoLevel[] = ["easy", "medium", "challenging"];
+
 /** Robot grid: rows top-to-bottom. "." open, "#" blocked, "A"–"D" labelled open squares. */
 export interface RobotGrid {
 	rows: string[];
@@ -37,20 +46,31 @@ export interface RobotGrid {
 
 export interface PseudoQuestion {
 	id: string;
-	category: PseudoCategory;
+	/** easy = one idea, a few lines; medium = two ideas combined; challenging = several ideas, longer traces. */
+	level: PseudoLevel;
+	/** Every concept the question exercises, main one first. */
+	topics: PseudoCategory[];
 	prompt: string;
 	code?: string;
 	grid?: RobotGrid;
+	/**
+	 * How the automated answer check (a small interpreter used during
+	 * development) verifies this question: the DISPLAY output (default), the
+	 * grid label the robot ends on, the way it ends up facing, or "manual" for
+	 * conceptual questions checked by hand.
+	 */
+	verify?: "output" | "square" | "facing" | "manual";
 	options: string[];
 	answer: number;
 	explanation: string;
 }
 
-export const PSEUDO_QUESTIONS: PseudoQuestion[] = [
+export const CORE_QUESTIONS: PseudoQuestion[] = [
 	// ---------------------------------------------------------------- Variables & display
 	{
 		id: "var-1",
-		category: "Variables & display",
+		level: "easy",
+		topics: ["Variables & display"],
 		prompt: "What is displayed?",
 		code: `a ← 4
 b ← a
@@ -63,7 +83,8 @@ DISPLAY(b)`,
 	},
 	{
 		id: "var-2",
-		category: "Variables & display",
+		level: "easy",
+		topics: ["Variables & display"],
 		prompt: "What is displayed?",
 		code: `x ← 3
 y ← 5
@@ -78,7 +99,8 @@ DISPLAY(y)`,
 	},
 	{
 		id: "var-3",
-		category: "Variables & display",
+		level: "medium",
+		topics: ["Variables & display"],
 		prompt: "What is displayed?",
 		code: `a ← 2
 b ← 9
@@ -94,7 +116,8 @@ DISPLAY(b)`,
 	},
 	{
 		id: "var-4",
-		category: "Variables & display",
+		level: "easy",
+		topics: ["Variables & display"],
 		prompt: "What is displayed?",
 		code: `count ← 10
 count ← count + 1
@@ -106,7 +129,8 @@ DISPLAY(count)`,
 	},
 	{
 		id: "var-5",
-		category: "Variables & display",
+		level: "easy",
+		topics: ["Variables & display"],
 		prompt: "The user types Sam when asked for input. What is displayed?",
 		code: `name ← INPUT()
 DISPLAY("Hello")
@@ -120,7 +144,8 @@ DISPLAY(name)`,
 	// ---------------------------------------------------------------- Arithmetic & MOD
 	{
 		id: "mod-1",
-		category: "Arithmetic & MOD",
+		level: "easy",
+		topics: ["Arithmetic & MOD"],
 		prompt: "What is displayed?",
 		code: `DISPLAY(17 MOD 5)`,
 		options: ["2", "3", "3.4", "12"],
@@ -129,7 +154,8 @@ DISPLAY(name)`,
 	},
 	{
 		id: "mod-2",
-		category: "Arithmetic & MOD",
+		level: "easy",
+		topics: ["Arithmetic & MOD"],
 		prompt: "What is displayed?",
 		code: `DISPLAY(20 MOD 4)`,
 		options: ["0", "5", "4", "1"],
@@ -138,7 +164,8 @@ DISPLAY(name)`,
 	},
 	{
 		id: "mod-3",
-		category: "Arithmetic & MOD",
+		level: "easy",
+		topics: ["Arithmetic & MOD"],
 		prompt: "What is displayed?",
 		code: `DISPLAY(4 MOD 9)`,
 		options: ["4", "0", "5", "2"],
@@ -148,17 +175,19 @@ DISPLAY(name)`,
 	},
 	{
 		id: "mod-4",
-		category: "Arithmetic & MOD",
+		level: "easy",
+		topics: ["Arithmetic & MOD"],
 		prompt: "What is displayed?",
 		code: `x ← 7
 DISPLAY(x / 2)`,
 		options: ["3.5", "3", "4", "1"],
 		answer: 0,
-		explanation: "On the AP reference sheet, / is ordinary division, so 7 / 2 is 3.5. (MOD is the operator that gives a remainder.)",
+		explanation: "In this pseudocode, / is ordinary division, so 7 / 2 is 3.5. (MOD is the operator that gives a remainder.)",
 	},
 	{
 		id: "mod-5",
-		category: "Arithmetic & MOD",
+		level: "easy",
+		topics: ["Arithmetic & MOD"],
 		prompt: "What is displayed?",
 		code: `DISPLAY(2 + 3 * 4)`,
 		options: ["14", "20", "24", "9"],
@@ -167,7 +196,8 @@ DISPLAY(x / 2)`,
 	},
 	{
 		id: "mod-6",
-		category: "Arithmetic & MOD",
+		level: "easy",
+		topics: ["Arithmetic & MOD"],
 		prompt: "What is displayed?",
 		code: `n ← 472
 DISPLAY(n MOD 10)`,
@@ -179,7 +209,8 @@ DISPLAY(n MOD 10)`,
 	// ---------------------------------------------------------------- Boolean logic
 	{
 		id: "bool-1",
-		category: "Boolean logic",
+		level: "easy",
+		topics: ["Boolean logic"],
 		prompt: "What is displayed?",
 		code: `a ← 5
 b ← 8
@@ -190,7 +221,8 @@ DISPLAY((a > 3) AND (b < 6))`,
 	},
 	{
 		id: "bool-2",
-		category: "Boolean logic",
+		level: "easy",
+		topics: ["Boolean logic"],
 		prompt: "What is displayed?",
 		code: `DISPLAY(NOT (4 = 4))`,
 		options: ["false", "true", "4", "0"],
@@ -199,7 +231,8 @@ DISPLAY((a > 3) AND (b < 6))`,
 	},
 	{
 		id: "bool-3",
-		category: "Boolean logic",
+		level: "easy",
+		topics: ["Boolean logic"],
 		prompt: "What is displayed?",
 		code: `x ← 10
 DISPLAY((x ≥ 10) OR (x < 0))`,
@@ -209,8 +242,10 @@ DISPLAY((x ≥ 10) OR (x < 0))`,
 	},
 	{
 		id: "bool-4",
-		category: "Boolean logic",
+		level: "medium",
+		topics: ["Boolean logic"],
 		prompt: "Which expression is true exactly when n is between 1 and 10, including 1 and 10?",
+		verify: "manual",
 		options: ["(n ≥ 1) AND (n ≤ 10)", "(n ≥ 1) OR (n ≤ 10)", "(n > 1) AND (n < 10)", "NOT (n ≥ 1)"],
 		answer: 0,
 		explanation:
@@ -218,7 +253,8 @@ DISPLAY((x ≥ 10) OR (x < 0))`,
 	},
 	{
 		id: "bool-5",
-		category: "Boolean logic",
+		level: "easy",
+		topics: ["Boolean logic"],
 		prompt: "What is displayed?",
 		code: `raining ← true
 cold ← false
@@ -231,7 +267,8 @@ DISPLAY(raining AND (NOT cold))`,
 	// ---------------------------------------------------------------- Selection
 	{
 		id: "sel-1",
-		category: "Selection",
+		level: "medium",
+		topics: ["Selection"],
 		prompt: "What is displayed?",
 		code: `score ← 85
 IF (score ≥ 90)
@@ -252,11 +289,12 @@ ELSE
 		options: ["B", "A", "Keep going", "A B"],
 		answer: 0,
 		explanation:
-			"85 is not ≥ 90, so the outer ELSE runs. Inside it, 85 ≥ 80 is true, so it displays B. This IF inside an ELSE is how the AP reference sheet writes \"else if\".",
+			"85 is not ≥ 90, so the outer ELSE runs. Inside it, 85 ≥ 80 is true, so it displays B. Putting an IF inside an ELSE is how this pseudocode writes \"else if\".",
 	},
 	{
 		id: "sel-2",
-		category: "Selection",
+		level: "easy",
+		topics: ["Selection"],
 		prompt: "What is displayed?",
 		code: `temp ← 15
 IF (temp > 20)
@@ -271,7 +309,8 @@ DISPLAY("done")`,
 	},
 	{
 		id: "sel-3",
-		category: "Selection",
+		level: "medium",
+		topics: ["Selection"],
 		prompt: "What is displayed?",
 		code: `x ← 4
 IF (x MOD 2 = 0)
@@ -297,7 +336,8 @@ ELSE
 	},
 	{
 		id: "sel-4",
-		category: "Selection",
+		level: "easy",
+		topics: ["Selection"],
 		prompt: "What is displayed?",
 		code: `age ← 13
 IF ((age ≥ 13) AND (age ≤ 19))
@@ -314,7 +354,8 @@ ELSE
 	},
 	{
 		id: "sel-5",
-		category: "Selection",
+		level: "easy",
+		topics: ["Selection"],
 		prompt: "What is displayed?",
 		code: `n ← 12
 IF (n > 5)
@@ -334,7 +375,8 @@ IF (n > 10)
 	// ---------------------------------------------------------------- Iteration
 	{
 		id: "loop-1",
-		category: "Iteration",
+		level: "easy",
+		topics: ["Iteration"],
 		prompt: "What is displayed?",
 		code: `total ← 0
 REPEAT 4 TIMES
@@ -348,7 +390,8 @@ DISPLAY(total)`,
 	},
 	{
 		id: "loop-2",
-		category: "Iteration",
+		level: "easy",
+		topics: ["Iteration"],
 		prompt: "What is displayed?",
 		code: `n ← 1
 REPEAT 3 TIMES
@@ -362,7 +405,8 @@ DISPLAY(n)`,
 	},
 	{
 		id: "loop-3",
-		category: "Iteration",
+		level: "easy",
+		topics: ["Iteration"],
 		prompt: "What is displayed?",
 		code: `x ← 0
 REPEAT UNTIL (x > 10)
@@ -377,7 +421,8 @@ DISPLAY(x)`,
 	},
 	{
 		id: "loop-4",
-		category: "Iteration",
+		level: "medium",
+		topics: ["Iteration"],
 		prompt: "What is displayed?",
 		code: `count ← 0
 n ← 20
@@ -393,7 +438,8 @@ DISPLAY(count)`,
 	},
 	{
 		id: "loop-5",
-		category: "Iteration",
+		level: "easy",
+		topics: ["Iteration"],
 		prompt: "What is displayed?",
 		code: `x ← 10
 REPEAT UNTIL (x > 5)
@@ -408,7 +454,8 @@ DISPLAY(x)`,
 	},
 	{
 		id: "loop-6",
-		category: "Iteration",
+		level: "medium",
+		topics: ["Iteration"],
 		prompt: "What happens when this code runs?",
 		code: `x ← 1
 REPEAT UNTIL (x = 10)
@@ -423,7 +470,8 @@ DISPLAY(x)`,
 	},
 	{
 		id: "loop-7",
-		category: "Iteration",
+		level: "easy",
+		topics: ["Iteration"],
 		prompt: "What is displayed?",
 		code: `total ← 0
 FOR EACH n IN [2, 5, 1]
@@ -439,18 +487,20 @@ DISPLAY(total)`,
 	// ---------------------------------------------------------------- Lists
 	{
 		id: "list-1",
-		category: "Lists",
+		level: "easy",
+		topics: ["Lists"],
 		prompt: "What is displayed?",
 		code: `nums ← [10, 20, 30, 40]
 DISPLAY(nums[2])`,
 		options: ["20", "30", "10", "An error"],
 		answer: 0,
 		explanation:
-			"On the AP reference sheet, lists start at index 1, not 0. nums[1] is 10, so nums[2] is 20.",
+			"In this pseudocode, lists start at index 1, not 0. nums[1] is 10, so nums[2] is 20.",
 	},
 	{
 		id: "list-2",
-		category: "Lists",
+		level: "easy",
+		topics: ["Lists"],
 		prompt: "What is displayed?",
 		code: `pets ← ["cat", "dog"]
 APPEND(pets, "fish")
@@ -461,7 +511,8 @@ DISPLAY(LENGTH(pets))`,
 	},
 	{
 		id: "list-3",
-		category: "Lists",
+		level: "medium",
+		topics: ["Lists"],
 		prompt: "What is displayed?",
 		code: `letters ← ["a", "b", "c"]
 INSERT(letters, 2, "z")
@@ -473,7 +524,8 @@ DISPLAY(letters)`,
 	},
 	{
 		id: "list-4",
-		category: "Lists",
+		level: "easy",
+		topics: ["Lists"],
 		prompt: "What is displayed?",
 		code: `list ← [5, 6, 7, 8]
 REMOVE(list, 1)
@@ -485,7 +537,8 @@ DISPLAY(list[1])`,
 	},
 	{
 		id: "list-5",
-		category: "Lists",
+		level: "easy",
+		topics: ["Lists"],
 		prompt: "What is displayed?",
 		code: `scores ← [3, 9, 4]
 scores[2] ← scores[1] + scores[3]
@@ -496,7 +549,8 @@ DISPLAY(scores)`,
 	},
 	{
 		id: "list-6",
-		category: "Lists",
+		level: "easy",
+		topics: ["Lists"],
 		prompt: "What happens when this code runs?",
 		code: `items ← [4, 8, 15]
 DISPLAY(items[4])`,
@@ -507,7 +561,8 @@ DISPLAY(items[4])`,
 	},
 	{
 		id: "list-7",
-		category: "Lists",
+		level: "medium",
+		topics: ["Lists"],
 		prompt: "What is displayed?",
 		code: `list ← [7, 2, 9, 4]
 max ← list[1]
@@ -526,7 +581,8 @@ DISPLAY(max)`,
 	},
 	{
 		id: "list-8",
-		category: "Lists",
+		level: "medium",
+		topics: ["Lists"],
 		prompt: "What is displayed?",
 		code: `nums ← [3, 8, 6, 5, 10]
 c ← 0
@@ -546,7 +602,8 @@ DISPLAY(c)`,
 	// ---------------------------------------------------------------- Procedures
 	{
 		id: "proc-1",
-		category: "Procedures",
+		level: "easy",
+		topics: ["Procedures"],
 		prompt: "What is displayed?",
 		code: `PROCEDURE double(x)
 {
@@ -559,7 +616,8 @@ DISPLAY(double(5) + 1)`,
 	},
 	{
 		id: "proc-2",
-		category: "Procedures",
+		level: "easy",
+		topics: ["Procedures"],
 		prompt: "What is displayed?",
 		code: `PROCEDURE greet(name)
 {
@@ -575,7 +633,8 @@ greet("Ben")`,
 	},
 	{
 		id: "proc-3",
-		category: "Procedures",
+		level: "medium",
+		topics: ["Procedures"],
 		prompt: "What is displayed?",
 		code: `PROCEDURE mystery(a, b)
 {
@@ -593,7 +652,8 @@ DISPLAY(mystery(3, 8))`,
 	},
 	{
 		id: "proc-4",
-		category: "Procedures",
+		level: "medium",
+		topics: ["Procedures"],
 		prompt: "What is displayed?",
 		code: `PROCEDURE check(n)
 {
@@ -611,7 +671,8 @@ DISPLAY(check(0))`,
 	},
 	{
 		id: "proc-5",
-		category: "Procedures",
+		level: "medium",
+		topics: ["Procedures"],
 		prompt: "What is displayed?",
 		code: `PROCEDURE addUp(list)
 {
@@ -631,7 +692,8 @@ DISPLAY(addUp([1, 2, 3, 4]))`,
 	// ---------------------------------------------------------------- Robot
 	{
 		id: "robot-1",
-		category: "Robot",
+		level: "easy",
+		topics: ["Robot"],
 		prompt: "The robot (triangle) starts facing up. Which square does it end on?",
 		code: `MOVE_FORWARD()
 MOVE_FORWARD()
@@ -641,13 +703,15 @@ MOVE_FORWARD()`,
 			rows: [".....", ".B...", ".A.D.", ".C...", "....."],
 			robot: { row: 4, col: 0, facing: "up" },
 		},
+		verify: "square",
 		options: ["A", "B", "C", "D"],
 		answer: 0,
 		explanation: "Two squares up, a quarter turn to the right (now facing right), then one square right — landing on A.",
 	},
 	{
 		id: "robot-2",
-		category: "Robot",
+		level: "medium",
+		topics: ["Robot"],
 		prompt: "The robot starts facing right. Which square does it end on?",
 		code: `REPEAT 3 TIMES
 {
@@ -659,6 +723,7 @@ MOVE_FORWARD()`,
 			rows: [".....", ".....", "....B", "...CA", "....D"],
 			robot: { row: 4, col: 1, facing: "right" },
 		},
+		verify: "square",
 		options: ["A", "B", "C", "D"],
 		answer: 0,
 		explanation:
@@ -666,16 +731,18 @@ MOVE_FORWARD()`,
 	},
 	{
 		id: "robot-3",
-		category: "Robot",
+		level: "medium",
+		topics: ["Robot"],
 		prompt: "The robot starts facing right. Dark squares are blocked. Which square does it end on?",
 		code: `REPEAT UNTIL (NOT CAN_MOVE("forward"))
 {
   MOVE_FORWARD()
 }`,
 		grid: {
-			rows: [".....", "..D..", "C.A#B", ".....", "....."],
+			rows: [".....", "..D..", "..A#B", "..C..", "....."],
 			robot: { row: 2, col: 0, facing: "right" },
 		},
+		verify: "square",
 		options: ["A", "B", "C", "D"],
 		answer: 0,
 		explanation:
@@ -683,18 +750,25 @@ MOVE_FORWARD()`,
 	},
 	{
 		id: "robot-4",
-		category: "Robot",
+		level: "easy",
+		topics: ["Robot"],
 		prompt: "The robot starts facing up. Which way is it facing after this code?",
 		code: `ROTATE_RIGHT()
 ROTATE_RIGHT()
 ROTATE_LEFT()`,
+		grid: {
+			rows: ["...", "...", "..."],
+			robot: { row: 1, col: 1, facing: "up" },
+		},
+		verify: "facing",
 		options: ["Right", "Up", "Down", "Left"],
 		answer: 0,
 		explanation: "Right twice turns it from up to right to down. One left turn brings it back to facing right.",
 	},
 	{
 		id: "robot-5",
-		category: "Robot",
+		level: "medium",
+		topics: ["Robot"],
 		prompt: "The robot starts facing up. Where does it end up?",
 		code: `REPEAT 4 TIMES
 {
@@ -705,6 +779,7 @@ ROTATE_LEFT()`,
 			rows: [".....", ".....", ".....", ".....", "....."],
 			robot: { row: 3, col: 1, facing: "up" },
 		},
+		verify: "manual",
 		options: [
 			"Back where it started, facing up",
 			"Back where it started, facing down",
@@ -717,7 +792,8 @@ ROTATE_LEFT()`,
 	},
 	{
 		id: "robot-6",
-		category: "Robot",
+		level: "medium",
+		topics: ["Robot"],
 		prompt: "The robot starts facing up. Dark squares are blocked. Which square does it end on?",
 		code: `IF (CAN_MOVE("forward"))
 {
@@ -732,9 +808,18 @@ ELSE
 			rows: [".....", ".....", "D....", "#B...", ".AC.."],
 			robot: { row: 4, col: 0, facing: "up" },
 		},
+		verify: "square",
 		options: ["A", "B", "C", "D"],
 		answer: 0,
 		explanation:
 			"The square above the robot is blocked, so CAN_MOVE(\"forward\") is false and the ELSE runs: turn right (now facing right) and move one square — onto A.",
 	},
+];
+
+/** The whole bank: the original set plus the three level files. */
+export const PSEUDO_QUESTIONS: PseudoQuestion[] = [
+	...CORE_QUESTIONS,
+	...EASY_QUESTIONS,
+	...MEDIUM_QUESTIONS,
+	...CHALLENGING_QUESTIONS,
 ];

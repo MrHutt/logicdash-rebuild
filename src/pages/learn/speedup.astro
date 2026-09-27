@@ -31,11 +31,11 @@ const tasks = [
 	<section class="block">
 		<p class="block-title">One Cook, Four Cooks</p>
 		<p class="block-text">
-			You need 40 sandwiches, and each one takes a minute to make. On your own, that's
+			You need 40 sandwiches, and each one takes a minute to make. On your own, that's{" "}
 			<span class="mono-highlight">40 minutes</span>.
 		</p>
 		<p class="block-text">
-			Three friends turn up and you each make 10. Everyone works at the same time, so you're done in
+			Three friends turn up and you each make 10. Everyone works at the same time, so you're done in{" "}
 			<span class="mono-highlight">10 minutes</span>. Four cooks, four times as fast.
 		</p>
 		<p class="block-text">
@@ -84,7 +84,7 @@ const tasks = [
 								<span class="kitchen-seg kitchen-seg--solo" style={`width: ${(PACKING / longest) * 100}%`} />
 							</span>
 							<span class="kitchen-total">
-								{fmt(k.total)} min
+								{fmt(k.total)} min{" "}
 								<span class="sr-only">
 									({SETUP} unpacking + {fmt(k.making)} making + {PACKING} packing)
 								</span>
@@ -150,7 +150,7 @@ const tasks = [
 				speedup of 100 ÷ 50 = 2.
 			</li>
 			<li>
-				A poor split — A + B on one (70 s) and C + D on the other (30 s) — takes
+				A poor split — A + B on one (70 s) and C + D on the other (30 s) — takes{" "}
 				<span class="mono-highlight">70 seconds</span>, because you have to wait for the slowest
 				processor to finish.
 			</li>

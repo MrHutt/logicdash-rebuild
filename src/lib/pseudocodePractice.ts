@@ -10,7 +10,7 @@
 //
 // Pure functions over a plain JSON-able state object, so the page can save
 // it to localStorage and this logic can be tested on its own.
-import type { PseudoCategory, PseudoQuestion } from "./pseudocodeQuestions";
+import type { PseudoCategory, PseudoLevel, PseudoQuestion } from "./pseudocodeQuestions";
 
 export interface QuestionProgress {
 	/** Relative chance of being picked (1 = normal). */
@@ -20,7 +20,7 @@ export interface QuestionProgress {
 }
 
 export interface PracticeState {
-	version: 1;
+	version: 2;
 	progress: Record<string, QuestionProgress>;
 	streak: number;
 	best: number;
@@ -29,6 +29,10 @@ export interface PracticeState {
 	recent: string[];
 	/** Topics the student has switched on. */
 	categories: PseudoCategory[];
+	/** Difficulty the student has chosen. */
+	level: PseudoLevel;
+	/** Best streak reached on each level. */
+	bestByLevel: Partial<Record<PseudoLevel, number>>;
 }
 
 const CORRECT_WEIGHT = 0.2; // how far a correct answer drops a question
@@ -37,18 +41,35 @@ const REQUEUE_MIN = 2; // a missed question returns after this many others…
 const REQUEUE_SPREAD = 3; // …plus 0–2 more, so it isn't predictable
 const RECENT_LENGTH = 3;
 
-export function freshState(categories: PseudoCategory[]): PracticeState {
-	return { version: 1, progress: {}, streak: 0, best: 0, answered: 0, recent: [], categories: [...categories] };
+export function freshState(categories: PseudoCategory[], level: PseudoLevel = "easy"): PracticeState {
+	return {
+		version: 2,
+		progress: {},
+		streak: 0,
+		best: 0,
+		answered: 0,
+		recent: [],
+		categories: [...categories],
+		level,
+		bestByLevel: {},
+	};
 }
 
 function progressFor(state: PracticeState, id: string): QuestionProgress {
 	return state.progress[id] ?? { weight: 1, dueIn: null };
 }
 
-/** Questions in the switched-on topics (all of them if none are on). */
+/**
+ * Questions at the chosen level that touch at least one switched-on topic.
+ * (Most medium/challenging questions combine topics, so "touches any" keeps
+ * a narrow topic choice from emptying the pool.) Falls back to the whole
+ * level if the topic choice matches nothing.
+ */
 export function eligibleQuestions(state: PracticeState, questions: PseudoQuestion[]): PseudoQuestion[] {
-	const inTopics = questions.filter((q) => state.categories.includes(q.category));
-	return inTopics.length > 0 ? inTopics : questions;
+	const atLevel = questions.filter((q) => q.level === state.level);
+	const inTopics = atLevel.filter((q) => q.topics.some((t) => state.categories.includes(t)));
+	if (inTopics.length > 0) return inTopics;
+	return atLevel.length > 0 ? atLevel : questions;
 }
 
 /** Missed questions currently waiting to come back. */
@@ -126,6 +147,7 @@ export function recordAnswer(
 			progress,
 			streak,
 			best: Math.max(state.best, streak),
+			bestByLevel: { ...state.bestByLevel, [state.level]: Math.max(state.bestByLevel[state.level] ?? 0, streak) },
 			answered: state.answered + 1,
 		},
 		milestone: correct && isPowerOfTwoMilestone(streak) ? streak : null,
@@ -136,18 +158,34 @@ export function isPowerOfTwoMilestone(n: number): boolean {
 	return n >= 2 && (n & (n - 1)) === 0;
 }
 
-/** Loose validation for state read back from localStorage. */
-export function isPracticeState(value: unknown): value is PracticeState {
-	if (!value || typeof value !== "object") return false;
-	const v = value as Partial<PracticeState>;
-	return (
-		v.version === 1 &&
+/** Switching level starts a fresh streak (a streak belongs to one level). */
+export function setLevel(state: PracticeState, level: PseudoLevel): PracticeState {
+	return level === state.level ? state : { ...state, level, streak: 0, recent: [] };
+}
+
+/**
+ * Loose validation for state read back from localStorage. Version 1 saves
+ * (before levels existed) are upgraded in place: their question history is
+ * kept, and they start on Easy.
+ */
+export function loadPracticeState(value: unknown): PracticeState | null {
+	if (!value || typeof value !== "object") return null;
+	const v = value as Partial<PracticeState> & { version?: number };
+	const valid =
+		(v.version === 1 || v.version === 2) &&
 		typeof v.progress === "object" &&
 		v.progress !== null &&
 		typeof v.streak === "number" &&
 		typeof v.best === "number" &&
 		typeof v.answered === "number" &&
 		Array.isArray(v.recent) &&
-		Array.isArray(v.categories)
-	);
+		Array.isArray(v.categories);
+	if (!valid) return null;
+	const levelOk = v.level === "easy" || v.level === "medium" || v.level === "challenging";
+	return {
+		...(v as PracticeState),
+		version: 2,
+		level: levelOk ? v.level! : "easy",
+		bestByLevel: v.bestByLevel && typeof v.bestByLevel === "object" ? v.bestByLevel : {},
+	};
 }

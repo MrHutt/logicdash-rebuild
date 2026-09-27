@@ -251,11 +251,11 @@ export const LEARN_TOPICS: LearnTopic[] = [
 	{
 		title: "Pseudocode Practice",
 		href: "/learn/pseudocode-practice",
-		blurb: "Endless AP-style code-reading questions. Build a streak.",
+		blurb: "Endless code-reading questions at three levels. Build a streak.",
 		live: true,
 		group: "Practice",
 		kind: "tool",
-		teaches: ["AP CSP pseudocode", "Reading code", "Tracing programs"],
+		teaches: ["Pseudocode", "Reading code", "Tracing programs"],
 	},
 ];
 
