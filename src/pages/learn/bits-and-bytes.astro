@@ -1,11 +1,6 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LearnArticle from "../../components/LearnArticle.astro";
 import BitChip from "../../components/BitChip.astro";
-import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
-
-const CURRENT_HREF = "/learn/bits-and-bytes";
-const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
-const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 
 const byteExample = "10110010".split("");
 
@@ -17,190 +12,85 @@ const units = [
 ];
 ---
 
-<Layout
-	title="Bits, Bytes, and Beyond"
+<LearnArticle
+	href="/learn/bits-and-bytes"
 	description="What a byte actually is, how 8 bits combine into 256 values, and how kilobytes, megabytes, and gigabytes measure data."
-	ogType="article"
 >
-	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+	<Fragment slot="lead">You've met bits. Now let's talk about what happens when you group them together.</Fragment>
 
-	<section class="hero">
-		<h1>Bits, Bytes, and Beyond</h1>
-		<p class="hero-lead">
-			You've met bits. Now let's talk about what happens when you group them together.
+	<section class="block">
+		<p class="block-title">A Bit Is One 0 or 1</p>
+		<p class="block-text">
+			That's the smallest unit — a single switch, on or off. On its own, a bit can't say much. Two
+			possible values isn't a lot to work with.
 		</p>
 	</section>
 
-	<div class="blocks">
-		<section class="block">
-			<p class="block-title">A Bit Is One 0 or 1</p>
-			<p class="block-text">
-				That's the smallest unit — a single switch, on or off. On its own, a bit can't say much. Two
-				possible values isn't a lot to work with.
-			</p>
-		</section>
+	<section class="block block--example">
+		<p class="block-title">A Byte Is 8 Bits</p>
+		<p class="block-text">
+			Group 8 bits together and you get a byte — like <span class="mono-highlight">10110010</span>.
+			With 8 bits, you can represent 256 different values (2 multiplied by itself 8 times). That's
+			enough to represent a letter, a small number, or one pixel's worth of a simple color.
+		</p>
 
-		<section class="block block--example">
-			<p class="block-title">A Byte Is 8 Bits</p>
-			<p class="block-text">
-				Group 8 bits together and you get a byte — like <span class="mono-highlight">10110010</span>.
-				With 8 bits, you can represent 256 different values (2 multiplied by itself 8 times). That's
-				enough to represent a letter, a small number, or one pixel's worth of a simple color.
-			</p>
-
-			<div class="byte-demo">
-				<div class="byte-demo-group">
-					<div class="byte-demo-tiles">
-						<BitChip value="1" />
-					</div>
-					<span class="byte-demo-label">1 bit</span>
+		<div class="byte-demo">
+			<div class="byte-demo-group">
+				<div class="byte-demo-tiles">
+					<BitChip value="1" />
 				</div>
-				<div class="byte-demo-group">
-					<div class="byte-demo-tiles">
-						{byteExample.map((bit) => <BitChip value={bit as "0" | "1"} />)}
-					</div>
-					<span class="byte-demo-label">1 byte</span>
+				<span class="byte-demo-label">1 bit</span>
+			</div>
+			<div class="byte-demo-group">
+				<div class="byte-demo-tiles">
+					{byteExample.map((bit) => <BitChip value={bit as "0" | "1"} />)}
 				</div>
+				<span class="byte-demo-label">1 byte</span>
 			</div>
-		</section>
+		</div>
+	</section>
 
-		<section class="block">
-			<p class="block-title">Why "256"?</p>
-			<p class="block-text">
-				Each bit doubles your options. 1 bit = 2 values (0 or 1). 2 bits = 4 values. 3 bits = 8
-				values. By 8 bits, you've got 256 possible combinations — from{" "}
-				<span class="mono-highlight">00000000</span> all the way to{" "}
-				<span class="mono-highlight">11111111</span>.
-			</p>
-			<p class="block-text">
-				This is also why LogicDash's Classic mode (5 bits) has exactly 32 possible secrets, and
-				OverClocked (6 bits) has 64. Every extra bit doubles the possibilities — and doubles the
-				challenge.
-			</p>
-		</section>
+	<section class="block">
+		<p class="block-title">Why "256"?</p>
+		<p class="block-text">
+			Each bit doubles your options. 1 bit = 2 values (0 or 1). 2 bits = 4 values. 3 bits = 8
+			values. By 8 bits, you've got 256 possible combinations — from{" "}
+			<span class="mono-highlight">00000000</span> all the way to{" "}
+			<span class="mono-highlight">11111111</span>.
+		</p>
+		<p class="block-text">
+			This is also why LogicDash's Classic mode (5 bits) has exactly 32 possible secrets, and
+			OverClocked (6 bits) has 64. Every extra bit doubles the possibilities — and doubles the
+			challenge.
+		</p>
+	</section>
 
-		<section class="block">
-			<p class="block-title">Beyond the Byte</p>
-			<p class="block-text">
-				Once you're storing real things — photos, songs, entire apps — you need a lot more than one
-				byte. That's where these familiar terms come from:
-			</p>
+	<section class="block">
+		<p class="block-title">Beyond the Byte</p>
+		<p class="block-text">
+			Once you're storing real things — photos, songs, entire apps — you need a lot more than one
+			byte. That's where these familiar terms come from:
+		</p>
 
-			<ul class="unit-list">
-				{
-					units.map((unit) => (
-						<li>
-							<span class="unit-name">{unit.name}</span> {unit.approx} — {unit.example}
-						</li>
-					))
-				}
-			</ul>
+		<ul class="unit-list">
+			{
+				units.map((unit) => (
+					<li>
+						<span class="unit-name">{unit.name}</span> {unit.approx} — {unit.example}
+					</li>
+				))
+			}
+		</ul>
 
-			<p class="block-text">
-				Every one of these, all the way up, is still just bits — 0s and 1s — grouped into bigger and
-				bigger chunks.
-			</p>
-		</section>
+		<p class="block-text">
+			Every one of these, all the way up, is still just bits — 0s and 1s — grouped into bigger and
+			bigger chunks.
+		</p>
+	</section>
 
-		<section class="block">
-			<div class="learn-pagination">
-				{
-					prev && (
-						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-							← {prev.title}
-						</a>
-					)
-				}
-				{
-					next &&
-						(next.live ? (
-							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-								{next.title} →
-							</a>
-						) : (
-							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-								{next.title} (coming soon)
-							</span>
-						))
-				}
-			</div>
-		</section>
-	</div>
-</Layout>
+</LearnArticle>
 
 <style>
-	.breadcrumb {
-		margin: 0 0 0.75rem;
-		text-align: center;
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
-	}
-
-	.breadcrumb a {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.breadcrumb a:hover {
-		text-decoration: underline;
-	}
-
-	.hero {
-		text-align: center;
-		margin-bottom: 1rem;
-	}
-
-	.hero h1 {
-		margin: 0 0 0.5rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
-	}
-
-	.hero-lead {
-		margin: 0 auto;
-		max-width: 34rem;
-		font-size: 1rem;
-	}
-
-	.blocks {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.block {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 14px;
-		padding: 1rem 1.15rem;
-	}
-
-	.block-title {
-		margin: 0 0 0.4rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #ffae2e;
-	}
-
-	.block-text {
-		margin: 0 0 0.6rem;
-		font-size: 1rem;
-	}
-
-	.block-text:last-child {
-		margin-bottom: 0;
-	}
-
-	.mono-highlight {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		color: var(--color-text);
-	}
-
-	.block--example {
-		text-align: center;
-	}
 
 	.byte-demo {
 		display: flex;
@@ -208,7 +98,7 @@ const units = [
 		justify-content: center;
 		flex-wrap: wrap;
 		gap: 1.5rem;
-		margin: 0.9rem 0 0.3rem;
+		margin: 1rem 0 0.25rem;
 		padding: 1rem;
 		border-radius: 12px;
 		background: var(--color-bg);
@@ -239,8 +129,8 @@ const units = [
 	.unit-list {
 		display: inline-block;
 		text-align: left;
-		margin: 0 0 0.9rem;
-		padding: 0.8rem 1rem 0.8rem 1.6rem;
+		margin: 0 0 1rem;
+		padding: 0.75rem 1rem 0.75rem 1.5rem;
 		border-radius: 12px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
@@ -258,30 +148,4 @@ const units = [
 		color: var(--color-text);
 	}
 
-	.learn-pagination {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.75rem;
-		font-size: 0.85rem;
-	}
-
-	.learn-pagination-link {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.learn-pagination-link:hover {
-		text-decoration: underline;
-	}
-
-	.learn-pagination-next {
-		margin-left: auto;
-	}
-
-	.learn-pagination-soon {
-		color: var(--color-text-muted);
-		font-weight: 600;
-		font-style: italic;
-	}
 </style>

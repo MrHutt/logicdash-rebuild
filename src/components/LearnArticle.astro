@@ -1,9 +1,16 @@
 ---
-// Shared shell for Learn pages: breadcrumb, centered hero/lead, the stack of
-// content blocks (the default slot), and Previous/Next pagination — the same
-// structure every original Learn page builds by hand, factored out so the
-// newer pages don't each carry ~200 lines of copied CSS. SEO (title, meta,
-// canonical, Open Graph, JSON-LD) all comes from Layout.astro + learnTopics.ts.
+// Shared shell for every Learn page: breadcrumb, centered hero, the content
+// blocks (the default slot), Previous/Next cards, and — on wide screens — a
+// sticky sidebar with "On this page" and "In this section" navigation.
+// SEO (title, meta, canonical, Open Graph, JSON-LD) comes from Layout.astro
+// + learnTopics.ts.
+//
+// Layout: a centered container (max 1280px). Below 1100px everything is one
+// column; from 1100px the lesson sits in a main column beside a 280px
+// sidebar, so wide screens are used for navigation rather than stretching
+// text lines or leaving a narrow column floating in empty space.
+//
+// Spacing uses the 4px scale defined in Layout.astro (--space-1 … --space-8).
 //
 // Styles are global but namespaced under .learn-article, because several of
 // the interactive demos build their markup client-side (innerHTML), which
@@ -16,51 +23,140 @@ interface Props {
 	href: string;
 	/** Meta description — keep under ~160 characters. */
 	description: string;
-	/** One or two sentences under the H1. */
-	lead: string;
+	/** One or two sentences under the H1 (or use a `lead` slot for markup). */
+	lead?: string;
 	/** Optional override for the H1 (defaults to the topic's title). */
 	heading?: string;
+	/** Optional override for the <title> (defaults to the topic's title). */
+	pageTitle?: string;
 }
 
-const { href, description, lead, heading } = Astro.props;
+const { href, description, lead, heading, pageTitle } = Astro.props;
 const topic = LEARN_TOPICS.find((t) => t.href === href);
 if (!topic) throw new Error(`LearnArticle: no topic registered for ${href} in learnTopics.ts`);
 const { prev, next } = getAdjacentLearnTopics(href);
+const siblings = LEARN_TOPICS.filter((t) => t.group === topic.group && t.live);
+const groupAnchor = topic.group
+	.toLowerCase()
+	.replace(/&/g, "and")
+	.replace(/[^a-z0-9]+/g, "-")
+	.replace(/^-|-$/g, "");
+
+// Render the page content once, give every section heading an id, and build
+// the "On this page" list from those headings — so every page gets its own
+// table of contents without anyone maintaining one by hand.
+const rawContent = await Astro.slots.render("default");
+const leadHtml = Astro.slots.has("lead") ? await Astro.slots.render("lead") : null;
+const toc: { id: string; label: string }[] = [];
+const usedIds = new Set<string>();
+const stripTags = (html: string) =>
+	html
+		.replace(/<[^>]+>/g, "")
+		.replace(/&amp;/g, "&")
+		.replace(/&#39;|&apos;/g, "'")
+		.replace(/&quot;/g, '"')
+		.replace(/\s+/g, " ")
+		.trim();
+const content = rawContent.replace(
+	/<p class="(block-title|demo-frame-title)"([^>]*)>([\s\S]*?)<\/p>/g,
+	(match, cls: string, attrs: string, inner: string) => {
+		if (/\sid=/.test(attrs)) return match;
+		const label = stripTags(inner);
+		if (!label) return match;
+		const base = `s-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+		let id = base;
+		for (let n = 2; usedIds.has(id); n++) id = `${base}-${n}`;
+		usedIds.add(id);
+		toc.push({ id, label: cls === "demo-frame-title" ? `▸ ${label}` : label });
+		return `<p class="${cls}" id="${id}"${attrs}>${inner}</p>`;
+	},
+);
 ---
 
-<Layout title={topic.title} description={description} ogType="article">
+<Layout title={pageTitle ?? topic.title} description={description} ogType="article" wide>
 	<div class="learn-article">
-		<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/learn">Learn</a> / {topic.title}</nav>
+		<nav class="breadcrumb" aria-label="Breadcrumb">
+			<a href="/learn">Learn</a>
+			<span aria-hidden="true">/</span>
+			<a href={`/learn#${groupAnchor}`}>{topic.group}</a>
+			<span aria-hidden="true">/</span>
+			<span aria-current="page">{topic.title}</span>
+		</nav>
 
-		<section class="hero">
+		<header class="hero">
 			<h1>{heading ?? topic.title}</h1>
-			<p class="hero-lead">{lead}</p>
-		</section>
+			{leadHtml ? <p class="hero-lead" set:html={leadHtml} /> : lead && <p class="hero-lead">{lead}</p>}
+		</header>
 
-		<div class="blocks">
-			<slot />
+		<div class="learn-layout">
+			<div class="learn-main">
+				<div class="blocks">
+					<Fragment set:html={content} />
+				</div>
 
-			<nav class="block learn-pagination" aria-label="More lessons">
-				{
-					prev && (
-						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-							← {prev.title}
-						</a>
-					)
-				}
-				{
-					next &&
-						(next.live ? (
-							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-								{next.title} →
+				<nav class="learn-pagination" aria-label="Previous and next lessons">
+					{
+						prev && (
+							<a class="learn-pagination-card learn-pagination-prev" href={prev.href}>
+								<span class="learn-pagination-label">← Previous</span>
+								<span class="learn-pagination-title">{prev.title}</span>
 							</a>
-						) : (
-							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-								{next.title} (coming soon)
-							</span>
-						))
-				}
-			</nav>
+						)
+					}
+					{
+						next &&
+							(next.live ? (
+								<a class="learn-pagination-card learn-pagination-next" href={next.href}>
+									<span class="learn-pagination-label">Next →</span>
+									<span class="learn-pagination-title">{next.title}</span>
+								</a>
+							) : (
+								<span class="learn-pagination-card learn-pagination-next learn-pagination-soon">
+									<span class="learn-pagination-label">Coming soon</span>
+									<span class="learn-pagination-title">{next.title}</span>
+								</span>
+							))
+					}
+				</nav>
+			</div>
+
+			<aside class="learn-aside" aria-label="Page navigation">
+				<div class="learn-aside-inner">
+					{
+						toc.length > 1 && (
+							<nav class="aside-card" aria-labelledby="aside-toc-title">
+								<p class="aside-title" id="aside-toc-title">
+									On this page
+								</p>
+								<ol class="aside-list">
+									{toc.map((item) => (
+										<li>
+											<a href={`#${item.id}`}>{item.label}</a>
+										</li>
+									))}
+								</ol>
+							</nav>
+						)
+					}
+					<nav class="aside-card" aria-labelledby="aside-section-title">
+						<p class="aside-title" id="aside-section-title">
+							{topic.group}
+						</p>
+						<ol class="aside-list">
+							{
+								siblings.map((t) => (
+									<li>
+										<a href={t.href} aria-current={t.href === href ? "page" : undefined}>
+											{t.title}
+										</a>
+									</li>
+								))
+							}
+						</ol>
+						<a class="aside-all" href="/learn">All lessons →</a>
+					</nav>
+				</div>
+			</aside>
 		</div>
 	</div>
 </Layout>
@@ -70,10 +166,17 @@ const { prev, next } = getAdjacentLearnTopics(href);
 		display: none !important;
 	}
 
+	/* ------------------------------------------------------------------
+	   Page frame: breadcrumb, hero, main column + sidebar.
+	   ------------------------------------------------------------------ */
+
 	.learn-article .breadcrumb {
-		margin: 0 0 0.75rem;
-		text-align: center;
-		font-size: 0.8rem;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-1) var(--space-2);
+		margin: 0 0 var(--space-3);
+		font-size: 0.8125rem;
 		color: var(--color-text-muted);
 	}
 
@@ -88,47 +191,163 @@ const { prev, next } = getAdjacentLearnTopics(href);
 	}
 
 	.learn-article .hero {
+		max-width: 48rem;
+		margin: 0 auto var(--space-6);
 		text-align: center;
-		margin-bottom: 1rem;
 	}
 
 	.learn-article .hero h1 {
-		margin: 0 0 0.5rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
+		margin: 0 0 var(--space-3);
+		font-size: clamp(1.75rem, 4vw, 2.5rem);
+		line-height: 1.15;
 	}
 
 	.learn-article .hero-lead {
 		margin: 0 auto;
-		max-width: 36rem;
-		font-size: 1.05rem;
+		max-width: 40rem;
+		font-size: 1.0625rem;
+		line-height: 1.6;
 	}
 
-	.learn-article .blocks {
+	.learn-article .learn-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-6);
+	}
+
+	.learn-article .learn-aside {
+		display: none;
+	}
+
+	@media (min-width: 1100px) {
+		.learn-article .learn-layout {
+			grid-template-columns: minmax(0, 1fr) 17.5rem;
+			align-items: start;
+		}
+
+		.learn-article .learn-aside {
+			display: block;
+			position: sticky;
+			top: var(--space-4);
+		}
+	}
+
+	.learn-article .learn-aside-inner {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: var(--space-4);
+		max-height: calc(100vh - var(--space-6));
+		overflow-y: auto;
 	}
 
-	.learn-article .block {
-		background: var(--color-surface);
+	.learn-article .aside-card {
+		padding: var(--space-4);
+		border-radius: 12px;
 		border: 1px solid var(--color-border);
-		border-radius: 14px;
-		padding: 1rem 1.15rem;
-		min-width: 0;
+		background: var(--color-surface);
 	}
 
-	.learn-article .block-title {
-		margin: 0 0 0.4rem;
-		font-size: 0.78rem;
+	.learn-article .aside-title {
+		margin: 0 0 var(--space-2);
+		font-size: 0.75rem;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		color: var(--color-accent);
 	}
 
+	.learn-article .aside-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.learn-article .aside-list a {
+		display: block;
+		padding: var(--space-1) var(--space-2);
+		border-radius: 0 8px 8px 0;
+		border-left: 2px solid transparent;
+		font-size: 0.875rem;
+		line-height: 1.4;
+		color: var(--color-text-muted);
+		text-decoration: none;
+	}
+
+	.learn-article .aside-list a:hover,
+	.learn-article .aside-list a:focus-visible {
+		background: var(--color-surface-alt);
+		color: var(--color-text);
+	}
+
+	.learn-article .aside-list a[aria-current="page"],
+	.learn-article .aside-list a.is-active {
+		border-left-color: var(--color-accent);
+		color: var(--color-text);
+		font-weight: 600;
+	}
+
+	.learn-article .aside-all {
+		display: inline-block;
+		margin-top: var(--space-3);
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--color-accent);
+		text-decoration: none;
+	}
+
+	.learn-article .aside-all:hover {
+		text-decoration: underline;
+	}
+
+	/* Section headings are link targets from the sidebar — keep them clear
+	   of the top edge when jumped to. */
+	.learn-article [id^="s-"] {
+		scroll-margin-top: var(--space-6);
+	}
+
+	/* ------------------------------------------------------------------
+	   Content blocks.
+	   ------------------------------------------------------------------ */
+
+	.learn-article .blocks {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.learn-article .block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		padding: var(--space-4);
+		min-width: 0;
+	}
+
+	@media (min-width: 768px) {
+		.learn-article .block {
+			padding: var(--space-5);
+		}
+	}
+
+	.learn-article .block-title {
+		margin: 0 0 var(--space-2);
+		font-size: 0.8125rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-accent);
+	}
+
+	/* Body copy keeps a comfortable reading width (about 75 characters)
+	   even when the column is wide. */
 	.learn-article .block-text {
-		margin: 0 0 0.6rem;
+		max-width: 75ch;
+		margin: 0 0 var(--space-3);
 		font-size: 1rem;
+		line-height: 1.65;
 	}
 
 	.learn-article .block-text:last-child {
@@ -142,7 +361,7 @@ const { prev, next } = getAdjacentLearnTopics(href);
 		font-weight: 700;
 	}
 
-	.learn-article .block a:not(.demo-btn):not(.learn-pagination-link) {
+	.learn-article .block a:not(.demo-btn):not(.related-link) {
 		color: var(--color-accent);
 		font-weight: 600;
 	}
@@ -157,40 +376,48 @@ const { prev, next } = getAdjacentLearnTopics(href);
 		text-align: center;
 	}
 
+	.learn-article .block--example .block-text,
 	.learn-article .block--example .block-list {
-		text-align: left;
 		margin-inline: auto;
-		max-width: 34rem;
 	}
 
-	/* Plain bulleted list inside a block — same colour/line-height as body copy. */
+	.learn-article .block--example .block-list {
+		text-align: left;
+		max-width: 36rem;
+	}
+
 	.learn-article .block-list {
-		margin: 0 0 0.6rem;
-		padding-left: 1.2rem;
+		max-width: 75ch;
+		margin: 0 0 var(--space-3);
+		padding-left: var(--space-5);
 		color: var(--color-text-muted);
-		line-height: 1.6;
+		line-height: 1.65;
 	}
 
 	.learn-article .block-list li + li {
-		margin-top: 0.3rem;
+		margin-top: var(--space-2);
 	}
 
 	.learn-article .block-list:last-child {
 		margin-bottom: 0;
 	}
 
-	/* The one-line "big idea" takeaway — an amber rule down the left, not a
-	   filled box, so it reads as emphasis rather than a new section. */
+	/* The one-line "big idea" takeaway — an amber rule down the left. */
 	.learn-article .block-callout {
-		margin: 0.8rem 0;
-		padding: 0.55rem 0.9rem;
-		border-left: 3px solid var(--color-accent);
+		max-width: 75ch;
+		margin: var(--space-4) 0;
+		padding: var(--space-3) var(--space-4);
+		border-left: 4px solid var(--color-accent);
 		border-radius: 0 8px 8px 0;
 		background: var(--color-bg);
 		color: var(--color-text);
 		font-size: 1rem;
-		line-height: 1.55;
+		line-height: 1.6;
 		text-align: left;
+	}
+
+	.learn-article .block--example .block-callout {
+		margin-inline: auto;
 	}
 
 	.learn-article .block-callout:last-child {
@@ -199,8 +426,8 @@ const { prev, next } = getAdjacentLearnTopics(href);
 
 	/* A dark inset panel for static diagrams and worked examples. */
 	.learn-article .figure {
-		margin: 0.9rem 0 0.4rem;
-		padding: 1rem;
+		margin: var(--space-4) 0 var(--space-2);
+		padding: var(--space-4);
 		border-radius: 12px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
@@ -208,8 +435,8 @@ const { prev, next } = getAdjacentLearnTopics(href);
 	}
 
 	.learn-article .figure-caption {
-		margin: 0.5rem 0 0;
-		font-size: 0.85rem;
+		margin: var(--space-2) 0 0;
+		font-size: 0.875rem;
 		font-style: italic;
 		color: var(--color-text-muted);
 		text-align: center;
@@ -217,14 +444,14 @@ const { prev, next } = getAdjacentLearnTopics(href);
 
 	/* Pseudocode / code sample. */
 	.learn-article .code-block {
-		margin: 0.8rem auto;
-		padding: 0.8rem 1rem;
-		max-width: 34rem;
-		border-radius: 10px;
+		margin: var(--space-4) auto;
+		padding: var(--space-3) var(--space-4);
+		max-width: 36rem;
+		border-radius: 8px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
 		font-family: var(--font-mono);
-		font-size: 0.92rem;
+		font-size: 0.9375rem;
 		line-height: 1.55;
 		color: var(--color-text);
 		white-space: pre;
@@ -232,11 +459,11 @@ const { prev, next } = getAdjacentLearnTopics(href);
 		text-align: left;
 	}
 
-	/* Comparison tables — same conventions as the IPv4 vs IPv6 page. */
+	/* Comparison tables. */
 	.learn-article .table-wrap {
-		margin: 0.9rem 0 0.3rem;
+		margin: var(--space-4) 0 var(--space-1);
 		overflow-x: auto;
-		border-radius: 10px;
+		border-radius: 8px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
 	}
@@ -244,12 +471,12 @@ const { prev, next } = getAdjacentLearnTopics(href);
 	.learn-article .data-table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.92rem;
+		font-size: 0.9375rem;
 		text-align: left;
 	}
 
 	.learn-article .data-table th {
-		padding: 0.55rem 0.9rem;
+		padding: var(--space-2) var(--space-4);
 		font-size: 0.75rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -259,8 +486,8 @@ const { prev, next } = getAdjacentLearnTopics(href);
 	}
 
 	.learn-article .data-table td {
-		padding: 0.55rem 0.9rem;
-		line-height: 1.45;
+		padding: var(--space-2) var(--space-4);
+		line-height: 1.5;
 		color: var(--color-text);
 		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
 	}
@@ -271,12 +498,12 @@ const { prev, next } = getAdjacentLearnTopics(href);
 
 	@media (max-width: 480px) {
 		.learn-article .data-table {
-			font-size: 0.85rem;
+			font-size: 0.875rem;
 		}
 
 		.learn-article .data-table th,
 		.learn-article .data-table td {
-			padding: 0.5rem 0.6rem;
+			padding: var(--space-2) var(--space-3);
 		}
 	}
 
@@ -286,17 +513,18 @@ const { prev, next } = getAdjacentLearnTopics(href);
 		white-space: nowrap;
 	}
 
-	/* Two-up comparison cards (e.g. lossless vs lossy). Stacks on phones. */
+	/* Side-by-side comparison cards (e.g. lossless vs lossy). They sit next
+	   to each other when there's room and stack on phones. */
 	.learn-article .compare-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-		gap: 0.7rem;
-		margin: 0.9rem 0 0.3rem;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+		gap: var(--space-3);
+		margin: var(--space-4) 0 var(--space-1);
 		text-align: left;
 	}
 
 	.learn-article .compare-card {
-		padding: 0.85rem 1rem;
+		padding: var(--space-4);
 		border-radius: 12px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
@@ -307,46 +535,48 @@ const { prev, next } = getAdjacentLearnTopics(href);
 	}
 
 	.learn-article .compare-card-title {
-		margin: 0 0 0.35rem;
+		margin: 0 0 var(--space-2);
 		font-family: var(--font-mono);
 		font-weight: 700;
-		font-size: 0.95rem;
+		font-size: 0.9375rem;
 		color: var(--color-text);
 	}
 
 	.learn-article .compare-card p {
-		margin: 0 0 0.4rem;
-		font-size: 0.95rem;
+		margin: 0 0 var(--space-2);
+		font-size: 0.9375rem;
 	}
 
 	.learn-article .compare-card p:last-child {
 		margin-bottom: 0;
 	}
 
-	/* "Related page" pointer used for the cross-linked pairs. */
+	/* "Pairs well with" pointer to a sibling page. */
 	.learn-article .related-link {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
-		padding: 0.8rem 1rem;
+		flex-wrap: wrap;
+		gap: var(--space-1) var(--space-3);
+		margin-top: var(--space-4);
+		padding: var(--space-3) var(--space-4);
 		border-radius: 12px;
 		border: 1px solid var(--color-border);
-		background: var(--color-surface);
+		background: var(--color-bg);
 		text-decoration: none;
 		transition: border-color 0.15s ease;
 	}
 
-	.learn-article .related-link:hover {
+	.learn-article .related-link:hover,
+	.learn-article .related-link:focus-visible {
 		border-color: var(--color-accent);
 	}
 
 	.learn-article .related-link-label {
-		font-size: 0.78rem;
+		font-size: 0.75rem;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--color-text-muted);
-		white-space: nowrap;
 	}
 
 	.learn-article .related-link-title {
@@ -354,31 +584,89 @@ const { prev, next } = getAdjacentLearnTopics(href);
 		color: var(--color-accent);
 	}
 
+	/* ------------------------------------------------------------------
+	   Previous / Next cards.
+	   ------------------------------------------------------------------ */
+
 	.learn-article .learn-pagination {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-3);
+		margin-top: var(--space-6);
+	}
+
+	@media (min-width: 640px) {
+		.learn-article .learn-pagination {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.learn-article .learn-pagination-next {
+			grid-column: 2;
+		}
+	}
+
+	.learn-article .learn-pagination-card {
 		display: flex;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		font-size: 0.9rem;
-	}
-
-	.learn-article .learn-pagination-link {
-		color: var(--color-accent);
-		font-weight: 600;
+		flex-direction: column;
+		gap: var(--space-1);
+		padding: var(--space-4);
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
 		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 
-	.learn-article .learn-pagination-link:hover {
-		text-decoration: underline;
+	.learn-article a.learn-pagination-card:hover,
+	.learn-article a.learn-pagination-card:focus-visible {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 30%, transparent);
 	}
 
 	.learn-article .learn-pagination-next {
-		margin-left: auto;
+		align-items: flex-end;
 		text-align: right;
 	}
 
-	.learn-article .learn-pagination-soon {
+	.learn-article .learn-pagination-label {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
 		color: var(--color-text-muted);
-		font-style: italic;
+	}
+
+	.learn-article .learn-pagination-title {
+		font-weight: 700;
+		font-size: 1rem;
+		color: var(--color-accent);
+	}
+
+	.learn-article .learn-pagination-soon .learn-pagination-title {
+		color: var(--color-text-muted);
 	}
 </style>
+
+<script>
+	// Highlight the sidebar's "On this page" entry for the section in view.
+	const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".learn-aside .aside-list a[href^='#']"));
+	if (tocLinks.length && "IntersectionObserver" in window) {
+		const byId = new Map(tocLinks.map((a) => [a.getAttribute("href")!.slice(1), a]));
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (!entry.isIntersecting) return;
+					tocLinks.forEach((a) => a.classList.remove("is-active"));
+					byId.get(entry.target.id)?.classList.add("is-active");
+				});
+			},
+			{ rootMargin: "0px 0px -70% 0px" },
+		);
+		byId.forEach((_, id) => {
+			const el = document.getElementById(id);
+			if (el) observer.observe(el);
+		});
+	}
+</script>

@@ -1,127 +1,92 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LearnArticle from "../../components/LearnArticle.astro";
 import PlaceValueChart from "../../components/PlaceValueChart.astro";
 import ByteBuilder from "../../components/ByteBuilder.astro";
 import PracticeQuiz from "../../components/PracticeQuiz.astro";
-import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
 
-const CURRENT_HREF = "/learn/reading-a-byte";
-const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
-const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 ---
 
-<Layout
-	title="Reading a Byte (Binary to Decimal)"
+<LearnArticle
+	href="/learn/reading-a-byte"
 	description="Learn to convert an 8-bit binary byte into its decimal value step by step, with worked examples and an interactive practice quiz."
-	ogType="article"
+	heading="Reading a Byte (Binary to Decimal)"
+	pageTitle="Reading a Byte (Binary to Decimal)"
 >
-	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+	<Fragment slot="lead">You've seen bytes as 0s and 1s. Here's how to actually read what number one means.</Fragment>
 
-	<section class="hero">
-		<h1>Reading a Byte (Binary to Decimal)</h1>
-		<p class="hero-lead">
-			You've seen bytes as 0s and 1s. Here's how to actually read what number one means.
+	<section class="block">
+		<p class="block-title">The Idea: Every Position Has a Value</p>
+		<p class="block-text">
+			In binary, each position (going right to left) is worth double the one before it: 1, 2, 4,
+			8, 16, 32, 64, 128. A "1" in that position means you count its value. A "0" means you don't.
+		</p>
+		<p class="block-text">
+			To find the decimal value of a byte, add up the values of every position that has a 1.
 		</p>
 	</section>
 
-	<div class="blocks">
-		<section class="block">
-			<p class="block-title">The Idea: Every Position Has a Value</p>
-			<p class="block-text">
-				In binary, each position (going right to left) is worth double the one before it: 1, 2, 4,
-				8, 16, 32, 64, 128. A "1" in that position means you count its value. A "0" means you don't.
-			</p>
-			<p class="block-text">
-				To find the decimal value of a byte, add up the values of every position that has a 1.
-			</p>
-		</section>
+	<section class="block block--example">
+		<p class="block-title">Example 1: A Simple One</p>
+		<p class="mono-display">00000101</p>
+		<PlaceValueChart bits="00000101" />
+		<p class="block-text">
+			Only two positions are 1: the "4" position and the "1" position.
+		</p>
+		<p class="block-text mono-highlight">4 + 1 = 5</p>
+		<p class="block-text">So <span class="mono-highlight">00000101</span> is 5.</p>
+	</section>
 
-		<section class="block block--example">
-			<p class="block-title">Example 1: A Simple One</p>
-			<p class="mono-display">00000101</p>
-			<PlaceValueChart bits="00000101" />
-			<p class="block-text">
-				Only two positions are 1: the "4" position and the "1" position.
-			</p>
-			<p class="block-text mono-highlight">4 + 1 = 5</p>
-			<p class="block-text">So <span class="mono-highlight">00000101</span> is 5.</p>
-		</section>
+	<section class="block block--example">
+		<p class="block-title">Example 2: A Full Worked Byte</p>
+		<p class="mono-display">10110101</p>
+		<PlaceValueChart bits="10110101" />
+		<p class="block-text">Positions with a 1: 128, 32, 16, 4, 1.</p>
+		<p class="block-text mono-highlight">128 + 32 + 16 + 4 + 1 = 181</p>
+		<p class="block-text">So <span class="mono-highlight">10110101</span> is 181.</p>
+	</section>
 
-		<section class="block block--example">
-			<p class="block-title">Example 2: A Full Worked Byte</p>
-			<p class="mono-display">10110101</p>
-			<PlaceValueChart bits="10110101" />
-			<p class="block-text">Positions with a 1: 128, 32, 16, 4, 1.</p>
-			<p class="block-text mono-highlight">128 + 32 + 16 + 4 + 1 = 181</p>
-			<p class="block-text">So <span class="mono-highlight">10110101</span> is 181.</p>
-		</section>
+	<section class="block block--example">
+		<p class="block-title">Example 3: All Zeros, All Ones</p>
+		<p class="block-text">
+			The lowest a byte can be is <span class="mono-highlight">00000000</span> — nothing lit, so
+			it's 0.
+		</p>
+		<PlaceValueChart bits="00000000" showEquation={false} />
+		<p class="block-text">The highest is <span class="mono-highlight">11111111</span> — every position lit:</p>
+		<PlaceValueChart bits="11111111" />
+		<p class="block-text">
+			That's why a byte can only hold values from 0 to 255 — 256 possible values in total,
+			exactly as we covered in <a href="/learn/bits-and-bytes">Bits, Bytes, and Beyond</a>.
+		</p>
+	</section>
 
-		<section class="block block--example">
-			<p class="block-title">Example 3: All Zeros, All Ones</p>
-			<p class="block-text">
-				The lowest a byte can be is <span class="mono-highlight">00000000</span> — nothing lit, so
-				it's 0.
-			</p>
-			<PlaceValueChart bits="00000000" showEquation={false} />
-			<p class="block-text">The highest is <span class="mono-highlight">11111111</span> — every position lit:</p>
-			<PlaceValueChart bits="11111111" />
-			<p class="block-text">
-				That's why a byte can only hold values from 0 to 255 — 256 possible values in total,
-				exactly as we covered in <a href="/learn/bits-and-bytes">Bits, Bytes, and Beyond</a>.
-			</p>
-		</section>
+	<section class="block">
+		<p class="block-text">
+			Converting the other way? See how to pad a short result correctly in{" "}
+			<a href="/learn/writing-a-byte#dont-forget-to-pad">Writing a Byte</a>.
+		</p>
+	</section>
 
-		<section class="block">
-			<p class="block-text">
-				Converting the other way? See how to pad a short result correctly in{" "}
-				<a href="/learn/writing-a-byte#dont-forget-to-pad">Writing a Byte</a>.
-			</p>
-		</section>
+	<section id="try-it-yourself" class="block block--example">
+		<p class="block-title">Try It Yourself</p>
+		<ByteBuilder />
+	</section>
 
-		<section id="try-it-yourself" class="block block--example">
-			<p class="block-title">Try It Yourself</p>
-			<ByteBuilder />
-		</section>
+	<section class="block block--example block--practice">
+		<p class="block-title">Practice</p>
+		<PracticeQuiz />
+	</section>
 
-		<section class="block block--example block--practice">
-			<p class="block-title">Practice</p>
-			<PracticeQuiz />
-		</section>
+	<section class="block">
+		<p class="block-title">Why This Matters</p>
+		<p class="block-text">
+			This is the exact skill behind converting binary to hex or decimal anywhere — file sizes,
+			color codes, IP addresses, memory addresses. Once you can read one byte, you can read any
+			of them.
+		</p>
+	</section>
 
-		<section class="block">
-			<p class="block-title">Why This Matters</p>
-			<p class="block-text">
-				This is the exact skill behind converting binary to hex or decimal anywhere — file sizes,
-				color codes, IP addresses, memory addresses. Once you can read one byte, you can read any
-				of them.
-			</p>
-		</section>
-
-		<section class="block">
-			<div class="learn-pagination">
-				{
-					prev && (
-						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-							← {prev.title}
-						</a>
-					)
-				}
-				{
-					next &&
-						(next.live ? (
-							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-								{next.title} →
-							</a>
-						) : (
-							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-								{next.title} (coming soon)
-							</span>
-						))
-				}
-			</div>
-		</section>
-	</div>
-</Layout>
+</LearnArticle>
 
 <script>
 	// "Try It Yourself" would be a cheat vector while the Practice quiz below
@@ -138,78 +103,6 @@ const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 </script>
 
 <style>
-	.breadcrumb {
-		margin: 0 0 0.75rem;
-		text-align: center;
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
-	}
-
-	.breadcrumb a {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.breadcrumb a:hover {
-		text-decoration: underline;
-	}
-
-	.hero {
-		text-align: center;
-		margin-bottom: 1rem;
-	}
-
-	.hero h1 {
-		margin: 0 0 0.5rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
-	}
-
-	.hero-lead {
-		margin: 0 auto;
-		max-width: 34rem;
-		font-size: 1rem;
-	}
-
-	.blocks {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.block {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 14px;
-		padding: 1rem 1.15rem;
-	}
-
-	.block-title {
-		margin: 0 0 0.4rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #ffae2e;
-	}
-
-	.block-text {
-		margin: 0 0 0.6rem;
-		font-size: 1rem;
-	}
-
-	.block-text:last-child {
-		margin-bottom: 0;
-	}
-
-	.mono-highlight {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		color: var(--color-text);
-	}
-
-	.block--example {
-		text-align: center;
-	}
 
 	.block--example .block-text {
 		text-align: left;
@@ -225,15 +118,15 @@ const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 	}
 
 	.block--example .mono-display + :global(.pv-chart) {
-		margin-bottom: 0.9rem;
+		margin-bottom: 1rem;
 	}
 
 	.block--example :global(.pv-chart) {
-		margin: 0 0 0.9rem;
+		margin: 0 0 1rem;
 	}
 
 	.block--example :global(.byte-builder) {
-		margin-top: 0.2rem;
+		margin-top: 0.25rem;
 	}
 
 	.block--practice {
@@ -242,30 +135,4 @@ const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 		box-shadow: 0 0 28px -10px color-mix(in srgb, var(--color-accent) 45%, transparent);
 	}
 
-	.learn-pagination {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.75rem;
-		font-size: 0.85rem;
-	}
-
-	.learn-pagination-link {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.learn-pagination-link:hover {
-		text-decoration: underline;
-	}
-
-	.learn-pagination-next {
-		margin-left: auto;
-	}
-
-	.learn-pagination-soon {
-		color: var(--color-text-muted);
-		font-weight: 600;
-		font-style: italic;
-	}
 </style>

@@ -1,12 +1,7 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LearnArticle from "../../components/LearnArticle.astro";
 import BitChip from "../../components/BitChip.astro";
 import BinaryCounter from "../../components/BinaryCounter.astro";
-import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
-
-const CURRENT_HREF = "/learn/counting-in-binary";
-const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
-const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 
 function countingRows(bitLength: number, start: number, end: number) {
 	return Array.from({ length: end - start + 1 }, (_, i) => {
@@ -20,84 +15,126 @@ const threeBitRowsLeft = countingRows(3, 0, 3);
 const threeBitRowsRight = countingRows(3, 4, 7);
 ---
 
-<Layout
-	title="Counting in Binary"
+<LearnArticle
+	href="/learn/counting-in-binary"
 	description="Learn how binary counting actually works — the rollover trick that turns 1 into 10, and 11 into 100 — one step at a time."
-	ogType="article"
 >
-	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+	<Fragment slot="lead">Binary counting isn't different math — it's the same idea, with fewer symbols. Let's go slowly.</Fragment>
 
-	<section class="hero">
-		<h1>Counting in Binary</h1>
-		<p class="hero-lead">
-			Binary counting isn't different math — it's the same idea, with fewer symbols. Let's go slowly.
+	<section class="block block--example">
+		<p class="block-title">Start With Just One Digit</p>
+		<p class="block-text">
+			In binary, you only ever have two symbols: <BitChip value="0" /> and <BitChip value="1" />. That's
+			it.
+		</p>
+		<p class="block-text">With one digit, you can count exactly two things:</p>
+
+		<div class="intro-tiles">
+			<div class="intro-group">
+				<BitChip value="0" />
+				<span class="intro-label">zero</span>
+			</div>
+			<div class="intro-group">
+				<BitChip value="1" />
+				<span class="intro-label">one</span>
+			</div>
+		</div>
+
+		<div class="reveal-row">
+			<span class="reveal-number">0</span>
+			<span class="reveal-arrow">→</span>
+			<span class="reveal-number">1</span>
+		</div>
+
+		<p class="block-text">
+			That's your first binary count. You just ran out of digits — there's no "2" in binary. So what
+			happens next?
 		</p>
 	</section>
 
-	<div class="blocks">
-		<section class="block block--example">
-			<p class="block-title">Start With Just One Digit</p>
-			<p class="block-text">
-				In binary, you only ever have two symbols: <BitChip value="0" /> and <BitChip value="1" />. That's
-				it.
-			</p>
-			<p class="block-text">With one digit, you can count exactly two things:</p>
+	<section class="block">
+		<p class="block-title">The Rollover</p>
+		<p class="block-text">
+			Think about counting on your fingers. You can count 0 through 9 using all ten digits on both
+			hands. But what happens when you need to count past 9? You run out of fingers — so you keep
+			track of how many "full hands" of ten you've counted, and start over on your fingers for the
+			rest.
+		</p>
+		<p class="block-text">
+			Binary works the same way, it just runs out of room much sooner — after just 1, not after 9. So
+			the next number after <span class="mono-highlight">1</span> isn't <span class="mono-highlight"
+				>2</span
+			>. It's:
+		</p>
 
-			<div class="intro-tiles">
-				<div class="intro-group">
-					<BitChip value="0" />
-					<span class="intro-label">zero</span>
-				</div>
-				<div class="intro-group">
-					<BitChip value="1" />
-					<span class="intro-label">one</span>
-				</div>
-			</div>
+		<div class="reveal-row">
+			<span class="reveal-number">10</span>
+		</div>
 
-			<div class="reveal-row">
-				<span class="reveal-number">0</span>
-				<span class="reveal-arrow">→</span>
-				<span class="reveal-number">1</span>
-			</div>
+		<p class="block-text">
+			That "1" on the left isn't a new mystery digit — it's a way of keeping track of "one full group,"
+			the same way you'd track "one full set of ten fingers." In binary, each group is just two, not
+			ten.
+		</p>
+	</section>
 
-			<p class="block-text">
-				That's your first binary count. You just ran out of digits — there's no "2" in binary. So what
-				happens next?
-			</p>
-		</section>
+	<section class="block block--example">
+		<p class="block-title">Counting to Three</p>
 
-		<section class="block">
-			<p class="block-title">The Rollover</p>
-			<p class="block-text">
-				Think about counting on your fingers. You can count 0 through 9 using all ten digits on both
-				hands. But what happens when you need to count past 9? You run out of fingers — so you keep
-				track of how many "full hands" of ten you've counted, and start over on your fingers for the
-				rest.
-			</p>
-			<p class="block-text">
-				Binary works the same way, it just runs out of room much sooner — after just 1, not after 9. So
-				the next number after <span class="mono-highlight">1</span> isn't <span class="mono-highlight"
-					>2</span
-				>. It's:
-			</p>
+		<div class="counting-rows">
+			{
+				twoBitRows.map((row) => (
+					<div class="counting-row">
+						<span class="counting-tiles">
+							{row.bits.split("").map((bit) => (
+								<BitChip value={bit as "0" | "1"} />
+							))}
+						</span>
+						<span class="counting-eq">=</span>
+						<span class="counting-decimal">{row.decimal}</span>
+					</div>
+				))
+			}
+		</div>
 
-			<div class="reveal-row">
-				<span class="reveal-number">10</span>
-			</div>
+		<p class="block-text">
+			Notice: every single count, only the rightmost digit changes — 0 to 1 to 0 to 1 — except when it
+			rolls over, which bumps the column next to it.
+		</p>
+	</section>
 
-			<p class="block-text">
-				That "1" on the left isn't a new mystery digit — it's a way of keeping track of "one full group,"
-				the same way you'd track "one full set of ten fingers." In binary, each group is just two, not
-				ten.
-			</p>
-		</section>
+	<section class="block">
+		<p class="block-title">The Tricky Part: What If Every Digit Is Already 1?</p>
+		<p class="block-text">
+			This is where it usually gets confusing, so let's slow down. Say you're at <span
+				class="mono-highlight">11</span
+			> (three) and you count one more.
+		</p>
+		<p class="block-text">
+			The rightmost 1 rolls over to 0 — same as before. But now the next column is also already 1, so it
+			rolls over too, and bumps the column after that.
+		</p>
 
-		<section class="block block--example">
-			<p class="block-title">Counting to Three</p>
+		<div class="reveal-row">
+			<span class="reveal-number">11</span>
+			<span class="reveal-arrow">→</span>
+			<span class="reveal-number">100</span>
+		</div>
 
-			<div class="counting-rows">
+		<p class="block-text">
+			It's the same idea as running out of fingers on both hands at once — you'd need a new way to
+			track it, and a new column appears. Binary does this constantly, since it only takes one
+			rollover to trigger the next.
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">Counting to Seven</p>
+
+		<div class="counting-columns">
+			<div class="counting-col">
 				{
-					twoBitRows.map((row) => (
+					threeBitRowsLeft.map((row) => (
 						<div class="counting-row">
 							<span class="counting-tiles">
 								{row.bits.split("").map((bit) => (
@@ -110,189 +147,42 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 					))
 				}
 			</div>
-
-			<p class="block-text">
-				Notice: every single count, only the rightmost digit changes — 0 to 1 to 0 to 1 — except when it
-				rolls over, which bumps the column next to it.
-			</p>
-		</section>
-
-		<section class="block">
-			<p class="block-title">The Tricky Part: What If Every Digit Is Already 1?</p>
-			<p class="block-text">
-				This is where it usually gets confusing, so let's slow down. Say you're at <span
-					class="mono-highlight">11</span
-				> (three) and you count one more.
-			</p>
-			<p class="block-text">
-				The rightmost 1 rolls over to 0 — same as before. But now the next column is also already 1, so it
-				rolls over too, and bumps the column after that.
-			</p>
-
-			<div class="reveal-row">
-				<span class="reveal-number">11</span>
-				<span class="reveal-arrow">→</span>
-				<span class="reveal-number">100</span>
-			</div>
-
-			<p class="block-text">
-				It's the same idea as running out of fingers on both hands at once — you'd need a new way to
-				track it, and a new column appears. Binary does this constantly, since it only takes one
-				rollover to trigger the next.
-			</p>
-		</section>
-
-		<section class="block block--example">
-			<p class="block-title">Counting to Seven</p>
-
-			<div class="counting-columns">
-				<div class="counting-col">
-					{
-						threeBitRowsLeft.map((row) => (
-							<div class="counting-row">
-								<span class="counting-tiles">
-									{row.bits.split("").map((bit) => (
-										<BitChip value={bit as "0" | "1"} />
-									))}
-								</span>
-								<span class="counting-eq">=</span>
-								<span class="counting-decimal">{row.decimal}</span>
-							</div>
-						))
-					}
-				</div>
-				<div class="counting-col">
-					{
-						threeBitRowsRight.map((row) => (
-							<div class="counting-row">
-								<span class="counting-tiles">
-									{row.bits.split("").map((bit) => (
-										<BitChip value={bit as "0" | "1"} />
-									))}
-								</span>
-								<span class="counting-eq">=</span>
-								<span class="counting-decimal">{row.decimal}</span>
-							</div>
-						))
-					}
-				</div>
-			</div>
-
-			<p class="block-text">
-				Look closely at the rightmost column — it alternates every single time: 0, 1, 0, 1, 0, 1, 0, 1. The
-				next column over changes half as often. The one after that, half as often again. That pattern
-				keeps going, no matter how many digits you add.
-			</p>
-		</section>
-
-		<section class="block block--example">
-			<p class="block-title">Try It Yourself</p>
-			<BinaryCounter />
-			<p class="block-text try-it-caption">
-				Press +1 a bunch of times in a row and watch what happens once you reach a run of 1s — you'll see
-				the rollover happen live.
-			</p>
-		</section>
-
-		<section class="block">
-			<div class="learn-pagination">
+			<div class="counting-col">
 				{
-					prev && (
-						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-							← {prev.title}
-						</a>
-					)
-				}
-				{
-					next &&
-						(next.live ? (
-							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-								{next.title} →
-							</a>
-						) : (
-							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-								{next.title} (coming soon)
+					threeBitRowsRight.map((row) => (
+						<div class="counting-row">
+							<span class="counting-tiles">
+								{row.bits.split("").map((bit) => (
+									<BitChip value={bit as "0" | "1"} />
+								))}
 							</span>
-						))
+							<span class="counting-eq">=</span>
+							<span class="counting-decimal">{row.decimal}</span>
+						</div>
+					))
 				}
 			</div>
-		</section>
-	</div>
-</Layout>
+		</div>
+
+		<p class="block-text">
+			Look closely at the rightmost column — it alternates every single time: 0, 1, 0, 1, 0, 1, 0, 1. The
+			next column over changes half as often. The one after that, half as often again. That pattern
+			keeps going, no matter how many digits you add.
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">Try It Yourself</p>
+		<BinaryCounter />
+		<p class="block-text try-it-caption">
+			Press +1 a bunch of times in a row and watch what happens once you reach a run of 1s — you'll see
+			the rollover happen live.
+		</p>
+	</section>
+
+</LearnArticle>
 
 <style>
-	.breadcrumb {
-		margin: 0 0 0.75rem;
-		text-align: center;
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
-	}
-
-	.breadcrumb a {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.breadcrumb a:hover {
-		text-decoration: underline;
-	}
-
-	.hero {
-		text-align: center;
-		margin-bottom: 1rem;
-	}
-
-	.hero h1 {
-		margin: 0 0 0.5rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
-	}
-
-	.hero-lead {
-		margin: 0 auto;
-		max-width: 34rem;
-		font-size: 1rem;
-	}
-
-	.blocks {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.block {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 14px;
-		padding: 1rem 1.15rem;
-	}
-
-	.block-title {
-		margin: 0 0 0.4rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #ffae2e;
-	}
-
-	.block-text {
-		margin: 0 0 0.6rem;
-		font-size: 1rem;
-	}
-
-	.block-text:last-child {
-		margin-bottom: 0;
-	}
-
-	.mono-highlight {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		color: var(--color-text);
-	}
-
-	.block--example {
-		text-align: center;
-	}
 
 	.block--example .block-text {
 		text-align: left;
@@ -313,7 +203,7 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 		align-items: center;
 		justify-content: center;
 		gap: 2rem;
-		margin: 0.9rem 0;
+		margin: 1rem 0;
 		padding: 1rem;
 		border-radius: 12px;
 		background: var(--color-bg);
@@ -324,7 +214,7 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.5rem;
 	}
 
 	.intro-group :global(.bit-chip) {
@@ -350,9 +240,9 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.9rem;
-		margin: 0.9rem 0;
-		padding: 0.85rem;
+		gap: 1rem;
+		margin: 1rem 0;
+		padding: 0.75rem;
 		border-radius: 12px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
@@ -375,9 +265,9 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 	.counting-rows {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
-		gap: 0.6rem 0.5rem;
-		margin: 0.9rem 0;
-		padding: 0.9rem;
+		gap: 0.5rem 0.5rem;
+		margin: 1rem 0;
+		padding: 1rem;
 		border-radius: 12px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
@@ -392,9 +282,9 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 		display: flex;
 		justify-content: center;
 		flex-wrap: wrap;
-		gap: 0.6rem 1.5rem;
-		margin: 0.9rem 0;
-		padding: 0.9rem;
+		gap: 0.5rem 1.5rem;
+		margin: 1rem 0;
+		padding: 1rem;
 		border-radius: 12px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
@@ -403,19 +293,19 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 	.counting-col {
 		display: flex;
 		flex-direction: column;
-		gap: 0.6rem;
+		gap: 0.5rem;
 	}
 
 	.counting-row {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.4rem;
+		gap: 0.5rem;
 	}
 
 	.counting-tiles {
 		display: inline-flex;
-		gap: 0.15rem;
+		gap: 0.25rem;
 	}
 
 	.counting-eq {
@@ -431,30 +321,4 @@ const threeBitRowsRight = countingRows(3, 4, 7);
 		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 60%, transparent);
 	}
 
-	.learn-pagination {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.75rem;
-		font-size: 0.85rem;
-	}
-
-	.learn-pagination-link {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.learn-pagination-link:hover {
-		text-decoration: underline;
-	}
-
-	.learn-pagination-next {
-		margin-left: auto;
-	}
-
-	.learn-pagination-soon {
-		color: var(--color-text-muted);
-		font-weight: 600;
-		font-style: italic;
-	}
 </style>

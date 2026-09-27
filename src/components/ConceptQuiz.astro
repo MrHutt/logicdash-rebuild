@@ -175,7 +175,7 @@ const { questions } = Astro.props;
 
 <style is:global>
 	.cq .cq-intro {
-		margin: 0 0 0.8em;
+		margin: 0 0 0.75em;
 		text-align: center;
 		font-size: 0.95em;
 		color: var(--color-text-muted);
@@ -184,7 +184,7 @@ const { questions } = Astro.props;
 	.cq .cq-list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.9em;
+		gap: 1em;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -193,14 +193,14 @@ const { questions } = Astro.props;
 
 	.cq .cq-item {
 		counter-increment: cq;
-		padding: 0.85em 1em;
+		padding: 0.75em 1em;
 		border-radius: 12px;
 		border: 1px solid var(--color-border);
 		background: var(--color-bg);
 	}
 
 	.cq .cq-question {
-		margin: 0 0 0.6em;
+		margin: 0 0 0.5em;
 		font-weight: 700;
 		font-size: 1.02em;
 		line-height: 1.45;
@@ -212,18 +212,25 @@ const { questions } = Astro.props;
 		color: var(--color-accent);
 	}
 
+	/* Four answers: an even 2 × 2 grid, or one column on phones. */
 	.cq .cq-options {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16em), 1fr));
-		gap: 0.45em;
+		grid-template-columns: 1fr;
+		gap: 0.5em;
+	}
+
+	@media (min-width: 560px) {
+		.cq .cq-options {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
 
 	.cq .cq-option {
 		display: flex;
 		align-items: center;
-		gap: 0.6em;
+		gap: 0.5em;
 		min-height: 2.9em;
-		padding: 0.5em 0.8em;
+		padding: 0.5em 0.75em;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
@@ -286,7 +293,7 @@ const { questions } = Astro.props;
 	}
 
 	.cq .cq-feedback {
-		margin: 0.6em 0 0;
+		margin: 0.5em 0 0;
 		font-size: 0.95em;
 		line-height: 1.5;
 		color: var(--color-text);
@@ -301,8 +308,8 @@ const { questions } = Astro.props;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.8em;
-		margin-top: 0.9em;
+		gap: 0.75em;
+		margin-top: 1em;
 	}
 
 	.cq.cq--class .cq-item:not(.is-current) {

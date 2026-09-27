@@ -24,6 +24,7 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 
 <Layout
 	title="Bit by Bit"
+	wide
 	description="Bit by Bit: free, plain-English lessons on binary, data, networks, and cybersecurity — with hands-on demos, quick quizzes, and endless pseudocode practice."
 >
 	<section class="hero">
@@ -80,7 +81,7 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 	}
 
 	.hero h1 {
-		margin: 0 0 0.4rem;
+		margin: 0 0 0.5rem;
 		font-size: clamp(1.6rem, 5vw, 2.1rem);
 	}
 
@@ -91,7 +92,7 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 	}
 
 	.hero-count {
-		margin: 0.35rem 0 0;
+		margin: 0.25rem 0 0;
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
 		color: var(--color-text-muted);
@@ -101,14 +102,14 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 	   second (or third) line when space runs out, so there's no breakpoint
 	   where they can collide or overflow. */
 	.group-jump {
-		margin: 0 0 1.4rem;
+		margin: 0 0 1.5rem;
 	}
 
 	.group-jump ul {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		gap: 0.45rem;
+		gap: 0.5rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -118,7 +119,7 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 		display: inline-flex;
 		align-items: center;
 		min-height: 2.25rem;
-		padding: 0.3rem 0.85rem;
+		padding: 0.25rem 0.75rem;
 		border-radius: 999px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
@@ -140,12 +141,12 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 	}
 
 	.topic-group-blurb {
-		margin: -0.25rem 0 0.7rem;
+		margin: -0.25rem 0 0.75rem;
 		font-size: 0.9rem;
 	}
 
 	.topic-group {
-		margin-bottom: 1.4rem;
+		margin-bottom: 1.5rem;
 	}
 
 	.topic-group:last-child {
@@ -153,8 +154,8 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 	}
 
 	.topic-group-title {
-		margin: 0 0 0.45rem;
-		padding-bottom: 0.35rem;
+		margin: 0 0 0.5rem;
+		padding-bottom: 0.25rem;
 		border-bottom: 1px solid var(--color-border);
 		font-size: 0.8rem;
 		font-weight: 700;
@@ -163,37 +164,14 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 		color: var(--color-accent);
 	}
 
-	/* Centered, wrapping rows of near-equal cards. Groups range from 3 to 7
-	   topics, so a partial last row is common — centering it keeps the
-	   section balanced instead of leaving one card stranded at the left.
-	   Cards grow only slightly past their basis so every row looks alike. */
+	/* One consistent grid for every section: columns keep the same width
+	   and line up from section to section (4 across on wide screens, then
+	   3, 2 and 1 as space runs out). auto-fill — not auto-fit — keeps a
+	   short section's cards the same size as everyone else's. */
 	.topic-cards {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.6rem;
-	}
-
-	.topic-cards > .topic-card {
-		flex: 1 1 13rem;
-		max-width: 15.5rem;
-	}
-
-	/* Phones: one full-width card per row. */
-	@media (max-width: 460px) {
-		.topic-cards > .topic-card {
-			flex-basis: 100%;
-			max-width: none;
-		}
-	}
-
-	/* At wide viewports, also widen the page itself (this page only — a
-	   card grid can use more width than the site's usual prose column
-	   without hurting readability). */
-	@media (min-width: 1200px) {
-		:global(main) {
-			max-width: 1200px;
-		}
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+		gap: var(--space-3);
 	}
 
 	.topic-card {
@@ -202,7 +180,7 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.25rem;
-		padding: 0.75rem 0.7rem;
+		padding: 0.75rem 0.75rem;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
@@ -247,8 +225,8 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 	}
 
 	.topic-card-badge {
-		margin-top: 0.1rem;
-		padding: 0.15rem 0.55rem;
+		margin-top: 0.25rem;
+		padding: 0.25rem 0.5rem;
 		border-radius: 999px;
 		border: 1px solid var(--color-border);
 		font-size: 0.7rem;

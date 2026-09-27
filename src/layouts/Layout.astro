@@ -13,9 +13,11 @@ interface Props {
 	ogType?: "website" | "article";
 	/** Page-specific JSON-LD. Learn articles and the Learn hub get theirs generated automatically below, so most pages never pass this. */
 	jsonLd?: Record<string, unknown>;
+	/** Use the wide, centered 1280px container (Learn pages and the Learn hub). */
+	wide?: boolean;
 }
 
-const { title, description, image = "/logicdash-runners.png", ogType = "website", jsonLd } = Astro.props;
+const { title, description, image = "/logicdash-runners.png", ogType = "website", jsonLd, wide = false } = Astro.props;
 const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 
 // Astro.site (set in astro.config.mjs) plus the current path gives a canonical
@@ -126,7 +128,7 @@ const structuredDataJSON = structuredData ? JSON.stringify(structuredData).repla
 	</head>
 	<body>
 		<Header />
-		<main>
+		<main class:list={[{ "main--wide": wide }]}>
 			<slot />
 		</main>
 		<Footer />
@@ -166,6 +168,18 @@ const structuredDataJSON = structuredData ? JSON.stringify(structuredData).repla
 		   same size as LED's at every viewport width. */
 		--clock-tile-height: clamp(3.667rem, 13.333vw, 6rem);
 		--font-terminal: "VT323", var(--font-mono);
+		/* Spacing scale — every step is a multiple of 4px. Use these for
+		   padding, margins and gaps so spacing stays consistent. */
+		--space-1: 0.25rem; /* 4px */
+		--space-2: 0.5rem; /* 8px */
+		--space-3: 0.75rem; /* 12px */
+		--space-4: 1rem; /* 16px */
+		--space-5: 1.5rem; /* 24px */
+		--space-6: 2rem; /* 32px */
+		--space-7: 3rem; /* 48px */
+		--space-8: 4rem; /* 64px */
+		/* Wide content container for Learn pages and the hub. */
+		--container-wide: 1280px;
 	}
 
 	* {
@@ -205,5 +219,18 @@ const structuredDataJSON = structuredData ? JSON.stringify(structuredData).repla
 		margin: 0 auto;
 		width: 100%;
 		box-sizing: border-box;
+	}
+
+	/* Wide container: centered, capped at 1280px, with spacing from the 4px
+	   scale — roomier gutters as the screen grows. */
+	main.main--wide {
+		max-width: var(--container-wide);
+		padding: var(--space-4) var(--space-4) var(--space-6);
+	}
+
+	@media (min-width: 768px) {
+		main.main--wide {
+			padding: var(--space-6) var(--space-6) var(--space-7);
+		}
 	}
 </style>

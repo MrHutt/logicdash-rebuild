@@ -451,17 +451,17 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	.pp-tool .pp-levels {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.4em;
-		margin-bottom: 0.9em;
+		gap: 0.5em;
+		margin-bottom: 1em;
 	}
 
 	.pp-tool .pp-level {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.15em;
+		gap: 0.25em;
 		min-height: 3.2em;
-		padding: 0.45em 0.5em;
+		padding: 0.5em 0.5em;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-bg);
@@ -511,7 +511,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	}
 
 	.pp-tool .pp-help-note {
-		margin: 0.6em 0 0;
+		margin: 0.5em 0 0;
 		font-size: 0.95em;
 		line-height: 1.5;
 		color: var(--color-text-muted);
@@ -522,13 +522,13 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.6em 1em;
+		gap: 0.5em 1em;
 	}
 
 	.pp-tool .pp-streak {
 		display: flex;
 		align-items: baseline;
-		gap: 0.4em;
+		gap: 0.5em;
 	}
 
 	.pp-tool .pp-streak-value {
@@ -551,7 +551,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	.pp-tool .pp-top-meta {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.3em 1em;
+		gap: 0.25em 1em;
 		font-size: 0.88em;
 		color: var(--color-text-muted);
 	}
@@ -562,8 +562,8 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	}
 
 	.pp-tool .pp-milestone {
-		margin: 0.7em 0 0;
-		padding: 0.5em 0.9em;
+		margin: 0.75em 0 0;
+		padding: 0.5em 1em;
 		border-radius: 10px;
 		border: 1px solid var(--color-accent);
 		background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
@@ -589,7 +589,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	}
 
 	.pp-tool .pp-topics {
-		margin-top: 0.8em;
+		margin-top: 0.75em;
 		font-size: 0.9em;
 		color: var(--color-text-muted);
 	}
@@ -599,7 +599,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		min-height: 2.2em;
 		display: flex;
 		align-items: center;
-		gap: 0.3em;
+		gap: 0.25em;
 		font-weight: 600;
 	}
 
@@ -623,13 +623,13 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	.pp-tool .pp-topic-chips {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4em;
-		margin-top: 0.4em;
+		gap: 0.5em;
+		margin-top: 0.5em;
 	}
 
 	.pp-tool .pp-chip {
 		min-height: 2.4em;
-		padding: 0.3em 0.8em;
+		padding: 0.25em 0.75em;
 		border-radius: 999px;
 		border: 1px dashed var(--color-border);
 		background: transparent;
@@ -658,8 +658,8 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	}
 
 	.pp-tool .pp-card {
-		margin-top: 0.9em;
-		padding: 1em 1.1em 1.1em;
+		margin-top: 1em;
+		padding: 1em 1em 1em;
 		border-radius: 12px;
 		border: 1px solid var(--color-border);
 		background: var(--color-bg);
@@ -679,7 +679,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	}
 
 	.pp-tool .pp-card-prompt {
-		margin: 0.3em 0 0;
+		margin: 0.25em 0 0;
 		font-size: 1.1em;
 		font-weight: 700;
 		line-height: 1.4;
@@ -691,15 +691,15 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		flex-wrap: wrap;
 		align-items: flex-start;
 		justify-content: center;
-		gap: 0.9em;
-		margin-top: 0.8em;
+		gap: 1em;
+		margin-top: 0.75em;
 	}
 
 	.pp-tool .pp-code {
 		flex: 1 1 16em;
 		max-width: 100%;
 		margin: 0;
-		padding: 0.8em 1em;
+		padding: 0.75em 1em;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
@@ -769,15 +769,15 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 13em), 1fr));
 		gap: 0.5em;
-		margin-top: 0.9em;
+		margin-top: 1em;
 	}
 
 	.pp-tool .pp-option {
 		display: flex;
 		align-items: center;
-		gap: 0.7em;
+		gap: 0.75em;
 		min-height: 3em;
-		padding: 0.5em 0.8em;
+		padding: 0.5em 0.75em;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
@@ -845,15 +845,15 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	}
 
 	.pp-tool .pp-feedback {
-		margin-top: 0.9em;
-		padding: 0.7em 0.9em;
+		margin-top: 1em;
+		padding: 0.75em 1em;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
 	}
 
 	.pp-tool .pp-verdict {
-		margin: 0 0 0.3em;
+		margin: 0 0 0.25em;
 		font-weight: 700;
 		font-size: 1em;
 	}
@@ -866,13 +866,13 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	}
 
 	.pp-tool .pp-reset-row {
-		margin: 0.9em 0 0;
+		margin: 1em 0 0;
 		text-align: right;
 	}
 
 	.pp-tool .pp-reset {
 		min-height: 2.2em;
-		padding: 0.2em 0.4em;
+		padding: 0.25em 0.5em;
 		border: none;
 		background: none;
 		color: var(--color-text-muted);
@@ -905,11 +905,11 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 
 	.demo-frame.is-fullscreen .pp-tool .pp-level {
 		min-height: 2.4em;
-		padding: 0.3em 0.5em;
+		padding: 0.25em 0.5em;
 	}
 
 	.demo-frame.is-fullscreen .pp-tool .pp-card {
-		margin-top: 0.6em;
+		margin-top: 0.5em;
 	}
 
 	@media (min-aspect-ratio: 5/4) {
@@ -923,7 +923,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 				"body feedback"
 				"body next";
 			grid-template-rows: auto auto auto auto 1fr;
-			column-gap: 1.4em;
+			column-gap: 1.5em;
 			align-items: start;
 		}
 

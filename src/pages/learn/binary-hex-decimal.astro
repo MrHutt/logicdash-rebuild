@@ -1,13 +1,8 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LearnArticle from "../../components/LearnArticle.astro";
 import BitChip from "../../components/BitChip.astro";
 import BaseConverter from "../../components/BaseConverter.astro";
 import BaseConversionQuiz from "../../components/BaseConversionQuiz.astro";
-import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
-
-const CURRENT_HREF = "/learn/binary-hex-decimal";
-const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
-const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 
 const byte = "10110010";
 const nibbles = [byte.slice(0, 4), byte.slice(4)].map((nibble) => ({
@@ -17,123 +12,90 @@ const nibbles = [byte.slice(0, 4), byte.slice(4)].map((nibble) => ({
 const hexValue = nibbles.map((n) => n.hex).join("");
 ---
 
-<Layout
-	title="Binary ↔ Hex ↔ Decimal"
+<LearnArticle
+	href="/learn/binary-hex-decimal"
 	description="Convert between binary, hexadecimal, and decimal with a live three-way converter, worked examples, and a mixed-practice quiz."
-	ogType="article"
 >
-	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+	<Fragment slot="lead">You've counted in binary. Now let's add two more number systems computers — and programmers —
+		use constantly.</Fragment>
 
-	<section class="hero">
-		<h1>Binary ↔ Hex ↔ Decimal</h1>
-		<p class="hero-lead">
-			You've counted in binary. Now let's add two more number systems computers — and programmers —
-			use constantly.
+	<section class="block">
+		<p class="block-title">Same Value, Different Base</p>
+		<p class="block-text">
+			Decimal, binary, and hexadecimal are just three different ways of writing the exact same
+			number. Decimal counts in groups of 10 (probably because we have 10 fingers). Binary counts
+			in groups of 2 — the only options a computer's circuits actually have. Hexadecimal counts in
+			groups of 16, and exists purely as a convenience for humans.
+		</p>
+		<p class="block-text">None of them change what the number is — only how it's written down.</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">Counting in Hexadecimal</p>
+		<p class="block-text">
+			Hex needs 16 digits, so it borrows letters once the numbers run out: 0, 1, 2 … 9, A, B, C, D,
+			E, F. Each hex digit represents exactly 4 bits — a "nibble" — so a whole byte is always
+			exactly two hex digits.
+		</p>
+		<p class="block-text">
+			Remember the byte from the last lesson, <span class="mono-highlight">{byte}</span>? Split
+			into two 4-bit halves, each half converts to one hex digit:
+		</p>
+
+		<div class="nibble-demo">
+			{
+				nibbles.map((nibble) => (
+					<div class="nibble-demo-group">
+						<div class="nibble-demo-tiles">
+							{nibble.bits.split("").map((bit) => (
+								<BitChip value={bit as "0" | "1"} />
+							))}
+						</div>
+						<span class="nibble-demo-label">{nibble.hex}</span>
+					</div>
+				))
+			}
+			<span class="nibble-demo-equals">=</span>
+			<span class="nibble-demo-result">{hexValue}</span>
+		</div>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Why Programmers Use Hex</p>
+		<p class="block-text">
+			Nobody's typing hex for fun — it's just far more compact than binary and lines up perfectly
+			with bytes (2 hex digits = 1 byte, always). You'll see hex show up in memory addresses, and
+			anywhere programmers need to talk about raw bytes without writing out 8 digits at a time.
+		</p>
+		<p class="block-text">
+			It's also how colors are written on the web. This site's own accent color is{" "}
+			<span class="mono-highlight">#FFAE2E</span> — three bytes glued together, one each for red
+			(<span class="mono-highlight">FF</span>), green (<span class="mono-highlight">AE</span>), and
+			blue (<span class="mono-highlight">2E</span>).
 		</p>
 	</section>
 
-	<div class="blocks">
-		<section class="block">
-			<p class="block-title">Same Value, Different Base</p>
-			<p class="block-text">
-				Decimal, binary, and hexadecimal are just three different ways of writing the exact same
-				number. Decimal counts in groups of 10 (probably because we have 10 fingers). Binary counts
-				in groups of 2 — the only options a computer's circuits actually have. Hexadecimal counts in
-				groups of 16, and exists purely as a convenience for humans.
-			</p>
-			<p class="block-text">None of them change what the number is — only how it's written down.</p>
-		</section>
+	<section class="block">
+		<p class="block-title">Converting Between Them</p>
+		<p class="block-text">
+			Binary to decimal: add up the value of each "on" bit (1, 2, 4, 8, 16 …) — exactly what you
+			learned on the <a href="/learn/what-is-binary">What is Binary?</a> page. Binary to hex: split
+			into groups of 4 and convert each nibble separately, as above. Going the other direction just
+			reverses the steps.
+		</p>
+	</section>
 
-		<section class="block block--example">
-			<p class="block-title">Counting in Hexadecimal</p>
-			<p class="block-text">
-				Hex needs 16 digits, so it borrows letters once the numbers run out: 0, 1, 2 … 9, A, B, C, D,
-				E, F. Each hex digit represents exactly 4 bits — a "nibble" — so a whole byte is always
-				exactly two hex digits.
-			</p>
-			<p class="block-text">
-				Remember the byte from the last lesson, <span class="mono-highlight">{byte}</span>? Split
-				into two 4-bit halves, each half converts to one hex digit:
-			</p>
+	<section id="try-it-yourself" class="block block--example">
+		<p class="block-title">Try It Yourself</p>
+		<BaseConverter />
+	</section>
 
-			<div class="nibble-demo">
-				{
-					nibbles.map((nibble) => (
-						<div class="nibble-demo-group">
-							<div class="nibble-demo-tiles">
-								{nibble.bits.split("").map((bit) => (
-									<BitChip value={bit as "0" | "1"} />
-								))}
-							</div>
-							<span class="nibble-demo-label">{nibble.hex}</span>
-						</div>
-					))
-				}
-				<span class="nibble-demo-equals">=</span>
-				<span class="nibble-demo-result">{hexValue}</span>
-			</div>
-		</section>
+	<section class="block block--example block--practice">
+		<p class="block-title">Practice</p>
+		<BaseConversionQuiz />
+	</section>
 
-		<section class="block">
-			<p class="block-title">Why Programmers Use Hex</p>
-			<p class="block-text">
-				Nobody's typing hex for fun — it's just far more compact than binary and lines up perfectly
-				with bytes (2 hex digits = 1 byte, always). You'll see hex show up in memory addresses, and
-				anywhere programmers need to talk about raw bytes without writing out 8 digits at a time.
-			</p>
-			<p class="block-text">
-				It's also how colors are written on the web. This site's own accent color is{" "}
-				<span class="mono-highlight">#FFAE2E</span> — three bytes glued together, one each for red
-				(<span class="mono-highlight">FF</span>), green (<span class="mono-highlight">AE</span>), and
-				blue (<span class="mono-highlight">2E</span>).
-			</p>
-		</section>
-
-		<section class="block">
-			<p class="block-title">Converting Between Them</p>
-			<p class="block-text">
-				Binary to decimal: add up the value of each "on" bit (1, 2, 4, 8, 16 …) — exactly what you
-				learned on the <a href="/learn/what-is-binary">What is Binary?</a> page. Binary to hex: split
-				into groups of 4 and convert each nibble separately, as above. Going the other direction just
-				reverses the steps.
-			</p>
-		</section>
-
-		<section id="try-it-yourself" class="block block--example">
-			<p class="block-title">Try It Yourself</p>
-			<BaseConverter />
-		</section>
-
-		<section class="block block--example block--practice">
-			<p class="block-title">Practice</p>
-			<BaseConversionQuiz />
-		</section>
-
-		<section class="block">
-			<div class="learn-pagination">
-				{
-					prev && (
-						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-							← {prev.title}
-						</a>
-					)
-				}
-				{
-					next &&
-						(next.live ? (
-							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-								{next.title} →
-							</a>
-						) : (
-							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-								{next.title} (coming soon)
-							</span>
-						))
-				}
-			</div>
-		</section>
-	</div>
-</Layout>
+</LearnArticle>
 
 <script>
 	// "Try It Yourself" would be a cheat vector while the Practice quiz below
@@ -149,86 +111,14 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 </script>
 
 <style>
-	.breadcrumb {
-		margin: 0 0 0.75rem;
-		text-align: center;
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
-	}
-
-	.breadcrumb a {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.breadcrumb a:hover {
-		text-decoration: underline;
-	}
-
-	.hero {
-		text-align: center;
-		margin-bottom: 1rem;
-	}
-
-	.hero h1 {
-		margin: 0 0 0.5rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
-	}
-
-	.hero-lead {
-		margin: 0 auto;
-		max-width: 34rem;
-		font-size: 1rem;
-	}
-
-	.blocks {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.block {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 14px;
-		padding: 1rem 1.15rem;
-	}
-
-	.block-title {
-		margin: 0 0 0.4rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #ffae2e;
-	}
-
-	.block-text {
-		margin: 0 0 0.6rem;
-		font-size: 1rem;
-	}
-
-	.block-text:last-child {
-		margin-bottom: 0;
-	}
-
-	.mono-highlight {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		color: var(--color-text);
-	}
-
-	.block--example {
-		text-align: center;
-	}
 
 	.nibble-demo {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		flex-wrap: wrap;
-		gap: 0.9rem;
-		margin: 0.9rem 0 0.3rem;
+		gap: 1rem;
+		margin: 1rem 0 0.25rem;
 		padding: 1rem;
 		border-radius: 12px;
 		background: var(--color-bg);
@@ -239,7 +129,7 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.5rem;
 	}
 
 	.nibble-demo-tiles {
@@ -274,30 +164,4 @@ const hexValue = nibbles.map((n) => n.hex).join("");
 		box-shadow: 0 0 28px -10px color-mix(in srgb, var(--color-accent) 45%, transparent);
 	}
 
-	.learn-pagination {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.75rem;
-		font-size: 0.85rem;
-	}
-
-	.learn-pagination-link {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.learn-pagination-link:hover {
-		text-decoration: underline;
-	}
-
-	.learn-pagination-next {
-		margin-left: auto;
-	}
-
-	.learn-pagination-soon {
-		color: var(--color-text-muted);
-		font-weight: 600;
-		font-style: italic;
-	}
 </style>
