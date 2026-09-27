@@ -73,12 +73,21 @@ export function estimateStrength(password: string): StrengthEstimate {
 		return { length: chars.length, sets, poolSize, bits: Math.log2(COMMON_PASSWORDS.length), warnings };
 	}
 
-	// A famous password with a few digits/symbols bolted on the end or a
-	// capital letter at the start ("Password123!") is barely any better.
-	const core = lowered.replace(/^[^a-z]+|[^a-z]+$/g, "");
-	if (core.length >= 4 && COMMON_PASSWORDS.includes(core)) {
-		const extra = chars.length - core.length;
-		warnings.push("It's built on a very common password — adding numbers or symbols to the end is a trick attackers expect.");
+	// A famous password with look-alike swaps (@ for a, 0 for o…), a capital
+	// at the start, or digits/symbols bolted on the end ("P@ssw0rd123!") is
+	// barely any better — attackers try all of those variations first.
+	const trimEnds = (t: string) => t.replace(/^[^a-z]+|[^a-z]+$/g, "");
+	const unswap = (t: string) =>
+		t.replace(/[@4]/g, "a").replace(/0/g, "o").replace(/[1!|]/g, "i").replace(/3/g, "e").replace(/[$5]/g, "s").replace(/7/g, "t");
+	const withoutTail = lowered.replace(/[0-9!?.#*]+$/, ""); // "p@ssw0rd123!" → "p@ssw0rd"
+	const core = [trimEnds(lowered), trimEnds(unswap(withoutTail))].find(
+		(c) => c.length >= 4 && COMMON_PASSWORDS.includes(c),
+	);
+	if (core) {
+		const extra = Math.max(0, chars.length - core.length);
+		warnings.push(
+			"It's built on a very common password. Swapping letters for look-alike symbols or adding numbers to the end are tricks attackers expect.",
+		);
 		return {
 			length: chars.length,
 			sets,

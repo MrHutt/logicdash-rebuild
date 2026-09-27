@@ -73,6 +73,20 @@ const growth = [
 				</div>
 			</div>
 
+			<label class="bsort-predict-toggle">
+				<input type="checkbox" data-bsort-predict checked />
+				Let me predict each step
+				<span class="bsort-predict-score" data-bsort-predict-score></span>
+			</label>
+
+			<div class="bsort-ask" data-bsort-ask hidden>
+				<p class="bsort-question" data-bsort-question></p>
+				<div class="demo-controls bsort-choices">
+					<button type="button" class="demo-btn demo-btn--primary" data-bsort-choice="swap">Swap them</button>
+					<button type="button" class="demo-btn demo-btn--primary" data-bsort-choice="keep">Leave them</button>
+				</div>
+			</div>
+
 			<div class="demo-controls">
 				<button type="button" class="demo-btn demo-btn--primary" data-bsort-step>Next step</button>
 				<button type="button" class="demo-btn" data-bsort-auto>Auto-sort</button>
@@ -148,6 +162,26 @@ const growth = [
 			wildly different. Choosing a good algorithm matters.
 		</p>
 	</section>
+
+	<section class="block">
+		<p class="block-title">Fast Enough — and Far Too Slow</p>
+		<p class="block-text">
+			Bubble sort is slow on huge lists, but it still finishes in a sensible amount of time. Computer
+			scientists call that <em>reasonable time</em>: as the list grows, the work grows by multiplying (10×
+			more items, about 100× more work).
+		</p>
+		<p class="block-text">
+			Some problems are much worse. To try every possible order of a delivery driver's stops, adding just
+			<em>one</em> more stop multiplies the work again. With 10 stops there are over 3 million orders; with
+			20 there are more than a billion billion. That's <em>unreasonable time</em> — no computer could ever
+			finish checking them all.
+		</p>
+		<p class="block-text">
+			For problems like that, programmers use a <em>heuristic</em>: a sensible shortcut that finds a good
+			answer quickly, even if it isn't guaranteed to be the very best. For the driver, "always go to the
+			nearest stop next" is a heuristic.
+		</p>
+	</section>
 </LearnArticle>
 
 <script>
@@ -162,6 +196,14 @@ const growth = [
 	const comparisonsEl = root.querySelector<HTMLElement>("[data-bsort-comparisons]")!;
 	const swapsEl = root.querySelector<HTMLElement>("[data-bsort-swaps]")!;
 	const passesEl = root.querySelector<HTMLElement>("[data-bsort-passes]")!;
+	const predictToggle = root.querySelector<HTMLInputElement>("[data-bsort-predict]")!;
+	const predictScoreEl = root.querySelector<HTMLElement>("[data-bsort-predict-score]")!;
+	const askEl = root.querySelector<HTMLElement>("[data-bsort-ask]")!;
+	const questionEl = root.querySelector<HTMLElement>("[data-bsort-question]")!;
+	const choiceBtns = root.querySelectorAll<HTMLButtonElement>("[data-bsort-choice]");
+	let predictRight = 0;
+	let predictTotal = 0;
+	let askTimer: number | undefined;
 
 	interface Item {
 		id: number;
@@ -207,7 +249,12 @@ const growth = [
 		done = false;
 		comparing = null;
 		render();
-		statusEl.textContent = "Press “Next step” to compare the first two bars.";
+		predictRight = 0;
+		predictTotal = 0;
+		statusEl.textContent = predictToggle.checked
+			? "Bubble sort compares neighbors, left to right. You decide each time."
+			: "Press “Next step” to compare the first two bars.";
+		prepare();
 	}
 
 	function render() {
@@ -235,7 +282,10 @@ const growth = [
 		comparing = null;
 		stopAuto();
 		render();
-		statusEl.textContent = `Sorted! ${comparisons} comparisons and ${swaps} swaps. Press “Shuffle” to try a new list.`;
+		askEl.hidden = true;
+		stepBtn.hidden = false;
+		const predicted = predictTotal ? ` You predicted ${predictRight} of ${predictTotal} steps correctly.` : "";
+		statusEl.textContent = `Sorted! ${comparisons} comparisons and ${swaps} swaps.${predicted} Press “Shuffle” to try a new list.`;
 	}
 
 	function step() {
@@ -279,6 +329,48 @@ const growth = [
 		render();
 	}
 
+	// --- Predict mode: before each comparison, the student decides whether
+	// the pair should swap, then sees the step happen. Passes the pairs to
+	// the student only while stepping by hand (Auto-sort just runs).
+	function nextIsComparison() {
+		return !done && j < items.length - 1 - pass;
+	}
+
+	function prepare() {
+		window.clearTimeout(askTimer);
+		predictScoreEl.textContent = predictTotal ? `— ${predictRight} of ${predictTotal} right` : "";
+		const ask = predictToggle.checked && autoTimer === null && nextIsComparison();
+		askEl.hidden = !ask;
+		stepBtn.hidden = ask;
+		choiceBtns.forEach((b) => (b.disabled = false));
+		if (ask) {
+			comparing = [j, j + 1];
+			render();
+			questionEl.textContent = `Should ${items[j].value} and ${items[j + 1].value} swap? (Smaller numbers belong on the left.)`;
+		}
+	}
+
+	choiceBtns.forEach((btn) => {
+		btn.addEventListener("click", () => {
+			if (!nextIsComparison()) return;
+			choiceBtns.forEach((b) => (b.disabled = true));
+			const shouldSwap = items[j].value > items[j + 1].value;
+			const right = (btn.dataset.bsortChoice === "swap") === shouldSwap;
+			predictTotal += 1;
+			if (right) predictRight += 1;
+			step();
+			statusEl.textContent = `${right ? "✓ Right!" : "✗ Not this time."} ${statusEl.textContent}`;
+			// Pause so the swap (or non-swap) can be seen before the next question.
+			askTimer = window.setTimeout(prepare, 750);
+		});
+	});
+
+	predictToggle.addEventListener("change", () => {
+		if (!predictToggle.checked) comparing = null;
+		render();
+		prepare();
+	});
+
 	function stopAuto() {
 		if (autoTimer !== null) {
 			window.clearInterval(autoTimer);
@@ -292,6 +384,9 @@ const growth = [
 
 	function startAuto() {
 		stopAuto();
+		window.clearTimeout(askTimer);
+		askEl.hidden = true;
+		stepBtn.hidden = false;
 		autoTimer = window.setInterval(step, speedMs());
 		render();
 	}
@@ -299,12 +394,14 @@ const growth = [
 	stepBtn.addEventListener("click", () => {
 		stopAuto();
 		step();
+		prepare();
 	});
 	autoBtn.addEventListener("click", () => {
 		if (autoTimer === null) startAuto();
 		else {
 			stopAuto();
 			render();
+			prepare();
 		}
 	});
 	speedInput.addEventListener("input", () => {
@@ -317,6 +414,43 @@ const growth = [
 </script>
 
 <style is:global>
+	.bsort-demo .bsort-predict-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.5em;
+		margin-top: 0.9em;
+		min-height: 2.2em;
+		font-size: 0.95em;
+		font-weight: 600;
+		color: var(--color-text);
+		cursor: pointer;
+	}
+
+	.bsort-demo .bsort-predict-toggle input {
+		width: 1.2em;
+		height: 1.2em;
+		accent-color: var(--color-accent);
+	}
+
+	.bsort-demo .bsort-predict-score {
+		font-family: var(--font-mono);
+		color: var(--color-accent);
+	}
+
+	.bsort-demo .bsort-question {
+		margin: 0.8em 0 0;
+		text-align: center;
+		font-weight: 700;
+		font-size: 1.05em;
+		color: #fff3d6;
+	}
+
+	.bsort-demo .bsort-choices {
+		margin-top: 0.5em;
+	}
+
 	.bsort-demo .bsort-legend {
 		display: flex;
 		flex-wrap: wrap;

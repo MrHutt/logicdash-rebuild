@@ -1,5 +1,6 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 import RelatedLink from "../../components/RelatedLink.astro";
 
 const message = ["SEE ", "YOU ", "AT ", "NOON"];
@@ -7,6 +8,33 @@ const total = message.length;
 const packets = message.map((data, i) => ({ number: i + 1, data }));
 // The order they happen to arrive in — deliberately scrambled.
 const arrivalOrder = [2, 4, 1, 3].map((n) => packets[n - 1]);
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "Why does each packet carry a number?",
+		options: ["So the packets can be put back in the right order when they arrive", "So they travel faster", "So they are encrypted", "So routers know which ones to delete"],
+		explain: "Packets can arrive jumbled. The numbers let the receiving computer reassemble the message — and spot any that are missing.",
+	},
+	{
+		q: "Packets that belong to the same message…",
+		options: ["can take different routes, arrive out of order, or not arrive at all", "always follow exactly the same route", "always arrive in the order they were sent", "can never get lost"],
+		explain: "Each packet is routed on its own, so the journeys can differ. That's why reassembly and re-sending are needed.",
+	},
+	{
+		q: "What does a router do?",
+		options: ["Passes each packet on, one step closer to where it's going", "Stores a copy of every website", "Chooses every device's password", "Turns data into electricity"],
+		explain: "A router reads a packet's destination address and hands it to the next router along a good path.",
+	},
+	{
+		q: "A live video-call app sends its data using UDP rather than TCP. Why?",
+		options: ["In a live call, a late packet is useless, so it's better to skip it than wait for it to be sent again", "UDP is more secure than TCP", "UDP makes sure every packet arrives", "TCP cannot carry video"],
+		explain: "TCP re-sends anything missing, which adds delay. For live audio and video, keeping up matters more than getting every packet.",
+	},
+	{
+		q: "What are internet protocols?",
+		options: ["Agreed rules that let devices made by different companies communicate", "The cables that connect computers", "Secret passwords for routers", "A type of computer virus"],
+		explain: "Because everyone follows the same open rules, any device can join the internet and talk to any other.",
+	},
+];
 ---
 
 <LearnArticle
@@ -30,6 +58,11 @@ const arrivalOrder = [2, 4, 1, 3].map((n) => packets[n - 1]);
 		<p class="block-callout">
 			That's how the internet moves everything: split it into small numbered pieces, send each one on
 			its own, and reassemble them at the other end.
+		</p>
+		<p class="block-text">
+			The internet itself is a <em>network of networks</em> — home Wi-Fi, school networks, phone
+			networks, company networks — all joined together. Packets hop from one network to the next until
+			they reach the right one.
 		</p>
 	</section>
 
@@ -91,6 +124,7 @@ const arrivalOrder = [2, 4, 1, 3].map((n) => packets[n - 1]);
 			router that's a step closer, a bit like a mail sorting center sending a letter on to the next town.
 		</p>
 		<p class="block-text">
+			Packets from the same message may arrive in order, out of order, or — occasionally — not at all.
 			No single router knows the whole journey. Each one just makes a good next step. And because the
 			decision is made fresh for each packet, two packets from the same message can take completely
 			different paths.
@@ -148,6 +182,8 @@ const arrivalOrder = [2, 4, 1, 3].map((n) => packets[n - 1]);
 		</p>
 		<RelatedLink href="/learn/bandwidth-and-latency" label="Read next" />
 	</section>
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

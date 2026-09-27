@@ -91,11 +91,13 @@ import RelatedLink from "../../components/RelatedLink.astro";
 
 			<div class="cz-alphabet" aria-hidden="true" data-cz-alphabet></div>
 
+			<p class="demo-status cz-challenge-status" data-cz-challenge-status aria-live="polite"></p>
 			<p class="cz-output-label">Result</p>
 			<p class="cz-output" data-cz-output aria-live="polite"></p>
 
 			<div class="demo-controls">
 				<button type="button" class="demo-btn" data-cz-swap>Use result as the message</button>
+				<button type="button" class="demo-btn" data-cz-challenge>Give me a secret message</button>
 				<button type="button" class="demo-btn demo-btn--primary" data-cz-crack>Crack it: try every key</button>
 			</div>
 			<div class="cz-crack" data-cz-crack-panel hidden>
@@ -172,6 +174,16 @@ import RelatedLink from "../../components/RelatedLink.astro";
 	const crackBtn = root.querySelector<HTMLButtonElement>("[data-cz-crack]")!;
 	const crackPanel = root.querySelector<HTMLElement>("[data-cz-crack-panel]")!;
 	const crackList = root.querySelector<HTMLOListElement>("[data-cz-crack-list]")!;
+	const challengeBtn = root.querySelector<HTMLButtonElement>("[data-cz-challenge]")!;
+	const challengeStatus = root.querySelector<HTMLElement>("[data-cz-challenge-status]")!;
+	const SECRETS = [
+		"THE KEY IS UNDER THE MAT",
+		"MEET ME BY THE OLD OAK TREE",
+		"BINARY IS JUST ONES AND ZEROS",
+		"NEVER SHARE YOUR PASSWORD",
+		"THE BOX IS LOCKED TIGHT",
+		"LUNCH IS AT NOON TODAY",
+	];
 
 	const A = "A".charCodeAt(0);
 
@@ -232,6 +244,21 @@ import RelatedLink from "../../components/RelatedLink.astro";
 		const next = mode() === "encrypt" ? "decrypt" : "encrypt";
 		modeInputs.forEach((i) => (i.checked = i.value === next));
 		render();
+	});
+
+	// Challenge: load a message locked with a random key, switch to Unlock,
+	// and let the student slide the key until it reads as English.
+	challengeBtn.addEventListener("click", () => {
+		const secret = SECRETS[Math.floor(Math.random() * SECRETS.length)];
+		const key = 1 + Math.floor(Math.random() * 25);
+		textInput.value = shiftText(secret, key);
+		modeInputs.forEach((i) => (i.checked = i.value === "decrypt"));
+		shiftInput.value = "1";
+		crackPanel.hidden = true;
+		crackBtn.textContent = "Crack it: try every key";
+		render();
+		challengeStatus.textContent =
+			"Here's a locked message. Slide the key until the result makes sense — that's the secret key. (Stuck? Press “Crack it”.)";
 	});
 
 	crackBtn.addEventListener("click", () => {

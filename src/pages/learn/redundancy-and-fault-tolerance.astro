@@ -1,5 +1,33 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "A plane can fly safely on one of its two engines. The second engine is an example of…",
+		options: ["Redundancy", "Compression", "Latency", "Abstraction"],
+		explain: "Redundancy means extra parts that aren't needed while everything works — there in case something fails.",
+	},
+	{
+		q: "What does it mean for a system to be fault tolerant?",
+		options: ["It keeps working even when one of its parts fails", "None of its parts can ever fail", "It shuts down safely whenever something fails", "It has no extra parts"],
+		explain: "Fault tolerance is about carrying on despite a failure — usually made possible by redundancy.",
+	},
+	{
+		q: "Computer A can reach computer D along two separate paths. A cable on one path is cut. What happens?",
+		options: ["Data still reaches D using the other path", "A and D can no longer communicate", "All data on the network is lost", "The whole network has to be rebuilt"],
+		explain: "Having more than one path (redundancy) is what lets the network route around the damage (fault tolerance).",
+	},
+	{
+		q: "What is the main downside of adding redundancy to a system?",
+		options: ["It costs more — extra parts, cables, or storage", "It makes the system less reliable", "It stops the system from working normally", "It removes the need for backups"],
+		explain: "Every spare costs something. Engineers weigh that cost against how bad a failure would be.",
+	},
+	{
+		q: "Which of these is a single point of failure?",
+		options: ["A school where all internet traffic goes through one router", "Photos saved on a phone and also backed up online", "A hospital with backup generators", "A network with many paths between computers"],
+		explain: "If that one router breaks, the whole school loses its connection. The other three all have a backup in place.",
+	},
+];
 ---
 
 <LearnArticle
@@ -136,6 +164,8 @@ import LearnArticle from "../../components/LearnArticle.astro";
 			backup power. The more a failure would hurt, the more redundancy is worth paying for.
 		</p>
 	</section>
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

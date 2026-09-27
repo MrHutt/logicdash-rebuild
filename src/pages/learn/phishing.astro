@@ -193,6 +193,29 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 	</section>
 
 	<section class="block">
+		<p class="block-title">Other Tricks to Know</p>
+		<ul class="block-list">
+			<li>
+				<em>Malware</em> — harmful software, often hidden in an attachment or a download, that can damage
+				a device or spy on it.
+			</li>
+			<li>
+				<em>Keyloggers</em> — a kind of malware that secretly records every key you press, including
+				passwords.
+			</li>
+			<li>
+				<em>Fake Wi-Fi hotspots</em> — a network set up with an official-sounding name ("Airport_Free_WiFi")
+				so the attacker can watch the traffic of anyone who joins.
+			</li>
+		</ul>
+		<p class="block-text">
+			The best defenses are the same habits: think before you click, keep your devices updated, and turn
+			on <em>multi-factor authentication</em> — needing something you know (a password) plus something
+			you have (like your phone) to sign in.
+		</p>
+	</section>
+
+	<section class="block">
 		<p class="block-title">Not Just Email</p>
 		<p class="block-text">
 			The same tricks turn up in text messages ("Your package couldn't be delivered — pay a small fee
@@ -520,7 +543,7 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 
 	/* Projector layout: email on the left, score and findings beside it, so
 	   the whole exercise fits on one 16:9 screen. */
-	@media (min-width: 1100px) {
+	@media (min-aspect-ratio: 5/4) {
 		.demo-frame.is-fullscreen .ph-layout {
 			display: grid;
 			grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
@@ -539,13 +562,6 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 
 		.demo-frame.is-fullscreen .ph-findings {
 			font-size: 0.8em;
-		}
-
-		/* A fully revealed findings list can outgrow the screen — scroll it
-		   on its own so the email stays in view. */
-		.demo-frame.is-fullscreen .ph-side {
-			max-height: calc(100vh - 11em);
-			overflow-y: auto;
 		}
 	}
 </style>

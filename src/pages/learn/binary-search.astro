@@ -38,6 +38,29 @@ const lanes = [
 		</p>
 	</section>
 
+	<DemoFrame label="Number-guessing game" title="Your turn first">
+		<div class="yt-demo" data-yt-demo>
+			<p class="yt-intro">
+				I'm thinking of a number from 1 to 100. Find it in as few guesses as you can — after each guess
+				I'll say higher or lower.
+			</p>
+			<div class="yt-track" aria-hidden="true">
+				<div class="yt-track-remaining" data-yt-remaining></div>
+			</div>
+			<p class="yt-range" data-yt-range>It could be anything from 1 to 100.</p>
+			<form class="demo-field yt-form" data-yt-form>
+				<label for="yt-guess">Your guess</label>
+				<input id="yt-guess" class="demo-input yt-input" type="number" min="1" max="100" inputmode="numeric" autocomplete="off" data-yt-input />
+				<button type="submit" class="demo-btn demo-btn--primary" data-yt-submit>Guess</button>
+			</form>
+			<ol class="yt-history" data-yt-history aria-label="Your guesses so far"></ol>
+			<p class="demo-status" data-yt-status aria-live="polite"></p>
+			<div class="demo-controls">
+				<button type="button" class="demo-btn" data-yt-new>New number</button>
+			</div>
+		</div>
+	</DemoFrame>
+
 	<section class="block">
 		<p class="block-title">Two Ways to Search</p>
 		<div class="compare-grid">
@@ -54,7 +77,7 @@ const lanes = [
 		</div>
 	</section>
 
-	<DemoFrame label="Binary search demo">
+	<DemoFrame label="Binary search demo" title="Now watch both methods race">
 		<div class="bs-demo" data-bs-demo>
 			<div class="demo-field">
 				<label for="bs-range">Hidden number between 1 and</label>
@@ -353,7 +376,179 @@ const lanes = [
 	reset();
 </script>
 
+
+<script>
+	// "Your turn" game: the student searches for themselves, then sees how
+	// their guess count compares with always-guess-the-middle (never more
+	// than 7 guesses for 1–100).
+	const yt = document.querySelector<HTMLElement>("[data-yt-demo]")!;
+	const form = yt.querySelector<HTMLFormElement>("[data-yt-form]")!;
+	const input = yt.querySelector<HTMLInputElement>("[data-yt-input]")!;
+	const submitBtn = yt.querySelector<HTMLButtonElement>("[data-yt-submit]")!;
+	const historyEl = yt.querySelector<HTMLOListElement>("[data-yt-history]")!;
+	const statusEl = yt.querySelector<HTMLElement>("[data-yt-status]")!;
+	const rangeEl = yt.querySelector<HTMLElement>("[data-yt-range]")!;
+	const remainingEl = yt.querySelector<HTMLElement>("[data-yt-remaining]")!;
+	const newBtn = yt.querySelector<HTMLButtonElement>("[data-yt-new]")!;
+	const MAX = 100;
+	const BINARY_WORST = 7;
+	let secret = 0;
+	let lo = 1;
+	let hi = MAX;
+	let guesses = 0;
+	let done = false;
+
+	function renderRange() {
+		const pct = (n: number) => ((n - 1) / (MAX - 1)) * 100;
+		remainingEl.style.left = `${pct(lo)}%`;
+		remainingEl.style.width = `max(4px, ${pct(hi) - pct(lo)}%)`;
+		rangeEl.textContent = done
+			? `Found it: ${secret}.`
+			: lo === hi
+				? `It must be ${lo}!`
+				: `It could be anything from ${lo} to ${hi} — that's ${hi - lo + 1} possibilities.`;
+	}
+
+	function start() {
+		secret = 1 + Math.floor(Math.random() * MAX);
+		lo = 1;
+		hi = MAX;
+		guesses = 0;
+		done = false;
+		historyEl.innerHTML = "";
+		input.disabled = false;
+		submitBtn.disabled = false;
+		input.value = "";
+		statusEl.textContent = "Tip: think about which guess rules out the most numbers.";
+		renderRange();
+	}
+
+	form.addEventListener("submit", (event) => {
+		event.preventDefault();
+		if (done) return;
+		const g = Math.round(Number(input.value));
+		if (!input.value || !Number.isFinite(g) || g < 1 || g > MAX) {
+			statusEl.textContent = "Type a whole number from 1 to 100.";
+			input.focus();
+			return;
+		}
+		guesses += 1;
+		// Checked before the range narrows: was this number already ruled out?
+		const alreadyRuledOut = g < lo || g > hi;
+		const li = document.createElement("li");
+		let note: string;
+		if (g === secret) {
+			done = true;
+			note = "✓ got it";
+		} else if (g < secret) {
+			note = "higher ↑";
+			if (g >= lo) lo = g + 1;
+		} else {
+			note = "lower ↓";
+			if (g <= hi) hi = g - 1;
+		}
+		li.textContent = `${g} — ${note}`;
+		historyEl.append(li);
+		renderRange();
+		input.value = "";
+
+		if (done) {
+			input.disabled = true;
+			submitBtn.disabled = true;
+			statusEl.textContent =
+				guesses <= BINARY_WORST
+					? `Found in ${guesses} ${guesses === 1 ? "guess" : "guesses"}! Always guessing the middle never needs more than ${BINARY_WORST} — you matched it.`
+					: `Found in ${guesses} guesses. Always guessing the middle never needs more than ${BINARY_WORST}. Watch how below.`;
+			newBtn.focus();
+		} else {
+			statusEl.textContent = alreadyRuledOut
+				? `${g} was already ruled out by an earlier clue — that guess couldn't tell you anything new.`
+				: `${g < secret ? "Higher" : "Lower"}. Guess ${guesses} done.`;
+			input.focus();
+		}
+	});
+
+	newBtn.addEventListener("click", () => {
+		start();
+		input.focus();
+	});
+
+	start();
+</script>
+
 <style is:global>
+	.yt-demo .yt-intro {
+		margin: 0 auto 0.8em;
+		max-width: 36em;
+		text-align: center;
+		font-size: 1em;
+		color: var(--color-text);
+	}
+
+	.yt-demo .yt-track {
+		position: relative;
+		margin: 0 auto;
+		max-width: 36em;
+		height: 1.1em;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-border) 70%, transparent);
+		overflow: hidden;
+	}
+
+	.yt-demo .yt-track-remaining {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		border-radius: 999px;
+		background: linear-gradient(90deg, #ffae2e, #ffc766);
+		transition:
+			left 0.3s ease,
+			width 0.3s ease;
+	}
+
+	.yt-demo .yt-range {
+		margin: 0.4em 0 0;
+		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 0.95em;
+		color: var(--color-text-muted);
+	}
+
+	.yt-demo .yt-input {
+		width: 6em;
+	}
+
+	.yt-demo .yt-history {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.4em;
+		margin: 0.8em 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.yt-demo .yt-history:empty {
+		display: none;
+	}
+
+	.yt-demo .yt-history li {
+		padding: 0.25em 0.7em;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.yt-demo .yt-history li:last-child {
+		border-color: var(--color-accent);
+	}
+
 	.bs-demo .bs-pick {
 		width: 6.5em;
 	}

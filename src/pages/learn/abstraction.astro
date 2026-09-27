@@ -1,5 +1,6 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 
 // Top of the stack is what a person sees; each row below is the detail the
 // row above lets you ignore.
@@ -22,6 +23,33 @@ const drawSquareCode = `PROCEDURE drawSquare()
 
 drawSquare()
 drawSquare()`;
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "A music app has a Play button. You press it without knowing how the song file is turned into sound. This is an example of…",
+		options: ["Abstraction", "Compression", "Redundancy", "Encryption"],
+		explain: "The button hides the complicated details and gives you one simple control — that's abstraction.",
+	},
+	{
+		q: "A programmer writes a procedure called drawStar() and uses it ten times in a program. What is the main benefit?",
+		options: ["The steps are written once, and the name hides the details, so the program is easier to read and change", "The program uses less electricity", "The ten stars are drawn at exactly the same time", "Nobody else can see the code inside the procedure"],
+		explain: "Naming a set of steps lets you use it again and again without repeating or re-reading the details. Fix it once, and every use gets the fix.",
+	},
+	{
+		q: "Instead of 30 separate variables for 30 test scores, a student keeps them in one list called scores. Why is this an abstraction?",
+		options: ["One name stands for many values, so the program can handle them together", "A list makes each score more accurate", "A list stores the numbers in hexadecimal", "A list keeps the scores secret"],
+		explain: "A list is data abstraction: the program works with \"scores\" as one thing instead of juggling 30 separate names.",
+	},
+	{
+		q: "The code inside a procedure called calculateTax(price) is rewritten to run faster. It still takes a price and returns the tax. What else in the program has to change?",
+		options: ["Nothing — the rest of the program only relies on what goes in and what comes out", "Every line that uses calculateTax", "The name of the procedure", "The whole program must be rewritten"],
+		explain: "That's the payoff of abstraction: as long as a procedure's inputs and results stay the same, the details inside can change freely.",
+	},
+	{
+		q: "A procedure drawSquare(size) takes a parameter. Why is that more useful than a procedure that always draws a square with sides of 10?",
+		options: ["One procedure can now draw squares of any size", "It draws squares faster", "It stops the square from being drawn twice", "Parameters make procedures run in parallel"],
+		explain: "A parameter makes a procedure general: the same steps work for many different values, so you don't need drawSmallSquare, drawBigSquare, and so on.",
+	},
+];
 ---
 
 <LearnArticle
@@ -118,7 +146,9 @@ drawSquare()`;
 			<li>
 				<em>Procedures</em> (also called functions): you give a set of steps a name, then use the
 				name instead of repeating the steps. Once <span class="mono-highlight">drawSquare()</span>{" "}
-				works, you can use it without re-reading how it draws each side.
+				works, you can use it without re-reading how it draws each side. Give it a
+				<em>parameter</em> — <span class="mono-highlight">drawSquare(size)</span> — and the same steps can
+				draw a square of any size.
 			</li>
 			<li>
 				<em>Lists</em>: instead of making 30 separate variables for 30 test scores, you keep them all
@@ -146,6 +176,8 @@ drawSquare()`;
 			uses it gets the improvement — without changing a single other line.
 		</p>
 	</section>
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

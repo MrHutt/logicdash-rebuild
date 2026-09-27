@@ -57,6 +57,11 @@ const HELPER_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
 				<output for="dc-helpers" class="dc-helpers-value" data-dc-helpers-value>1</output>
 			</div>
 
+			<div class="demo-field dc-predict">
+				<label for="dc-predict">Predict first: how many seconds will it take?</label>
+				<input id="dc-predict" class="demo-input dc-predict-input" type="number" min="0" step="0.1" inputmode="decimal" placeholder="optional" data-dc-predict />
+			</div>
+
 			<div class="dc-workers" data-dc-workers></div>
 
 			<div class="demo-stats">
@@ -144,6 +149,11 @@ const HELPER_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
 		<p class="block-callout">
 			Distributed computing shines when a big job can be broken into lots of independent pieces.
 		</p>
+		<p class="block-text">
+			It also solves a second problem: size. Some jobs involve more data than any single computer could
+			store, or would take one computer years to finish. Spreading the data and the work across many
+			machines makes those problems possible at all — not just faster.
+		</p>
 	</section>
 </LearnArticle>
 
@@ -160,6 +170,7 @@ const HELPER_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
 	const newBtn = root.querySelector<HTMLButtonElement>("[data-dc-new]")!;
 	const historyWrap = root.querySelector<HTMLElement>("[data-dc-history-wrap]")!;
 	const historyEl = root.querySelector<HTMLElement>("[data-dc-history]")!;
+	const predictInput = root.querySelector<HTMLInputElement>("[data-dc-predict]")!;
 
 	const N = 120;
 	const SECONDS_PER_BIT = 0.1;
@@ -243,6 +254,7 @@ const HELPER_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
 		startBtn.disabled = true;
 		newBtn.disabled = true;
 		helpersInput.disabled = true;
+		predictInput.disabled = true;
 		buildWorkers();
 
 		const parts = chunks(helpers);
@@ -286,11 +298,20 @@ const HELPER_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
 			totalEl.textContent = String(total);
 			runs.push({ helpers, time: finishTime });
 			renderHistory();
-			statusEl.textContent = `Done: ${total} ones counted in ${finishTime.toFixed(1)} seconds with ${helpers} helper${helpers === 1 ? "" : "s"}. Try a different number of helpers.`;
+			const guess = Number(predictInput.value);
+			const predictionNote =
+				predictInput.value.trim() !== "" && Number.isFinite(guess)
+					? Math.abs(guess - finishTime) <= 0.3
+						? ` You predicted ${guess} s — spot on!`
+						: ` You predicted ${guess} s (${guess > finishTime ? "slower" : "faster"} than it really was).`
+					: "";
+			statusEl.textContent = `Done: ${total} ones counted in ${finishTime.toFixed(1)} seconds with ${helpers} helper${helpers === 1 ? "" : "s"}.${predictionNote} Try a different number of helpers.`;
+			predictInput.value = "";
 			running = false;
 			startBtn.disabled = false;
 			newBtn.disabled = false;
 			helpersInput.disabled = false;
+			predictInput.disabled = false;
 			startBtn.textContent = "Run again";
 		};
 		frame = requestAnimationFrame(tick);
@@ -312,6 +333,10 @@ const HELPER_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
 </script>
 
 <style is:global>
+	.dc-demo .dc-predict-input {
+		width: 7em;
+	}
+
 	.dc-demo .dc-task {
 		margin: 0 0 0.3em;
 		text-align: center;

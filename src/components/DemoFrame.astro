@@ -46,22 +46,68 @@ const { title = "Try it yourself", label } = Astro.props;
 			return frame.classList.contains("is-fullscreen");
 		}
 
+		// --- Fit to screen ------------------------------------------------
+		// In fullscreen the whole demo must be visible without scrolling.
+		// Everything inside is sized in em, so the frame's font-size is the
+		// one dial: start from the CSS size (the largest we'd want) and
+		// binary-search down to the largest size at which nothing overflows.
+		// Re-run whenever the content changes (new question, feedback shown)
+		// or the window resizes.
+		const MIN_FONT_PX = 11;
+		const fits = () => frame.scrollHeight <= frame.clientHeight + 1 && frame.scrollWidth <= frame.clientWidth + 1;
+
+		function fit() {
+			if (!isOpen()) return;
+			frame.style.fontSize = "";
+			const max = parseFloat(getComputedStyle(frame).fontSize);
+			if (fits()) return;
+			let lo = MIN_FONT_PX;
+			let hi = max;
+			for (let i = 0; i < 12 && hi - lo > 0.25; i++) {
+				const mid = (lo + hi) / 2;
+				frame.style.fontSize = `${mid}px`;
+				if (fits()) lo = mid;
+				else hi = mid;
+			}
+			frame.style.fontSize = `${lo}px`;
+		}
+
+		// Content changes: shrink straight away if something now overflows,
+		// then do a full re-fit once things settle (which can also grow the
+		// text back when the content gets shorter again).
+		let settleTimer: number | undefined;
+		const body = frame.querySelector<HTMLElement>(".demo-frame-body")!;
+		new MutationObserver(() => {
+			if (!isOpen()) return;
+			if (!fits()) fit();
+			window.clearTimeout(settleTimer);
+			settleTimer = window.setTimeout(fit, 200);
+		}).observe(body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["hidden", "open"] });
+		window.addEventListener("resize", () => {
+			if (isOpen()) fit();
+		});
+
 		function enter() {
 			frame.classList.add("is-fullscreen");
 			document.body.classList.add("demo-fullscreen");
 			enterBtn.hidden = true;
 			exitBtn.hidden = false;
 			exitBtn.focus();
-			document.documentElement.requestFullscreen?.().catch(() => {
-				// Native fullscreen denied or unsupported — the CSS fullscreen
-				// look still applies, so the demo remains projectable.
-			});
+			fit();
+			document.documentElement
+				.requestFullscreen?.()
+				.then(fit) // the viewport grows once native fullscreen kicks in
+				.catch(() => {
+					// Native fullscreen denied or unsupported — the CSS fullscreen
+					// look still applies, so the demo remains projectable.
+				});
 			frame.dispatchEvent(new CustomEvent("demo-fullscreen-change", { detail: { fullscreen: true } }));
 		}
 
 		function exit() {
 			if (!isOpen()) return;
 			frame.classList.remove("is-fullscreen");
+			frame.style.fontSize = "";
 			document.body.classList.remove("demo-fullscreen");
 			exitBtn.hidden = true;
 			enterBtn.hidden = false;
@@ -179,7 +225,9 @@ const { title = "Try it yourself", label } = Astro.props;
 		font-size: clamp(1.1rem, 1.6vmin + 0.5rem, 2.4rem);
 		border: none;
 		border-radius: 0;
-		padding: 1em clamp(1rem, 4vw, 3rem) 1.5em;
+		padding: 0.8em clamp(1rem, 4vw, 3rem) 1em;
+		/* Scroll is only a last resort: the fit-to-screen script shrinks the
+		   content until it fits, so this only kicks in on tiny screens. */
 		overflow-y: auto;
 		background:
 			radial-gradient(ellipse at center, rgba(255, 174, 46, 0.08) 0%, transparent 60%),
@@ -187,15 +235,17 @@ const { title = "Try it yourself", label } = Astro.props;
 		box-shadow: none;
 	}
 
+	/* Full width (not an em cap) so shrinking the text to fit doesn't also
+	   narrow the layout and make it taller. */
 	.demo-frame.is-fullscreen .demo-frame-bar {
 		width: 100%;
-		max-width: 64em;
-		margin: 0 auto 1em;
+		max-width: none;
+		margin: 0 auto 0.6em;
 	}
 
 	.demo-frame.is-fullscreen .demo-frame-body {
 		width: 100%;
-		max-width: 64em;
+		max-width: none;
 		margin: auto;
 	}
 

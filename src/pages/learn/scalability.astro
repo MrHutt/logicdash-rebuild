@@ -1,5 +1,6 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 
 const breaks = [
 	{ problem: "You can only squeeze lemons so fast", fix: "Hire helpers and open more stands" },
@@ -7,6 +8,33 @@ const breaks = [
 	{ problem: "Customers line up at one stand while another sits empty", fix: "Send each customer to whichever stand has the shortest line" },
 	{ problem: "You run out of lemons by noon", fix: "Find a supplier who delivers to every stand" },
 	{ problem: "If you get sick, the whole business stops", fix: "Make sure no single person is the only one who can do a job" },
+];
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "A website works well for 1,000 visitors a day but crashes when a million visit at once. The website is not…",
+		options: ["Scalable", "Encrypted", "Compressed", "Abstract"],
+		explain: "Scalability is a system's ability to keep working as demand grows. This site couldn't handle the growth.",
+	},
+	{
+		q: "Which of these is an example of \"scaling out\"?",
+		options: ["Adding more servers that share the work", "Replacing the server with one bigger, faster server", "Making the website's pictures smaller", "Switching the server off at night"],
+		explain: "Scaling out means adding more machines. Replacing one machine with a more powerful one is scaling up — and it has a ceiling.",
+	},
+	{
+		q: "Why was the internet able to grow from a few computers to billions of devices?",
+		options: ["It uses open, shared rules, and there is no single central computer that everything must pass through", "One company controls all of the traffic", "Every device is wired directly to every other device", "Its design has never changed"],
+		explain: "Shared protocols let anyone join, and having no single central point means no single bottleneck to overload.",
+	},
+	{
+		q: "A club's sign-up forms are all typed in by one volunteer. Membership triples. What is the scalability problem?",
+		options: ["The one volunteer is a bottleneck: the work grows but the capacity doesn't", "The forms are not encrypted", "The forms are too short", "There is too much redundancy"],
+		explain: "When a single person, machine, or step has to handle everything, growth piles up there. Scaling means removing that bottleneck.",
+	},
+	{
+		q: "The original internet addressing system (IPv4) eventually ran out of addresses. Why?",
+		options: ["Each address used 32 bits, which only allows about 4.3 billion different addresses", "Addresses expire after a few years", "Too many addresses were encrypted", "The addresses were written in hexadecimal"],
+		explain: "A fixed number of bits means a fixed number of possible values. 32 bits felt like plenty in 1981 — then billions of devices came online.",
+	},
 ];
 ---
 
@@ -122,4 +150,6 @@ const breaks = [
 			</li>
 		</ul>
 	</section>
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
