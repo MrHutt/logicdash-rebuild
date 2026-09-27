@@ -1,30 +1,54 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import TopicIcon from "../../components/TopicIcon.astro";
-import { LEARN_TOPICS, GROUP_ORDER } from "../../lib/learnTopics";
+import { LEARN_TOPICS, GROUP_ORDER, GROUP_BLURBS } from "../../lib/learnTopics";
 
 // GROUP_ORDER is shared with learnTopics.ts's HUB_ORDERED_TOPICS, which
 // drives every article's prev/next — so this grid and that pagination always
 // agree on what "next" means.
+const slug = (name: string) =>
+	name
+		.toLowerCase()
+		.replace(/&/g, "and")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-|-$/g, "");
+
 const groups = GROUP_ORDER.map((name) => ({
 	name,
+	id: slug(name),
+	blurb: GROUP_BLURBS[name],
 	topics: LEARN_TOPICS.filter((topic) => topic.group === name),
 })).filter((group) => group.topics.length > 0);
+const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 ---
 
 <Layout
 	title="Bit by Bit"
-	description="Bit by Bit: free lessons on binary, bytes, hexadecimal, and error correction — the ideas behind LogicDash's puzzle, explained simply."
+	description="Bit by Bit: free, plain-English lessons on binary, data, networks, and cybersecurity — with hands-on demos and endless AP CSP pseudocode practice."
 >
 	<section class="hero">
 		<h1>Bit by Bit</h1>
-		<p class="hero-lead">The ideas behind the puzzle, explained simply.</p>
+		<p class="hero-lead">The ideas behind the puzzle — and the computer science around it — explained simply.</p>
+		<p class="hero-count">{liveCount} lessons and practice tools</p>
 	</section>
+
+	<nav class="group-jump" aria-label="Jump to a section">
+		<ul>
+			{
+				groups.map((group) => (
+					<li>
+						<a href={`#${group.id}`}>{group.name}</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
 
 	{
 		groups.map((group) => (
-			<div class="topic-group">
-				<h2 class="topic-group-title">{group.name}</h2>
+			<section class="topic-group" id={group.id} aria-labelledby={`${group.id}-title`}>
+				<h2 class="topic-group-title" id={`${group.id}-title`}>{group.name}</h2>
+				<p class="topic-group-blurb">{group.blurb}</p>
 				<div class="topic-cards">
 					{group.topics.map((topic) =>
 						topic.live ? (
@@ -32,6 +56,7 @@ const groups = GROUP_ORDER.map((name) => ({
 								<TopicIcon href={topic.href} />
 								<span class="topic-card-name">{topic.title}</span>
 								<span class="topic-card-blurb">{topic.blurb}</span>
+								{topic.kind === "tool" && <span class="topic-card-badge topic-card-badge--tool">Practice tool</span>}
 							</a>
 						) : (
 							<div class="topic-card topic-card--soon">
@@ -43,7 +68,7 @@ const groups = GROUP_ORDER.map((name) => ({
 						),
 					)}
 				</div>
-			</div>
+			</section>
 		))
 	}
 </Layout>
@@ -61,7 +86,62 @@ const groups = GROUP_ORDER.map((name) => ({
 
 	.hero-lead {
 		margin: 0 auto;
+		max-width: 36rem;
 		font-size: 1rem;
+	}
+
+	.hero-count {
+		margin: 0.35rem 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	/* Section shortcuts. Plain wrapping pills — they simply flow onto a
+	   second (or third) line when space runs out, so there's no breakpoint
+	   where they can collide or overflow. */
+	.group-jump {
+		margin: 0 0 1.4rem;
+	}
+
+	.group-jump ul {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.45rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.group-jump a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.25rem;
+		padding: 0.3rem 0.85rem;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: border-color 0.15s ease;
+	}
+
+	.group-jump a:hover,
+	.group-jump a:focus-visible {
+		border-color: var(--color-accent);
+	}
+
+	.topic-group {
+		scroll-margin-top: 1rem;
+	}
+
+	.topic-group-blurb {
+		margin: -0.25rem 0 0.7rem;
+		font-size: 0.9rem;
 	}
 
 	.topic-group {
@@ -73,55 +153,46 @@ const groups = GROUP_ORDER.map((name) => ({
 	}
 
 	.topic-group-title {
-		margin: 0 0 0.6rem;
+		margin: 0 0 0.45rem;
 		padding-bottom: 0.35rem;
 		border-bottom: 1px solid var(--color-border);
-		font-size: 0.72rem;
+		font-size: 0.8rem;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		color: var(--color-accent);
 	}
 
+	/* Centered, wrapping rows of near-equal cards. Groups range from 3 to 7
+	   topics, so a partial last row is common — centering it keeps the
+	   section balanced instead of leaving one card stranded at the left.
+	   Cards grow only slightly past their basis so every row looks alike. */
 	.topic-cards {
-		display: grid;
-		/* auto-fit (not auto-fill) collapses any unfilled tracks and hands
-		   their space to the real cards — every group here has just 2 or 3
-		   topics, so without this the row stays pinned to a narrow strip on
-		   the left with a lot of dead space to the right on wide screens. The
-		   minmax cap still keeps cards from ballooning past a sane size when
-		   a row genuinely has room to spare. */
-		grid-template-columns: repeat(auto-fit, minmax(11.5rem, 16rem));
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.6rem;
 	}
 
-	/* Below this width, auto-fit can only fit a single track — but that
-	   track is still capped at the minmax max (16rem), so CSS Grid's default
-	   justify-content: start left-anchors that one narrower card, leaving
-	   dead space beside it instead of using the full row. Forcing a single
-	   1fr column here makes that lone card stretch to the container's full
-	   width instead. */
+	.topic-cards > .topic-card {
+		flex: 1 1 13rem;
+		max-width: 15.5rem;
+	}
+
+	/* Phones: one full-width card per row. */
 	@media (max-width: 460px) {
-		.topic-cards {
-			grid-template-columns: 1fr;
+		.topic-cards > .topic-card {
+			flex-basis: 100%;
+			max-width: none;
 		}
 	}
 
 	/* At wide viewports, also widen the page itself (this page only — a
 	   card grid can use more width than the site's usual prose column
-	   without hurting readability) and let cards grow a bit further, so the
-	   grid actually fills more of the screen instead of just floating in a
-	   960px column with empty space beside it. */
+	   without hurting readability). */
 	@media (min-width: 1200px) {
 		:global(main) {
 			max-width: 1200px;
-		}
-
-		/* Uncapped (1fr) here on purpose — at this width there's enough
-		   screen real estate that letting a 2-card row actually stretch to
-		   fill it reads as "a wide gallery," not "a few oversized tiles." */
-		.topic-cards {
-			grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
 		}
 	}
 
@@ -166,7 +237,7 @@ const groups = GROUP_ORDER.map((name) => ({
 	}
 
 	.topic-card-blurb {
-		font-size: 0.7rem;
+		font-size: 0.78rem;
 		line-height: 1.35;
 		color: var(--color-text-muted);
 	}
@@ -185,5 +256,10 @@ const groups = GROUP_ORDER.map((name) => ({
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--color-text-muted);
+	}
+
+	.topic-card-badge--tool {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
 	}
 </style>

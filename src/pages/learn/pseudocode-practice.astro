@@ -1,0 +1,766 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import { PSEUDO_CATEGORIES, PSEUDO_QUESTIONS } from "../../lib/pseudocodeQuestions";
+
+const cheatSheet = [
+	{ code: "a ← 5", means: "Store 5 in the variable a" },
+	{ code: "DISPLAY(a)", means: "Show a's value (followed by a space)" },
+	{ code: "a MOD b", means: "The remainder when a is divided by b" },
+	{ code: "= ≠ < > ≤ ≥", means: "Compare two values (true or false)" },
+	{ code: "AND  OR  NOT", means: "Combine or flip true/false values" },
+	{ code: "REPEAT n TIMES", means: "Run the block exactly n times" },
+	{ code: "REPEAT UNTIL (c)", means: "Check c first; keep running the block until c is true" },
+	{ code: "list[1]", means: "The FIRST item — AP lists start at 1, not 0" },
+	{ code: "APPEND / INSERT / REMOVE", means: "Add to the end / add at an index / delete at an index" },
+	{ code: "LENGTH(list)", means: "How many items are in the list" },
+	{ code: "RETURN(x)", means: "Send x back from a procedure and stop it immediately" },
+	{ code: "CAN_MOVE(\"forward\")", means: "true if the robot's next square is open" },
+];
+---
+
+<LearnArticle
+	href="/learn/pseudocode-practice"
+	description="Endless AP Computer Science Principles pseudocode practice: random code-reading questions on variables, MOD, loops, lists, procedures and robot commands, with streaks instead of scores."
+	lead="Read the code, predict what it does. There's no end and no score — just keep going and build a streak."
+>
+	<section class="block">
+		<p class="block-title">How This Works</p>
+		<ul class="block-list">
+			<li>
+				Every question uses the pseudocode from the <em>AP Computer Science Principles</em> exam
+				reference sheet.
+			</li>
+			<li><em>Miss one?</em> Read the explanation. That question will come back again soon — and keep coming back until you get it.</li>
+			<li><em>Get one right?</em> It shows up less often for a while, but it can still return later.</li>
+			<li>There's no final score. Just a streak of right answers in a row. Hit 2, 4, 8, 16… for a milestone.</li>
+		</ul>
+		<p class="block-text">
+			Your progress is saved in this browser only. Keyboard shortcuts: <span class="mono-highlight">1–4</span>
+			to answer, <span class="mono-highlight">Enter</span> for the next question.
+		</p>
+	</section>
+
+	<DemoFrame label="Pseudocode practice" title="Practice">
+		<div class="pp-tool" data-pp-tool>
+			<div class="pp-top">
+				<div class="pp-streak" aria-live="polite">
+					<span class="pp-streak-value" data-pp-streak>0</span>
+					<span class="pp-streak-label">in a row</span>
+				</div>
+				<div class="pp-top-meta">
+					<span>Best: <strong data-pp-best>0</strong></span>
+					<span>Answered: <strong data-pp-answered>0</strong></span>
+					<span data-pp-waiting-wrap hidden>Coming back: <strong data-pp-waiting>0</strong></span>
+				</div>
+			</div>
+
+			<p class="pp-milestone" data-pp-milestone role="status" hidden></p>
+
+			<details class="pp-topics">
+				<summary>Topics: <span data-pp-topic-summary>all</span></summary>
+				<div class="pp-topic-chips">
+					{
+						PSEUDO_CATEGORIES.map((cat) => (
+							<button type="button" class="pp-chip" data-pp-topic={cat} aria-pressed="true">
+								{cat} <span class="pp-chip-count">({PSEUDO_QUESTIONS.filter((q) => q.category === cat).length})</span>
+							</button>
+						))
+					}
+				</div>
+			</details>
+
+			<article class="pp-card">
+				<p class="pp-card-cat" data-pp-cat></p>
+				<p class="pp-card-prompt" data-pp-prompt tabindex="-1"></p>
+				<div class="pp-card-body">
+					<pre class="pp-code" data-pp-code hidden></pre>
+					<div class="pp-grid" data-pp-grid hidden></div>
+				</div>
+				<div class="pp-options" data-pp-options role="group" aria-label="Answer choices"></div>
+				<div class="pp-feedback" data-pp-feedback aria-live="polite" hidden>
+					<p class="pp-verdict" data-pp-verdict></p>
+					<p class="pp-explanation" data-pp-explanation></p>
+				</div>
+				<div class="demo-controls">
+					<button type="button" class="demo-btn demo-btn--primary" data-pp-next hidden>Next question →</button>
+				</div>
+			</article>
+
+			<p class="pp-reset-row">
+				<button type="button" class="pp-reset" data-pp-reset>Reset my progress</button>
+			</p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Quick Reference</p>
+		<p class="block-text">The notation you'll see, in plain English:</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<tbody>
+					{
+						cheatSheet.map((row) => (
+							<tr>
+								<td class="num">{row.code}</td>
+								<td>{row.means}</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</div>
+		<p class="block-text">
+			The robot questions use a grid: the triangle is the robot, pointing the way it faces. Dark squares
+			are blocked. <span class="mono-highlight">ROTATE_LEFT()</span> and
+			<span class="mono-highlight">ROTATE_RIGHT()</span> turn it a quarter turn without moving it.
+		</p>
+	</section>
+</LearnArticle>
+
+<script>
+	import { PSEUDO_CATEGORIES, PSEUDO_QUESTIONS, type PseudoQuestion, type PseudoCategory } from "../../lib/pseudocodeQuestions";
+	import {
+		freshState,
+		pickNext,
+		markShown,
+		recordAnswer,
+		waitingCount,
+		isPracticeState,
+		type PracticeState,
+	} from "../../lib/pseudocodePractice";
+
+	const STORAGE_KEY = "logicdash:pseudocode-practice:v1";
+	const root = document.querySelector<HTMLElement>("[data-pp-tool]")!;
+	const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+	const streakEl = $("[data-pp-streak]");
+	const bestEl = $("[data-pp-best]");
+	const answeredEl = $("[data-pp-answered]");
+	const waitingWrap = $("[data-pp-waiting-wrap]");
+	const waitingEl = $("[data-pp-waiting]");
+	const milestoneEl = $("[data-pp-milestone]");
+	const topicSummary = $("[data-pp-topic-summary]");
+	const topicChips = root.querySelectorAll<HTMLButtonElement>("[data-pp-topic]");
+	const catEl = $("[data-pp-cat]");
+	const promptEl = $("[data-pp-prompt]");
+	const codeEl = $<HTMLPreElement>("[data-pp-code]");
+	const gridEl = $("[data-pp-grid]");
+	const optionsEl = $("[data-pp-options]");
+	const feedbackEl = $("[data-pp-feedback]");
+	const verdictEl = $("[data-pp-verdict]");
+	const explanationEl = $("[data-pp-explanation]");
+	const nextBtn = $<HTMLButtonElement>("[data-pp-next]");
+	const resetBtn = $<HTMLButtonElement>("[data-pp-reset]");
+
+	// --- Persistence (best-effort: private windows or blocked storage just
+	// mean progress lasts for this visit only). ---------------------------
+	function load(): PracticeState {
+		try {
+			const raw = localStorage.getItem(STORAGE_KEY);
+			if (raw) {
+				const parsed: unknown = JSON.parse(raw);
+				if (isPracticeState(parsed)) {
+					parsed.categories = parsed.categories.filter((c) => PSEUDO_CATEGORIES.includes(c));
+					if (parsed.categories.length === 0) parsed.categories = [...PSEUDO_CATEGORIES];
+					return parsed;
+				}
+			}
+		} catch {
+			/* ignore */
+		}
+		return freshState(PSEUDO_CATEGORIES);
+	}
+
+	function save() {
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+		} catch {
+			/* ignore */
+		}
+	}
+
+	let state = load();
+	let current: PseudoQuestion | null = null;
+	let answered = false;
+	let optionOrder: number[] = [];
+	let milestoneTimer: number | undefined;
+
+	function shuffled(n: number): number[] {
+		const order = Array.from({ length: n }, (_, i) => i);
+		for (let i = n - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[order[i], order[j]] = [order[j], order[i]];
+		}
+		return order;
+	}
+
+	function renderStats() {
+		streakEl.textContent = String(state.streak);
+		bestEl.textContent = String(state.best);
+		answeredEl.textContent = String(state.answered);
+		const waiting = waitingCount(state, PSEUDO_QUESTIONS);
+		waitingWrap.hidden = waiting === 0;
+		waitingEl.textContent = String(waiting);
+	}
+
+	function renderTopics() {
+		topicChips.forEach((chip) => {
+			chip.setAttribute("aria-pressed", String(state.categories.includes(chip.dataset.ppTopic as PseudoCategory)));
+		});
+		topicSummary.textContent =
+			state.categories.length === PSEUDO_CATEGORIES.length ? "all" : `${state.categories.length} of ${PSEUDO_CATEGORIES.length}`;
+	}
+
+	function renderGrid(q: PseudoQuestion) {
+		gridEl.innerHTML = "";
+		if (!q.grid) {
+			gridEl.hidden = true;
+			return;
+		}
+		const { rows, robot } = q.grid;
+		gridEl.hidden = false;
+		gridEl.style.setProperty("--cols", String(rows[0].length));
+		const facingWord = { up: "up", down: "down", left: "left", right: "right" }[robot.facing];
+		gridEl.setAttribute("role", "img");
+		const labels: string[] = [];
+		rows.forEach((row, r) => {
+			Array.from(row).forEach((ch, c) => {
+				const cell = document.createElement("span");
+				cell.className = "pp-cell";
+				if (ch === "#") cell.classList.add("pp-cell--blocked");
+				if (/[A-D]/.test(ch)) {
+					cell.textContent = ch;
+					cell.classList.add("pp-cell--label");
+					labels.push(`${ch} at row ${r + 1}, column ${c + 1}`);
+				}
+				if (r === robot.row && c === robot.col) {
+					const bot = document.createElement("span");
+					bot.className = `pp-robot pp-robot--${robot.facing}`;
+					bot.textContent = "▲";
+					cell.append(bot);
+				}
+				gridEl.append(cell);
+			});
+		});
+		const blocked = rows.flatMap((row, r) => Array.from(row).flatMap((ch, c) => (ch === "#" ? [`row ${r + 1}, column ${c + 1}`] : [])));
+		gridEl.setAttribute(
+			"aria-label",
+			`A ${rows.length} by ${rows[0].length} grid. The robot is at row ${robot.row + 1}, column ${robot.col + 1}, facing ${facingWord}.` +
+				(labels.length ? ` Squares: ${labels.join("; ")}.` : "") +
+				(blocked.length ? ` Blocked: ${blocked.join("; ")}.` : ""),
+		);
+	}
+
+	/** `moveFocus` is for user-triggered changes, so keyboard and screen-reader users land on the new question. */
+	function showQuestion(moveFocus = false) {
+		current = pickNext(state, PSEUDO_QUESTIONS);
+		state = markShown(state, current.id);
+		answered = false;
+		optionOrder = shuffled(current.options.length);
+
+		catEl.textContent = current.category;
+		promptEl.textContent = current.prompt;
+		codeEl.hidden = !current.code;
+		codeEl.textContent = current.code ?? "";
+		renderGrid(current);
+
+		optionsEl.innerHTML = "";
+		optionOrder.forEach((optIndex, pos) => {
+			const btn = document.createElement("button");
+			btn.type = "button";
+			btn.className = "pp-option";
+			btn.dataset.optIndex = String(optIndex);
+			const key = document.createElement("span");
+			key.className = "pp-option-key";
+			key.textContent = String(pos + 1);
+			key.setAttribute("aria-hidden", "true");
+			const text = document.createElement("span");
+			text.className = "pp-option-text";
+			text.textContent = current!.options[optIndex];
+			btn.append(key, text);
+			btn.addEventListener("click", () => answer(optIndex));
+			optionsEl.append(btn);
+		});
+
+		feedbackEl.hidden = true;
+		nextBtn.hidden = true;
+		renderStats();
+		save();
+		if (moveFocus) promptEl.focus({ preventScroll: true });
+	}
+
+	function answer(optIndex: number) {
+		if (!current || answered) return;
+		answered = true;
+		const correct = optIndex === current.answer;
+		const result = recordAnswer(state, current.id, correct);
+		state = result.state;
+
+		optionsEl.querySelectorAll<HTMLButtonElement>(".pp-option").forEach((btn) => {
+			const i = Number(btn.dataset.optIndex);
+			btn.disabled = true;
+			const key = btn.querySelector(".pp-option-key")!;
+			if (i === current!.answer) {
+				btn.classList.add("pp-option--correct");
+				key.textContent = "✓"; // the mark replaces the number, so color isn't the only cue
+			} else if (i === optIndex) {
+				btn.classList.add("pp-option--incorrect");
+				key.textContent = "✗";
+			}
+		});
+
+		const correctPos = optionOrder.indexOf(current.answer) + 1;
+		verdictEl.className = `pp-verdict ${correct ? "demo-verdict--good" : "demo-verdict--bad"}`;
+		verdictEl.textContent = correct
+			? "✓ Correct!"
+			: `✗ Not quite — the answer is ${correctPos}: ${current.options[current.answer]}. This one will come back soon.`;
+		explanationEl.textContent = current.explanation;
+		feedbackEl.hidden = false;
+		nextBtn.hidden = false;
+		nextBtn.focus({ preventScroll: true });
+
+		if (result.milestone) showMilestone(result.milestone);
+		renderStats();
+		save();
+	}
+
+	function showMilestone(n: number) {
+		const power = Math.log2(n);
+		milestoneEl.textContent = `Streak of ${n}! That's 2${toSuperscript(power)} in a row.`;
+		milestoneEl.hidden = false;
+		milestoneEl.classList.remove("is-pop");
+		void milestoneEl.offsetWidth; // restart the animation
+		milestoneEl.classList.add("is-pop");
+		window.clearTimeout(milestoneTimer);
+		milestoneTimer = window.setTimeout(() => (milestoneEl.hidden = true), 4000);
+	}
+
+	function toSuperscript(n: number): string {
+		const map = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+		return String(n)
+			.split("")
+			.map((d) => map[Number(d)])
+			.join("");
+	}
+
+	nextBtn.addEventListener("click", () => showQuestion(true));
+
+	topicChips.forEach((chip) => {
+		chip.addEventListener("click", () => {
+			const cat = chip.dataset.ppTopic as PseudoCategory;
+			const on = state.categories.includes(cat);
+			if (on && state.categories.length === 1) return; // always keep at least one topic
+			state = { ...state, categories: on ? state.categories.filter((c) => c !== cat) : [...state.categories, cat] };
+			renderTopics();
+			save();
+			// Move on if the current question's topic was just switched off.
+			if (current && !state.categories.includes(current.category)) showQuestion(true);
+			else renderStats();
+		});
+	});
+
+	resetBtn.addEventListener("click", () => {
+		if (!window.confirm("Reset your streak, best streak, and question history?")) return;
+		state = freshState(PSEUDO_CATEGORIES);
+		renderTopics();
+		showQuestion(true);
+	});
+
+	// 1–4 answer, Enter / N moves on — ignored while typing in a form field
+	// or while the topic chips have focus.
+	document.addEventListener("keydown", (event) => {
+		const target = event.target as HTMLElement;
+		if (target.closest("input, select, textarea, summary, .pp-topics") || event.metaKey || event.ctrlKey || event.altKey) return;
+		if (!answered && /^[1-4]$/.test(event.key)) {
+			const btn = optionsEl.querySelectorAll<HTMLButtonElement>(".pp-option")[Number(event.key) - 1];
+			btn?.click();
+		} else if (answered && (event.key === "Enter" || event.key.toLowerCase() === "n") && target !== nextBtn) {
+			event.preventDefault();
+			showQuestion(true);
+		}
+	});
+
+	renderTopics();
+	showQuestion();
+</script>
+
+<style is:global>
+	.pp-tool .pp-top {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6em 1em;
+	}
+
+	.pp-tool .pp-streak {
+		display: flex;
+		align-items: baseline;
+		gap: 0.4em;
+	}
+
+	.pp-tool .pp-streak-value {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 2.2em;
+		line-height: 1;
+		color: #fff3d6;
+		text-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 55%, transparent);
+	}
+
+	.pp-tool .pp-streak-label {
+		font-size: 0.85em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-tool .pp-top-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3em 1em;
+		font-size: 0.88em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-tool .pp-top-meta strong {
+		font-family: var(--font-mono);
+		color: var(--color-text);
+	}
+
+	.pp-tool .pp-milestone {
+		margin: 0.7em 0 0;
+		padding: 0.5em 0.9em;
+		border-radius: 10px;
+		border: 1px solid var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
+		text-align: center;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: #fff3d6;
+	}
+
+	.pp-tool .pp-milestone.is-pop {
+		animation: pp-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes pp-pop {
+		from {
+			transform: scale(0.85);
+			opacity: 0;
+		}
+		to {
+			transform: none;
+			opacity: 1;
+		}
+	}
+
+	.pp-tool .pp-topics {
+		margin-top: 0.8em;
+		font-size: 0.9em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-tool .pp-topics summary {
+		cursor: pointer;
+		min-height: 2.2em;
+		display: flex;
+		align-items: center;
+		gap: 0.3em;
+		font-weight: 600;
+	}
+
+	.pp-tool .pp-topics summary::before {
+		content: "▸";
+		color: var(--color-accent);
+	}
+
+	.pp-tool .pp-topics[open] summary::before {
+		content: "▾";
+	}
+
+	.pp-tool .pp-topics summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.pp-tool .pp-topics summary {
+		list-style: none;
+	}
+
+	.pp-tool .pp-topic-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4em;
+		margin-top: 0.4em;
+	}
+
+	.pp-tool .pp-chip {
+		min-height: 2.4em;
+		padding: 0.3em 0.8em;
+		border-radius: 999px;
+		border: 1px dashed var(--color-border);
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-sans);
+		font-size: 0.95em;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.pp-tool .pp-chip[aria-pressed="true"] {
+		border-style: solid;
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.pp-tool .pp-chip[aria-pressed="true"]::before {
+		content: "✓ ";
+		color: var(--color-accent);
+	}
+
+	.pp-tool .pp-chip-count {
+		font-family: var(--font-mono);
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-tool .pp-card {
+		margin-top: 0.9em;
+		padding: 1em 1.1em 1.1em;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.pp-tool .pp-card-cat {
+		margin: 0;
+		font-size: 0.78em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+	}
+
+	.pp-tool .pp-card-prompt:focus {
+		outline: none;
+	}
+
+	.pp-tool .pp-card-prompt {
+		margin: 0.3em 0 0;
+		font-size: 1.1em;
+		font-weight: 700;
+		line-height: 1.4;
+		color: var(--color-text);
+	}
+
+	.pp-tool .pp-card-body {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 0.9em;
+		margin-top: 0.8em;
+	}
+
+	.pp-tool .pp-code {
+		flex: 1 1 16em;
+		max-width: 100%;
+		margin: 0;
+		padding: 0.8em 1em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-size: 1em;
+		line-height: 1.5;
+		color: var(--color-text);
+		overflow-x: auto;
+		tab-size: 2;
+	}
+
+	.pp-tool .pp-grid {
+		--cols: 5;
+		display: grid;
+		grid-template-columns: repeat(var(--cols), 2.2em);
+		grid-auto-rows: 2.2em;
+		gap: 2px;
+		padding: 2px;
+		border-radius: 6px;
+		background: var(--color-border);
+		flex-shrink: 0;
+	}
+
+	.pp-tool .pp-cell {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95em;
+	}
+
+	.pp-tool .pp-cell--label {
+		color: var(--color-text);
+	}
+
+	.pp-tool .pp-cell--blocked {
+		background: repeating-linear-gradient(135deg, #3a3e50 0 4px, #25283a 4px 8px);
+	}
+
+	.pp-tool .pp-robot {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--color-accent);
+		font-size: 1.3em;
+		line-height: 1;
+	}
+
+	.pp-tool .pp-robot--right {
+		transform: rotate(90deg);
+	}
+
+	.pp-tool .pp-robot--down {
+		transform: rotate(180deg);
+	}
+
+	.pp-tool .pp-robot--left {
+		transform: rotate(270deg);
+	}
+
+	.pp-tool .pp-options {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 13em), 1fr));
+		gap: 0.5em;
+		margin-top: 0.9em;
+	}
+
+	.pp-tool .pp-option {
+		display: flex;
+		align-items: center;
+		gap: 0.7em;
+		min-height: 3em;
+		padding: 0.5em 0.8em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95em;
+		text-align: left;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.pp-tool .pp-option:hover:not(:disabled),
+	.pp-tool .pp-option:focus-visible {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.pp-tool .pp-option:active:not(:disabled) {
+		transform: scale(0.97);
+	}
+
+	.pp-tool .pp-option:disabled {
+		cursor: default;
+	}
+
+	.pp-tool .pp-option:disabled:not(.pp-option--correct):not(.pp-option--incorrect) {
+		opacity: 0.5;
+	}
+
+	.pp-tool .pp-option-key {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 1.7em;
+		height: 1.7em;
+		border-radius: 6px;
+		border: 1px solid var(--color-border);
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-tool .pp-option--correct {
+		border-color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
+	}
+
+	.pp-tool .pp-option--incorrect {
+		border-color: var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface));
+	}
+
+	.pp-tool .pp-option--correct .pp-option-key {
+		border-color: var(--color-success);
+		color: var(--color-success);
+	}
+
+	.pp-tool .pp-option--incorrect .pp-option-key {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+	}
+
+	.pp-tool .pp-feedback {
+		margin-top: 0.9em;
+		padding: 0.7em 0.9em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.pp-tool .pp-verdict {
+		margin: 0 0 0.3em;
+		font-weight: 700;
+		font-size: 1em;
+	}
+
+	.pp-tool .pp-explanation {
+		margin: 0;
+		font-size: 0.98em;
+		line-height: 1.55;
+		color: var(--color-text);
+	}
+
+	.pp-tool .pp-reset-row {
+		margin: 0.9em 0 0;
+		text-align: right;
+	}
+
+	.pp-tool .pp-reset {
+		min-height: 2.2em;
+		padding: 0.2em 0.4em;
+		border: none;
+		background: none;
+		color: var(--color-text-muted);
+		font-family: var(--font-sans);
+		font-size: 0.85em;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+
+	.pp-tool .pp-reset:hover,
+	.pp-tool .pp-reset:focus-visible {
+		color: var(--color-text);
+	}
+</style>
+
+<style is:global>
+	/* The practice card carries more text than the other demos, so in
+	   fullscreen it runs a touch smaller to fit a whole answered question
+	   on a 16:9 projector without scrolling. */
+	.demo-frame.is-fullscreen .pp-tool {
+		font-size: 0.84em;
+	}
+</style>
