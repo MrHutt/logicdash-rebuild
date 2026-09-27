@@ -51,7 +51,7 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 
 <LearnArticle
 	href="/learn/phishing"
-	description="Learn to spot phishing emails: click the red flags in a realistic fake email — look-alike senders, urgent threats, disguised links and attachments — and get a score."
+	description="Learn to spot phishing: click the red flags in a fake email — look-alike senders, urgent threats, disguised links and attachments — and get a score."
 	lead="Some emails are bait. Here's how to spot the hook before you bite."
 >
 	<section class="block">
@@ -79,6 +79,7 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 				flags — and some parts that are perfectly normal.
 			</p>
 
+			<div class="ph-layout">
 			<article class="ph-email" aria-label="Mock email">
 				<header class="ph-email-head">
 					<p class="ph-email-row">
@@ -141,6 +142,7 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 				</p>
 			</article>
 
+			<div class="ph-side">
 			<div class="demo-stats">
 				<div class="demo-stat">
 					<span class="demo-stat-value"><span data-ph-found>0</span> / {totalFlags}</span>
@@ -158,6 +160,8 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 			<div class="demo-controls">
 				<button type="button" class="demo-btn" data-ph-reveal>Show me the rest</button>
 				<button type="button" class="demo-btn" data-ph-reset>Start over</button>
+			</div>
+			</div>
 			</div>
 		</div>
 	</DemoFrame>
@@ -512,5 +516,36 @@ const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
 
 	.ph-demo .ph-finding--flag strong {
 		color: var(--color-accent);
+	}
+
+	/* Projector layout: email on the left, score and findings beside it, so
+	   the whole exercise fits on one 16:9 screen. */
+	@media (min-width: 1100px) {
+		.demo-frame.is-fullscreen .ph-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+			align-items: start;
+			gap: 1.2em;
+		}
+
+		.demo-frame.is-fullscreen .ph-email {
+			margin: 0;
+			font-size: 0.9em;
+		}
+
+		.demo-frame.is-fullscreen .ph-side .demo-stats {
+			margin-top: 0;
+		}
+
+		.demo-frame.is-fullscreen .ph-findings {
+			font-size: 0.8em;
+		}
+
+		/* A fully revealed findings list can outgrow the screen — scroll it
+		   on its own so the email stays in view. */
+		.demo-frame.is-fullscreen .ph-side {
+			max-height: calc(100vh - 11em);
+			overflow-y: auto;
+		}
 	}
 </style>
