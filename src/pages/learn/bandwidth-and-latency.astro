@@ -1,0 +1,586 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import RelatedLink from "../../components/RelatedLink.astro";
+
+const BANDWIDTH_STEPS = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000];
+const LATENCY_STEPS = [5, 10, 20, 40, 80, 150, 300, 600, 800];
+const presets = [
+	{ label: "Home fiber", bw: 500, lat: 10 },
+	{ label: "Phone data", bw: 25, lat: 50 },
+	{ label: "Busy café Wi-Fi", bw: 2, lat: 80 },
+	{ label: "Satellite", bw: 50, lat: 600 },
+];
+---
+
+<LearnArticle
+	href="/learn/bandwidth-and-latency"
+	description="The difference between bandwidth and latency, felt rather than just read: drag the sliders to see why a fast connection can still feel slow, with a live video-buffering simulation."
+	lead="Your internet plan says it's fast. So why does a video call still lag? Because 'fast' means two different things."
+>
+	<section class="block">
+		<p class="block-title">A Highway, Two Ways</p>
+		<p class="block-text">
+			Picture data as cars driving along a highway from a website to you.
+		</p>
+		<div class="compare-grid">
+			<div class="compare-card compare-card--accent">
+				<p class="compare-card-title">Bandwidth = how many lanes</p>
+				<p>More lanes let more cars through at once. High bandwidth means lots of data can arrive every second.</p>
+				<p>Measured in <em>megabits per second</em> (Mbps).</p>
+			</div>
+			<div class="compare-card">
+				<p class="compare-card-title">Latency = how long the drive takes</p>
+				<p>Even on an empty highway, the first car takes time to arrive. Latency is that delay before anything shows up.</p>
+				<p>Measured in <em>milliseconds</em> (ms) — thousandths of a second.</p>
+			</div>
+		</div>
+		<p class="block-callout">
+			Adding lanes doesn't make the drive any shorter. Bandwidth and latency are separate — and different
+			tasks care about different ones.
+		</p>
+	</section>
+
+	<DemoFrame label="Bandwidth and latency demo">
+		<div class="bl-demo" data-bl-demo data-bw-steps={JSON.stringify(BANDWIDTH_STEPS)} data-lat-steps={JSON.stringify(LATENCY_STEPS)}>
+			<div class="bl-presets demo-controls">
+				{presets.map((p) => <button type="button" class="demo-btn" data-bl-preset data-bw={p.bw} data-lat={p.lat}>{p.label}</button>)}
+			</div>
+
+			<div class="bl-sliders">
+				<div class="bl-slider">
+					<label for="bl-bw">Bandwidth</label>
+					<input id="bl-bw" class="demo-range" type="range" min="0" max={BANDWIDTH_STEPS.length - 1} value="6" data-bl-bw />
+					<output for="bl-bw" class="bl-slider-value" data-bl-bw-value></output>
+				</div>
+				<div class="bl-slider">
+					<label for="bl-lat">Latency (round trip)</label>
+					<input id="bl-lat" class="demo-range" type="range" min="0" max={LATENCY_STEPS.length - 1} value="3" data-bl-lat />
+					<output for="bl-lat" class="bl-slider-value" data-bl-lat-value></output>
+				</div>
+			</div>
+
+			<div class="bl-panels">
+				<section class="bl-panel" aria-labelledby="bl-ping-title">
+					<p class="bl-panel-title" id="bl-ping-title">Feel the latency</p>
+					<div class="bl-ping-track" aria-hidden="true">
+						<span class="bl-ping-end">You</span>
+						<span class="bl-ping-line"><span class="bl-ping-dot" data-bl-dot></span></span>
+						<span class="bl-ping-end">Server</span>
+					</div>
+					<div class="demo-controls">
+						<button type="button" class="demo-btn demo-btn--primary" data-bl-ping>Send a message</button>
+					</div>
+					<p class="bl-panel-result" data-bl-ping-result aria-live="polite">Tap to send — watch how long the reply takes.</p>
+				</section>
+
+				<section class="bl-panel" aria-labelledby="bl-video-title">
+					<p class="bl-panel-title" id="bl-video-title">Feel the bandwidth</p>
+					<div class="demo-field bl-quality">
+						<label for="bl-quality">Video quality</label>
+						<select id="bl-quality" class="demo-select" data-bl-quality>
+							<option value="1.5">Standard (1.5 Mbps)</option>
+							<option value="5" selected>HD (5 Mbps)</option>
+							<option value="25">4K (25 Mbps)</option>
+						</select>
+					</div>
+					<div class="bl-video" aria-hidden="true">
+						<div class="bl-video-screen" data-bl-screen>▶</div>
+						<div class="bl-video-bar">
+							<span class="bl-video-buffered" data-bl-buffered></span>
+							<span class="bl-video-played" data-bl-played></span>
+						</div>
+					</div>
+					<div class="demo-controls">
+						<button type="button" class="demo-btn demo-btn--primary" data-bl-play>Play video</button>
+					</div>
+					<p class="bl-panel-result" data-bl-video-result aria-live="polite">A 20-second clip. The light bar is what's downloaded so far.</p>
+				</section>
+			</div>
+
+			<p class="bl-tasks-title">How long everyday tasks take on this connection</p>
+			<ul class="bl-tasks" data-bl-tasks></ul>
+			<div class="bl-legend" aria-hidden="true">
+				<span><span class="bl-key bl-key--wait"></span>Waiting (latency)</span>
+				<span><span class="bl-key bl-key--load"></span>Downloading (bandwidth)</span>
+			</div>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Which One Matters When?</p>
+		<ul class="block-list">
+			<li>
+				<em>Big downloads and streaming</em> — a movie, a game update, 4K video — are about
+				<em>bandwidth</em>. The initial delay barely matters next to minutes of downloading.
+			</li>
+			<li>
+				<em>Back-and-forth tasks</em> — video calls, online games, clicking around a website — are about
+				<em>latency</em>. Each action has to reach the server and come back, and more lanes can't make
+				that trip shorter.
+			</li>
+		</ul>
+		<p class="block-text">
+			That's why a satellite connection can stream a film perfectly well but feel sluggish in an online
+			game: plenty of lanes, but a very long drive to space and back.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Where Latency Comes From</p>
+		<p class="block-text">
+			Data travels through cables at close to the speed of light — incredibly fast, but not instant.
+			Crossing an ocean and back takes a noticeable fraction of a second. Every router that passes your
+			packets along adds a little more delay, and a busy network adds more as packets wait their turn.
+		</p>
+		<p class="block-text">
+			That's why "just get faster internet" doesn't always fix lag: a bigger plan usually buys more
+			bandwidth, while latency depends mostly on distance and how many stops your data makes along the
+			way.
+		</p>
+		<RelatedLink href="/learn/packets-and-routing" label="How data travels" />
+	</section>
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-bl-demo]")!;
+	const BW_STEPS: number[] = JSON.parse(root.dataset.bwSteps!);
+	const LAT_STEPS: number[] = JSON.parse(root.dataset.latSteps!);
+
+	const bwInput = root.querySelector<HTMLInputElement>("[data-bl-bw]")!;
+	const latInput = root.querySelector<HTMLInputElement>("[data-bl-lat]")!;
+	const bwValue = root.querySelector<HTMLElement>("[data-bl-bw-value]")!;
+	const latValue = root.querySelector<HTMLElement>("[data-bl-lat-value]")!;
+	const tasksEl = root.querySelector<HTMLUListElement>("[data-bl-tasks]")!;
+	const dot = root.querySelector<HTMLElement>("[data-bl-dot]")!;
+	const pingBtn = root.querySelector<HTMLButtonElement>("[data-bl-ping]")!;
+	const pingResult = root.querySelector<HTMLElement>("[data-bl-ping-result]")!;
+	const qualitySelect = root.querySelector<HTMLSelectElement>("[data-bl-quality]")!;
+	const screen = root.querySelector<HTMLElement>("[data-bl-screen]")!;
+	const bufferedEl = root.querySelector<HTMLElement>("[data-bl-buffered]")!;
+	const playedEl = root.querySelector<HTMLElement>("[data-bl-played]")!;
+	const playBtn = root.querySelector<HTMLButtonElement>("[data-bl-play]")!;
+	const videoResult = root.querySelector<HTMLElement>("[data-bl-video-result]")!;
+
+	const bandwidth = () => BW_STEPS[Number(bwInput.value)]; // Mbps
+	const latency = () => LAT_STEPS[Number(latInput.value)]; // ms, round trip
+
+	function formatSeconds(s: number): string {
+		if (s < 1) return `${Math.round(s * 1000)} ms`;
+		if (s < 60) return `${s < 10 ? s.toFixed(1) : Math.round(s)} seconds`;
+		if (s < 3600) return `${Math.round(s / 60)} minutes`;
+		const h = s / 3600;
+		return `${h < 10 ? h.toFixed(1) : Math.round(h)} hours`;
+	}
+
+	// Each task: how many round trips it needs before/while loading, and how
+	// many megabits it has to download.
+	const TASKS = [
+		{ name: "Send a chat message", trips: 1, megabits: 0.01 },
+		{ name: "Load a web page (2 MB)", trips: 4, megabits: 16 },
+		{ name: "Download a movie (2 GB)", trips: 1, megabits: 16000 },
+	];
+
+	function renderTasks() {
+		const bw = bandwidth();
+		const lat = latency() / 1000;
+		tasksEl.innerHTML = "";
+		TASKS.forEach((task) => {
+			const wait = task.trips * lat;
+			const load = task.megabits / bw;
+			const total = wait + load;
+			const waitPct = (wait / total) * 100;
+			const li = document.createElement("li");
+			li.className = "bl-task";
+			li.innerHTML = `
+				<span class="bl-task-name"></span>
+				<span class="bl-task-bar" aria-hidden="true">
+					<span class="bl-task-wait" style="width:${waitPct}%"></span><span class="bl-task-load" style="width:${100 - waitPct}%"></span>
+				</span>
+				<span class="bl-task-time"></span>
+				<span class="bl-task-note"></span>`;
+			li.querySelector(".bl-task-name")!.textContent = task.name;
+			li.querySelector(".bl-task-time")!.textContent = formatSeconds(total);
+			li.querySelector(".bl-task-note")!.textContent =
+				waitPct > 60 ? "Mostly waiting — latency matters most" : waitPct < 40 ? "Mostly downloading — bandwidth matters most" : "A mix of both";
+			tasksEl.append(li);
+		});
+	}
+
+	function renderSliders() {
+		bwValue.textContent = `${bandwidth()} Mbps`;
+		latValue.textContent = `${latency()} ms`;
+		renderTasks();
+	}
+
+	// --- Ping: the dot really takes the round-trip time to go out and back.
+	let pingStart = 0;
+	let pingFrame = 0;
+	pingBtn.addEventListener("click", () => {
+		cancelAnimationFrame(pingFrame);
+		const rtt = latency();
+		pingStart = performance.now();
+		pingResult.textContent = "Sending…";
+		const tick = (now: number) => {
+			const t = Math.min(1, (now - pingStart) / rtt);
+			const pos = t < 0.5 ? t * 2 : 2 - t * 2; // out, then back
+			dot.style.left = `${pos * 100}%`;
+			dot.classList.toggle("is-returning", t >= 0.5);
+			if (t < 1) pingFrame = requestAnimationFrame(tick);
+			else {
+				pingResult.textContent = `Reply arrived after ${rtt} ms${rtt >= 300 ? " — you can feel that delay." : rtt <= 20 ? " — practically instant." : "."}`;
+			}
+		};
+		pingFrame = requestAnimationFrame(tick);
+	});
+
+	// --- Video: downloads at the bandwidth, plays at normal speed, and
+	// pauses to buffer whenever playback catches up with the download.
+	const CLIP = 20; // seconds of video
+	const START_BUFFER = 2; // seconds needed before playback starts/resumes
+	let videoFrame = 0;
+	let running = false;
+	let last = 0;
+	let startDelay = 0;
+	let buffered = 0;
+	let played = 0;
+	let buffering = true;
+	let stalls = 0;
+	let waited = 0;
+
+	function renderVideo() {
+		bufferedEl.style.width = `${(buffered / CLIP) * 100}%`;
+		playedEl.style.width = `${(played / CLIP) * 100}%`;
+		screen.textContent = !running && played === 0 ? "▶" : buffering && played < CLIP ? "Buffering…" : played >= CLIP ? "✓" : "";
+		screen.classList.toggle("is-playing", running && !buffering);
+	}
+
+	function videoTick(now: number) {
+		const dt = Math.min(0.1, (now - last) / 1000);
+		last = now;
+		if (startDelay > 0) {
+			startDelay -= dt;
+			waited += dt;
+		} else {
+			const rate = bandwidth() / Number(qualitySelect.value); // seconds of video per second
+			buffered = Math.min(CLIP, buffered + rate * dt);
+		}
+		if (buffering) {
+			if (startDelay <= 0) waited += dt; // (the start delay was already counted above)
+			if (buffered - played >= START_BUFFER || buffered >= CLIP) buffering = false;
+		} else {
+			played = Math.min(buffered, played + dt);
+			if (played >= CLIP) {
+				running = false;
+				renderVideo();
+				const verdict =
+					stalls === 0 ? "Smooth all the way through." : `It stopped to buffer ${stalls} time${stalls === 1 ? "" : "s"}.`;
+				videoResult.textContent = `${verdict} Time spent waiting: ${waited.toFixed(1)} seconds.`;
+				playBtn.textContent = "Play again";
+				return;
+			}
+			if (buffered < CLIP && buffered - played < 0.05) {
+				buffering = true;
+				stalls += 1;
+				videoResult.textContent = "Buffering — the video caught up with the download.";
+			}
+		}
+		renderVideo();
+		videoFrame = requestAnimationFrame(videoTick);
+	}
+
+	playBtn.addEventListener("click", () => {
+		cancelAnimationFrame(videoFrame);
+		running = true;
+		startDelay = latency() / 1000; // the request itself takes a round trip
+		buffered = 0;
+		played = 0;
+		buffering = true;
+		stalls = 0;
+		waited = 0;
+		playBtn.textContent = "Restart";
+		const rate = bandwidth() / Number(qualitySelect.value);
+		videoResult.textContent =
+			rate >= 1
+				? "Playing… this connection downloads video faster than it plays."
+				: "Playing… this connection downloads video slower than it plays. Watch what happens.";
+		last = performance.now();
+		videoFrame = requestAnimationFrame(videoTick);
+	});
+
+	root.querySelectorAll<HTMLButtonElement>("[data-bl-preset]").forEach((btn) => {
+		btn.addEventListener("click", () => {
+			bwInput.value = String(BW_STEPS.indexOf(Number(btn.dataset.bw)));
+			latInput.value = String(LAT_STEPS.indexOf(Number(btn.dataset.lat)));
+			renderSliders();
+		});
+	});
+	bwInput.addEventListener("input", renderSliders);
+	latInput.addEventListener("input", renderSliders);
+
+	renderSliders();
+	renderVideo();
+</script>
+
+<style is:global>
+	.bl-demo .bl-presets {
+		margin-top: 0;
+	}
+
+	.bl-demo .bl-presets .demo-btn {
+		font-size: 0.82em;
+	}
+
+	.bl-demo .bl-sliders {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 17em), 1fr));
+		gap: 0.6em 1.5em;
+		margin: 1em auto 0;
+		max-width: 44em;
+	}
+
+	.bl-demo .bl-slider {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: 0.2em 0.8em;
+	}
+
+	.bl-demo .bl-slider label {
+		grid-column: 1 / -1;
+		font-weight: 600;
+		font-size: 0.95em;
+		color: var(--color-text-muted);
+	}
+
+	.bl-demo .bl-slider .demo-range {
+		width: 100%;
+	}
+
+	.bl-demo .bl-slider-value {
+		min-width: 5.5em;
+		text-align: right;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.15em;
+		color: #fff3d6;
+	}
+
+	.bl-demo .bl-panels {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 17em), 1fr));
+		gap: 0.8em;
+		margin-top: 1em;
+	}
+
+	.bl-demo .bl-panel {
+		padding: 0.85em 1em;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		text-align: center;
+	}
+
+	.bl-demo .bl-panel-title {
+		margin: 0 0 0.7em;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.bl-demo .bl-panel-result {
+		margin: 0.7em 0 0;
+		min-height: 3em;
+		font-size: 0.92em;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.bl-demo .bl-ping-track {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+	}
+
+	.bl-demo .bl-ping-end {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.bl-demo .bl-ping-line {
+		position: relative;
+		flex: 1;
+		height: 0.35em;
+		border-radius: 999px;
+		background: var(--color-border);
+	}
+
+	.bl-demo .bl-ping-dot {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		width: 1.1em;
+		height: 1.1em;
+		margin: -0.55em 0 0 -0.55em;
+		border-radius: 50%;
+		background: var(--color-accent);
+		box-shadow: 0 0 10px var(--color-accent);
+	}
+
+	.bl-demo .bl-ping-dot.is-returning {
+		background: #fff3d6;
+	}
+
+	.bl-demo .bl-quality {
+		margin-top: 0;
+		margin-bottom: 0.6em;
+	}
+
+	.bl-demo .bl-video-screen {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 5em;
+		border-radius: 8px 8px 0 0;
+		background: #000;
+		border: 1px solid var(--color-border);
+		border-bottom: none;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.bl-demo .bl-video-screen.is-playing {
+		background:
+			radial-gradient(circle at 30% 40%, rgba(255, 174, 46, 0.35), transparent 50%),
+			radial-gradient(circle at 70% 70%, rgba(255, 243, 214, 0.2), transparent 55%),
+			#000;
+	}
+
+	.bl-demo .bl-video-bar {
+		position: relative;
+		height: 0.7em;
+		border-radius: 0 0 6px 6px;
+		background: var(--color-border);
+		overflow: hidden;
+	}
+
+	.bl-demo .bl-video-buffered,
+	.bl-demo .bl-video-played {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 0;
+	}
+
+	.bl-demo .bl-video-buffered {
+		background: #7c8196;
+	}
+
+	.bl-demo .bl-video-played {
+		background: var(--color-accent);
+	}
+
+	.bl-demo .bl-tasks-title {
+		margin: 1.2em 0 0.5em;
+		text-align: center;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.bl-demo .bl-tasks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7em;
+		margin: 0 auto;
+		max-width: 46em;
+		padding: 0;
+		list-style: none;
+	}
+
+	.bl-demo .bl-task {
+		display: grid;
+		grid-template-columns: minmax(9em, 13em) 1fr minmax(6em, auto);
+		grid-template-areas:
+			"name bar time"
+			". note note";
+		align-items: center;
+		gap: 0.2em 0.8em;
+		text-align: left;
+	}
+
+	.bl-demo .bl-task-name {
+		grid-area: name;
+		font-size: 0.92em;
+		color: var(--color-text);
+	}
+
+	.bl-demo .bl-task-bar {
+		grid-area: bar;
+		display: flex;
+		height: 1em;
+		border-radius: 4px;
+		overflow: hidden;
+		background: var(--color-border);
+	}
+
+	.bl-demo .bl-task-wait,
+	.bl-demo .bl-key--wait {
+		background: repeating-linear-gradient(135deg, #7c8196 0 4px, #4a4f63 4px 8px);
+	}
+
+	.bl-demo .bl-task-load,
+	.bl-demo .bl-key--load {
+		background: var(--color-accent);
+	}
+
+	.bl-demo .bl-task-time {
+		grid-area: time;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95em;
+		color: #fff3d6;
+		white-space: nowrap;
+	}
+
+	.bl-demo .bl-task-note {
+		grid-area: note;
+		font-size: 0.82em;
+		color: var(--color-text-muted);
+	}
+
+	.bl-demo .bl-legend {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.4em 1.2em;
+		margin-top: 0.8em;
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.bl-demo .bl-legend > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+	}
+
+	.bl-demo .bl-key {
+		display: inline-block;
+		width: 1.4em;
+		height: 0.8em;
+		border-radius: 3px;
+	}
+
+	@media (max-width: 520px) {
+		.bl-demo .bl-task {
+			grid-template-columns: 1fr auto;
+			grid-template-areas:
+				"name time"
+				"bar bar"
+				"note note";
+		}
+	}
+</style>

@@ -1,0 +1,423 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+
+const growth = [
+	{ items: "10", comparisons: "45" },
+	{ items: "100", comparisons: "4,950" },
+	{ items: "1,000", comparisons: "499,500" },
+	{ items: "1 million", comparisons: "about 500 billion" },
+];
+---
+
+<LearnArticle
+	href="/learn/sorting-algorithms"
+	description="How sorting algorithms work: step through a bubble sort one comparison at a time, count the swaps, and see why some sorting methods are much faster than others."
+	lead="Computers sort things constantly — search results, playlists, prices from low to high. Here's how one of the simplest methods works, one step at a time."
+>
+	<section class="block">
+		<p class="block-title">Why Sorting Matters</p>
+		<p class="block-text">
+			A sorted list is easier for people to read — and far faster for computers to search. The
+			<a href="/learn/binary-search">Binary Search</a> trick of "guess the middle, throw away half" only
+			works when the list is already in order. Sorting once makes every search after that quick.
+		</p>
+		<p class="block-text">
+			A step-by-step method for solving a problem is called an <em>algorithm</em>. There are many
+			sorting algorithms. They all end up with the same sorted list — they just take different routes to
+			get there, and some routes are much shorter than others.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Bubble Sort: Compare Neighbors</p>
+		<p class="block-text">
+			Picture a row of people you want to arrange from shortest to tallest. Bubble sort works like this:
+		</p>
+		<ol class="block-list">
+			<li>Look at the first two people. If the left one is taller, swap them.</li>
+			<li>Move one place to the right and compare the next pair. Swap if needed.</li>
+			<li>
+				Keep going to the end of the row. The tallest person has now "bubbled up" all the way to the
+				end — they're in their final place.
+			</li>
+			<li>Start again from the left, ignoring the end of the row that's already sorted.</li>
+			<li>Stop when you get through a whole pass without making a single swap.</li>
+		</ol>
+		<p class="block-callout">
+			Each pass moves the biggest remaining item to its correct place — like a bubble rising to the top.
+		</p>
+	</section>
+
+	<DemoFrame label="Bubble sort demo">
+		<div class="bsort-demo" data-bsort-demo>
+			<div class="bsort-legend" aria-hidden="true">
+				<span><span class="bsort-key bsort-key--compare"></span>Being compared</span>
+				<span><span class="bsort-key bsort-key--done"></span>In its final place</span>
+			</div>
+
+			<div class="bsort-stage" data-bsort-stage role="img" aria-label="Bars to be sorted"></div>
+
+			<div class="demo-stats">
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-bsort-comparisons>0</span>
+					<span class="demo-stat-label">Comparisons</span>
+				</div>
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-bsort-swaps>0</span>
+					<span class="demo-stat-label">Swaps</span>
+				</div>
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-bsort-passes>0</span>
+					<span class="demo-stat-label">Passes</span>
+				</div>
+			</div>
+
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-bsort-step>Next step</button>
+				<button type="button" class="demo-btn" data-bsort-auto>Auto-sort</button>
+				<button type="button" class="demo-btn" data-bsort-shuffle>Shuffle</button>
+			</div>
+
+			<div class="demo-field">
+				<label for="bsort-count">Bars</label>
+				<select id="bsort-count" class="demo-select" data-bsort-count>
+					<option value="6">6</option>
+					<option value="10" selected>10</option>
+					<option value="16">16</option>
+				</select>
+				<label for="bsort-speed">Speed</label>
+				<input id="bsort-speed" class="demo-range bsort-speed" type="range" min="1" max="5" value="3" data-bsort-speed />
+			</div>
+
+			<p class="demo-status" data-bsort-status aria-live="polite"></p>
+		</div>
+	</DemoFrame>
+
+	<section class="block block--example">
+		<p class="block-title">How Much Work Is That?</p>
+		<p class="block-text">
+			In the worst case — a list that starts completely backwards — bubble sort has to compare nearly
+			every item with nearly every other item. The work grows much faster than the list does:
+		</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Items to sort</th>
+						<th>Comparisons (worst case)</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						growth.map((row) => (
+							<tr>
+								<td class="num">{row.items}</td>
+								<td class="num">{row.comparisons}</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</div>
+		<p class="block-text">
+			Ten times more items means roughly <em>a hundred times</em> more work. For a class list, that's no
+			problem. For a million online orders, it's far too slow.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Faster Ways to Sort</p>
+		<p class="block-text">
+			Because sorting matters so much, computer scientists have invented quicker methods. One of the
+			best known is <em>merge sort</em>, which uses a "divide and conquer" idea:
+		</p>
+		<ul class="block-list">
+			<li>Split the list in half, and keep splitting until every piece is just one item.</li>
+			<li>
+				Merge the pieces back together two at a time, always keeping them in order — like two people
+				each holding a sorted hand of cards, combining them by repeatedly taking the smaller front card.
+			</li>
+		</ul>
+		<p class="block-text">
+			Sorting a million items takes merge sort around 20 million steps instead of 500 billion. Same
+			sorted result, a tiny fraction of the work.
+		</p>
+		<p class="block-callout">
+			Different algorithms can solve the same problem correctly — but how much work they take can be
+			wildly different. Choosing a good algorithm matters.
+		</p>
+	</section>
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-bsort-demo]")!;
+	const stage = root.querySelector<HTMLElement>("[data-bsort-stage]")!;
+	const stepBtn = root.querySelector<HTMLButtonElement>("[data-bsort-step]")!;
+	const autoBtn = root.querySelector<HTMLButtonElement>("[data-bsort-auto]")!;
+	const shuffleBtn = root.querySelector<HTMLButtonElement>("[data-bsort-shuffle]")!;
+	const countSelect = root.querySelector<HTMLSelectElement>("[data-bsort-count]")!;
+	const speedInput = root.querySelector<HTMLInputElement>("[data-bsort-speed]")!;
+	const statusEl = root.querySelector<HTMLElement>("[data-bsort-status]")!;
+	const comparisonsEl = root.querySelector<HTMLElement>("[data-bsort-comparisons]")!;
+	const swapsEl = root.querySelector<HTMLElement>("[data-bsort-swaps]")!;
+	const passesEl = root.querySelector<HTMLElement>("[data-bsort-passes]")!;
+
+	interface Item {
+		id: number;
+		value: number;
+		el: HTMLElement;
+	}
+
+	let items: Item[] = [];
+	let pass = 0; // completed passes
+	let j = 0; // left index of the next pair to compare
+	let swappedThisPass = false;
+	let comparisons = 0;
+	let swaps = 0;
+	let sortedFrom = 0; // items at index >= sortedFrom are in their final place
+	let done = false;
+	let comparing: [number, number] | null = null;
+	let autoTimer: number | null = null;
+
+	function shuffle() {
+		stopAuto();
+		const n = Number(countSelect.value);
+		// Distinct values so every bar has a clearly different height.
+		const pool = Array.from({ length: 30 }, (_, i) => i + 1);
+		for (let i = pool.length - 1; i > 0; i--) {
+			const k = Math.floor(Math.random() * (i + 1));
+			[pool[i], pool[k]] = [pool[k], pool[i]];
+		}
+		const values = pool.slice(0, n);
+		stage.innerHTML = "";
+		items = values.map((value, id) => {
+			const el = document.createElement("div");
+			el.className = "bsort-bar";
+			el.innerHTML = `<span class="bsort-bar-fill"></span><span class="bsort-bar-label">${value}</span>`;
+			stage.append(el);
+			return { id, value, el };
+		});
+		pass = 0;
+		j = 0;
+		swappedThisPass = false;
+		comparisons = 0;
+		swaps = 0;
+		sortedFrom = n;
+		done = false;
+		comparing = null;
+		render();
+		statusEl.textContent = "Press “Next step” to compare the first two bars.";
+	}
+
+	function render() {
+		const n = items.length;
+		const max = Math.max(...items.map((it) => it.value));
+		stage.style.setProperty("--bars", String(n));
+		items.forEach((item, index) => {
+			item.el.style.setProperty("--i", String(index));
+			item.el.style.setProperty("--h", String(item.value / max));
+			item.el.classList.toggle("is-compared", !!comparing && (index === comparing[0] || index === comparing[1]));
+			item.el.classList.toggle("is-done", index >= sortedFrom);
+		});
+		stage.setAttribute("aria-label", `Bars in current order: ${items.map((it) => it.value).join(", ")}`);
+		comparisonsEl.textContent = String(comparisons);
+		swapsEl.textContent = String(swaps);
+		passesEl.textContent = String(pass);
+		stepBtn.disabled = done;
+		autoBtn.disabled = done;
+		autoBtn.textContent = autoTimer === null ? "Auto-sort" : "Pause";
+	}
+
+	function finish() {
+		done = true;
+		sortedFrom = 0;
+		comparing = null;
+		stopAuto();
+		render();
+		statusEl.textContent = `Sorted! ${comparisons} comparisons and ${swaps} swaps. Press “Shuffle” to try a new list.`;
+	}
+
+	function step() {
+		if (done) return;
+		const n = items.length;
+		const lastIndex = n - 1 - pass; // the pass ends once j reaches here
+
+		if (j >= lastIndex) {
+			// End of a pass: the biggest remaining bar is now in place.
+			pass += 1;
+			sortedFrom = lastIndex;
+			if (!swappedThisPass || pass >= n - 1) {
+				finish();
+				if (!swappedThisPass && pass < n - 1) {
+					statusEl.textContent = `A whole pass with no swaps — so everything is already in order. Sorted with ${comparisons} comparisons and ${swaps} swaps.`;
+				}
+				return;
+			}
+			j = 0;
+			swappedThisPass = false;
+			comparing = null;
+			render();
+			statusEl.textContent = `Pass ${pass} done — ${items[lastIndex].value} has bubbled to its final place. Starting the next pass.`;
+			return;
+		}
+
+		const a = items[j];
+		const b = items[j + 1];
+		comparisons += 1;
+		comparing = [j, j + 1];
+		if (a.value > b.value) {
+			items[j] = b;
+			items[j + 1] = a;
+			swaps += 1;
+			swappedThisPass = true;
+			statusEl.textContent = `${a.value} is bigger than ${b.value}, so they swap.`;
+		} else {
+			statusEl.textContent = `${a.value} is smaller than ${b.value} — already in order, no swap.`;
+		}
+		j += 1;
+		render();
+	}
+
+	function stopAuto() {
+		if (autoTimer !== null) {
+			window.clearInterval(autoTimer);
+			autoTimer = null;
+		}
+	}
+
+	function speedMs() {
+		return [900, 600, 380, 200, 90][Number(speedInput.value) - 1];
+	}
+
+	function startAuto() {
+		stopAuto();
+		autoTimer = window.setInterval(step, speedMs());
+		render();
+	}
+
+	stepBtn.addEventListener("click", () => {
+		stopAuto();
+		step();
+	});
+	autoBtn.addEventListener("click", () => {
+		if (autoTimer === null) startAuto();
+		else {
+			stopAuto();
+			render();
+		}
+	});
+	speedInput.addEventListener("input", () => {
+		if (autoTimer !== null) startAuto();
+	});
+	shuffleBtn.addEventListener("click", shuffle);
+	countSelect.addEventListener("change", shuffle);
+
+	shuffle();
+</script>
+
+<style is:global>
+	.bsort-demo .bsort-legend {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.4em 1.2em;
+		margin-bottom: 0.8em;
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.bsort-demo .bsort-legend > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+	}
+
+	.bsort-demo .bsort-key {
+		display: inline-block;
+		width: 1.1em;
+		height: 1.1em;
+		border-radius: 3px;
+	}
+
+	.bsort-demo .bsort-key--compare {
+		background: #5b6075;
+		outline: 3px solid #fff3d6;
+		outline-offset: 1px;
+	}
+
+	.bsort-demo .bsort-key--done {
+		background: var(--color-accent);
+	}
+
+	/* Bars are absolutely positioned by index (--i) so a swap slides them
+	   past each other instead of just redrawing. */
+	.bsort-demo .bsort-stage {
+		--bars: 10;
+		position: relative;
+		height: 14em;
+		margin: 0 auto;
+		max-width: 44em;
+		padding-bottom: 1.8em;
+	}
+
+	.bsort-demo .bsort-bar {
+		position: absolute;
+		bottom: 0;
+		left: calc(var(--i) * (100% / var(--bars)));
+		width: calc(100% / var(--bars));
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		align-items: center;
+		padding: 0 0.15em;
+		transition: left 0.3s ease;
+	}
+
+	.bsort-demo .bsort-bar-fill {
+		display: block;
+		width: 100%;
+		max-width: 3.2em;
+		height: calc(var(--h) * (100% - 1.8em));
+		min-height: 0.4em;
+		border-radius: 5px 5px 2px 2px;
+		background: #5b6075;
+		transition:
+			height 0.3s ease,
+			background-color 0.2s ease;
+	}
+
+	.bsort-demo .bsort-bar-label {
+		height: 1.8em;
+		line-height: 1.8em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.9em;
+		color: var(--color-text);
+	}
+
+	.bsort-demo .bsort-bar.is-done .bsort-bar-fill {
+		background: var(--color-accent);
+	}
+
+	.bsort-demo .bsort-bar.is-compared .bsort-bar-fill {
+		outline: 3px solid #fff3d6;
+		outline-offset: 1px;
+	}
+
+	.bsort-demo .bsort-bar.is-compared .bsort-bar-label {
+		color: #fff3d6;
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
+	}
+
+	.bsort-demo .bsort-speed {
+		width: 9em;
+	}
+
+	.demo-frame.is-fullscreen .bsort-demo .bsort-stage {
+		height: 16em;
+	}
+</style>
