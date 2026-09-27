@@ -1,0 +1,323 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import RelatedLink from "../../components/RelatedLink.astro";
+
+// Sandwich-shop timelines. "solo" steps can only be done by one person at a
+// time; "shared" steps split evenly between however many cooks there are.
+const SETUP = 5;
+const MAKING = 40;
+const PACKING = 5;
+const kitchens = [1, 2, 4, 8].map((cooks) => {
+	const making = MAKING / cooks;
+	const total = SETUP + making + PACKING;
+	return { cooks, making, total, speedup: (SETUP + MAKING + PACKING) / total };
+});
+const longest = kitchens[0].total;
+const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+
+const tasks = [
+	{ name: "A", secs: 40 },
+	{ name: "B", secs: 30 },
+	{ name: "C", secs: 20 },
+	{ name: "D", secs: 10 },
+];
+---
+
+<LearnArticle
+	href="/learn/speedup"
+	description="What speedup means in parallel computing, explained with a sandwich-making kitchen: why more workers help, and why they never help quite as much as you'd hope."
+	lead="One cook makes sandwiches for a party. Then three friends come to help. How much faster is it now?"
+>
+	<section class="block">
+		<p class="block-title">One Cook, Four Cooks</p>
+		<p class="block-text">
+			You need 40 sandwiches, and each one takes a minute to make. On your own, that's
+			<span class="mono-highlight">40 minutes</span>.
+		</p>
+		<p class="block-text">
+			Three friends turn up and you each make 10. Everyone works at the same time, so you're done in
+			<span class="mono-highlight">10 minutes</span>. Four cooks, four times as fast.
+		</p>
+		<p class="block-text">
+			Computer scientists call that number — "how many times faster" — the <em>speedup</em>:
+		</p>
+		<p class="formula">
+			speedup = <span class="formula-frac"><span>time with one worker</span><span>time with many workers</span></span>
+		</p>
+		<p class="block-text">Here, 40 ÷ 10 = a speedup of <span class="mono-highlight">4</span>.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Doing Things at the Same Time</p>
+		<p class="block-text">
+			Working one step after another is called <em>sequential</em> work. Splitting a job so several
+			workers do parts of it at the same moment is called <em>parallel</em> work. Computers do this
+			too: most phones and laptops have several "cores" — separate little processors inside the
+			same chip — that can each work on a different part of a job at once.
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">The Catch: Some Steps Can't Be Shared</p>
+		<p class="block-text">
+			Real kitchens aren't quite that simple. Before anyone starts, someone has to unpack the
+			shopping and lay everything out (5 minutes). At the end, someone has to pack all the
+			sandwiches into one cooler (5 minutes). Extra cooks don't make those steps any faster — it's
+			still one person unpacking one bag.
+		</p>
+
+		<div class="figure">
+			<div class="kitchen-legend" aria-hidden="true">
+				<span><span class="kitchen-swatch kitchen-swatch--solo"></span>One person only (unpack, pack)</span>
+				<span><span class="kitchen-swatch kitchen-swatch--shared"></span>Shared between cooks (making)</span>
+			</div>
+			<ul class="kitchen-rows">
+				{
+					kitchens.map((k) => (
+						<li class="kitchen-row">
+							<span class="kitchen-label">
+								{k.cooks} {k.cooks === 1 ? "cook" : "cooks"}
+							</span>
+							<span class="kitchen-bar" aria-hidden="true">
+								<span class="kitchen-seg kitchen-seg--solo" style={`width: ${(SETUP / longest) * 100}%`} />
+								<span class="kitchen-seg kitchen-seg--shared" style={`width: ${(k.making / longest) * 100}%`} />
+								<span class="kitchen-seg kitchen-seg--solo" style={`width: ${(PACKING / longest) * 100}%`} />
+							</span>
+							<span class="kitchen-total">
+								{fmt(k.total)} min
+								<span class="sr-only">
+									({SETUP} unpacking + {fmt(k.making)} making + {PACKING} packing)
+								</span>
+							</span>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Cooks</th>
+						<th>Total time</th>
+						<th>Speedup</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						kitchens.map((k) => (
+							<tr>
+								<td class="num">{k.cooks}</td>
+								<td class="num">{fmt(k.total)} min</td>
+								<td class="num">{k.speedup.toFixed(2).replace(/\.?0+$/, "")}×</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</div>
+
+		<p class="block-text">
+			Four cooks now give a speedup of 50 ÷ 20 = <span class="mono-highlight">2.5</span>, not 4.
+			Doubling to eight cooks only gets you to about <span class="mono-highlight">3.3</span>. The
+			one-person steps take the same 10 minutes no matter how many cooks you add — so eventually,
+			more help barely helps at all.
+		</p>
+		<p class="block-callout">
+			Adding workers only speeds up the parts of a job that can be shared. The parts that can't be
+			shared set a limit on how fast the whole job can ever be.
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">Working It Out Like a Computer Scientist</p>
+		<p class="block-text">
+			Here's the kind of question you'll see in a computer science class. A computer has four tasks
+			to run. None of them depend on each other:
+		</p>
+		<ul class="task-chips" aria-label="Tasks and how long each takes">
+			{tasks.map((t) => <li class="task-chip">Task {t.name}: {t.secs} s</li>)}
+		</ul>
+		<ul class="block-list">
+			<li>
+				<em>One processor</em> has to run them one after another: 40 + 30 + 20 + 10 =
+				<span class="mono-highlight">100 seconds</span>.
+			</li>
+			<li>
+				<em>Two processors</em> can share them. A good split is A + D on one (50 s) and B + C on the
+				other (50 s). Both finish at the same time: <span class="mono-highlight">50 seconds</span>, a
+				speedup of 100 ÷ 50 = 2.
+			</li>
+			<li>
+				A poor split — A + B on one (70 s) and C + D on the other (30 s) — takes
+				<span class="mono-highlight">70 seconds</span>, because you have to wait for the slowest
+				processor to finish.
+			</li>
+		</ul>
+		<p class="block-callout">
+			With parallel work, the total time is set by whichever worker finishes <em>last</em>.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Try It With Helpers</p>
+		<p class="block-text">
+			Want to see speedup happen? The Distributed Computing page lets you split a big counting job
+			between as many helpers as you like and time the result.
+		</p>
+		<RelatedLink href="/learn/distributed-computing" label="Try it next" />
+	</section>
+</LearnArticle>
+
+<style>
+	.formula {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+		margin: 0.4rem 0 0.8rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.formula-frac {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		font-size: 0.9rem;
+	}
+
+	.formula-frac span:first-child {
+		padding: 0 0.4rem 0.2rem;
+		border-bottom: 2px solid var(--color-accent);
+	}
+
+	.formula-frac span:last-child {
+		padding-top: 0.2rem;
+	}
+
+	.kitchen-legend {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.4rem 1.2rem;
+		margin-bottom: 0.8rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.kitchen-legend > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.kitchen-swatch {
+		display: inline-block;
+		width: 1.4rem;
+		height: 0.8rem;
+		border-radius: 3px;
+	}
+
+	.kitchen-rows {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
+	}
+
+	.kitchen-row {
+		display: grid;
+		grid-template-columns: 4.5rem 1fr 4.5rem;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.kitchen-label,
+	.kitchen-total {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-text);
+		white-space: nowrap;
+	}
+
+	.kitchen-label {
+		text-align: right;
+	}
+
+	.kitchen-total {
+		text-align: left;
+	}
+
+	.kitchen-bar {
+		display: flex;
+		height: 1.3rem;
+		gap: 2px;
+	}
+
+	.kitchen-seg {
+		display: block;
+		height: 100%;
+		border-radius: 3px;
+	}
+
+	/* One-person steps: hatched and muted. Shared step: solid amber. The
+	   pattern (not just the color) tells them apart. */
+	.kitchen-seg--solo,
+	.kitchen-swatch--solo {
+		background: repeating-linear-gradient(135deg, #5b6075 0 4px, #3a3e50 4px 8px);
+	}
+
+	.kitchen-seg--shared,
+	.kitchen-swatch--shared {
+		background: var(--color-accent);
+	}
+
+	.task-chips {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.4rem;
+		margin: 0.6rem 0 0.8rem;
+		padding: 0;
+		list-style: none;
+	}
+
+	.task-chip {
+		padding: 0.3rem 0.7rem;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-family: var(--font-mono);
+		font-size: 0.88rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+	}
+
+	@media (max-width: 420px) {
+		.kitchen-row {
+			grid-template-columns: 3.6rem 1fr 3.8rem;
+			gap: 0.4rem;
+		}
+
+		.kitchen-label,
+		.kitchen-total {
+			font-size: 0.78rem;
+		}
+	}
+</style>

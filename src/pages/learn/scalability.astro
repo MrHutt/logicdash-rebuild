@@ -1,0 +1,125 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+
+const breaks = [
+	{ problem: "You can only squeeze lemons so fast", fix: "Hire helpers and open more stands" },
+	{ problem: "Every stand makes the lemonade a bit differently", fix: "Write the recipe down so every stand follows the same rules" },
+	{ problem: "Customers line up at one stand while another sits empty", fix: "Send each customer to whichever stand has the shortest line" },
+	{ problem: "You run out of lemons by noon", fix: "Find a supplier who delivers to every stand" },
+	{ problem: "If you get sick, the whole business stops", fix: "Make sure no single person is the only one who can do a job" },
+];
+---
+
+<LearnArticle
+	href="/learn/scalability"
+	description="Scalability explained with a lemonade stand that becomes a chain: what breaks as demand grows, scaling up vs scaling out, and why the internet was designed to grow."
+	lead="A lemonade stand works fine for twenty customers. What happens when two thousand show up?"
+>
+	<section class="block">
+		<p class="block-title">The Lemonade Stand</p>
+		<p class="block-text">
+			You set up a table, a jug, and a stack of cups. On a normal afternoon you sell about twenty
+			cups — easy. Then a video of your lemonade goes viral, and the next day there's a line down the
+			street.
+		</p>
+		<p class="block-text">
+			Suddenly everything that worked before starts to go wrong. Your arms get tired. The jug is
+			always empty. People give up and leave.
+		</p>
+		<p class="block-callout">
+			A system is <em>scalable</em> if it can keep working well as it grows — much more work, many more
+			users — without falling apart or having to be rebuilt from scratch.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Two Ways to Grow</p>
+		<div class="compare-grid">
+			<div class="compare-card">
+				<p class="compare-card-title">Scale up: get bigger</p>
+				<p>Buy a giant jug and an electric juicer. One stand, but more powerful.</p>
+				<p>Simple — but there's a limit. There's only so big a jug can get.</p>
+			</div>
+			<div class="compare-card compare-card--accent">
+				<p class="compare-card-title">Scale out: add more</p>
+				<p>Open more stands around town, each with its own helper.</p>
+				<p>Can keep growing — but only if the stands work together well.</p>
+			</div>
+		</div>
+		<p class="block-text">
+			Computers grow in the same two ways. A website can move to one bigger, faster computer (scaling
+			up), or it can spread its work across many ordinary computers working side by side (scaling
+			out). The biggest websites in the world scale out — they run on thousands of computers at once.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">What Has to Change</p>
+		<p class="block-text">
+			Turning one stand into a chain means solving problems you never had before:
+		</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>What breaks</th>
+						<th>What has to change</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						breaks.map((row) => (
+							<tr>
+								<td>{row.problem}</td>
+								<td>{row.fix}</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</div>
+		<p class="block-text">
+			Every one of those has a computer version. Websites share the load across many computers, send
+			each visitor to the least-busy one, follow shared rules so every computer gives the same answer,
+			and keep spare copies so one breakdown doesn't take everything offline (more on that in
+			<a href="/learn/redundancy-and-fault-tolerance">Redundancy &amp; Fault Tolerance</a>).
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">When Scaling Goes Wrong</p>
+		<p class="block-text">
+			You've probably seen a system that <em>didn't</em> scale: a ticket website that crashes the
+			moment a big concert goes on sale, or a game's servers that fall over on launch day. Nothing was
+			broken before — the system just wasn't built for that many people arriving at once.
+		</p>
+		<p class="block-text">
+			Sometimes the limit is built right into the design. The original internet addresses had room
+			for about 4.3 billion devices, which felt endless in 1981 — until the world ran out. That story
+			is on the <a href="/learn/ipv4-vs-ipv6">IPv4 vs IPv6</a> page.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Internet Was Built to Scale</p>
+		<p class="block-text">
+			The internet itself is one of the most scalable systems ever built. It has grown from a handful
+			of university computers to billions of devices, and it still works. A few design choices made
+			that possible:
+		</p>
+		<ul class="block-list">
+			<li>
+				<em>No single boss computer.</em> There's no central machine everything has to go through, so
+				there's no single bottleneck to overload.
+			</li>
+			<li>
+				<em>Shared, open rules.</em> Anyone can connect a new network, as long as it follows the same
+				agreed rules (called <em>protocols</em>) as everyone else.
+			</li>
+			<li>
+				<em>Many possible routes.</em> Data can travel lots of different paths, so new connections add
+				capacity instead of crowding one road — see <a href="/learn/packets-and-routing">Packets &amp; Routing</a>.
+			</li>
+		</ul>
+	</section>
+</LearnArticle>

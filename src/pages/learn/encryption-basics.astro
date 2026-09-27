@@ -1,0 +1,396 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import RelatedLink from "../../components/RelatedLink.astro";
+---
+
+<LearnArticle
+	href="/learn/encryption-basics"
+	description="Encryption explained simply: plaintext, ciphertext, and keys, a hands-on Caesar cipher you can lock and crack, and why modern keys are so hard to guess."
+	lead="Put a note in a box, lock it, and send it anywhere. Anyone can carry the box — but only someone with the right key can read what's inside."
+>
+	<section class="block">
+		<p class="block-title">The Locked Box</p>
+		<p class="block-text">
+			When you send a message over the internet, it passes through lots of computers you don't own
+			and people you'll never meet. It's a bit like handing a postcard to a chain of strangers —
+			any of them could read it.
+		</p>
+		<p class="block-text">
+			<em>Encryption</em> puts the message in a locked box first. The strangers can still pass the box
+			along, but without the key, all they see is scrambled nonsense.
+		</p>
+		<p class="block-callout">
+			The <a href="/learn/error-correction">Error Correction</a> page is about protecting data from
+			<em>accidental</em> damage. Encryption is about protecting it from <em>unwanted eyes</em>.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Words You'll Hear</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<tbody>
+					<tr>
+						<td><em>Plaintext</em></td>
+						<td>The original, readable message.</td>
+					</tr>
+					<tr>
+						<td><em>Ciphertext</em></td>
+						<td>The scrambled version that looks like nonsense.</td>
+					</tr>
+					<tr>
+						<td><em>Key</em></td>
+						<td>The secret that tells you how to scramble and unscramble.</td>
+					</tr>
+					<tr>
+						<td><em>Encrypt</em></td>
+						<td>Lock it: turn plaintext into ciphertext.</td>
+					</tr>
+					<tr>
+						<td><em>Decrypt</em></td>
+						<td>Unlock it: turn ciphertext back into plaintext.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<section class="block">
+		<p class="block-title">A 2,000-Year-Old Lock</p>
+		<p class="block-text">
+			One of the oldest known ciphers is named after Julius Caesar, who is said to have used it for
+			military messages. You move every letter a set number of places along the alphabet. With a
+			key of 3, A becomes D, B becomes E, and so on:
+		</p>
+		<p class="caesar-example">
+			<span>HELLO</span>
+			<span class="caesar-example-arrow" aria-hidden="true">→</span>
+			<span>KHOOR</span>
+		</p>
+		<p class="block-text">
+			To decrypt, you move each letter back by the same amount. The key — "3" — is the secret.
+		</p>
+	</section>
+
+	<DemoFrame label="Caesar cipher demo">
+		<div class="cz-demo" data-cz-demo>
+			<div class="demo-field">
+				<label for="cz-text">Your message</label>
+				<input id="cz-text" class="demo-input cz-text" type="text" maxlength="60" value="MEET ME AT NOON" autocomplete="off" spellcheck="false" data-cz-text />
+			</div>
+			<div class="demo-field">
+				<label for="cz-shift">Key (shift)</label>
+				<input id="cz-shift" class="demo-range" type="range" min="1" max="25" value="3" data-cz-shift />
+				<output class="cz-shift-value" for="cz-shift" data-cz-shift-value>3</output>
+			</div>
+			<div class="cz-mode" role="radiogroup" aria-label="Lock or unlock">
+				<label><input type="radio" name="cz-mode" value="encrypt" checked data-cz-mode /> Lock (encrypt)</label>
+				<label><input type="radio" name="cz-mode" value="decrypt" data-cz-mode /> Unlock (decrypt)</label>
+			</div>
+
+			<div class="cz-alphabet" aria-hidden="true" data-cz-alphabet></div>
+
+			<p class="cz-output-label">Result</p>
+			<p class="cz-output" data-cz-output aria-live="polite"></p>
+
+			<div class="demo-controls">
+				<button type="button" class="demo-btn" data-cz-swap>Use result as the message</button>
+				<button type="button" class="demo-btn demo-btn--primary" data-cz-crack>Crack it: try every key</button>
+			</div>
+			<div class="cz-crack" data-cz-crack-panel hidden>
+				<p class="demo-note">
+					An attacker doesn't need your key — there are only 25 to try. Can you spot the one that
+					reads as real words?
+				</p>
+				<ol class="cz-crack-list" data-cz-crack-list></ol>
+			</div>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Why Caesar's Lock Is Weak</p>
+		<p class="block-text">
+			The Caesar cipher only has 25 possible keys. Anyone who intercepts the message can simply try
+			all of them — which is exactly what the "Crack it" button does. A computer can do that faster
+			than you can blink.
+		</p>
+		<p class="block-text">
+			That's the heart of good encryption: there must be <em>so many possible keys</em> that trying
+			them all is hopeless.
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">Modern Keys Are Made of Bits</p>
+		<p class="block-text">
+			Today's encryption keys are long binary numbers. As you've seen elsewhere on this site, every
+			extra bit doubles the number of possibilities. A common key size is 128 bits, which gives:
+		</p>
+		<p class="big-number">2<sup>128</sup> ≈ 340,000,000,000,000,000,000,000,000,000,000,000,000 keys</p>
+		<p class="block-text">
+			That's the same enormous number as the count of IPv6 addresses. Even if every computer on
+			Earth tried billions of keys a second, working through them all would take far, far longer
+			than the universe has existed.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Problem With Sharing Keys</p>
+		<p class="block-text">
+			Caesar's cipher, and many modern ones, use <em>the same key</em> to lock and unlock. That's
+			called <em>symmetric</em> encryption. It's fast and strong — but it has a problem: before you can
+			send a secret message, your friend needs a copy of the key. How do you get it to them without
+			someone copying it on the way?
+		</p>
+		<p class="block-text">
+			The clever solution uses two different keys — one for locking, one for unlocking.
+		</p>
+		<RelatedLink href="/learn/public-key-cryptography" label="Read next" />
+	</section>
+
+	<section class="block">
+		<p class="block-title">Where Encryption Protects You</p>
+		<ul class="block-list">
+			<li>The padlock icon next to a web address means your connection to that site is encrypted.</li>
+			<li>Secure messaging apps encrypt messages so only the people in the chat can read them.</li>
+			<li>Your phone encrypts what's stored on it, so a stolen phone doesn't mean stolen photos.</li>
+			<li>Wi-Fi networks with a password encrypt the data travelling through the air.</li>
+		</ul>
+	</section>
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-cz-demo]")!;
+	const textInput = root.querySelector<HTMLInputElement>("[data-cz-text]")!;
+	const shiftInput = root.querySelector<HTMLInputElement>("[data-cz-shift]")!;
+	const shiftValue = root.querySelector<HTMLElement>("[data-cz-shift-value]")!;
+	const modeInputs = root.querySelectorAll<HTMLInputElement>("[data-cz-mode]");
+	const alphabetEl = root.querySelector<HTMLElement>("[data-cz-alphabet]")!;
+	const outputEl = root.querySelector<HTMLElement>("[data-cz-output]")!;
+	const swapBtn = root.querySelector<HTMLButtonElement>("[data-cz-swap]")!;
+	const crackBtn = root.querySelector<HTMLButtonElement>("[data-cz-crack]")!;
+	const crackPanel = root.querySelector<HTMLElement>("[data-cz-crack-panel]")!;
+	const crackList = root.querySelector<HTMLOListElement>("[data-cz-crack-list]")!;
+
+	const A = "A".charCodeAt(0);
+
+	function shiftText(text: string, shift: number): string {
+		// Letters move around the alphabet (wrapping Z back to A); anything
+		// else — spaces, digits, punctuation — passes through unchanged.
+		return text
+			.toUpperCase()
+			.split("")
+			.map((ch) => {
+				const code = ch.charCodeAt(0);
+				if (code < A || code > A + 25) return ch;
+				return String.fromCharCode(A + ((((code - A + shift) % 26) + 26) % 26));
+			})
+			.join("");
+	}
+
+	function mode(): "encrypt" | "decrypt" {
+		return (Array.from(modeInputs).find((i) => i.checked)?.value as "encrypt" | "decrypt") ?? "encrypt";
+	}
+
+	function render() {
+		const shift = Number(shiftInput.value);
+		shiftValue.textContent = String(shift);
+		const signed = mode() === "encrypt" ? shift : -shift;
+		outputEl.textContent = shiftText(textInput.value, signed) || " ";
+
+		const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(A + i));
+		alphabetEl.innerHTML = letters
+			.map((letter) => `<span class="cz-pair"><span>${letter}</span><span>${shiftText(letter, signed)}</span></span>`)
+			.join("");
+
+		if (!crackPanel.hidden) renderCrack();
+	}
+
+	function renderCrack() {
+		const ciphertext = mode() === "encrypt" ? outputEl.textContent ?? "" : textInput.value.toUpperCase();
+		crackList.innerHTML = "";
+		for (let key = 1; key <= 25; key++) {
+			const li = document.createElement("li");
+			const keyLabel = document.createElement("span");
+			keyLabel.className = "cz-crack-key";
+			keyLabel.textContent = `Key ${key}`;
+			const attempt = document.createElement("span");
+			attempt.textContent = shiftText(ciphertext, -key);
+			li.append(keyLabel, attempt);
+			crackList.append(li);
+		}
+	}
+
+	textInput.addEventListener("input", render);
+	shiftInput.addEventListener("input", render);
+	modeInputs.forEach((i) => i.addEventListener("change", render));
+
+	swapBtn.addEventListener("click", () => {
+		textInput.value = (outputEl.textContent ?? "").trim();
+		// Flip direction so pressing this after locking shows how to unlock.
+		const next = mode() === "encrypt" ? "decrypt" : "encrypt";
+		modeInputs.forEach((i) => (i.checked = i.value === next));
+		render();
+	});
+
+	crackBtn.addEventListener("click", () => {
+		crackPanel.hidden = !crackPanel.hidden;
+		crackBtn.textContent = crackPanel.hidden ? "Crack it: try every key" : "Hide the cracking attempts";
+		if (!crackPanel.hidden) renderCrack();
+	});
+
+	render();
+</script>
+
+<style>
+	.caesar-example {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		margin: 0.6rem 0 0.8rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.3rem;
+		letter-spacing: 0.12em;
+		color: #fff3d6;
+	}
+
+	.caesar-example-arrow {
+		color: var(--color-accent);
+		letter-spacing: 0;
+	}
+
+	.big-number {
+		margin: 0.6rem 0 0.8rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: #fff3d6;
+		overflow-wrap: anywhere;
+	}
+</style>
+
+<style is:global>
+	.cz-demo .cz-text {
+		width: min(100%, 22em);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.cz-demo .cz-shift-value {
+		min-width: 2em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.3em;
+		color: #fff3d6;
+	}
+
+	.cz-demo .cz-mode {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5em 1.4em;
+		margin-top: 0.7em;
+		font-size: 0.95em;
+		color: var(--color-text);
+	}
+
+	.cz-demo .cz-mode label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		min-height: 2.2em;
+		cursor: pointer;
+	}
+
+	.cz-demo .cz-mode input {
+		width: 1.1em;
+		height: 1.1em;
+		accent-color: var(--color-accent);
+	}
+
+	.cz-demo .cz-alphabet {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(1.9em, 1fr));
+		gap: 0.25em;
+		margin: 0.9em auto 0;
+		max-width: 52em;
+	}
+
+	.cz-demo .cz-pair {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 0.2em 0;
+		border-radius: 6px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.9em;
+		line-height: 1.35;
+	}
+
+	.cz-demo .cz-pair span:first-child {
+		color: var(--color-text-muted);
+	}
+
+	.cz-demo .cz-pair span:last-child {
+		color: var(--color-accent);
+	}
+
+	.cz-demo .cz-output-label {
+		margin: 1em 0 0.2em;
+		text-align: center;
+		font-size: 0.78em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.cz-demo .cz-output {
+		margin: 0 auto;
+		max-width: 30em;
+		padding: 0.5em 0.8em;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-accent);
+		text-align: center;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.4em;
+		letter-spacing: 0.1em;
+		color: #fff3d6;
+		overflow-wrap: anywhere;
+	}
+
+	.cz-demo .cz-crack-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 17em), 1fr));
+		gap: 0.3em 1em;
+		margin: 0.7em 0 0;
+		padding: 0;
+		list-style: none;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+		color: var(--color-text);
+	}
+
+	.cz-demo .cz-crack-list li {
+		display: flex;
+		gap: 0.7em;
+		padding: 0.25em 0.5em;
+		border-radius: 6px;
+		background: var(--color-bg);
+		overflow-wrap: anywhere;
+	}
+
+	.cz-demo .cz-crack-key {
+		flex-shrink: 0;
+		min-width: 4em;
+		color: var(--color-text-muted);
+	}
+</style>

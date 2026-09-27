@@ -1,0 +1,266 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+
+const presets = [
+	{ label: "A row of pixels", value: "WWWWWWWWWWBBBBWWWWWWWWWW" },
+	{ label: "A long scream", value: "AAAAAAAAAAAAARGH" },
+	{ label: "A normal word", value: "COMPUTER" },
+];
+---
+
+<LearnArticle
+	href="/learn/compression"
+	description="How data compression works: lossless (zip, PNG) vs lossy (JPG, MP3), explained with packing a suitcase — plus a hands-on run-length encoding demo."
+	lead="Two people pack the same clothes. One suitcase bulges; the other zips shut with room to spare. Computers pack data the same way."
+>
+	<section class="block">
+		<p class="block-title">Packing a Suitcase</p>
+		<p class="block-text">
+			A good packer doesn't leave anything behind — they just fold smarter. Socks go inside shoes,
+			shirts get rolled, nothing is wasted. Same clothes, less space.
+		</p>
+		<p class="block-text">
+			Or think about notes you scribble for yourself: "mtg w/ Sam @ 3 tmrw" says the same thing as
+			"Meeting with Sam at three o'clock tomorrow" in half the letters.
+		</p>
+		<p class="block-callout">
+			<em>Compression</em> means storing the same information using fewer bits.
+		</p>
+		<p class="block-text">
+			Fewer bits means files take up less storage and download faster. As you saw on
+			<a href="/learn/bits-and-bytes">Bits, Bytes, and Beyond</a>, every photo, song, and video is
+			really just a very long string of bits — and compression is how we keep those strings
+			manageable.
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">A Simple Trick: Count the Repeats</p>
+		<p class="block-text">
+			Imagine a row of pixels in a black-and-white picture: ten white, four black, ten white. Instead
+			of writing every pixel, you can write how many of each come in a row:
+		</p>
+		<p class="rle-example">
+			<span class="rle-example-before">WWWWWWWWWWBBBBWWWWWWWWWW</span>
+			<span class="rle-example-arrow" aria-hidden="true">↓</span>
+			<span class="rle-example-after">10W4B10W</span>
+		</p>
+		<p class="block-text">
+			24 characters became 8, and nothing was lost — you can rebuild the exact original from
+			"10W4B10W". This trick is called <em>run-length encoding</em>. Try it:
+		</p>
+	</section>
+
+	<DemoFrame label="Run-length encoding demo">
+		<div class="rle-demo" data-rle-demo>
+			<div class="demo-field">
+				<label for="rle-input">Type something (try lots of repeated letters)</label>
+			</div>
+			<div class="demo-field">
+				<input id="rle-input" class="demo-input rle-input" type="text" maxlength="60" autocomplete="off" spellcheck="false" value={presets[0].value} data-rle-input />
+			</div>
+			<div class="demo-controls rle-presets">
+				{presets.map((p) => <button type="button" class="demo-btn" data-rle-preset={p.value}>{p.label}</button>)}
+			</div>
+
+			<p class="rle-label">Compressed</p>
+			<p class="rle-output" data-rle-output></p>
+
+			<div class="demo-stats">
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-rle-before>0</span>
+					<span class="demo-stat-label">Bytes before</span>
+				</div>
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-rle-after>0</span>
+					<span class="demo-stat-label">Bytes after</span>
+				</div>
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-rle-change>0%</span>
+					<span class="demo-stat-label" data-rle-change-label>Smaller</span>
+				</div>
+			</div>
+			<p class="demo-status" data-rle-status aria-live="polite"></p>
+			<p class="demo-note">Counting each letter or digit as one byte, the way plain text is usually stored.</p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Compression Isn't Magic</p>
+		<p class="block-text">
+			Did you try "A normal word"? Run-length encoding made it <em>bigger</em>, because every single
+			letter turned into "1" plus the letter. Compression only works when there's a pattern to take
+			advantage of. Real compression tools use much cleverer pattern-spotting — like noticing a whole
+			word or phrase that appears again and again and replacing it with a short code — but the same
+			rule holds: no patterns, no savings.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Two Kinds of Compression</p>
+		<div class="compare-grid">
+			<div class="compare-card">
+				<p class="compare-card-title">Lossless</p>
+				<p>Nothing is thrown away. You can always rebuild the <em>exact</em> original.</p>
+				<p>Examples: ZIP files, PNG images.</p>
+				<p>Use it for: text, documents, spreadsheets, apps — anything where one wrong letter or number matters.</p>
+			</div>
+			<div class="compare-card compare-card--accent">
+				<p class="compare-card-title">Lossy</p>
+				<p>Throws away detail people probably won't notice. Much smaller files — but the lost detail is gone for good.</p>
+				<p>Examples: JPG photos, MP3 music, streamed video.</p>
+				<p>Use it for: photos, music, and video, where "nearly perfect" is perfectly fine.</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="block">
+		<p class="block-title">How Lossy Compression Gets Away With It</p>
+		<p class="block-text">
+			A photo of a blue sky might contain thousands of very slightly different blues. Your eyes can't
+			really tell them apart, so a JPG stores just a few blues instead. A song contains very quiet
+			sounds hidden underneath louder ones; an MP3 simply leaves out what you wouldn't hear anyway.
+		</p>
+		<p class="block-text">
+			The catch: once detail is thrown away, it can't be brought back. Save a JPG, open it, and save it
+			again many times, and it slowly gets blurry and blocky — like a photocopy of a photocopy.
+		</p>
+		<p class="block-callout">
+			Lossless: smaller, and perfect. Lossy: much smaller, and "good enough." Which one to use depends on
+			whether you can afford to lose anything.
+		</p>
+	</section>
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-rle-demo]")!;
+	const input = root.querySelector<HTMLInputElement>("[data-rle-input]")!;
+	const output = root.querySelector<HTMLElement>("[data-rle-output]")!;
+	const beforeEl = root.querySelector<HTMLElement>("[data-rle-before]")!;
+	const afterEl = root.querySelector<HTMLElement>("[data-rle-after]")!;
+	const changeEl = root.querySelector<HTMLElement>("[data-rle-change]")!;
+	const changeLabel = root.querySelector<HTMLElement>("[data-rle-change-label]")!;
+	const status = root.querySelector<HTMLElement>("[data-rle-status]")!;
+
+	// Each run of the same character becomes <count><character>.
+	function runLengthEncode(text: string): string {
+		let out = "";
+		let i = 0;
+		while (i < text.length) {
+			let run = 1;
+			while (i + run < text.length && text[i + run] === text[i]) run++;
+			out += `${run}${text[i]}`;
+			i += run;
+		}
+		return out;
+	}
+
+	function render() {
+		const text = input.value;
+		const encoded = runLengthEncode(text);
+		output.textContent = encoded || " ";
+		beforeEl.textContent = String(text.length);
+		afterEl.textContent = String(encoded.length);
+
+		if (text.length === 0) {
+			changeEl.textContent = "—";
+			changeLabel.textContent = "Smaller";
+			status.textContent = "Type something to compress it.";
+			return;
+		}
+		const digitNote = /\d/.test(text)
+			? " (Heads up: with digits in the message, counts and data blur together — real tools use smarter formats.)"
+			: "";
+		const diff = Math.round(((text.length - encoded.length) / text.length) * 100);
+		if (diff > 0) {
+			changeEl.textContent = `${diff}%`;
+			changeLabel.textContent = "Smaller";
+			status.textContent = `Saved ${text.length - encoded.length} bytes — lots of repeats to squeeze out.${digitNote}`;
+		} else if (diff < 0) {
+			changeEl.textContent = `${-diff}%`;
+			changeLabel.textContent = "Bigger!";
+			status.textContent = `Not enough repeats — this “compressed” version is actually bigger than the original.${digitNote}`;
+		} else {
+			changeEl.textContent = "0%";
+			changeLabel.textContent = "Smaller";
+			status.textContent = `Exactly the same size — no savings this time.${digitNote}`;
+		}
+	}
+
+	input.addEventListener("input", render);
+	root.querySelectorAll<HTMLButtonElement>("[data-rle-preset]").forEach((btn) => {
+		btn.addEventListener("click", () => {
+			input.value = btn.dataset.rlePreset ?? "";
+			render();
+		});
+	});
+
+	render();
+</script>
+
+<style>
+	.rle-example {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		margin: 0.6rem 0 0.8rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	.rle-example-before {
+		font-size: 0.95rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.05em;
+	}
+
+	.rle-example-arrow {
+		color: var(--color-accent);
+	}
+
+	.rle-example-after {
+		font-size: 1.3rem;
+		color: #fff3d6;
+		letter-spacing: 0.08em;
+	}
+</style>
+
+<style is:global>
+	.rle-demo .rle-input {
+		width: min(100%, 28em);
+		letter-spacing: 0.04em;
+	}
+
+	.rle-demo .rle-presets .demo-btn {
+		font-size: 0.82em;
+	}
+
+	.rle-demo .rle-label {
+		margin: 1em 0 0.2em;
+		text-align: center;
+		font-size: 0.78em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.rle-demo .rle-output {
+		margin: 0 auto;
+		max-width: 30em;
+		padding: 0.5em 0.8em;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-accent);
+		text-align: center;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.35em;
+		letter-spacing: 0.06em;
+		color: #fff3d6;
+		overflow-wrap: anywhere;
+	}
+</style>

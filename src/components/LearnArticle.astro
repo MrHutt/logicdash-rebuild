@@ -1,0 +1,384 @@
+---
+// Shared shell for Learn pages: breadcrumb, centered hero/lead, the stack of
+// content blocks (the default slot), and Previous/Next pagination — the same
+// structure every original Learn page builds by hand, factored out so the
+// newer pages don't each carry ~200 lines of copied CSS. SEO (title, meta,
+// canonical, Open Graph, JSON-LD) all comes from Layout.astro + learnTopics.ts.
+//
+// Styles are global but namespaced under .learn-article, because several of
+// the interactive demos build their markup client-side (innerHTML), which
+// Astro's scoped styles can't reach.
+import Layout from "../layouts/Layout.astro";
+import { LEARN_TOPICS, getAdjacentLearnTopics } from "../lib/learnTopics";
+
+interface Props {
+	/** The topic's href exactly as listed in learnTopics.ts, e.g. "/learn/compression". */
+	href: string;
+	/** Meta description — keep under ~160 characters. */
+	description: string;
+	/** One or two sentences under the H1. */
+	lead: string;
+	/** Optional override for the H1 (defaults to the topic's title). */
+	heading?: string;
+}
+
+const { href, description, lead, heading } = Astro.props;
+const topic = LEARN_TOPICS.find((t) => t.href === href);
+if (!topic) throw new Error(`LearnArticle: no topic registered for ${href} in learnTopics.ts`);
+const { prev, next } = getAdjacentLearnTopics(href);
+---
+
+<Layout title={topic.title} description={description} ogType="article">
+	<div class="learn-article">
+		<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/learn">Learn</a> / {topic.title}</nav>
+
+		<section class="hero">
+			<h1>{heading ?? topic.title}</h1>
+			<p class="hero-lead">{lead}</p>
+		</section>
+
+		<div class="blocks">
+			<slot />
+
+			<nav class="block learn-pagination" aria-label="More lessons">
+				{
+					prev && (
+						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
+							← {prev.title}
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
+								{next.title} →
+							</a>
+						) : (
+							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
+								{next.title} (coming soon)
+							</span>
+						))
+				}
+			</nav>
+		</div>
+	</div>
+</Layout>
+
+<style is:global>
+	.learn-article [hidden] {
+		display: none !important;
+	}
+
+	.learn-article .breadcrumb {
+		margin: 0 0 0.75rem;
+		text-align: center;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	.learn-article .breadcrumb a {
+		color: var(--color-accent);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-article .breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.learn-article .hero {
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+
+	.learn-article .hero h1 {
+		margin: 0 0 0.5rem;
+		font-size: clamp(1.6rem, 5vw, 2.1rem);
+	}
+
+	.learn-article .hero-lead {
+		margin: 0 auto;
+		max-width: 36rem;
+		font-size: 1.05rem;
+	}
+
+	.learn-article .blocks {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.learn-article .block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		padding: 1rem 1.15rem;
+		min-width: 0;
+	}
+
+	.learn-article .block-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-accent);
+	}
+
+	.learn-article .block-text {
+		margin: 0 0 0.6rem;
+		font-size: 1rem;
+	}
+
+	.learn-article .block-text:last-child {
+		margin-bottom: 0;
+	}
+
+	.learn-article .block-text em,
+	.learn-article .block-list em {
+		color: var(--color-text);
+		font-style: normal;
+		font-weight: 700;
+	}
+
+	.learn-article .block a:not(.demo-btn):not(.learn-pagination-link) {
+		color: var(--color-accent);
+		font-weight: 600;
+	}
+
+	.learn-article .mono-highlight {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.learn-article .block--example {
+		text-align: center;
+	}
+
+	.learn-article .block--example .block-list {
+		text-align: left;
+		margin-inline: auto;
+		max-width: 34rem;
+	}
+
+	/* Plain bulleted list inside a block — same colour/line-height as body copy. */
+	.learn-article .block-list {
+		margin: 0 0 0.6rem;
+		padding-left: 1.2rem;
+		color: var(--color-text-muted);
+		line-height: 1.6;
+	}
+
+	.learn-article .block-list li + li {
+		margin-top: 0.3rem;
+	}
+
+	.learn-article .block-list:last-child {
+		margin-bottom: 0;
+	}
+
+	/* The one-line "big idea" takeaway — an amber rule down the left, not a
+	   filled box, so it reads as emphasis rather than a new section. */
+	.learn-article .block-callout {
+		margin: 0.8rem 0;
+		padding: 0.55rem 0.9rem;
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 8px 8px 0;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-size: 1rem;
+		line-height: 1.55;
+		text-align: left;
+	}
+
+	.learn-article .block-callout:last-child {
+		margin-bottom: 0;
+	}
+
+	/* A dark inset panel for static diagrams and worked examples. */
+	.learn-article .figure {
+		margin: 0.9rem 0 0.4rem;
+		padding: 1rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		overflow-x: auto;
+	}
+
+	.learn-article .figure-caption {
+		margin: 0.5rem 0 0;
+		font-size: 0.85rem;
+		font-style: italic;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	/* AP-style pseudocode / code sample. */
+	.learn-article .code-block {
+		margin: 0.8rem auto;
+		padding: 0.8rem 1rem;
+		max-width: 34rem;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-size: 0.92rem;
+		line-height: 1.55;
+		color: var(--color-text);
+		white-space: pre;
+		overflow-x: auto;
+		text-align: left;
+	}
+
+	/* Comparison tables — same conventions as the IPv4 vs IPv6 page. */
+	.learn-article .table-wrap {
+		margin: 0.9rem 0 0.3rem;
+		overflow-x: auto;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.learn-article .data-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		text-align: left;
+	}
+
+	.learn-article .data-table th {
+		padding: 0.55rem 0.9rem;
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.learn-article .data-table td {
+		padding: 0.55rem 0.9rem;
+		line-height: 1.45;
+		color: var(--color-text);
+		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+	}
+
+	.learn-article .data-table tbody tr:last-child td {
+		border-bottom: none;
+	}
+
+	@media (max-width: 480px) {
+		.learn-article .data-table {
+			font-size: 0.85rem;
+		}
+
+		.learn-article .data-table th,
+		.learn-article .data-table td {
+			padding: 0.5rem 0.6rem;
+		}
+	}
+
+	.learn-article .data-table .num {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	/* Two-up comparison cards (e.g. lossless vs lossy). Stacks on phones. */
+	.learn-article .compare-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+		gap: 0.7rem;
+		margin: 0.9rem 0 0.3rem;
+		text-align: left;
+	}
+
+	.learn-article .compare-card {
+		padding: 0.85rem 1rem;
+		border-radius: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.learn-article .compare-card--accent {
+		border-color: color-mix(in srgb, var(--color-accent) 60%, var(--color-border));
+	}
+
+	.learn-article .compare-card-title {
+		margin: 0 0 0.35rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--color-text);
+	}
+
+	.learn-article .compare-card p {
+		margin: 0 0 0.4rem;
+		font-size: 0.95rem;
+	}
+
+	.learn-article .compare-card p:last-child {
+		margin-bottom: 0;
+	}
+
+	/* "Related page" pointer used for the cross-linked pairs. */
+	.learn-article .related-link {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.8rem 1rem;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		text-decoration: none;
+		transition: border-color 0.15s ease;
+	}
+
+	.learn-article .related-link:hover {
+		border-color: var(--color-accent);
+	}
+
+	.learn-article .related-link-label {
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+		white-space: nowrap;
+	}
+
+	.learn-article .related-link-title {
+		font-weight: 700;
+		color: var(--color-accent);
+	}
+
+	.learn-article .learn-pagination {
+		display: flex;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		font-size: 0.9rem;
+	}
+
+	.learn-article .learn-pagination-link {
+		color: var(--color-accent);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.learn-article .learn-pagination-link:hover {
+		text-decoration: underline;
+	}
+
+	.learn-article .learn-pagination-next {
+		margin-left: auto;
+		text-align: right;
+	}
+
+	.learn-article .learn-pagination-soon {
+		color: var(--color-text-muted);
+		font-style: italic;
+	}
+</style>

@@ -1,0 +1,221 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import RelatedLink from "../../components/RelatedLink.astro";
+
+const message = ["SEE ", "YOU ", "AT ", "NOON"];
+const total = message.length;
+const packets = message.map((data, i) => ({ number: i + 1, data }));
+// The order they happen to arrive in — deliberately scrambled.
+const arrivalOrder = [2, 4, 1, 3].map((n) => packets[n - 1]);
+---
+
+<LearnArticle
+	href="/learn/packets-and-routing"
+	description="How data travels across the internet: messages are split into numbered packets, routed separately through many routers, and reassembled — explained with mailing a jigsaw puzzle."
+	lead="How do you post a 1,000-piece jigsaw puzzle to a friend when it won't fit in one envelope? The internet solves the same problem millions of times a second."
+>
+	<section class="block">
+		<p class="block-title">Mailing a Puzzle</p>
+		<p class="block-text">
+			Say you want to send a friend a finished jigsaw puzzle, but it's far too big for one envelope. So
+			you break it into ten sections, put each in its own envelope, and write two things on every one:
+			your friend's address, and a number — "3 of 10."
+		</p>
+		<p class="block-text">
+			The envelopes go through different post offices. Some take a faster route, some get held up. They
+			arrive on different days, in a jumbled order. But because every envelope is numbered, your friend
+			can put the sections back in the right order. And if "7 of 10" never shows up, they know exactly
+			which one to ask you to send again.
+		</p>
+		<p class="block-callout">
+			That's how the internet moves everything: split it into small numbered pieces, send each one on
+			its own, and reassemble them at the other end.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Packets</p>
+		<p class="block-text">
+			Each of those small pieces is called a <em>packet</em>. A web page, a photo, or a video call is
+			chopped into many packets — often hundreds or thousands. Every packet carries:
+		</p>
+		<ul class="block-list">
+			<li>
+				<em>Addresses</em> — where it's going and where it came from (the
+				<a href="/learn/ipv4-vs-ipv6">IP addresses</a> you might have read about).
+			</li>
+			<li><em>A number</em> — so the pieces can be put back in order.</li>
+			<li><em>The data itself</em> — its small slice of the message.</li>
+		</ul>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">A Message, Start to Finish</p>
+
+		<div class="figure">
+			<p class="stage-title">1. Split into packets</p>
+			<ul class="packet-row">
+				{
+					packets.map((p) => (
+						<li class="packet">
+							<span class="packet-header">#{p.number} of {total}</span>
+							<span class="packet-data">{p.data.trim()}</span>
+						</li>
+					))
+				}
+			</ul>
+
+			<p class="stage-title">2. Travel separately — and arrive jumbled</p>
+			<ul class="packet-row">
+				{
+					arrivalOrder.map((p) => (
+						<li class="packet packet--muted">
+							<span class="packet-header">#{p.number} of {total}</span>
+							<span class="packet-data">{p.data.trim()}</span>
+						</li>
+					))
+				}
+			</ul>
+
+			<p class="stage-title">3. Put back in order by number</p>
+			<p class="reassembled">{message.join("")}</p>
+		</div>
+		<p class="figure-caption">The numbers are what make reassembly possible.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Routers: The Internet's Mail Sorters</p>
+		<p class="block-text">
+			Between you and a website are lots of <em>routers</em> — computers whose whole job is passing
+			packets along. A router looks at a packet's destination address and hands it to a neighboring
+			router that's a step closer, a bit like a mail sorting center sending a letter on to the next town.
+		</p>
+		<p class="block-text">
+			No single router knows the whole journey. Each one just makes a good next step. And because the
+			decision is made fresh for each packet, two packets from the same message can take completely
+			different paths.
+		</p>
+		<p class="block-text">
+			That flexibility is also what makes the internet so hard to break. If a cable is cut or a router
+			goes down, packets are simply sent another way — which is exactly the idea on the
+			<a href="/learn/redundancy-and-fault-tolerance">Redundancy &amp; Fault Tolerance</a> page.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Rules Everyone Follows</p>
+		<p class="block-text">
+			For all of this to work between billions of devices made by different companies, everyone has to
+			follow the same rules. These agreed rules are called <em>protocols</em>. A few you'll hear about:
+		</p>
+		<ul class="block-list">
+			<li>
+				<em>IP (Internet Protocol)</em> — the addressing rules: how packets are labeled and passed
+				between routers.
+			</li>
+			<li>
+				<em>TCP</em> — the careful one: numbers the packets, puts them back in order, and asks for
+				any missing ones to be sent again. Used for web pages, email, and downloads, where every piece
+				matters.
+			</li>
+			<li>
+				<em>UDP</em> — the quick one: sends packets without checking they all arrived. Used for live
+				video calls and online games, where a late packet is useless anyway — better to skip it and
+				keep going.
+			</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Why Not Send It All in One Go?</p>
+		<ul class="block-list">
+			<li>
+				<em>Sharing the road.</em> Small packets from millions of people can take turns on the same
+				cables, so one giant download doesn't block everyone else.
+			</li>
+			<li>
+				<em>Easy fixes.</em> If something goes wrong, only one small packet needs re-sending, not the
+				whole file.
+			</li>
+			<li>
+				<em>Many routes.</em> Packets can spread out across different paths and around any broken
+				ones.
+			</li>
+		</ul>
+		<p class="block-text">
+			How quickly all those packets arrive depends on two different things — how much can travel at
+			once, and how long each piece takes to get there.
+		</p>
+		<RelatedLink href="/learn/bandwidth-and-latency" label="Read next" />
+	</section>
+</LearnArticle>
+
+<style>
+	.stage-title {
+		margin: 0 0 0.5rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.stage-title:not(:first-child) {
+		margin-top: 1.1rem;
+	}
+
+	.packet-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.packet {
+		display: flex;
+		flex-direction: column;
+		min-width: 5.5rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-accent);
+		background: var(--color-surface);
+		overflow: hidden;
+		font-family: var(--font-mono);
+	}
+
+	.packet--muted {
+		border-color: var(--color-border);
+	}
+
+	.packet-header {
+		padding: 0.2rem 0.5rem;
+		font-size: 0.75rem;
+		font-weight: 700;
+		background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg));
+		color: #fff3d6;
+	}
+
+	.packet--muted .packet-header {
+		background: var(--color-surface-alt);
+		color: var(--color-text);
+	}
+
+	.packet-data {
+		padding: 0.35rem 0.5rem;
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.reassembled {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.4rem;
+		letter-spacing: 0.08em;
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, #ffae2e 50%, transparent);
+	}
+</style>

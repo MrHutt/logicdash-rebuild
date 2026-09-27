@@ -1,6 +1,7 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { HUB_ORDERED_TOPICS, findLearnTopic } from "../lib/learnTopics";
 
 interface Props {
 	title: string;
@@ -10,15 +11,83 @@ interface Props {
 	image?: string;
 	/** Open Graph type — "article" suits the Learn section's standalone lessons better than the default "website". */
 	ogType?: "website" | "article";
+	/** Page-specific JSON-LD. Learn articles and the Learn hub get theirs generated automatically below, so most pages never pass this. */
+	jsonLd?: Record<string, unknown>;
 }
 
-const { title, description, image = "/logicdash-runners.png", ogType = "website" } = Astro.props;
+const { title, description, image = "/logicdash-runners.png", ogType = "website", jsonLd } = Astro.props;
 const pageTitle = title === "LogicDash" ? "LogicDash" : `${title} | LogicDash`;
 
 // Astro.site (set in astro.config.mjs) plus the current path gives a canonical
 // URL that's correct on every page without each one computing it by hand.
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const ogImageURL = new URL(image, Astro.site);
+
+// Structured data (JSON-LD) for the Learn section, built from learnTopics.ts
+// so every lesson — old and new — gets the same LearningResource + breadcrumb
+// block without each page having to remember it.
+const siteURL = new URL("/", Astro.site).href;
+const learnHubURL = new URL("/learn/", Astro.site).href;
+const publisher = { "@type": "Organization", name: "LogicDash", url: siteURL };
+const learnTopic = findLearnTopic(Astro.url.pathname);
+const isLearnHub = Astro.url.pathname.replace(/\/+$/, "") === "/learn";
+
+let structuredData: Record<string, unknown> | null = jsonLd ?? null;
+if (!structuredData && learnTopic) {
+	const isTool = learnTopic.kind === "tool";
+	structuredData = {
+		"@context": "https://schema.org",
+		"@graph": [
+			{
+				"@type": isTool ? ["LearningResource", "WebApplication"] : ["LearningResource", "Article"],
+				"@id": `${canonicalURL.href}#resource`,
+				name: learnTopic.title,
+				headline: learnTopic.title,
+				description,
+				url: canonicalURL.href,
+				image: ogImageURL.href,
+				inLanguage: "en",
+				isAccessibleForFree: true,
+				learningResourceType: isTool ? "Practice tool" : "Lesson",
+				educationalLevel: "High school",
+				audience: { "@type": "EducationalAudience", educationalRole: "student" },
+				...(learnTopic.teaches ? { teaches: learnTopic.teaches } : {}),
+				...(isTool ? { applicationCategory: "EducationalApplication", operatingSystem: "Any (web browser)" } : {}),
+				isPartOf: { "@type": "CollectionPage", name: "Bit by Bit", url: learnHubURL },
+				author: publisher,
+				publisher,
+			},
+			{
+				"@type": "BreadcrumbList",
+				itemListElement: [
+					{ "@type": "ListItem", position: 1, name: "Learn", item: learnHubURL },
+					{ "@type": "ListItem", position: 2, name: learnTopic.title, item: canonicalURL.href },
+				],
+			},
+		],
+	};
+} else if (!structuredData && isLearnHub) {
+	structuredData = {
+		"@context": "https://schema.org",
+		"@type": "CollectionPage",
+		name: "Bit by Bit",
+		description,
+		url: canonicalURL.href,
+		inLanguage: "en",
+		publisher,
+		mainEntity: {
+			"@type": "ItemList",
+			itemListElement: HUB_ORDERED_TOPICS.filter((topic) => topic.live).map((topic, i) => ({
+				"@type": "ListItem",
+				position: i + 1,
+				name: topic.title,
+				url: new URL(`${topic.href}/`, Astro.site).href,
+			})),
+		},
+	};
+}
+// "<" is escaped so no string inside the data can ever close the script tag early.
+const structuredDataJSON = structuredData ? JSON.stringify(structuredData).replace(/</g, "\\u003c") : null;
 ---
 
 <html lang="en">
@@ -40,6 +109,7 @@ const ogImageURL = new URL(image, Astro.site);
 		<meta property="og:image" content={ogImageURL} />
 		<meta property="og:url" content={canonicalURL} />
 		<title>{pageTitle}</title>
+		{structuredDataJSON && <script type="application/ld+json" set:html={structuredDataJSON} />}
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link

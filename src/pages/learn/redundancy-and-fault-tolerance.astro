@@ -1,0 +1,204 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+---
+
+<LearnArticle
+	href="/learn/redundancy-and-fault-tolerance"
+	description="Redundancy and fault tolerance explained with spare tires and multi-engine planes: how extra parts, copies, and routes keep computers and the internet working when something fails."
+	lead="Why does a car carry a spare tire it almost never uses? The answer is one of the most important ideas in keeping computers running."
+>
+	<section class="block">
+		<p class="block-title">The Spare Tire</p>
+		<p class="block-text">
+			Most days, the spare tire in a car's trunk does nothing. It's extra weight you carry around
+			"just in case." But on the day you get a flat, it's the difference between finishing your trip
+			and being stuck at the side of the road.
+		</p>
+		<p class="block-text">
+			Passenger jets work the same way. A plane with two engines is designed and tested so that it
+			can keep flying safely on just one. The second engine isn't there because the plane needs both
+			— it's there in case one stops.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Two Words, One Idea</p>
+		<div class="compare-grid">
+			<div class="compare-card">
+				<p class="compare-card-title">Redundancy</p>
+				<p>Having <em>extra</em> parts, copies, or paths that aren't needed when everything is working.</p>
+				<p>The spare tire. The second engine.</p>
+			</div>
+			<div class="compare-card compare-card--accent">
+				<p class="compare-card-title">Fault tolerance</p>
+				<p>The system <em>keeps working</em> even when one of its parts fails.</p>
+				<p>You finish the trip. The plane lands safely.</p>
+			</div>
+		</div>
+		<p class="block-callout">
+			Redundancy is the cause; fault tolerance is the effect. Adding extra parts (redundancy) is
+			<em>how</em> you build a system that survives a failure (fault tolerance).
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">One Road or Two?</p>
+		<p class="block-text">
+			Imagine two towns joined by roads. If there's only one road and it floods, the towns are cut
+			off. If there are two roads, traffic just takes the other one.
+		</p>
+
+		<div class="figure">
+			<div class="route-panels">
+				<figure class="route-panel">
+					<svg viewBox="0 0 220 120" role="img" aria-labelledby="route-one-title">
+						<title id="route-one-title">One route between Town A and Town B. It is cut, so the towns are disconnected.</title>
+						<line x1="40" y1="60" x2="95" y2="60" class="route-line" />
+						<line x1="125" y1="60" x2="180" y2="60" class="route-line" />
+						<text x="110" y="67" class="route-cut">✕</text>
+						<circle cx="30" cy="60" r="16" class="route-node" />
+						<circle cx="190" cy="60" r="16" class="route-node" />
+						<text x="30" y="65" class="route-node-label">A</text>
+						<text x="190" y="65" class="route-node-label">B</text>
+					</svg>
+					<figcaption>One route, cut: <strong>disconnected</strong></figcaption>
+				</figure>
+
+				<figure class="route-panel">
+					<svg viewBox="0 0 220 120" role="img" aria-labelledby="route-two-title">
+						<title id="route-two-title">Two routes between Town A and Town B. The bottom route is cut, but the top route still connects them.</title>
+						<path d="M42 50 Q110 -5 178 50" class="route-line route-line--active" />
+						<path d="M42 70 Q70 100 95 104" class="route-line route-line--dead" />
+						<path d="M125 104 Q150 100 178 70" class="route-line route-line--dead" />
+						<text x="110" y="111" class="route-cut">✕</text>
+						<circle cx="30" cy="60" r="16" class="route-node" />
+						<circle cx="190" cy="60" r="16" class="route-node" />
+						<text x="30" y="65" class="route-node-label">A</text>
+						<text x="190" y="65" class="route-node-label">B</text>
+					</svg>
+					<figcaption>Two routes, one cut: <strong>still connected</strong></figcaption>
+				</figure>
+			</div>
+		</div>
+
+		<p class="block-text">
+			The internet is built like the second picture, only with millions of connections. When a cable
+			is damaged or a computer along the way breaks, data simply travels a different path. That's
+			why a single broken cable doesn't take the whole internet down — see
+			<a href="/learn/packets-and-routing">Packets &amp; Routing</a> for how data finds its way.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Single Point of Failure</p>
+		<p class="block-text">
+			Engineers hunt for any part that, if it broke, would stop everything. They call it a
+			<em>single point of failure</em>. The one road between the towns is one. So is a school's only
+			Wi-Fi router, or a business where only one person knows the password to everything.
+		</p>
+		<p class="block-text">
+			The fix is almost always redundancy: a second road, a backup router, a second person who knows
+			how things work.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Redundancy All Around You</p>
+		<ul class="block-list">
+			<li>
+				<em>Backups.</em> Keeping your photos on your phone <em>and</em> in online storage means losing
+				your phone doesn't lose your memories.
+			</li>
+			<li>
+				<em>Data centers.</em> Big websites keep several copies of your data on different computers,
+				often in different buildings or even different countries, so a fire or power cut in one place
+				doesn't wipe anything out.
+			</li>
+			<li>
+				<em>Backup power.</em> Hospitals have generators that start automatically if the electricity
+				goes off.
+			</li>
+			<li>
+				<em>Extra bits.</em> The error-correcting codes on the
+				<a href="/learn/error-correction">Error Correction</a> page add extra bits that aren't part of
+				the message itself. Those extra bits are redundancy too — they let the computer notice, and
+				even fix, a bit that got flipped by accident.
+			</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<p class="block-title">It Isn't Free</p>
+		<p class="block-text">
+			Every spare costs something: a spare tire takes up trunk space, a second engine costs money and
+			fuel, and every extra copy of data needs somewhere to be stored. So engineers ask how bad a
+			failure would be. A lemonade stand might not need a backup table. A hospital definitely needs
+			backup power. The more a failure would hurt, the more redundancy is worth paying for.
+		</p>
+	</section>
+</LearnArticle>
+
+<style>
+	.route-panels {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+		gap: 1rem;
+	}
+
+	.route-panel {
+		margin: 0;
+	}
+
+	.route-panel svg {
+		display: block;
+		width: 100%;
+		max-width: 18rem;
+		margin: 0 auto;
+		height: auto;
+	}
+
+	.route-panel figcaption {
+		margin-top: 0.4rem;
+		font-size: 0.9rem;
+		color: var(--color-text-muted);
+	}
+
+	.route-panel figcaption strong {
+		color: var(--color-text);
+	}
+
+	.route-line {
+		fill: none;
+		stroke: #5b6075;
+		stroke-width: 4;
+		stroke-dasharray: 6 5;
+		stroke-linecap: round;
+	}
+
+	.route-line--active {
+		stroke: var(--color-accent);
+		stroke-dasharray: none;
+	}
+
+	.route-cut {
+		fill: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 20px;
+		font-weight: 700;
+		text-anchor: middle;
+	}
+
+	.route-node {
+		fill: var(--color-surface);
+		stroke: var(--color-text);
+		stroke-width: 2;
+	}
+
+	.route-node-label {
+		fill: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 15px;
+		font-weight: 700;
+		text-anchor: middle;
+	}
+</style>

@@ -1,0 +1,492 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+
+const worstCases = [
+	{ size: "10", linear: "10", binary: "4" },
+	{ size: "100", linear: "100", binary: "7" },
+	{ size: "1,000", linear: "1,000", binary: "10" },
+	{ size: "1 million", linear: "1 million", binary: "20" },
+	{ size: "1 billion", linear: "1 billion", binary: "30" },
+];
+
+const lanes = [
+	{ id: "linear", name: "Linear search", how: "Check 1, then 2, then 3…" },
+	{ id: "binary", name: "Binary search", how: "Always guess the middle" },
+];
+---
+
+<LearnArticle
+	href="/learn/binary-search"
+	description="Binary search explained with a hands-on demo: find a hidden number by halving the possibilities each guess, and compare it with a one-by-one linear search."
+	lead="You've been doing this the whole time. Every LogicDash guess uses feedback to make the next guess smarter — binary search is the most famous version of that idea."
+>
+	<section class="block">
+		<p class="block-title">The Guessing Game</p>
+		<p class="block-text">
+			"I'm thinking of a number from 1 to 100. After each guess, I'll tell you if the answer is
+			higher or lower."
+		</p>
+		<p class="block-text">
+			You could guess 1, then 2, then 3, and so on. You'd get there eventually — but it might take
+			100 guesses. Almost nobody plays that way. Instead, most people start with
+			<span class="mono-highlight">50</span>. If the answer is "higher," every number from 1 to 50
+			is gone in one guess. Then they try <span class="mono-highlight">75</span>, and so on.
+		</p>
+		<p class="block-callout">
+			Binary search: guess the middle, throw away the half that can't be right, repeat.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Two Ways to Search</p>
+		<div class="compare-grid">
+			<div class="compare-card">
+				<p class="compare-card-title">Linear search</p>
+				<p>Check every item in order, one at a time, until you find it.</p>
+				<p>Works on <em>any</em> list, even a jumbled one. Slow on long lists.</p>
+			</div>
+			<div class="compare-card compare-card--accent">
+				<p class="compare-card-title">Binary search</p>
+				<p>Check the middle item, then keep only the half that could hold the answer.</p>
+				<p>Much faster — but <em>only works if the list is already sorted</em>.</p>
+			</div>
+		</div>
+	</section>
+
+	<DemoFrame label="Binary search demo">
+		<div class="bs-demo" data-bs-demo>
+			<div class="demo-field">
+				<label for="bs-range">Hidden number between 1 and</label>
+				<select id="bs-range" class="demo-select" data-bs-range>
+					<option value="100" selected>100</option>
+					<option value="1000">1,000</option>
+				</select>
+			</div>
+			<div class="demo-field">
+				<label for="bs-pick">Choose the hidden number yourself (optional)</label>
+				<input id="bs-pick" class="demo-input bs-pick" type="number" min="1" max="100" inputmode="numeric" data-bs-pick />
+				<button type="button" class="demo-btn" data-bs-use-pick>Hide it</button>
+			</div>
+
+			<p class="bs-secret">
+				Hidden number: <span class="bs-secret-value" data-bs-secret>?</span>
+				<button type="button" class="bs-reveal" data-bs-reveal aria-pressed="false">Show</button>
+			</p>
+
+			<div class="bs-lanes">
+				{
+					lanes.map((lane) => (
+						<div class="bs-lane" data-bs-lane={lane.id}>
+							<p class="bs-lane-name">{lane.name}</p>
+							<p class="bs-lane-how">{lane.how}</p>
+							<div class="bs-track" aria-hidden="true">
+								<div class="bs-track-remaining" data-bs-remaining />
+								<div class="bs-track-marker" data-bs-marker hidden />
+							</div>
+							<div class="bs-track-ends" aria-hidden="true">
+								<span>1</span>
+								<span data-bs-max-label>100</span>
+							</div>
+							<p class="bs-lane-guess" data-bs-guess>No guesses yet</p>
+							<div class="bs-lane-stats">
+								<div class="demo-stat">
+									<span class="demo-stat-value" data-bs-count>0</span>
+									<span class="demo-stat-label">Guesses</span>
+								</div>
+								<div class="demo-stat">
+									<span class="demo-stat-value" data-bs-left>100</span>
+									<span class="demo-stat-label">Still possible</span>
+								</div>
+							</div>
+						</div>
+					))
+				}
+			</div>
+
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-bs-step>Next guess</button>
+				<button type="button" class="demo-btn" data-bs-run>Run to the end</button>
+				<button type="button" class="demo-btn" data-bs-new>New hidden number</button>
+			</div>
+			<p class="demo-status" data-bs-status aria-live="polite">
+				Press “Next guess” — both searches take one guess at a time.
+			</p>
+		</div>
+	</DemoFrame>
+
+	<section class="block block--example">
+		<p class="block-title">Why Halving Is So Powerful</p>
+		<p class="block-text">
+			Each binary-search guess cuts the possibilities in half. Double the size of the list, and you
+			only need <em>one</em> more guess. Here's the most guesses each method could ever need (the worst case):
+		</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Numbers to search</th>
+						<th>Linear</th>
+						<th>Binary</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						worstCases.map((row) => (
+							<tr>
+								<td class="num">{row.size}</td>
+								<td class="num">{row.linear}</td>
+								<td class="num">{row.binary}</td>
+							</tr>
+						))
+					}
+				</tbody>
+			</table>
+		</div>
+		<p class="block-text">
+			Notice the binary column: 7 guesses covers 100 numbers because 7 halvings is the same as the
+			doubling you've seen with bits — 2<sup>7</sup> = 128, which is more than 100. Thirty guesses
+			is enough to search a <em>billion</em> sorted items.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Catch: It Has to Be Sorted</p>
+		<p class="block-text">
+			Binary search only works because "higher" or "lower" tells you which half to throw away. That
+			only makes sense if the items are in order. You can't binary-search a shuffled deck of cards —
+			the middle card tells you nothing about where the others are.
+		</p>
+		<p class="block-text">
+			That's why computers spend so much effort sorting data: sorting once makes every later search
+			fast. See how sorting works on the <a href="/learn/sorting-algorithms">Sorting Algorithms</a> page.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Where You'll Meet It</p>
+		<ul class="block-list">
+			<li>Looking up a word in a paper dictionary — you open near the middle, not at page one.</li>
+			<li>Finding a contact in your phone, or a product in a huge online store.</li>
+			<li>Programmers hunting for the exact change that broke their code, by testing halfway points.</li>
+		</ul>
+	</section>
+</LearnArticle>
+
+<script>
+	type LaneId = "linear" | "binary";
+	interface LaneState {
+		lo: number;
+		hi: number;
+		count: number;
+		lastGuess: number | null;
+		found: boolean;
+	}
+
+	const root = document.querySelector<HTMLElement>("[data-bs-demo]")!;
+	const rangeSelect = root.querySelector<HTMLSelectElement>("[data-bs-range]")!;
+	const pickInput = root.querySelector<HTMLInputElement>("[data-bs-pick]")!;
+	const usePickBtn = root.querySelector<HTMLButtonElement>("[data-bs-use-pick]")!;
+	const secretEl = root.querySelector<HTMLElement>("[data-bs-secret]")!;
+	const revealBtn = root.querySelector<HTMLButtonElement>("[data-bs-reveal]")!;
+	const stepBtn = root.querySelector<HTMLButtonElement>("[data-bs-step]")!;
+	const runBtn = root.querySelector<HTMLButtonElement>("[data-bs-run]")!;
+	const newBtn = root.querySelector<HTMLButtonElement>("[data-bs-new]")!;
+	const statusEl = root.querySelector<HTMLElement>("[data-bs-status]")!;
+
+	let max = 100;
+	let secret = 1;
+	let revealed = false;
+	let runTimer: number | null = null;
+	const lanes: Record<LaneId, LaneState> = {
+		linear: freshLane(),
+		binary: freshLane(),
+	};
+
+	function freshLane(): LaneState {
+		return { lo: 1, hi: max, count: 0, lastGuess: null, found: false };
+	}
+
+	function laneEl(id: LaneId) {
+		return root.querySelector<HTMLElement>(`[data-bs-lane="${id}"]`)!;
+	}
+
+	function reset(newSecret?: number) {
+		stopRun();
+		secret = newSecret ?? 1 + Math.floor(Math.random() * max);
+		lanes.linear = freshLane();
+		lanes.binary = freshLane();
+		revealed = false;
+		render();
+		statusEl.textContent = "New hidden number chosen. Press “Next guess” to start.";
+	}
+
+	function nextGuess(id: LaneId, lane: LaneState): number {
+		// Linear walks upward one by one; binary always takes the middle of
+		// whatever range is still possible.
+		return id === "linear" ? lane.lo : Math.floor((lane.lo + lane.hi) / 2);
+	}
+
+	function stepLane(id: LaneId): string | null {
+		const lane = lanes[id];
+		if (lane.found) return null;
+		const guess = nextGuess(id, lane);
+		lane.count += 1;
+		lane.lastGuess = guess;
+		if (guess === secret) {
+			lane.found = true;
+			lane.lo = lane.hi = guess;
+			return `found it in ${lane.count} ${lane.count === 1 ? "guess" : "guesses"}`;
+		}
+		if (guess < secret) lane.lo = guess + 1;
+		else lane.hi = guess - 1;
+		return `guessed ${guess} — ${guess < secret ? "too low" : "too high"}`;
+	}
+
+	function step(announce: boolean) {
+		const linearMsg = stepLane("linear");
+		const binaryMsg = stepLane("binary");
+		render();
+		const done = lanes.linear.found && lanes.binary.found;
+		if (done) {
+			stopRun();
+			statusEl.textContent = `Both found ${secret}. Linear search took ${lanes.linear.count} guesses; binary search took ${lanes.binary.count}.`;
+		} else if (announce) {
+			const parts = [];
+			if (linearMsg) parts.push(`Linear ${linearMsg}.`);
+			if (binaryMsg) parts.push(`Binary ${binaryMsg}.`);
+			statusEl.textContent = parts.join(" ");
+		}
+	}
+
+	function render() {
+		secretEl.textContent = revealed || (lanes.linear.found && lanes.binary.found) ? String(secret) : "?";
+		revealBtn.textContent = revealed ? "Hide" : "Show";
+		revealBtn.setAttribute("aria-pressed", String(revealed));
+
+		(["linear", "binary"] as LaneId[]).forEach((id) => {
+			const lane = lanes[id];
+			const el = laneEl(id);
+			const remaining = el.querySelector<HTMLElement>("[data-bs-remaining]")!;
+			const marker = el.querySelector<HTMLElement>("[data-bs-marker]")!;
+			const guessEl = el.querySelector<HTMLElement>("[data-bs-guess]")!;
+			const pct = (n: number) => ((n - 1) / Math.max(1, max - 1)) * 100;
+
+			remaining.style.left = `${pct(lane.lo)}%`;
+			remaining.style.width = `max(3px, ${pct(lane.hi) - pct(lane.lo)}%)`;
+			marker.hidden = lane.lastGuess === null;
+			if (lane.lastGuess !== null) marker.style.left = `${pct(lane.lastGuess)}%`;
+
+			el.querySelector<HTMLElement>("[data-bs-count]")!.textContent = String(lane.count);
+			el.querySelector<HTMLElement>("[data-bs-left]")!.textContent = String(lane.hi - lane.lo + 1);
+			el.querySelector<HTMLElement>("[data-bs-max-label]")!.textContent = max.toLocaleString();
+			el.classList.toggle("is-found", lane.found);
+
+			if (lane.lastGuess === null) guessEl.textContent = "No guesses yet";
+			else if (lane.found) guessEl.textContent = `✓ Found it: ${lane.lastGuess}`;
+			else guessEl.textContent = `Guessed ${lane.lastGuess} — ${lane.lastGuess < secret ? "too low ↑" : "too high ↓"}`;
+		});
+
+		const done = lanes.linear.found && lanes.binary.found;
+		stepBtn.disabled = done;
+		runBtn.disabled = done && runTimer === null;
+		runBtn.textContent = runTimer === null ? "Run to the end" : "Pause";
+	}
+
+	function stopRun() {
+		if (runTimer !== null) {
+			window.clearInterval(runTimer);
+			runTimer = null;
+		}
+	}
+
+	function toggleRun() {
+		if (runTimer !== null) {
+			stopRun();
+			render();
+			statusEl.textContent = "Paused.";
+			return;
+		}
+		// Fast enough that linear search finishes in a few seconds even at
+		// 1,000 — binary search will already be done long before that, which
+		// is exactly the point.
+		const interval = max > 100 ? 12 : 70;
+		runTimer = window.setInterval(() => step(false), interval);
+		render();
+		statusEl.textContent = "Running…";
+	}
+
+	rangeSelect.addEventListener("change", () => {
+		max = Number(rangeSelect.value);
+		pickInput.max = String(max);
+		reset();
+	});
+
+	usePickBtn.addEventListener("click", () => {
+		const value = Math.round(Number(pickInput.value));
+		if (!Number.isFinite(value) || value < 1 || value > max) {
+			statusEl.textContent = `Pick a whole number from 1 to ${max.toLocaleString()}.`;
+			pickInput.focus();
+			return;
+		}
+		pickInput.value = "";
+		reset(value);
+		statusEl.textContent = "Your number is hidden. Press “Next guess” to watch both searches hunt for it.";
+	});
+
+	pickInput.addEventListener("keydown", (event) => {
+		if (event.key === "Enter") usePickBtn.click();
+	});
+
+	revealBtn.addEventListener("click", () => {
+		revealed = !revealed;
+		render();
+	});
+
+	stepBtn.addEventListener("click", () => {
+		stopRun();
+		step(true);
+	});
+	runBtn.addEventListener("click", toggleRun);
+	newBtn.addEventListener("click", () => reset());
+
+	reset();
+</script>
+
+<style is:global>
+	.bs-demo .bs-pick {
+		width: 6.5em;
+	}
+
+	.bs-demo .bs-secret {
+		margin: 0.9em 0 0;
+		text-align: center;
+		font-size: 1em;
+		color: var(--color-text-muted);
+	}
+
+	.bs-demo .bs-secret-value {
+		display: inline-block;
+		min-width: 2.5em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.3em;
+		color: #fff3d6;
+	}
+
+	.bs-demo .bs-reveal {
+		margin-left: 0.4em;
+		padding: 0.25em 0.8em;
+		min-height: 2.2em;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-sans);
+		font-size: 0.85em;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.bs-demo .bs-reveal:hover,
+	.bs-demo .bs-reveal:focus-visible {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.bs-demo .bs-lanes {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16em), 1fr));
+		gap: 0.8em;
+		margin-top: 0.9em;
+	}
+
+	.bs-demo .bs-lane {
+		padding: 0.85em 1em;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		text-align: center;
+		transition: border-color 0.2s ease;
+	}
+
+	.bs-demo .bs-lane.is-found {
+		border-color: var(--color-accent);
+	}
+
+	.bs-demo .bs-lane-name {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.05em;
+		color: var(--color-text);
+	}
+
+	.bs-demo .bs-lane-how {
+		margin: 0.1em 0 0.7em;
+		font-size: 0.9em;
+	}
+
+	.bs-demo .bs-track {
+		position: relative;
+		height: 1.1em;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-border) 70%, transparent);
+		overflow: hidden;
+	}
+
+	/* The shaded span is "numbers that could still be the answer" — it
+	   shrinks as guesses rule numbers out. */
+	.bs-demo .bs-track-remaining {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		background: linear-gradient(90deg, #ffae2e, #ffc766);
+		border-radius: 999px;
+		transition:
+			left 0.25s ease,
+			width 0.25s ease;
+	}
+
+	.bs-demo .bs-track-marker {
+		position: absolute;
+		top: -0.1em;
+		bottom: -0.1em;
+		width: 3px;
+		margin-left: -1px;
+		background: #fff;
+		box-shadow: 0 0 4px #000;
+		transition: left 0.25s ease;
+	}
+
+	.bs-demo .bs-track-ends {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 0.2em;
+		font-family: var(--font-mono);
+		font-size: 0.8em;
+		color: var(--color-text-muted);
+	}
+
+	.bs-demo .bs-lane-guess {
+		margin: 0.6em 0 0;
+		min-height: 1.5em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.95em;
+		color: var(--color-text);
+	}
+
+	.bs-demo .bs-lane-stats {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.5em;
+		margin-top: 0.6em;
+	}
+
+	.bs-demo .bs-lane-stats .demo-stat {
+		min-width: 6.5em;
+		background: var(--color-surface);
+	}
+</style>

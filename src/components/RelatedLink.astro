@@ -1,0 +1,20 @@
+---
+// A single "pairs well with" pointer to a sibling Learn page — used for the
+// deliberately cross-linked pairs (Encryption ↔ Public-Key, Speedup ↔
+// Distributed Computing, Packets ↔ Bandwidth). Styled in LearnArticle.astro.
+import { LEARN_TOPICS } from "../lib/learnTopics";
+
+interface Props {
+	href: string;
+	label?: string;
+}
+
+const { href, label = "Pairs well with" } = Astro.props;
+const topic = LEARN_TOPICS.find((t) => t.href === href);
+if (!topic) throw new Error(`RelatedLink: unknown topic ${href}`);
+---
+
+<a class="related-link" href={topic.href}>
+	<span class="related-link-label">{label}</span>
+	<span class="related-link-title">{topic.title} →</span>
+</a>

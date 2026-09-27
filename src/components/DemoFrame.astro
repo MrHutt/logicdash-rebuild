@@ -1,0 +1,394 @@
+---
+// The "Try it yourself" box for Learn-page interactive demos, with a
+// built-in fullscreen mode for projecting in class. Same approach as
+// /tools/countdown-clock and /tools/student-picker: a class drives the
+// fullscreen *look* (black ambient-amber backdrop, site chrome hidden, content
+// scaled up), and the real Fullscreen API is requested on top of that — so
+// the demo still projects properly if the browser refuses native fullscreen.
+//
+// Sizing contract: everything inside the frame should be sized in `em`, not
+// `rem`/`px`. The frame's own font-size is the single dial — 1rem normally,
+// scaled with the viewport in fullscreen — so one rule makes every demo
+// readable from a phone up to a classroom projector.
+interface Props {
+	/** Heading shown on the frame's bar. */
+	title?: string;
+	/** Accessible name for the whole demo region, e.g. "Binary search demo". */
+	label: string;
+}
+
+const { title = "Try it yourself", label } = Astro.props;
+---
+
+<section class="demo-frame" data-demo-frame aria-label={label}>
+	<div class="demo-frame-bar">
+		<p class="demo-frame-title">{title}</p>
+		<button type="button" class="demo-frame-fs-btn" data-demo-fs-enter aria-label={`Show ${label} fullscreen`}>
+			<span aria-hidden="true">⛶</span>
+			<span class="demo-frame-fs-text">Fullscreen</span>
+		</button>
+		<button type="button" class="demo-frame-exit-btn" data-demo-fs-exit aria-label="Exit fullscreen" hidden>
+			<span aria-hidden="true">×</span>
+		</button>
+	</div>
+	<div class="demo-frame-body">
+		<slot />
+	</div>
+</section>
+
+<script>
+	// One listener set per frame, so a page could host more than one demo.
+	document.querySelectorAll<HTMLElement>("[data-demo-frame]").forEach((frame) => {
+		const enterBtn = frame.querySelector<HTMLButtonElement>("[data-demo-fs-enter]")!;
+		const exitBtn = frame.querySelector<HTMLButtonElement>("[data-demo-fs-exit]")!;
+
+		function isOpen() {
+			return frame.classList.contains("is-fullscreen");
+		}
+
+		function enter() {
+			frame.classList.add("is-fullscreen");
+			document.body.classList.add("demo-fullscreen");
+			enterBtn.hidden = true;
+			exitBtn.hidden = false;
+			exitBtn.focus();
+			document.documentElement.requestFullscreen?.().catch(() => {
+				// Native fullscreen denied or unsupported — the CSS fullscreen
+				// look still applies, so the demo remains projectable.
+			});
+			frame.dispatchEvent(new CustomEvent("demo-fullscreen-change", { detail: { fullscreen: true } }));
+		}
+
+		function exit() {
+			if (!isOpen()) return;
+			frame.classList.remove("is-fullscreen");
+			document.body.classList.remove("demo-fullscreen");
+			exitBtn.hidden = true;
+			enterBtn.hidden = false;
+			enterBtn.focus();
+			if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+			frame.dispatchEvent(new CustomEvent("demo-fullscreen-change", { detail: { fullscreen: false } }));
+		}
+
+		enterBtn.addEventListener("click", enter);
+		exitBtn.addEventListener("click", exit);
+
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape" && isOpen()) exit();
+		});
+
+		// The browser's own exit (its Esc handling, F11) — keep our class in sync.
+		document.addEventListener("fullscreenchange", () => {
+			if (!document.fullscreenElement) exit();
+		});
+	});
+</script>
+
+<style is:global>
+	/* Several controls below set display:flex, which would otherwise beat the
+	   browser's own [hidden] rule and leave "hidden" buttons on screen. */
+	.demo-frame [hidden] {
+		display: none !important;
+	}
+
+	.demo-frame {
+		font-size: 1rem;
+		background: var(--color-surface);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+		border-radius: 14px;
+		padding: 0.85em 1em 1.1em;
+		min-width: 0;
+		box-shadow: 0 0 18px -8px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.demo-frame-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75em;
+		margin-bottom: 0.8em;
+	}
+
+	.demo-frame-title {
+		margin: 0;
+		font-size: 0.78em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-accent);
+	}
+
+	.demo-frame-fs-btn,
+	.demo-frame-exit-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		min-height: 2.5em;
+		padding: 0.3em 0.8em;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg);
+		color: var(--color-text-muted);
+		font-family: var(--font-sans);
+		font-size: 0.85em;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.demo-frame-fs-btn:hover,
+	.demo-frame-exit-btn:hover,
+	.demo-frame-fs-btn:focus-visible,
+	.demo-frame-exit-btn:focus-visible {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	.demo-frame-exit-btn {
+		justify-content: center;
+		width: 2.8em;
+		height: 2.8em;
+		padding: 0;
+		font-size: 1.1em;
+	}
+
+	/* Hidden on very narrow phones: the ⛶ glyph alone is still labelled. */
+	@media (max-width: 360px) {
+		.demo-frame-fs-text {
+			display: none;
+		}
+	}
+
+	/* --- Fullscreen: the frame takes over the viewport. position: fixed
+	   (rather than hiding every sibling like the tools pages do) keeps this
+	   working no matter where on the page the demo sits. */
+	body.demo-fullscreen {
+		overflow: hidden;
+	}
+
+	.demo-frame.is-fullscreen {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		display: flex;
+		flex-direction: column;
+		/* One dial scales everything inside (see the sizing contract above):
+		   ~17.6px on a phone, ~25px on a 1080p projector, capped ~38px on 4K. */
+		font-size: clamp(1.1rem, 1.6vmin + 0.5rem, 2.4rem);
+		border: none;
+		border-radius: 0;
+		padding: 1em clamp(1rem, 4vw, 3rem) 1.5em;
+		overflow-y: auto;
+		background:
+			radial-gradient(ellipse at center, rgba(255, 174, 46, 0.08) 0%, transparent 60%),
+			#000;
+		box-shadow: none;
+	}
+
+	.demo-frame.is-fullscreen .demo-frame-bar {
+		width: 100%;
+		max-width: 64em;
+		margin: 0 auto 1em;
+	}
+
+	.demo-frame.is-fullscreen .demo-frame-body {
+		width: 100%;
+		max-width: 64em;
+		margin: auto;
+	}
+
+	/* ---------------------------------------------------------------------
+	   Shared demo controls. Every demo uses these so buttons, readouts and
+	   status lines look (and scale) the same across the whole Learn library.
+	   All sizes in em — see the sizing contract at the top of this file.
+	   --------------------------------------------------------------------- */
+
+	.demo-controls {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5em;
+		margin: 0.9em 0 0;
+	}
+
+	.demo-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4em;
+		min-height: 2.75em;
+		padding: 0.45em 1.1em;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		text-decoration: none;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.demo-btn:hover:not(:disabled),
+	.demo-btn:focus-visible {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.demo-btn:active:not(:disabled) {
+		transform: scale(0.96);
+	}
+
+	.demo-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.demo-btn--primary {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+	}
+
+	/* Numeric readouts (guess counts, timers, swap counters). */
+	.demo-stats {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.6em;
+		margin: 0.9em 0 0;
+	}
+
+	.demo-stat {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 7em;
+		padding: 0.5em 0.9em;
+		border-radius: 10px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+	}
+
+	.demo-stat-value {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.5em;
+		line-height: 1.2;
+		color: #fff3d6;
+	}
+
+	.demo-stat-label {
+		font-size: 0.78em;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+	}
+
+	/* The plain-English "what just happened" line — also the aria-live region. */
+	.demo-status {
+		margin: 0.9em auto 0;
+		max-width: 40em;
+		min-height: 1.6em;
+		font-size: 1em;
+		line-height: 1.5;
+		text-align: center;
+		color: var(--color-text);
+	}
+
+	.demo-field {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5em 0.75em;
+		margin: 0.6em 0 0;
+		font-size: 0.95em;
+		color: var(--color-text-muted);
+	}
+
+	.demo-field label {
+		font-weight: 600;
+	}
+
+	.demo-input {
+		min-height: 2.6em;
+		padding: 0.4em 0.7em;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 1em;
+	}
+
+	.demo-input:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
+	}
+
+	.demo-range {
+		width: min(22em, 100%);
+		accent-color: var(--color-accent);
+		height: 1.6em;
+	}
+
+	.demo-select {
+		min-height: 2.6em;
+		padding: 0.3em 0.6em;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 0.95em;
+	}
+
+	.demo-note {
+		margin: 0.7em 0 0;
+		font-size: 0.85em;
+		line-height: 1.5;
+		text-align: center;
+		color: var(--color-text-muted);
+	}
+
+	/* Correct / not-quite feedback: one colour signal per result, always
+	   paired with a word and a symbol so colour is never the only cue. */
+	.demo-verdict--good {
+		color: var(--color-success);
+	}
+
+	.demo-verdict--bad {
+		color: var(--color-danger);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.demo-frame *,
+		.demo-frame *::before,
+		.demo-frame *::after {
+			transition-duration: 0.01ms !important;
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+		}
+	}
+</style>
