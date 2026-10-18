@@ -154,32 +154,33 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 
 			<p class="ampm-label" data-ampm hidden></p>
 
-			<div class="clock-progress countdown-only" data-progress aria-hidden="true">
+			<div class="clock-progress countdown-only page-only" data-progress aria-hidden="true">
 				<span class="clock-progress-fill" data-progress-fill></span>
 			</div>
 			<p class="times-up" data-times-up role="status" aria-live="assertive" hidden>Time's up!</p>
 
-			<!-- One control bar for both the page and fullscreen: the controls a
-			     teacher needs mid-lesson are always one tap away, sized for a
-			     touchscreen board, never hidden behind a menu. -->
+			<!-- One control bar for both the page and fullscreen. On the page:
+			     big touchscreen-sized buttons. In fullscreen only Pause and Exit
+			     remain, small and faint under the clock, so the screen is just
+			     the time. -->
 			<div class="clock-controls" data-clock-controls>
 				<div class="control-main">
 					<button type="button" class="big-btn big-btn--primary countdown-only" data-toggle>
 						<span aria-hidden="true" data-toggle-icon>▶</span>
 						<span data-toggle-label>Start</span>
 					</button>
-					<button type="button" class="big-btn countdown-only" data-reset>
+					<button type="button" class="big-btn countdown-only page-only" data-reset>
 						<span aria-hidden="true">↺</span>{" "}
 						Reset
 					</button>
-					<button type="button" class="big-btn countdown-only" data-add-minute>+1 min</button>
+					<button type="button" class="big-btn countdown-only page-only" data-add-minute>+1 min</button>
 					<button type="button" class="big-btn page-only" data-fullscreen-btn>
 						<span aria-hidden="true">⛶</span>{" "}
 						Fullscreen
 					</button>
 					<button type="button" class="big-btn fullscreen-only" data-exit-fullscreen>
 						<span aria-hidden="true">✕</span>{" "}
-						Exit
+						Exit fullscreen
 					</button>
 					<button
 						type="button"
@@ -189,18 +190,8 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 						aria-controls="clock-settings"
 					>
 						<span aria-hidden="true">⚙</span>{" "}
-						Settings
+						Time &amp; settings
 					</button>
-				</div>
-				<div class="quick-presets countdown-only" role="group" aria-label="Quick times">
-					<button type="button" class="preset-chip" data-preset="60">1 min</button>
-					<button type="button" class="preset-chip" data-preset="120">2 min</button>
-					<button type="button" class="preset-chip" data-preset="180">3 min</button>
-					<button type="button" class="preset-chip" data-preset="300">5 min</button>
-					<button type="button" class="preset-chip" data-preset="600">10 min</button>
-					<button type="button" class="preset-chip" data-preset="900">15 min</button>
-					<button type="button" class="preset-chip" data-preset="1200">20 min</button>
-					<button type="button" class="preset-chip" data-preset="1800">30 min</button>
 				</div>
 			</div>
 		</div>
@@ -212,6 +203,20 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 			</div>
 
 			<div class="control-panel" data-countdown-panel>
+				<p class="drawer-section-label">Quick times</p>
+				<div class="quick-presets" role="group" aria-label="Quick times">
+					<button type="button" class="preset-chip" data-preset="60">1 min</button>
+					<button type="button" class="preset-chip" data-preset="120">2 min</button>
+					<button type="button" class="preset-chip" data-preset="180">3 min</button>
+					<button type="button" class="preset-chip" data-preset="300">5 min</button>
+					<button type="button" class="preset-chip" data-preset="600">10 min</button>
+					<button type="button" class="preset-chip" data-preset="900">15 min</button>
+					<button type="button" class="preset-chip" data-preset="1200">20 min</button>
+					<button type="button" class="preset-chip" data-preset="1800">30 min</button>
+					<button type="button" class="preset-chip" data-preset="2700">45 min</button>
+					<button type="button" class="preset-chip" data-preset="3600">1 hour</button>
+				</div>
+
 				<p class="drawer-section-label">Any time you like</p>
 				<div class="time-input-row">
 					<label class="time-input-field">
@@ -227,14 +232,6 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 						<input type="number" inputmode="numeric" min="0" max="59" value="0" data-input="seconds" class="time-input" />
 					</label>
 					<button type="button" class="btn btn--ghost set-btn" data-action="set">Set</button>
-				</div>
-
-				<p class="drawer-section-label">Longer activities</p>
-				<div class="preset-row">
-					<button type="button" class="preset-btn" data-preset="1800">30 min</button>
-					<button type="button" class="preset-btn" data-preset="3000">50 min</button>
-					<button type="button" class="preset-btn" data-preset="3600">1 hour</button>
-					<button type="button" class="preset-btn" data-preset="5400">90 min</button>
 				</div>
 
 
@@ -335,17 +332,17 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		<section class="clock-help" aria-labelledby="clock-help-title">
 			<h2 class="clock-help-title" id="clock-help-title">How to use it in class</h2>
 			<ol class="clock-help-steps">
-				<li><strong>Pick a time.</strong> Tap a quick time like <em>5 min</em>, or open <em>Settings</em> to type any time.</li>
+				<li><strong>Pick a time.</strong> Open <em>Time &amp; settings</em> and tap a quick time like <em>5 min</em>, or type any time.</li>
 				<li><strong>Press Start.</strong> The bar under the digits shrinks so students can see how much time is left at a glance.</li>
-				<li><strong>Go fullscreen</strong> for the projector or board. While it runs, the buttons fade away — move the mouse or tap the screen to bring them back.</li>
-				<li><strong>Time's up:</strong> the clock flashes, shows <em>Time's up!</em> and plays a soft chime (turn the chime off in Settings).</li>
+				<li><strong>Go fullscreen</strong> for the projector or board. The screen shows just the clock, with a small Pause and Exit underneath that fade away while it runs — move the mouse or tap the screen to bring them back.</li>
+				<li><strong>Time's up:</strong> the screen lights up, shows <em>Time's up!</em> and plays a soft chime (turn the chime off in Time &amp; settings).</li>
 			</ol>
 			<p class="clock-help-note">
 				<strong>Keyboard:</strong> <kbd>Space</kbd> start / pause · <kbd>R</kbd> reset · <kbd>+</kbd> add a minute ·{" "}
 				<kbd>F</kbd> fullscreen · <kbd>Esc</kbd> exit fullscreen
 			</p>
 			<p class="clock-help-note">
-				<strong>Hard to read from the back of the room?</strong> Settings → Brightness → <em>Max</em>, and try the LED or
+				<strong>Hard to read from the back of the room?</strong> Time &amp; settings → Brightness → <em>Max</em>, and try the LED or
 				Refined styles — they're the boldest. Switch to <em>Current Time</em> mode for a wall clock. Your choices are
 				remembered on this device.
 			</p>
@@ -760,8 +757,18 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		const top = fullscreen ? 16 : displayShell.getBoundingClientRect().top + window.scrollY;
 		const availW = (fullscreen ? window.innerWidth * 0.96 : displayShell.clientWidth) - 4;
 		const availH = Math.max(140, window.innerHeight - top - others - 24);
-		const size = Math.max(36, Math.floor(probe * Math.min(availW / w, availH / h)));
+		let size = Math.max(36, Math.floor(probe * Math.min(availW / w, availH / h)));
 		displayShell.style.setProperty("--clock-tile-height", `${size}px`);
+		// Fullscreen must never scroll: if padding or the time's-up banner
+		// still pushes the page past the screen, step the digits down until
+		// everything fits.
+		if (fullscreen) {
+			const root = document.documentElement;
+			for (let i = 0; i < 30 && size > 36 && root.scrollHeight > window.innerHeight + 1; i++) {
+				size = Math.max(36, Math.floor(size * 0.96));
+				displayShell.style.setProperty("--clock-tile-height", `${size}px`);
+			}
+		}
 	}
 
 	window.addEventListener("resize", () => requestAnimationFrame(fitClock));
@@ -799,6 +806,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		displayStage.classList.remove("is-finished");
 		document.body.classList.remove("clock-finished");
 		timesUpEl.hidden = true;
+		requestAnimationFrame(fitClock);
 	}
 
 	function updateControls() {
@@ -922,6 +930,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		timesUpEl.hidden = false;
 		updateControls();
 		bumpIdle();
+		requestAnimationFrame(fitClock);
 		if (chimeToggle.checked) playChime();
 	}
 
@@ -1256,12 +1265,12 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		100% {
 			box-shadow:
 				inset 0 0 50px rgba(0, 0, 0, 0.65),
-				0 0 30px rgba(255, 174, 46, 0.25);
+				0 0 30px rgba(255, 92, 122, 0.3);
 		}
 		50% {
 			box-shadow:
 				inset 0 0 50px rgba(0, 0, 0, 0.65),
-				0 0 75px rgba(255, 174, 46, 0.6);
+				0 0 90px rgba(255, 92, 122, 0.75);
 		}
 	}
 
@@ -2634,16 +2643,99 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		display: inline-flex !important;
 	}
 
-	/* Fullscreen: bigger touch targets, and the whole bar fades away while
-	   the clock runs with nobody touching anything. */
-	body.clock-fullscreen .big-btn {
-		min-height: 4rem;
-		font-size: 1.25rem;
-		background: rgba(20, 22, 31, 0.85);
+	/* Fullscreen: the screen is just the clock. Pause and Exit sit under
+	   it as small, faint text buttons (still easy to hit), and fade away
+	   entirely while the clock runs with nobody touching anything. */
+	body.clock-fullscreen .big-btn,
+	body.clock-fullscreen .big-btn--primary {
+		min-width: 0;
+		min-height: 2.75rem;
+		padding: var(--space-2) var(--space-4);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 999px;
+		background: transparent;
+		color: rgba(232, 234, 242, 0.6);
+		font-size: 0.9375rem;
+		font-weight: 600;
+		box-shadow: none;
 	}
 
-	body.clock-fullscreen .big-btn--primary {
-		background: #ffae2e;
+	body.clock-fullscreen .big-btn:hover:not(:disabled),
+	body.clock-fullscreen .big-btn:focus-visible {
+		border-color: rgba(255, 174, 46, 0.6);
+		background: rgba(255, 255, 255, 0.04);
+		color: #e8eaf2;
+		box-shadow: none;
+	}
+
+	/* Nothing to pause once time is up — leave only Exit. */
+	body.clock-fullscreen.clock-finished [data-toggle] {
+		display: none !important;
+	}
+
+	/* --- Time's up: a vivid, unmistakable finish ------------------------
+	   Warm amber → coral → magenta, so it reads as "stop now" from the back
+	   of the room without being alarming. */
+	body.clock-finished .display-shell {
+		position: relative;
+		isolation: isolate;
+	}
+
+	body.clock-finished .display-shell::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: 32px;
+		background: radial-gradient(ellipse at center, rgba(255, 92, 122, 0.35) 0%, rgba(255, 174, 46, 0.18) 40%, transparent 70%);
+		animation: finish-glow 1.4s ease-in-out infinite;
+		pointer-events: none;
+	}
+
+	body.clock-fullscreen.clock-finished .times-up {
+		font-size: min(14vh, 10vw);
+	}
+
+	body.clock-fullscreen.clock-finished {
+		background:
+			radial-gradient(ellipse at center, rgba(255, 92, 122, 0.28) 0%, rgba(255, 174, 46, 0.12) 45%, transparent 75%),
+			#000 !important;
+	}
+
+	body.clock-finished .times-up {
+		background: linear-gradient(90deg, #ffd27a, #ff8a3d 35%, #ff4f7b 70%, #ff7ad9);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		text-shadow: none;
+		filter: drop-shadow(0 0 18px rgba(255, 92, 122, 0.65));
+		/* Sized from the screen, not the digits, so fitting the clock
+		   around it is a one-pass measurement. */
+		font-size: clamp(2.25rem, 7vw, 5rem);
+		line-height: 1.15;
+		letter-spacing: 0.02em;
+		animation: times-up-pop 1.4s ease-in-out infinite;
+	}
+
+	@keyframes finish-glow {
+		50% {
+			opacity: 0.45;
+			transform: scale(0.97);
+		}
+	}
+
+	@keyframes times-up-pop {
+		50% {
+			transform: scale(1.06);
+			filter: drop-shadow(0 0 32px rgba(255, 92, 122, 0.9));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		body.clock-finished .display-shell::before,
+		body.clock-finished .times-up {
+			animation: none;
+		}
 	}
 
 	body.clock-idle .clock-controls {
