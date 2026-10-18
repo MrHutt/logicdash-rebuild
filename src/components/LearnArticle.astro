@@ -115,7 +115,12 @@ const content = rawContent.replace(
 				</label>
 				<span class="section-count" data-section-count aria-live="polite"></span>
 				<button type="button" class="section-step" data-section-next aria-label="Next section">→</button>
+				<span class="section-ticks" data-section-ticks aria-hidden="true"></span>
 			</nav>
+			<p class="swipe-hint" data-swipe-hint hidden>
+				<span class="swipe-hint-icon" aria-hidden="true">↔</span>
+				Swipe or tap <span class="swipe-hint-key" aria-hidden="true">→</span><span class="sr-only">Next</span> for the next section
+			</p>
 
 			<div class="blocks" data-blocks>
 				<Fragment set:html={content} />
@@ -389,6 +394,76 @@ const content = rawContent.replace(
 		color: var(--color-text-muted);
 	}
 
+	/* Segment ticks along the bottom edge of the bar: how many sections
+	   there are and which one you're on. Slide mode only. */
+	.learn-article .section-ticks {
+		display: none;
+		position: absolute;
+		left: var(--space-3);
+		right: var(--space-3);
+		bottom: 3px;
+		gap: 3px;
+	}
+
+	.learn-article.is-slides .section-ticks {
+		display: flex;
+	}
+
+	.learn-article .section-ticks span {
+		flex: 1;
+		height: 3px;
+		border-radius: 999px;
+		background: var(--color-border);
+		transition: background 0.2s ease;
+	}
+
+	.learn-article .section-ticks span.is-done {
+		background: color-mix(in srgb, var(--group-color) 45%, var(--color-border));
+	}
+
+	.learn-article .section-ticks span.is-current {
+		background: var(--group-color);
+	}
+
+	.learn-article.is-slides .section-bar {
+		padding-bottom: var(--space-3);
+	}
+
+	/* First-visit hint under the bar. Gone once you've moved a section. */
+	.learn-article .swipe-hint {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		margin: calc(-1 * var(--space-2)) 0 var(--space-3);
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+
+	.learn-article .swipe-hint-icon {
+		color: var(--group-color);
+		font-size: 1rem;
+		animation: swipe-hint-sway 1.8s ease-in-out infinite;
+	}
+
+	.learn-article .swipe-hint-key {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		color: var(--color-text);
+		font-weight: 700;
+	}
+
+	@keyframes swipe-hint-sway {
+		50% {
+			transform: translateX(3px);
+		}
+	}
+
 	/* --- Slide mode (phones and tablets) ---------------------------------
 	   Sections sit side by side and snap into place, so you swipe (or tap
 	   Back/Next) from one to the next. The strip's height follows the
@@ -447,7 +522,7 @@ const content = rawContent.replace(
 		position: relative;
 		flex-direction: row;
 		align-items: flex-start;
-		gap: var(--space-4);
+		gap: var(--space-3);
 		overflow-x: auto;
 		overflow-y: hidden;
 		scroll-snap-type: x mandatory;
@@ -460,10 +535,18 @@ const content = rawContent.replace(
 		display: none;
 	}
 
+	/* Each slide is a little narrower than the screen, so the edge of the
+	   next section peeks in from the right — the usual sign that there's
+	   more to swipe to. Sections not on screen are dimmed. */
 	.learn-article.is-slides .blocks > * {
-		flex: 0 0 100%;
+		flex: 0 0 calc(100% - 2rem);
 		scroll-snap-align: start;
 		scroll-snap-stop: always;
+		transition: opacity 0.25s ease;
+	}
+
+	.learn-article.is-slides .blocks > :not(.is-current) {
+		opacity: 0.4;
 	}
 
 	/* (Not on a demo that's in fullscreen — that one must stay fixed.) */
@@ -500,8 +583,13 @@ const content = rawContent.replace(
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.learn-article.is-slides .blocks {
+		.learn-article.is-slides .blocks,
+		.learn-article.is-slides .blocks > * {
 			transition: none;
+		}
+
+		.learn-article .swipe-hint-icon {
+			animation: none;
 		}
 	}
 
@@ -983,14 +1071,45 @@ const content = rawContent.replace(
 		});
 		bar.hidden = false;
 
+		// Ticks along the bar's bottom edge, one per section.
+		const tickRow = bar.querySelector<HTMLElement>("[data-section-ticks]")!;
+		const ticks = sections.map(() => tickRow.appendChild(document.createElement("span")));
+
+		// First-visit hint ("Swipe or tap → …"). Once someone has moved a
+		// section — on any lesson — we remember it and stop showing it.
+		const hint = document.querySelector<HTMLElement>("[data-swipe-hint]");
+		const HINT_KEY = "logicdash:swipe-learned";
+		let learned = false;
+		try {
+			learned = localStorage.getItem(HINT_KEY) === "1";
+		} catch {
+			// Storage blocked: just show the hint each time.
+		}
+		function markLearned() {
+			if (learned) return;
+			learned = true;
+			if (hint) hint.hidden = true;
+			try {
+				localStorage.setItem(HINT_KEY, "1");
+			} catch {
+				// ignore
+			}
+		}
+
 		const slideQuery = window.matchMedia("(max-width: 1023px)");
 		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 		let current = 0;
 		let slides = false;
 
 		function setActive(i: number) {
+			if (slides && i !== current) markLearned();
 			current = i;
 			select.value = String(i);
+			sections.forEach((el, j) => el.classList.toggle("is-current", j === i));
+			ticks.forEach((t, j) => {
+				t.classList.toggle("is-current", j === i);
+				t.classList.toggle("is-done", j < i);
+			});
 			chips.forEach((chip, j) => {
 				chip.classList.toggle("is-active", j === i);
 				if (j === i) chip.setAttribute("aria-current", "true");
@@ -1083,10 +1202,24 @@ const content = rawContent.replace(
 		);
 		sections.forEach((el) => observer.observe(el));
 
+		let nudged = false;
 		function applyMode() {
 			slides = slideQuery.matches;
 			article!.classList.toggle("is-slides", slides);
 			slideNav!.hidden = !slides;
+			if (hint) hint.hidden = !slides || learned;
+			// One gentle nudge on a first visit: the strip slides a little
+			// way and back, showing that sections move sideways.
+			if (slides && !learned && !nudged && !reduceMotion && current === 0) {
+				nudged = true;
+				window.setTimeout(() => {
+					if (current !== 0 || !slides) return;
+					blocks!.style.scrollSnapType = "none";
+					blocks!.scrollTo({ left: 56, behavior: "smooth" });
+					window.setTimeout(() => blocks!.scrollTo({ left: 0, behavior: "smooth" }), 450);
+					window.setTimeout(() => (blocks!.style.scrollSnapType = ""), 1000);
+				}, 900);
+			}
 			if (slides) {
 				blocks!.scrollLeft = sections[current].offsetLeft - blocks!.offsetLeft;
 				setActive(current);
