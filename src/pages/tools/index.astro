@@ -1,31 +1,41 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import SegmentDigit from "../../components/SegmentDigit.astro";
+import LineIcon from "../../components/LineIcon.astro";
 
+// Each tool gets its own soft color (same palette as the Byte Lab groups;
+// no cyan) so the four cards are easy to tell apart at a glance.
 const TOOLS = [
 	{
 		href: "/tools/countdown-clock",
 		title: "Countdown Clock",
-		blurb: "A big, bright timer that fills the projector screen — one-tap times, a progress bar, a time's-up chime, and ten retro display styles.",
+		blurb: "A big, bright timer that fills the projector screen.",
+		features: ["Quick times", "Time's-up chime", "10 display styles"],
 		icon: "clock",
+		color: "#ffae2e",
 	},
 	{
 		href: "/tools/seating-chart",
 		title: "Seating Chart",
-		blurb: "Paste your class list, pick rows, groups, pairs or a U-shape, add keep-apart rules — then swap seats by hand, project it, or print it.",
+		blurb: "Paste your class list and get a seating plan in seconds.",
+		features: ["Rows, groups or U-shape", "Keep-apart rules", "Print or project"],
 		icon: "seats",
+		color: "#a78bfa",
 	},
 	{
 		href: "/tools/student-picker",
 		title: "Student Picker",
-		blurb: "Randomly picks students from your roster with a fun reveal animation — no one gets picked twice until everyone's had a turn, plus random pairs and splitting the class into groups.",
+		blurb: "Pick a student at random, with a fun reveal.",
+		features: ["Fair turns", "Random pairs", "Split into groups"],
 		icon: "picker",
+		color: "#f472b6",
 	},
 	{
 		href: "/tools/binary-clock",
 		title: "Binary Clock",
-		blurb: "A binary counter that counts up or down on its own — great for demonstrating, or just running in the background, how numbers look in binary.",
+		blurb: "Watch numbers count up or down in binary.",
+		features: ["Counts on its own", "Great for demos", "Up or down"],
 		icon: "binary",
+		color: "#60a5fa",
 	},
 ] as const;
 ---
@@ -36,265 +46,195 @@ const TOOLS = [
 	description="Free classroom tools from LogicDash — a big countdown clock, a seating chart maker, a random student picker, and a binary clock, ready to project."
 >
 	<section class="hero">
-		<h1>Tools</h1>
-		<p class="hero-lead">
-			Free classroom tools made to be projected at the front of the room. No sign-in, no ads, and class lists
-			never leave your device. Pick one, put it on screen, and get on with class.
-		</p>
+		<h1>Classroom Tools</h1>
+		<p class="hero-lead">Free tools made for the front of the room. No sign-in, no ads — and class lists never leave your device.</p>
 	</section>
 
 	<div class="tool-cards">
 		{
 			TOOLS.map((tool) => (
-				<a class="tool-card" href={tool.href}>
-					<div class="tool-icon" aria-hidden="true">
-						{tool.icon === "clock" && (
-							<div class="icon-scale-wrap">
-								<div class="icon-scale-inner">
-									<SegmentDigit value="1" />
-									<SegmentDigit value="2" />
-									<span class="mini-colon">
-										<span class="mini-colon-dot" />
-										<span class="mini-colon-dot" />
-									</span>
-									<SegmentDigit value="0" />
-									<SegmentDigit value="0" />
-								</div>
-							</div>
-						)}
-						{tool.icon === "picker" && (
-							<div class="ti-picker-row">
-								<span class="ti-picker-name ti-picker-name--dim">Ben</span>
-								<span class="ti-picker-name ti-picker-name--picked">Dana</span>
-								<span class="ti-picker-name ti-picker-name--dim">Kai</span>
-							</div>
-						)}
-						{tool.icon === "seats" && (
-							<div class="ti-seats">
-								{Array.from({ length: 8 }, (_, i) => (
-									<span class={`ti-seat${i === 5 ? " ti-seat--on" : ""}`} />
-								))}
-							</div>
-						)}
-						{tool.icon === "binary" && (
-							<div class="icon-scale-wrap">
-								<div class="icon-scale-inner">
-									<SegmentDigit value="1" />
-									<SegmentDigit value="0" />
-									<SegmentDigit value="1" />
-									<SegmentDigit value="1" />
-									<SegmentDigit value="0" />
-								</div>
-							</div>
-						)}
-					</div>
-					<div class="tool-card-body">
+				<a class="tool-card" href={tool.href} style={`--c: ${tool.color}`}>
+					<span class="tool-icon">
+						<LineIcon name={tool.icon} size={36} />
+					</span>
+					<span class="tool-card-body">
 						<span class="tool-card-name">{tool.title}</span>
 						<span class="tool-card-blurb">{tool.blurb}</span>
-					</div>
+						<span class="tool-card-features">
+							{tool.features.map((f) => (
+								<span class="tool-feature">{f}</span>
+							))}
+						</span>
+					</span>
+					<span class="tool-card-go" aria-hidden="true">
+						Open →
+					</span>
 				</a>
 			))
 		}
 	</div>
+
+	<p class="tools-note">
+		Every tool has a <strong>Fullscreen</strong> button for the projector. Class lists you save are kept on this device
+		only. Looking for lessons? Try <a href="/learn">Byte Lab</a>.
+	</p>
 </Layout>
 
 <style>
 	.hero {
 		text-align: center;
-		margin: 0 auto 1.5rem;
-		max-width: 40rem;
+		margin: 0 auto var(--space-6);
+		max-width: 42rem;
 	}
 
 	.hero h1 {
-		margin: 0 0 0.5rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
+		margin: 0 0 var(--space-2);
+		font-size: clamp(2rem, 6vw, 3rem);
+		line-height: 1.1;
+		letter-spacing: -0.02em;
 	}
 
 	.hero-lead {
 		margin: 0 auto;
-		font-size: 0.95rem;
-		line-height: 1.55;
+		font-size: 1.0625rem;
+		line-height: 1.6;
 		color: var(--color-text-muted);
 	}
 
-	/* One tool per row — each card gets full width to lay out icon and text
-	   side by side, rather than competing for space in a narrow column. */
+	/* Two across from tablet width, one on phones. */
 	.tool-cards {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		max-width: 40rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+		gap: var(--space-4);
+		max-width: 64rem;
 		margin: 0 auto;
 	}
 
 	.tool-card {
-		position: relative;
-		display: flex;
-		align-items: center;
-		gap: 1.1rem;
-		padding: 0.9rem 1.25rem;
-		border-radius: 12px;
+		display: grid;
+		grid-template-columns: auto 1fr;
+		grid-template-areas:
+			"icon body"
+			"icon go";
+		column-gap: var(--space-5);
+		row-gap: var(--space-3);
+		padding: var(--space-6);
+		border-radius: 18px;
 		border: 1px solid var(--color-border);
-		background: var(--color-surface);
+		background:
+			radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--c) 12%, transparent), transparent 60%),
+			var(--color-surface);
 		text-decoration: none;
-		text-align: left;
 		transition:
 			border-color 0.15s ease,
 			box-shadow 0.15s ease,
 			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
-	.tool-card:hover {
-		border-color: var(--color-accent);
-		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 35%, transparent);
-		transform: translateY(-1px);
+	.tool-card:hover,
+	.tool-card:focus-visible {
+		border-color: var(--c);
+		box-shadow: 0 10px 32px -12px color-mix(in srgb, var(--c) 60%, transparent);
+		transform: translateY(-2px);
 	}
 
 	.tool-card:active {
 		transform: scale(0.98);
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.1s ease-out;
+	}
+
+	.tool-icon {
+		grid-area: icon;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 72px;
+		height: 72px;
+		border-radius: 18px;
+		background: color-mix(in srgb, var(--c) 16%, var(--color-bg));
+		border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+		color: var(--c);
 	}
 
 	.tool-card-body {
+		grid-area: body;
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
-		min-width: 0;
+		gap: var(--space-2);
 	}
 
 	.tool-card-name {
-		font-family: var(--font-mono);
+		font-size: 1.375rem;
 		font-weight: 700;
-		font-size: 0.95rem;
+		line-height: 1.2;
 		color: var(--color-text);
 	}
 
 	.tool-card-blurb {
-		font-size: 0.8rem;
-		line-height: 1.4;
+		font-size: 1rem;
+		line-height: 1.5;
 		color: var(--color-text-muted);
 	}
 
-	/* --- Bespoke mini previews, one per tool — same "built from the site's
-	   own tile visual language" approach as TopicIcon.astro on /learn. Every
-	   card's icon sits in the same fixed-size box so the row of cards lines
-	   up cleanly regardless of which preview is inside it. ---------------- */
-
-	.tool-icon {
+	.tool-card-features {
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		width: 7rem;
-		height: 2.75rem;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-1);
 	}
 
-	/* Countdown Clock and Binary Clock previews embed the real SegmentDigit
-	   component (the actual /tools/countdown-clock and /tools/binary-clock
-	   markup) rather than an approximation — pixel-identical to the real
-	   tool, just shrunk to icon size. SegmentDigit's own natural size
-	   (clamp(2.2rem, 8vw, 3.6rem), see SegmentDigit.astro) is much bigger
-	   than this card's icon area and isn't overridable from outside its
-	   own component scope, so it's rendered at natural size inside
-	   .icon-scale-inner and visually shrunk with a transform; .icon-
-	   scale-wrap is a fixed-height window that clips the untransformed
-	   layout box down to size (transform doesn't change layout
-	   dimensions, only paint). 0.4 (down from an earlier, cramped 0.55) is
-	   what actually fits the digits' natural ~96px height inside this
-	   smaller row-icon box with room to spare, instead of clipping them. */
-	.icon-scale-wrap {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-	}
-
-	.icon-scale-inner {
-		display: flex;
-		align-items: center;
-		gap: 0.3rem;
-		transform: scale(0.4);
-	}
-
-	.mini-colon {
-		display: flex;
-		flex-direction: column;
-		gap: 0.3rem;
-	}
-
-	.mini-colon-dot {
-		width: 0.4rem;
-		height: 0.4rem;
-		border-radius: 50%;
-		background: #fff3d6;
-		box-shadow:
-			0 0 2px #fff3d6,
-			0 0 6px var(--color-accent);
-	}
-
-	.ti-picker-row {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-	}
-
-	.ti-picker-name {
-		padding: 0.25rem 0.4rem;
-		border-radius: 6px;
+	.tool-feature {
+		padding: 2px var(--space-3);
+		border-radius: 999px;
 		border: 1px solid var(--color-border);
 		background: var(--color-bg);
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.6rem;
-		color: var(--color-text-muted);
+		font-size: 0.8125rem;
+		font-weight: 600;
 		white-space: nowrap;
+		color: var(--color-text);
 	}
 
-	.ti-picker-name--dim {
-		opacity: 0.5;
+	.tool-card-go {
+		grid-area: go;
+		justify-self: start;
+		font-weight: 700;
+		color: var(--c);
 	}
 
-	.ti-picker-name--picked {
-		border-color: var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg));
-		color: #fff3d6;
-		box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 45%, transparent);
-	}
-
-	@media (max-width: 460px) {
+	@media (max-width: 480px) {
 		.tool-card {
-			flex-direction: column;
-			text-align: center;
-			padding: 1.25rem 1rem;
+			column-gap: var(--space-4);
+			padding: var(--space-5);
+		}
+
+		.tool-icon {
+			width: 56px;
+			height: 56px;
 		}
 
 		.tool-card-body {
-			align-items: center;
+			min-width: 0;
+		}
+
+		.tool-feature {
+			white-space: normal;
 		}
 	}
 
-	.ti-seats {
-		display: grid;
-		grid-template-columns: repeat(4, 1.1rem);
-		gap: 0.25rem;
+	.tools-note {
+		max-width: 42rem;
+		margin: var(--space-6) auto 0;
+		text-align: center;
+		font-size: 0.9375rem;
+		line-height: 1.6;
+		color: var(--color-text-muted);
 	}
 
-	.ti-seat {
-		display: block;
-		height: 0.9rem;
-		border-radius: 3px;
-		border: 1px solid var(--color-border);
-		background: var(--color-bg);
+	.tools-note strong {
+		color: var(--color-text);
 	}
 
-	.ti-seat--on {
-		border-color: var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 35%, var(--color-bg));
-		box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent);
+	.tools-note a {
+		color: var(--color-accent);
+		font-weight: 600;
 	}
 </style>
