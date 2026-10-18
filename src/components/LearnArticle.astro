@@ -1,14 +1,16 @@
 ---
 // Shared shell for every Learn page: breadcrumb, centered hero, the content
-// blocks (the default slot), Previous/Next cards, and — on wide screens — a
-// sticky sidebar with "On this page" and "In this section" navigation.
+// blocks (the default slot), a section bar, "More in this group", and
+// Previous/Next lesson cards.
 // SEO (title, meta, canonical, Open Graph, JSON-LD) comes from Layout.astro
 // + learnTopics.ts.
 //
-// Layout: a centered container (max 1280px). Below 1100px everything is one
-// column; from 1100px the lesson sits in a main column beside a 280px
-// sidebar, so wide screens are used for navigation rather than stretching
-// text lines or leaving a narrow column floating in empty space.
+// Layout: one wide centered column (max 72rem) — no sidebar, so the lesson
+// itself gets the room. From 1024px a sticky section bar tracks where you
+// are; below that the sections become swipeable slides with Back/Next, so a
+// phone or tablet shows one section at a time instead of a long scroll.
+// Each group has its own soft color (--group-color, from learnTopics.ts),
+// used on section titles and accents.
 //
 // Spacing uses the 4px scale defined in Layout.astro (--space-1 … --space-8).
 //
@@ -16,7 +18,7 @@
 // the interactive demos build their markup client-side (innerHTML), which
 // Astro's scoped styles can't reach.
 import Layout from "../layouts/Layout.astro";
-import { LEARN_TOPICS, LEVEL_LABELS, FOCUS_LABELS, getAdjacentLearnTopics, shortLink } from "../lib/learnTopics";
+import { LEARN_TOPICS, LEVEL_LABELS, FOCUS_LABELS, GROUP_COLORS, getAdjacentLearnTopics, shortLink } from "../lib/learnTopics";
 
 interface Props {
 	/** The topic's href exactly as listed in learnTopics.ts, e.g. "/learn/compression". */
@@ -42,12 +44,11 @@ const groupAnchor = topic.group
 	.replace(/[^a-z0-9]+/g, "-")
 	.replace(/^-|-$/g, "");
 
-// Render the page content once, give every section heading an id, and build
-// the "On this page" list from those headings — so every page gets its own
-// table of contents without anyone maintaining one by hand.
+// Render the page content once and give every section heading an id, so the
+// section bar (built client-side from those headings) can link to them —
+// every page gets its own section list without anyone maintaining one.
 const rawContent = await Astro.slots.render("default");
 const leadHtml = Astro.slots.has("lead") ? await Astro.slots.render("lead") : null;
-const toc: { id: string; label: string }[] = [];
 const usedIds = new Set<string>();
 const stripTags = (html: string) =>
 	html
@@ -67,18 +68,17 @@ const content = rawContent.replace(
 		let id = base;
 		for (let n = 2; usedIds.has(id); n++) id = `${base}-${n}`;
 		usedIds.add(id);
-		toc.push({ id, label: cls === "demo-frame-title" ? `▸ ${label}` : label });
 		return `<p class="${cls}" id="${id}"${attrs}>${inner}</p>`;
 	},
 );
 ---
 
 <Layout title={pageTitle ?? topic.title} description={description} ogType="article" wide>
-	<div class="learn-article">
+	<div class="learn-article" style={`--group-color: ${GROUP_COLORS[topic.group]}`}>
 		<nav class="breadcrumb" aria-label="Breadcrumb">
 			<a href="/learn">Byte Lab</a>
 			<span aria-hidden="true">/</span>
-			<a href={`/learn#${groupAnchor}`}>{topic.group}</a>
+			<a class="breadcrumb-group" href={`/learn#${groupAnchor}`}>{topic.group}</a>
 			<span aria-hidden="true">/</span>
 			<span aria-current="page">{topic.title}</span>
 		</nav>
@@ -100,75 +100,76 @@ const content = rawContent.replace(
 			{leadHtml ? <p class="hero-lead" set:html={leadHtml} /> : lead && <p class="hero-lead">{lead}</p>}
 		</header>
 
-		<div class="learn-layout">
-			<div class="learn-main">
-				<div class="blocks">
-					<Fragment set:html={content} />
-				</div>
+		<div class="learn-main">
+			{/* Section bar: built by the script below from the lesson's own
+			    section titles. Desktop: a sticky row of links that tracks where
+			    you are. Phones/tablets: the same row plus Back/Next, and the
+			    sections become swipeable slides. Without JavaScript the lesson
+			    is simply one long page. */}
+			<nav class="section-bar" aria-label="Sections in this lesson" data-section-bar hidden>
+				<button type="button" class="section-step" data-section-prev aria-label="Previous section">←</button>
+				<ol class="section-chips" data-section-chips></ol>
+				<label class="section-select-wrap">
+					<span class="sr-only">Go to section</span>
+					<select class="section-select" data-section-select></select>
+				</label>
+				<span class="section-count" data-section-count aria-live="polite"></span>
+				<button type="button" class="section-step" data-section-next aria-label="Next section">→</button>
+			</nav>
 
-				<nav class="learn-pagination" aria-label="Previous and next lessons">
-					{
-						prev && (
-							<a class="learn-pagination-card learn-pagination-prev" href={prev.href}>
-								<span class="learn-pagination-label">← Previous</span>
-								<span class="learn-pagination-title">{prev.title}</span>
-							</a>
-						)
-					}
-					{
-						next &&
-							(next.live ? (
-								<a class="learn-pagination-card learn-pagination-next" href={next.href}>
-									<span class="learn-pagination-label">Next →</span>
-									<span class="learn-pagination-title">{next.title}</span>
-								</a>
-							) : (
-								<span class="learn-pagination-card learn-pagination-next learn-pagination-soon">
-									<span class="learn-pagination-label">Coming soon</span>
-									<span class="learn-pagination-title">{next.title}</span>
-								</span>
-							))
-					}
-				</nav>
+			<div class="blocks" data-blocks>
+				<Fragment set:html={content} />
 			</div>
 
-			<aside class="learn-aside" aria-label="Page navigation">
-				<div class="learn-aside-inner">
+			<div class="slide-nav" data-slide-nav hidden>
+				<button type="button" class="slide-nav-btn" data-slide-prev>← Back</button>
+				<button type="button" class="slide-nav-btn slide-nav-btn--next" data-slide-next>
+					Next: <span data-slide-next-title></span> →
+				</button>
+			</div>
+
+			<nav class="more-in-group" aria-labelledby="more-in-group-title">
+				<p class="more-in-group-title" id="more-in-group-title">More in {topic.group}</p>
+				<ul class="more-in-group-list">
 					{
-						toc.length > 1 && (
-							<nav class="aside-card" aria-labelledby="aside-toc-title">
-								<p class="aside-title" id="aside-toc-title">
-									On this page
-								</p>
-								<ol class="aside-list">
-									{toc.map((item) => (
-										<li>
-											<a href={`#${item.id}`}>{item.label}</a>
-										</li>
-									))}
-								</ol>
-							</nav>
-						)
+						siblings.map((t) => (
+							<li>
+								<a href={t.href} aria-current={t.href === href ? "page" : undefined}>
+									{t.title}
+								</a>
+							</li>
+						))
 					}
-					<nav class="aside-card" aria-labelledby="aside-section-title">
-						<p class="aside-title" id="aside-section-title">
-							{topic.group}
-						</p>
-						<ol class="aside-list">
-							{
-								siblings.map((t) => (
-									<li>
-										<a href={t.href} aria-current={t.href === href ? "page" : undefined}>
-											{t.title}
-										</a>
-									</li>
-								))
-							}
-						</ol>
-						<a class="aside-all" href="/learn">All lessons →</a>
-					</nav>
-				</div>
-			</aside>
+					<li>
+						<a class="more-in-group-all" href="/learn">All lessons →</a>
+					</li>
+				</ul>
+			</nav>
+
+			<nav class="learn-pagination" aria-label="Previous and next lessons">
+				{
+					prev && (
+						<a class="learn-pagination-card learn-pagination-prev" href={prev.href}>
+							<span class="learn-pagination-label">← Previous lesson</span>
+							<span class="learn-pagination-title">{prev.title}</span>
+						</a>
+					)
+				}
+				{
+					next &&
+						(next.live ? (
+							<a class="learn-pagination-card learn-pagination-next" href={next.href}>
+								<span class="learn-pagination-label">Next lesson →</span>
+								<span class="learn-pagination-title">{next.title}</span>
+							</a>
+						) : (
+							<span class="learn-pagination-card learn-pagination-next learn-pagination-soon">
+								<span class="learn-pagination-label">Coming soon</span>
+								<span class="learn-pagination-title">{next.title}</span>
+							</span>
+						))
+				}
+			</nav>
 		</div>
 	</div>
 </Layout>
@@ -196,6 +197,10 @@ const content = rawContent.replace(
 		color: var(--color-accent);
 		font-weight: 600;
 		text-decoration: none;
+	}
+
+	.learn-article .breadcrumb .breadcrumb-group {
+		color: var(--group-color);
 	}
 
 	.learn-article .breadcrumb a:hover {
@@ -226,7 +231,7 @@ const content = rawContent.replace(
 	}
 
 	.learn-article .lesson-meta-level {
-		color: var(--color-accent);
+		color: var(--group-color);
 		font-weight: 700;
 	}
 
@@ -283,118 +288,303 @@ const content = rawContent.replace(
 		line-height: 1.6;
 	}
 
-	.learn-article .learn-layout {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: var(--space-6);
+	/* One wide column: no sidebar, so the lesson gets the room. */
+	.learn-article .learn-main {
+		max-width: 72rem;
+		margin: 0 auto;
 	}
 
-	.learn-article .learn-aside {
+	/* --- Section bar ----------------------------------------------------
+	   A single scrollable row of section links (never wraps), sticky at the
+	   top of the screen while you read. Back/Next and the "2 of 7" count
+	   only show in slide mode (phones and tablets). */
+	.learn-article .section-bar {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0 0 var(--space-4);
+		padding: var(--space-2);
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+		backdrop-filter: blur(8px);
+	}
+
+	.learn-article .section-chips {
+		display: flex;
+		flex: 1;
+		min-width: 0;
+		gap: var(--space-1);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		overflow-x: auto;
+		scrollbar-width: none;
+		scroll-behavior: smooth;
+	}
+
+	.learn-article .section-chips::-webkit-scrollbar {
 		display: none;
 	}
 
-	@media (min-width: 1100px) {
-		.learn-article .learn-layout {
-			grid-template-columns: minmax(0, 1fr) 17.5rem;
-			align-items: start;
-		}
-
-		.learn-article .learn-aside {
-			display: block;
-			position: sticky;
-			top: var(--space-4);
-		}
+	.learn-article .section-chips a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.25rem;
+		padding: 0 var(--space-3);
+		border-radius: 999px;
+		border: 1px solid transparent;
+		color: var(--color-text-muted);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		white-space: nowrap;
+		text-decoration: none;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background 0.15s ease;
 	}
 
-	.learn-article .learn-aside-inner {
-		display: flex;
-		flex-direction: column;
+	.learn-article .section-chips a:hover,
+	.learn-article .section-chips a:focus-visible {
+		color: var(--color-text);
+		border-color: var(--color-border);
+	}
+
+	.learn-article .section-chips a.is-active {
+		color: var(--color-text);
+		border-color: color-mix(in srgb, var(--group-color) 70%, transparent);
+		background: color-mix(in srgb, var(--group-color) 16%, transparent);
+	}
+
+	.learn-article .section-step {
+		display: none;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.learn-article .section-step:disabled {
+		opacity: 0.35;
+		cursor: default;
+	}
+
+	.learn-article .section-count {
+		display: none;
+		flex-shrink: 0;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Slide mode (phones and tablets) ---------------------------------
+	   Sections sit side by side and snap into place, so you swipe (or tap
+	   Back/Next) from one to the next. The strip's height follows the
+	   section on screen, so a short section never leaves a big gap. */
+	.learn-article.is-slides .section-step {
+		display: inline-flex;
+	}
+
+	.learn-article.is-slides .section-count {
+		display: inline;
+	}
+
+	/* Phones/tablets: the chip row becomes one dropdown showing the current
+	   section's title (a row of chips is too cramped at this width). */
+	.learn-article .section-select-wrap {
+		display: none;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.learn-article.is-slides .section-chips {
+		display: none;
+	}
+
+	.learn-article.is-slides .section-select-wrap {
+		display: block;
+	}
+
+	.learn-article .section-select {
+		width: 100%;
+		min-height: 2.5rem;
+		padding: 0 var(--space-3);
+		border: 1px solid color-mix(in srgb, var(--group-color) 60%, var(--color-border));
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--group-color) 12%, var(--color-bg));
+		color: var(--color-text);
+		font: inherit;
+		font-size: 0.875rem;
+		font-weight: 700;
+		text-overflow: ellipsis;
+	}
+
+	.learn-article .sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+	}
+
+	/* position: relative keeps absolutely-positioned bits inside off-screen
+	   slides (e.g. screen-reader labels) clipped by the strip, instead of
+	   widening the page. */
+	.learn-article.is-slides .blocks {
+		position: relative;
+		flex-direction: row;
+		align-items: flex-start;
 		gap: var(--space-4);
-		max-height: calc(100vh - var(--space-6));
-		overflow-y: auto;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x mandatory;
+		overscroll-behavior-x: contain;
+		scrollbar-width: none;
+		transition: height 0.25s ease;
 	}
 
-	.learn-article .aside-card {
+	.learn-article.is-slides .blocks::-webkit-scrollbar {
+		display: none;
+	}
+
+	.learn-article.is-slides .blocks > * {
+		flex: 0 0 100%;
+		scroll-snap-align: start;
+		scroll-snap-stop: always;
+	}
+
+	/* (Not on a demo that's in fullscreen — that one must stay fixed.) */
+	.learn-article.is-slides .blocks > :not(.is-fullscreen) {
+		position: relative;
+	}
+
+	.learn-article .slide-nav {
+		display: flex;
+		gap: var(--space-3);
+		margin-top: var(--space-4);
+	}
+
+	.learn-article .slide-nav-btn {
+		min-height: 3rem;
+		padding: var(--space-2) var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		background: var(--color-surface);
+		color: var(--color-text);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.learn-article .slide-nav-btn--next {
+		flex: 1;
+		border-color: color-mix(in srgb, var(--group-color) 60%, var(--color-border));
+		text-align: right;
+	}
+
+	.learn-article .slide-nav-btn:disabled {
+		display: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.learn-article.is-slides .blocks {
+			transition: none;
+		}
+	}
+
+	/* --- More in this group ---------------------------------------------- */
+	.learn-article .more-in-group {
+		margin-top: var(--space-6);
 		padding: var(--space-4);
 		border-radius: 12px;
 		border: 1px solid var(--color-border);
+		border-top: 3px solid var(--group-color);
 		background: var(--color-surface);
 	}
 
-	.learn-article .aside-title {
-		margin: 0 0 var(--space-2);
+	.learn-article .more-in-group-title {
+		margin: 0 0 var(--space-3);
 		font-size: 0.75rem;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: var(--color-accent);
+		color: var(--group-color);
 	}
 
-	.learn-article .aside-list {
+	.learn-article .more-in-group-list {
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-1);
+		flex-wrap: wrap;
+		gap: var(--space-2);
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	.learn-article .aside-list a {
-		display: block;
-		padding: var(--space-1) var(--space-2);
-		border-radius: 0 8px 8px 0;
-		border-left: 2px solid transparent;
+	.learn-article .more-in-group-list a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.25rem;
+		padding: 0 var(--space-3);
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
 		font-size: 0.875rem;
-		line-height: 1.4;
-		color: var(--color-text-muted);
+		font-weight: 600;
 		text-decoration: none;
 	}
 
-	.learn-article .aside-list a:hover,
-	.learn-article .aside-list a:focus-visible {
-		background: var(--color-surface-alt);
-		color: var(--color-text);
+	.learn-article .more-in-group-list a:hover,
+	.learn-article .more-in-group-list a:focus-visible {
+		border-color: var(--group-color);
 	}
 
-	.learn-article .aside-list a[aria-current="page"],
-	.learn-article .aside-list a.is-active {
-		border-left-color: var(--color-accent);
-		color: var(--color-text);
-		font-weight: 600;
+	.learn-article .more-in-group-list a[aria-current="page"] {
+		border-color: color-mix(in srgb, var(--group-color) 70%, transparent);
+		background: color-mix(in srgb, var(--group-color) 16%, var(--color-bg));
 	}
 
-	.learn-article .aside-all {
-		display: inline-block;
-		margin-top: var(--space-3);
-		font-size: 0.875rem;
-		font-weight: 600;
+	.learn-article .more-in-group-list .more-in-group-all {
+		border-style: dashed;
 		color: var(--color-accent);
-		text-decoration: none;
 	}
 
-	.learn-article .aside-all:hover {
-		text-decoration: underline;
-	}
-
-	/* Section headings are link targets from the sidebar — keep them clear
-	   of the top edge when jumped to. */
+	/* Section headings are link targets from the section bar — keep them
+	   clear of the sticky bar when jumped to. */
 	.learn-article [id^="s-"] {
-		scroll-margin-top: var(--space-6);
+		scroll-margin-top: 5rem;
 	}
 
 	/* ------------------------------------------------------------------
 	   Content blocks.
 	   ------------------------------------------------------------------ */
 
-	.learn-article .blocks {
+	.learn-article .blocks,
+	.learn-article .section-group {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);
 	}
 
 	.learn-article .block {
-		background: var(--color-surface);
+		background:
+			linear-gradient(180deg, color-mix(in srgb, var(--group-color) 5%, transparent), transparent 8rem),
+			var(--color-surface);
 		border: 1px solid var(--color-border);
+		border-top: 3px solid color-mix(in srgb, var(--group-color) 55%, var(--color-border));
 		border-radius: 12px;
 		padding: var(--space-4);
 		min-width: 0;
@@ -412,16 +602,24 @@ const content = rawContent.replace(
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: var(--color-accent);
+		color: var(--group-color);
 	}
 
-	/* Body copy keeps a comfortable reading width (about 75 characters)
-	   even when the column is wide. */
+	/* Body copy: a little larger on big screens, and allowed to run wider
+	   now there's no sidebar, while still stopping short of very long lines. */
 	.learn-article .block-text {
-		max-width: 75ch;
+		max-width: 85ch;
 		margin: 0 0 var(--space-3);
 		font-size: 1rem;
 		line-height: 1.65;
+	}
+
+	@media (min-width: 1024px) {
+		.learn-article .block-text,
+		.learn-article .block-list,
+		.learn-article .block-callout {
+			font-size: 1.0625rem;
+		}
 	}
 
 	.learn-article .block-text:last-child {
@@ -461,7 +659,7 @@ const content = rawContent.replace(
 	}
 
 	.learn-article .block-list {
-		max-width: 75ch;
+		max-width: 85ch;
 		margin: 0 0 var(--space-3);
 		padding-left: var(--space-5);
 		color: var(--color-text-muted);
@@ -476,12 +674,12 @@ const content = rawContent.replace(
 		margin-bottom: 0;
 	}
 
-	/* The one-line "big idea" takeaway — an amber rule down the left. */
+	/* The one-line "big idea" takeaway — a rule in the group's color. */
 	.learn-article .block-callout {
-		max-width: 75ch;
+		max-width: 85ch;
 		margin: var(--space-4) 0;
 		padding: var(--space-3) var(--space-4);
-		border-left: 4px solid var(--color-accent);
+		border-left: 4px solid var(--group-color);
 		border-radius: 0 8px 8px 0;
 		background: var(--color-bg);
 		color: var(--color-text);
@@ -724,24 +922,186 @@ const content = rawContent.replace(
 </style>
 
 <script>
-	// Highlight the sidebar's "On this page" entry for the section in view.
-	const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".learn-aside .aside-list a[href^='#']"));
-	if (tocLinks.length && "IntersectionObserver" in window) {
-		const byId = new Map(tocLinks.map((a) => [a.getAttribute("href")!.slice(1), a]));
+	// --- Section bar + slides -------------------------------------------
+	// Each top-level block of the lesson is a "section". The bar lists them
+	// (labelled by each one's title). From 1024px up it's a sticky row that
+	// highlights the section you're reading; below that the sections become
+	// slides you swipe or step through with Back/Next.
+	const article = document.querySelector<HTMLElement>(".learn-article");
+	const bar = document.querySelector<HTMLElement>("[data-section-bar]");
+	const blocks = document.querySelector<HTMLElement>("[data-blocks]");
+	const chipList = document.querySelector<HTMLOListElement>("[data-section-chips]");
+	const slideNav = document.querySelector<HTMLElement>("[data-slide-nav]");
+	// Group the lesson's blocks into sections: each titled block starts one,
+	// and an untitled block travels with the section before it (wrapped
+	// together so they stay on the same slide). Component <script>s that end
+	// up among the blocks are skipped.
+	const sections: HTMLElement[] = [];
+	if (blocks) {
+		const groups: HTMLElement[][] = [];
+		for (const el of Array.from(blocks.children) as HTMLElement[]) {
+			if (["SCRIPT", "STYLE", "TEMPLATE"].includes(el.tagName)) continue;
+			if (el.querySelector("[id^='s-']") || groups.length === 0) groups.push([el]);
+			else groups[groups.length - 1].push(el);
+		}
+		for (const group of groups) {
+			if (group.length === 1) {
+				sections.push(group[0]);
+				continue;
+			}
+			const wrap = document.createElement("div");
+			wrap.className = "section-group";
+			group[0].before(wrap);
+			wrap.append(...group);
+			sections.push(wrap);
+		}
+	}
+	const titled = sections
+		.map((el) => ({ el, title: el.querySelector<HTMLElement>("[id^='s-']") }))
+		.filter((s): s is { el: HTMLElement; title: HTMLElement } => s.title !== null);
+
+	if (article && bar && blocks && chipList && slideNav && titled.length > 1 && titled.length === sections.length) {
+		const count = bar.querySelector<HTMLElement>("[data-section-count]")!;
+		const prevBtn = bar.querySelector<HTMLButtonElement>("[data-section-prev]")!;
+		const nextBtn = bar.querySelector<HTMLButtonElement>("[data-section-next]")!;
+		const slidePrev = slideNav.querySelector<HTMLButtonElement>("[data-slide-prev]")!;
+		const slideNext = slideNav.querySelector<HTMLButtonElement>("[data-slide-next]")!;
+		const slideNextTitle = slideNav.querySelector<HTMLElement>("[data-slide-next-title]")!;
+		const labels = titled.map(({ title }) => title.textContent!.replace(/\s+/g, " ").trim());
+		const select = bar.querySelector<HTMLSelectElement>("[data-section-select]")!;
+		labels.forEach((label, i) => select.add(new Option(label, String(i))));
+		select.addEventListener("change", () => goTo(Number(select.value), true));
+
+		const chips = titled.map(({ title }, i) => {
+			const li = document.createElement("li");
+			const a = document.createElement("a");
+			a.href = `#${title.id}`;
+			a.textContent = labels[i];
+			li.append(a);
+			chipList.append(li);
+			return a;
+		});
+		bar.hidden = false;
+
+		const slideQuery = window.matchMedia("(max-width: 1023px)");
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		let current = 0;
+		let slides = false;
+
+		function setActive(i: number) {
+			current = i;
+			select.value = String(i);
+			chips.forEach((chip, j) => {
+				chip.classList.toggle("is-active", j === i);
+				if (j === i) chip.setAttribute("aria-current", "true");
+				else chip.removeAttribute("aria-current");
+			});
+			// Keep the active chip visible in the scrolling row.
+			const chip = chips[i];
+			const row = chipList!;
+			const left = chip.offsetLeft - row.clientWidth / 2 + chip.offsetWidth / 2;
+			row.scrollTo({ left, behavior: reduceMotion ? "auto" : "smooth" });
+			if (slides) {
+				count.textContent = `${i + 1} of ${sections.length}`;
+				prevBtn.disabled = slidePrev.disabled = i === 0;
+				nextBtn.disabled = slideNext.disabled = i === sections.length - 1;
+				slideNextTitle.textContent = labels[i + 1] ?? "";
+				fitHeight();
+			}
+		}
+
+		// Slide mode: the strip is as tall as the section on screen.
+		function fitHeight() {
+			if (slides) blocks!.style.height = `${sections[current].offsetHeight}px`;
+		}
+		const heightWatcher = new ResizeObserver(() => fitHeight());
+		sections.forEach((el) => heightWatcher.observe(el));
+
+		function goTo(i: number, focus = false) {
+			i = Math.max(0, Math.min(sections.length - 1, i));
+			if (slides) {
+				blocks!.scrollTo({ left: sections[i].offsetLeft - blocks!.offsetLeft, behavior: reduceMotion ? "auto" : "smooth" });
+				setActive(i);
+				// Bring the top of the new section into view if we're scrolled past it.
+				const top = bar!.getBoundingClientRect().top;
+				if (top < 0 || blocks!.getBoundingClientRect().top < 0) bar!.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+				if (focus) titled[i].title.focus({ preventScroll: true });
+			} else {
+				titled[i].title.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+				setActive(i);
+			}
+		}
+
+		// Titles get tabindex=-1 so moving to a section can move focus there too.
+		titled.forEach(({ title }) => title.setAttribute("tabindex", "-1"));
+
+		chips.forEach((chip, i) =>
+			chip.addEventListener("click", (event) => {
+				event.preventDefault();
+				history.replaceState(null, "", chip.hash);
+				goTo(i, true);
+			}),
+		);
+		[prevBtn, slidePrev].forEach((b) => b.addEventListener("click", () => goTo(current - 1, b === slidePrev)));
+		[nextBtn, slideNext].forEach((b) => b.addEventListener("click", () => goTo(current + 1, b === slideNext)));
+
+		// Swiping: settle on whichever slide is mostly in view.
+		let scrollTimer: number | undefined;
+		blocks.addEventListener(
+			"scroll",
+			() => {
+				if (!slides) return;
+				window.clearTimeout(scrollTimer);
+				scrollTimer = window.setTimeout(() => {
+					const width = sections[0].offsetWidth + parseFloat(getComputedStyle(blocks).columnGap || "0");
+					const i = Math.round(blocks.scrollLeft / width);
+					if (i !== current) setActive(Math.max(0, Math.min(sections.length - 1, i)));
+				}, 80);
+			},
+			{ passive: true },
+		);
+
+		// Tabbing into an off-screen slide brings that slide into view.
+		blocks.addEventListener("focusin", (event) => {
+			if (!slides) return;
+			const i = sections.findIndex((el) => el.contains(event.target as Node));
+			if (i >= 0 && i !== current) {
+				blocks.scrollLeft = sections[i].offsetLeft - blocks.offsetLeft;
+				setActive(i);
+			}
+		});
+
+		// Desktop: highlight the section being read.
 		const observer = new IntersectionObserver(
 			(entries) => {
-				entries.forEach((entry) => {
-					if (!entry.isIntersecting) return;
-					tocLinks.forEach((a) => a.classList.remove("is-active"));
-					byId.get(entry.target.id)?.classList.add("is-active");
-				});
+				if (slides) return;
+				for (const entry of entries) {
+					if (entry.isIntersecting) setActive(sections.indexOf(entry.target as HTMLElement));
+				}
 			},
-			{ rootMargin: "0px 0px -70% 0px" },
+			{ rootMargin: "-20% 0px -60% 0px" },
 		);
-		byId.forEach((_, id) => {
-			const el = document.getElementById(id);
-			if (el) observer.observe(el);
-		});
+		sections.forEach((el) => observer.observe(el));
+
+		function applyMode() {
+			slides = slideQuery.matches;
+			article!.classList.toggle("is-slides", slides);
+			slideNav!.hidden = !slides;
+			if (slides) {
+				blocks!.scrollLeft = sections[current].offsetLeft - blocks!.offsetLeft;
+				setActive(current);
+			} else {
+				blocks!.style.height = "";
+				setActive(current);
+			}
+		}
+		slideQuery.addEventListener("change", applyMode);
+
+		// Open on the section named in the address (e.g. from a shared link).
+		const fromHash = location.hash ? titled.findIndex(({ el }) => el.querySelector(location.hash.replace(/[^#\w-]/g, "")) !== null) : -1;
+		current = Math.max(0, fromHash);
+		applyMode();
+		if (fromHash > 0 && slides) requestAnimationFrame(() => (blocks.scrollLeft = sections[fromHash].offsetLeft - blocks.offsetLeft));
 	}
 
 	// Copy the short link. The clipboard API needs a secure context, so fall

@@ -32,19 +32,33 @@ export const GROUP_BLURBS: Record<LearnGroup, string> = {
 };
 
 /**
- * Who a lesson suits. Deliberately described by age/stage rather than by
- * any exam board or course name:
- * - starter:  first steps (roughly ages 11–14)
- * - core:     the main high-school course content (roughly 14–16)
- * - advanced: deeper ideas for older students and exam courses (16+)
+ * One soft color per group, used to color-code the hub cards and each
+ * lesson's section titles. Amber stays the site's accent for buttons; no
+ * cyan. All pass WCAG AA as text on the dark surfaces.
+ */
+export const GROUP_COLORS: Record<LearnGroup, string> = {
+	"Binary & Data": "#ffae2e",
+	"Reliability & Correction": "#a3e635",
+	"Networks & Systems": "#a78bfa",
+	Security: "#f472b6",
+	Practice: "#60a5fa",
+};
+
+/**
+ * How much a lesson assumes. Described by experience, not by age, exam
+ * board or course name:
+ * - starter:  "Beginner" — new to the topic
+ * - core:     "Intermediate" — the main ideas most courses cover
+ * - advanced: "Advanced" — going deeper
+ * (The keys stay as they were so saved filters and links keep working.)
  */
 export type LearnLevel = "starter" | "core" | "advanced";
 export const LEVEL_ORDER: LearnLevel[] = ["starter", "core", "advanced"];
-export const LEVEL_LABELS: Record<LearnLevel, string> = { starter: "Starter", core: "Core", advanced: "Advanced" };
+export const LEVEL_LABELS: Record<LearnLevel, string> = { starter: "Beginner", core: "Intermediate", advanced: "Advanced" };
 export const LEVEL_HINTS: Record<LearnLevel, string> = {
-	starter: "First steps · about ages 11–14",
-	core: "Main course content · about ages 14–16",
-	advanced: "Deeper ideas · 16+ and exam courses",
+	starter: "New to the topic",
+	core: "The main ideas",
+	advanced: "Going deeper",
 };
 
 /** Cross-cutting focus areas, so a teacher can pull together e.g. every cybersecurity lesson. */
