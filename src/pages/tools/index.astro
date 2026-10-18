@@ -6,8 +6,14 @@ const TOOLS = [
 	{
 		href: "/tools/countdown-clock",
 		title: "Countdown Clock",
-		blurb: "A countdown timer with ten different retro-inspired display styles to choose from, perfect for timing activities and tests.",
+		blurb: "A big, bright timer that fills the projector screen — one-tap times, a progress bar, a time's-up chime, and ten retro display styles.",
 		icon: "clock",
+	},
+	{
+		href: "/tools/seating-chart",
+		title: "Seating Chart",
+		blurb: "Paste your class list, pick rows, groups, pairs or a U-shape, add keep-apart rules — then swap seats by hand, project it, or print it.",
+		icon: "seats",
 	},
 	{
 		href: "/tools/student-picker",
@@ -25,16 +31,15 @@ const TOOLS = [
 ---
 
 <Layout
+	wide
 	title="Tools"
-	description="Free classroom tools from LogicDash — a countdown clock, a random student picker, and a binary counter, ready to project."
+	description="Free classroom tools from LogicDash — a big countdown clock, a seating chart maker, a random student picker, and a binary clock, ready to project."
 >
 	<section class="hero">
 		<h1>Tools</h1>
 		<p class="hero-lead">
-			Free classroom tools, built to be projected at the front of the room and actually used — no sign-in, no
-			ads. Each one borrows its look from a real piece of retro display tech (Nixie tubes, split-flap boards,
-			VFDs) and matches LogicDash's own amber, nixie-tube-inspired style, so they feel like part of the same
-			toolkit rather than a bolted-on extra. Pick one, put it on screen, and get on with class.
+			Free classroom tools made to be projected at the front of the room. No sign-in, no ads, and class lists
+			never leave your device. Pick one, put it on screen, and get on with class.
 		</p>
 	</section>
 
@@ -62,6 +67,13 @@ const TOOLS = [
 								<span class="ti-picker-name ti-picker-name--dim">Ben</span>
 								<span class="ti-picker-name ti-picker-name--picked">Dana</span>
 								<span class="ti-picker-name ti-picker-name--dim">Kai</span>
+							</div>
+						)}
+						{tool.icon === "seats" && (
+							<div class="ti-seats">
+								{Array.from({ length: 8 }, (_, i) => (
+									<span class={`ti-seat${i === 5 ? " ti-seat--on" : ""}`} />
+								))}
 							</div>
 						)}
 						{tool.icon === "binary" && (
@@ -264,5 +276,25 @@ const TOOLS = [
 		.tool-card-body {
 			align-items: center;
 		}
+	}
+
+	.ti-seats {
+		display: grid;
+		grid-template-columns: repeat(4, 1.1rem);
+		gap: 0.25rem;
+	}
+
+	.ti-seat {
+		display: block;
+		height: 0.9rem;
+		border-radius: 3px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.ti-seat--on {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 35%, var(--color-bg));
+		box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent);
 	}
 </style>
