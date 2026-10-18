@@ -18,6 +18,9 @@
 				id="converter-input"
 				class="converter-input"
 				inputmode="numeric"
+				min="0"
+				max="255"
+				step="1"
 				placeholder="e.g. 200"
 				data-converter-input
 			/>
@@ -155,7 +158,30 @@
 				await wait(TRAVEL_STEP_MS);
 			}
 
-			if (token !== runToken) cleanupConnector();
+			if (token !== runToken) {
+				cleanupConnector();
+				return;
+			}
+
+			// The connector is placed in pixels, so re-measure it if the layout
+			// changes afterwards (phone rotated, window resized) — otherwise
+			// it would drift away from the remainder tiles.
+			const topRow = orderedRows[orderedRows.length - 1];
+			const bottomRow = orderedRows[0];
+			const reposition = () => {
+				if (!line.isConnected) {
+					window.removeEventListener("resize", reposition);
+					return;
+				}
+				const rect = stepsEl!.getBoundingClientRect();
+				const topY = remainderTileCenterY(rect, topRow);
+				const bottomY = remainderTileCenterY(rect, bottomRow);
+				line.style.transition = arrow.style.transition = "none";
+				line.style.top = `${topY}px`;
+				line.style.bottom = `${rect.height - bottomY}px`;
+				arrow.style.top = `${topY}px`;
+			};
+			window.addEventListener("resize", reposition);
 		}
 
 		async function runConversion(value: number) {
