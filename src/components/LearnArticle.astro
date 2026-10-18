@@ -16,7 +16,7 @@
 // the interactive demos build their markup client-side (innerHTML), which
 // Astro's scoped styles can't reach.
 import Layout from "../layouts/Layout.astro";
-import { LEARN_TOPICS, LEVEL_LABELS, FOCUS_LABELS, getAdjacentLearnTopics } from "../lib/learnTopics";
+import { LEARN_TOPICS, LEVEL_LABELS, FOCUS_LABELS, getAdjacentLearnTopics, shortLink } from "../lib/learnTopics";
 
 interface Props {
 	/** The topic's href exactly as listed in learnTopics.ts, e.g. "/learn/compression". */
@@ -91,6 +91,11 @@ const content = rawContent.replace(
 				<span>About {topic.minutes} min</span>
 				<span aria-hidden="true">•</span>
 				<span>{topic.focus.map((f) => FOCUS_LABELS[f]).join(", ")}</span>
+			</p>
+			<p class="share-link">
+				<span class="share-link-label">Short link</span>
+				<a class="share-link-url" href={`/${topic.code}`} data-share-url={`https://${shortLink(topic)}`}>{shortLink(topic)}</a>
+				<button type="button" class="share-link-copy" data-share-copy aria-label={`Copy short link ${shortLink(topic)}`}>Copy</button>
 			</p>
 			{leadHtml ? <p class="hero-lead" set:html={leadHtml} /> : lead && <p class="hero-lead">{lead}</p>}
 		</header>
@@ -223,6 +228,52 @@ const content = rawContent.replace(
 	.learn-article .lesson-meta-level {
 		color: var(--color-accent);
 		font-weight: 700;
+	}
+
+	.learn-article .share-link {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		margin: 0 0 var(--space-4);
+		padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-surface);
+		font-size: 0.8125rem;
+	}
+
+	.learn-article .share-link-label {
+		color: var(--color-text-muted);
+	}
+
+	.learn-article .share-link-url {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	.learn-article .share-link-url:hover {
+		color: var(--color-accent);
+	}
+
+	.learn-article .share-link-copy {
+		min-height: 2rem;
+		padding: 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.learn-article .share-link-copy:hover,
+	.learn-article .share-link-copy:focus-visible {
+		border-color: var(--color-accent);
 	}
 
 	.learn-article .hero-lead {
@@ -690,6 +741,23 @@ const content = rawContent.replace(
 		byId.forEach((_, id) => {
 			const el = document.getElementById(id);
 			if (el) observer.observe(el);
+		});
+	}
+
+	// Copy the short link. The clipboard API needs a secure context, so fall
+	// back to selecting the text for a manual copy if it's unavailable.
+	const copyBtn = document.querySelector<HTMLButtonElement>("[data-share-copy]");
+	const shareUrl = document.querySelector<HTMLAnchorElement>("[data-share-url]");
+	if (copyBtn && shareUrl) {
+		copyBtn.addEventListener("click", async () => {
+			try {
+				await navigator.clipboard.writeText(shareUrl.dataset.shareUrl!);
+				copyBtn.textContent = "Copied ✓";
+			} catch {
+				getSelection()?.selectAllChildren(shareUrl);
+				copyBtn.textContent = "Press Ctrl+C";
+			}
+			setTimeout(() => (copyBtn.textContent = "Copy"), 2000);
 		});
 	}
 </script>

@@ -42,12 +42,13 @@ const groups = GROUP_ORDER.map((name) => ({
 	topics: LEARN_TOPICS.filter((topic) => topic.group === name),
 })).filter((group) => group.topics.length > 0);
 const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
+const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).map((topic) => [topic.code, topic.href]));
 ---
 
 <Layout
 	title="Byte Lab"
 	wide
-	description="Byte Lab: free, plain-English computer science lessons on binary, data, networks, cybersecurity, and programming — with hands-on demos, quick quizzes, and pseudocode practice."
+	description="Byte Lab: free, plain-English computer science lessons on binary, networks, cybersecurity, and programming, with hands-on demos and quick quizzes."
 >
 	<section class="hero">
 		<h1>Byte Lab</h1>
@@ -55,6 +56,21 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 			Short, hands-on computer science lessons. Read a little, try a demo, check yourself with a quiz.
 		</p>
 		<p class="hero-count">{liveCount} lessons and practice tools · free · no sign-up</p>
+		<form class="code-go" data-code-form data-codes={JSON.stringify(codeMap)} hidden>
+			<label for="lesson-code">Got a lesson code?</label>
+			<input
+				id="lesson-code"
+				name="code"
+				maxlength="40"
+				placeholder="5A2"
+				autocomplete="off"
+				autocapitalize="characters"
+				spellcheck="false"
+				aria-describedby="lesson-code-msg"
+			/>
+			<button type="submit">Go</button>
+			<p class="code-go-msg" id="lesson-code-msg" aria-live="polite" data-code-msg></p>
+		</form>
 	</section>
 
 	<section class="how-to" aria-labelledby="how-to-title">
@@ -62,7 +78,7 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 		<div class="how-card">
 			<h3>For students</h3>
 			<ol>
-				<li>Pick a lesson — start with <strong>Starter</strong> if the topic is new to you.</li>
+				<li>Got a code from your teacher? Type it in the box above. Otherwise pick a lesson — start with <strong>Starter</strong> if the topic is new to you.</li>
 				<li>Read each section, then do the <strong>Try it yourself</strong> activity.</li>
 				<li>Finish with the quiz or practice. Wrong answers explain why, so read them.</li>
 			</ol>
@@ -70,8 +86,8 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 		<div class="how-card">
 			<h3>For teachers</h3>
 			<ol>
-				<li>Filter by <strong>level</strong> and <strong>focus</strong> to find lessons for your class.</li>
-				<li>Press <strong>Fullscreen</strong> on any demo or quiz to project it. It fits the whole screen, from a phone to a classroom display.</li>
+				<li>Filter by <strong>level</strong> and <strong>focus</strong> to find lessons for your class. Every lesson has a short link, like <strong>logicdash.io/5A2</strong> — it is under the lesson title and in the corner of each card.</li>
+				<li>Press <strong>Fullscreen</strong> on any demo or quiz to project it. It fits the whole screen and shows the short link, so students can open it on their own device.</li>
 				<li>Each lesson takes about 5–15 minutes: use one as a starter, a demo, or an exit ticket.</li>
 			</ol>
 		</div>
@@ -140,6 +156,10 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 								data-levels={topic.levels.join(" ")}
 								data-focus={topic.focus.join(" ")}
 							>
+								<span class="card-code">
+									<span class="sr-only">Short link code </span>
+									{topic.code}
+								</span>
 								<TopicIcon href={topic.href} />
 								<span class="topic-card-name">{topic.title}</span>
 								<span class="topic-card-blurb">{topic.blurb}</span>
@@ -167,6 +187,22 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 </Layout>
 
 <script>
+	// "Got a lesson code?" — the same codes as the logicdash.io/5A2 short links.
+	const codeForm = document.querySelector<HTMLFormElement>("[data-code-form]");
+	if (codeForm) {
+		codeForm.hidden = false;
+		const codes = JSON.parse(codeForm.dataset.codes!) as Record<string, string>;
+		const input = codeForm.querySelector("input")!;
+		const msg = codeForm.querySelector<HTMLElement>("[data-code-msg]")!;
+		codeForm.addEventListener("submit", (event) => {
+			event.preventDefault();
+			const code = input.value.trim().toUpperCase().replace(/^.*\//, "");
+			const href = codes[code];
+			if (href) location.href = href;
+			else msg.textContent = code ? `No lesson has the code ${code}. Check it and try again.` : "Type the 3-character code.";
+		});
+	}
+
 	// Filters are a progressive enhancement: without JavaScript every lesson
 	// shows. The current filter is kept in the address (?level=…&focus=…), so a
 	// teacher can share a link that opens on, say, every Starter cybersecurity
@@ -529,6 +565,75 @@ const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 	.tag--level {
 		color: var(--color-accent);
 		border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+	}
+
+	.card-code {
+		position: absolute;
+		top: var(--space-2);
+		right: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.code-go {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-2);
+		margin: var(--space-4) 0 0;
+	}
+
+	.code-go label {
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	.code-go input {
+		width: 5.5rem;
+		min-height: 2.5rem;
+		padding: 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-surface);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 1rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	.code-go input:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
+	}
+
+	.code-go button {
+		min-height: 2.5rem;
+		padding: 0 var(--space-4);
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: var(--color-accent);
+		color: var(--color-accent-contrast);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.code-go-msg {
+		flex-basis: 100%;
+		margin: 0;
+		min-height: 0;
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
+	.code-go-msg:empty {
+		display: none;
 	}
 
 	.tag--strong {

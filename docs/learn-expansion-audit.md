@@ -110,3 +110,22 @@ UK spelling.
 - The phishing email's inline hotspots broke lines on phones.
 
 **End-to-end check (26 checks, all passing):** every demo and quiz was played start to finish in a real browser, with no JavaScript errors.
+
+---
+
+## Round 3 — classroom update
+
+| Request | What changed |
+|---|---|
+| Countdown Clock brighter and bigger | Digits fill the screen width: about 1,210px wide on a 1366px laptop (was 670px) and 300–350px tall on a 1080p projector. A brightness setting (Normal / Bright / Brightest) is added. Large Start/Pause, +1 min and Reset buttons, plus one-tap presets from 1 to 30 minutes. Controls fade during a fullscreen countdown. Your settings are remembered. Tested: 18 checks. |
+| Classroom layout organizer | The Seating Chart is published (listed on Tools, in the sitemap, allowed in `robots.txt`). It shares class lists with Student Picker. Exam mode spreads students apart. Names fit in fullscreen and print. Tested: 14 checks. |
+| Catchy name | The Learn hub is now **Byte Lab**: in the nav, footer, breadcrumbs and structured data. |
+| Classroom use, many courses | Every lesson is tagged with a level (Starter about 11–14 / Core about 14–16 / Advanced 16+), a focus (Data & binary, Networks & systems, Cybersecurity, Programming & algorithms) and a time estimate. The hub filters by level and focus, and the filter is kept in a shareable URL. There are clear "For students" and "For teachers" steps. No exam or course names are used. |
+| Quizzes | 5-question quizzes are added to What is Binary, Bits and Bytes, Hamming Distance, Error Correction, and IPv4 vs IPv6. 10 lessons now end with a quiz. |
+| Pseudocode checked against the reference sheet | All 197 questions were linted for notation: ← assignment, DISPLAY/RETURN with parentheses, IF/REPEAT UNTIL conditions in parentheses, 1-based lists, braces on their own lines, and no `==`, `%`, `!=`, 0-based indexes or made-up keywords. **No deviations found.** |
+| Exam-style question formats | 16 questions added (213 total): <br>• RANDOM: which values are possible, and what is the chance? <br>• Fill in `<MISSING CODE>`. <br>• "Which segments work?" with segments I / II / III. <br>Checked by substituting every option, running every segment on several inputs, and listing every RANDOM outcome. |
+| Short links | Every lesson has a permanent code, such as `logicdash.io/5A2`. Codes are 3 hex characters and avoid 0, 8, B and D. Each is a redirect page in upper and lower case, marked noindex and left out of the sitemap. The link appears: <br>• under the lesson title, with a Copy button <br>• in the corner of each hub card <br>• on screen in fullscreen demos and quizzes, so students can open it on their phones. <br>The hub has a "Got a lesson code?" box. |
+
+**Testing (teacher and student):** 30 end-to-end demo and quiz checks, 18 clock checks, 14 seating checks and 20 short-link checks all pass. Fullscreen fits with no scrolling for 15 demo states at 6 screen sizes. Every page was checked at 320, 768 and 1920px: no sideways scroll and no JavaScript errors. The text scan finds no glued words. All contrast pairs pass WCAG AA. No exam or licensed names appear in the built site.
+
+**Note for deploy:** short links only work on logicdash.io once a fresh build is uploaded. On a host that is case-sensitive, both `/5A2` and `/5a2` are built.

@@ -17,12 +17,18 @@ interface Props {
 	label: string;
 }
 
+import { findLearnTopic, shortLink } from "../lib/learnTopics";
+
 const { title = "Try it yourself", label } = Astro.props;
+// In fullscreen the bar shows the lesson's short link, so students can read
+// it off the projector and open the same page on their own device.
+const topic = findLearnTopic(Astro.url.pathname);
 ---
 
 <section class="demo-frame" data-demo-frame aria-label={label}>
 	<div class="demo-frame-bar">
 		<p class="demo-frame-title">{title}</p>
+		{topic && <p class="demo-frame-link">{shortLink(topic)}</p>}
 		<button type="button" class="demo-frame-fs-btn" data-demo-fs-enter aria-label={`Show ${label} fullscreen`}>
 			<span aria-hidden="true">⛶</span>
 			<span class="demo-frame-fs-text">Fullscreen</span>
@@ -162,6 +168,19 @@ const { title = "Try it yourself", label } = Astro.props;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		color: var(--color-accent);
+	}
+
+	.demo-frame-link {
+		display: none;
+	}
+
+	.demo-frame.is-fullscreen .demo-frame-link {
+		display: block;
+		margin: 0 0 0 auto;
+		font-family: var(--font-mono);
+		font-size: 1em;
+		font-weight: 700;
+		color: var(--color-text);
 	}
 
 	.demo-frame-fs-btn,
