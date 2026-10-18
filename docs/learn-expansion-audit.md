@@ -129,3 +129,33 @@ UK spelling.
 **Testing (teacher and student):** 30 end-to-end demo and quiz checks, 18 clock checks, 14 seating checks and 20 short-link checks all pass. Fullscreen fits with no scrolling for 15 demo states at 6 screen sizes. Every page was checked at 320, 768 and 1920px: no sideways scroll and no JavaScript errors. The text scan finds no glued words. All contrast pairs pass WCAG AA. No exam or licensed names appear in the built site.
 
 **Note for deploy:** short links only work on logicdash.io once a fresh build is uploaded. On a host that is case-sensitive, both `/5A2` and `/5a2` are built.
+
+---
+
+## Round 4 — classroom feedback
+
+| Request | What changed |
+|---|---|
+| Clock fullscreen shows only the clock | Fullscreen shows just the digits. Small, faint **Pause** and **Exit fullscreen** buttons sit underneath and fade while the clock runs. Reset, +1 min, the progress bar and settings now appear only on the normal page. |
+| More vibrant end | Time's up shows a large amber → coral → magenta "Time's up!" with a glow, and still fits the screen. |
+| Small preset times | Moved into **Time & settings** (1 min to 1 hour), above "Any time you like". |
+| Practice screen jumps | The answer panel and Next button are laid out (invisibly) with each question. Both verdicts share the same space. The streak milestone is a floating toast. In fullscreen, the text is held at its size while the answer appears. **Measured: 0px movement on answer** on the page and in fullscreen, at 5 screen sizes. |
+| Robot squares shaded, not black | Grids now look like a printed exam: light squares and solid black blocked squares. Prompts say "Black squares are blocked". |
+| Lesson sidebar | Removed. The lesson uses one 72rem column, with slightly larger body text from 1024px. Its lessons-in-this-group list moved to a "More in …" strip at the bottom. |
+| Swipe to reduce scrolling | Below 1024px, each section is a slide. Swipe or use Back/Next, jump with the section dropdown, and see a "2 of 7" count. The strip's height follows the current section. Deep links open the right slide, and fullscreen demos still work inside slides. On desktop, a sticky section bar highlights the section you're reading. |
+| Subtle color per section | Each group has a soft color, used on section titles, borders, callouts and the hub. Binary & Data is amber, Reliability lime, Networks violet, Security pink and Practice blue. All colors pass AA (6.6:1 or higher). |
+| Remove ages | Levels are **Beginner / Intermediate / Advanced**, described as "New to the topic / The main ideas / Going deeper". |
+| Writing a Byte up arrow | The ↑ key on the converter's number box went past 255 (and ↓ below 0) straight into an error. It's now limited to 0–255. The "read bottom to top" arrow is re-measured on resize so it stays attached. |
+| Tools page | A clean 2×2 grid. Each card has its own color, a large line icon, a one-line description, three feature tags and an "Open" link. |
+| Byte Lab easier on the eyes | New line icons, one per lesson, with no digit tiles. Cards show only icon, title, blurb and a level meter; codes, minutes and quiz tags are gone from cards. Colored section headings and jump pills, plus a gradient title. On phones, cards are horizontal and chip rows scroll sideways. |
+
+**Testing:**
+- 30 end-to-end demo and quiz checks
+- 22 clock checks
+- 14 seating checks
+- 20 short-link checks
+- 16 slide and section-bar checks
+- 0px answer shift (5 screen sizes)
+- Fullscreen fit: 15 states × 6 sizes, all fit
+- No sideways scroll on any page at 320 / 768 / 1920px
+- No JavaScript errors
