@@ -1,17 +1,17 @@
 ---
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import Layout from "../../layouts/Layout.astro";
-import TopicIcon from "../../components/TopicIcon.astro";
+import LineIcon from "../../components/LineIcon.astro";
 import {
 	LEARN_TOPICS,
 	GROUP_ORDER,
 	GROUP_BLURBS,
+	GROUP_COLORS,
 	LEVEL_ORDER,
 	LEVEL_LABELS,
 	LEVEL_HINTS,
 	FOCUS_ORDER,
 	FOCUS_LABELS,
+	type LearnTopic,
 } from "../../lib/learnTopics";
 
 // GROUP_ORDER is shared with learnTopics.ts's HUB_ORDERED_TOPICS, which
@@ -24,25 +24,21 @@ const slug = (name: string) =>
 		.replace(/[^a-z0-9]+/g, "-")
 		.replace(/^-|-$/g, "");
 
-// Which lessons end with a quick quiz — read from the page source, so the
-// badge can never drift out of date.
-const hasQuiz = (href: string) => {
-	try {
-		const file = path.join(process.cwd(), "src/pages", `${href}.astro`);
-		return readFileSync(file, "utf8").includes("<ConceptQuiz");
-	} catch {
-		return false;
-	}
-};
-
 const groups = GROUP_ORDER.map((name) => ({
 	name,
 	id: slug(name),
 	blurb: GROUP_BLURBS[name],
+	color: GROUP_COLORS[name],
 	topics: LEARN_TOPICS.filter((topic) => topic.group === name),
 })).filter((group) => group.topics.length > 0);
 const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
 const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).map((topic) => [topic.code, topic.href]));
+
+/** "Beginner", "Beginner – Intermediate", "Beginner – Advanced"… */
+const levelText = (topic: LearnTopic) => {
+	const ordered = LEVEL_ORDER.filter((l) => topic.levels.includes(l));
+	return ordered.length === 1 ? LEVEL_LABELS[ordered[0]] : `${LEVEL_LABELS[ordered[0]]} – ${LEVEL_LABELS[ordered.at(-1)!]}`;
+};
 ---
 
 <Layout
@@ -51,11 +47,12 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 	description="Byte Lab: free, plain-English computer science lessons on binary, networks, cybersecurity, and programming, with hands-on demos and quick quizzes."
 >
 	<section class="hero">
+		<span class="hero-bits" aria-hidden="true">
+			{groups.map((group) => <span style={`--c: ${group.color}`} />)}
+		</span>
 		<h1>Byte Lab</h1>
-		<p class="hero-lead">
-			Short, hands-on computer science lessons. Read a little, try a demo, check yourself with a quiz.
-		</p>
-		<p class="hero-count">{liveCount} lessons and practice tools · free · no sign-up</p>
+		<p class="hero-lead">Short, hands-on computer science lessons. Read a little, try a demo, check yourself with a quiz.</p>
+		<p class="hero-count">{liveCount} lessons · free · no sign-up</p>
 		<form class="code-go" data-code-form data-codes={JSON.stringify(codeMap)} hidden>
 			<label for="lesson-code">Got a lesson code?</label>
 			<input
@@ -78,7 +75,7 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 		<div class="how-card">
 			<h3>For students</h3>
 			<ol>
-				<li>Got a code from your teacher? Type it in the box above. Otherwise pick a lesson — start with <strong>Starter</strong> if the topic is new to you.</li>
+				<li>Got a code from your teacher? Type it in the box above. Otherwise pick a lesson — try <strong>Beginner</strong> if the topic is new to you.</li>
 				<li>Read each section, then do the <strong>Try it yourself</strong> activity.</li>
 				<li>Finish with the quiz or practice. Wrong answers explain why, so read them.</li>
 			</ol>
@@ -86,9 +83,9 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 		<div class="how-card">
 			<h3>For teachers</h3>
 			<ol>
-				<li>Filter by <strong>level</strong> and <strong>focus</strong> to find lessons for your class. Every lesson has a short link, like <strong>logicdash.io/5A2</strong> — it is under the lesson title and in the corner of each card.</li>
-				<li>Press <strong>Fullscreen</strong> on any demo or quiz to project it. It fits the whole screen and shows the short link, so students can open it on their own device.</li>
-				<li>Each lesson takes about 5–15 minutes: use one as a starter, a demo, or an exit ticket.</li>
+				<li>Filter by <strong>level</strong> and <strong>topic</strong> to find lessons for your class.</li>
+				<li>Share a lesson with its short link, like <strong>logicdash.io/5A2</strong> — it's under every lesson's title.</li>
+				<li>Press <strong>Fullscreen</strong> on any demo or quiz to project it. It fits the whole screen and shows the short link for students' own devices.</li>
 			</ol>
 		</div>
 	</section>
@@ -106,7 +103,7 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 			}
 		</div>
 		<div class="filter-row" role="group" aria-labelledby="filter-focus-label">
-			<span class="filter-label" id="filter-focus-label">Focus</span>
+			<span class="filter-label" id="filter-focus-label">Topic</span>
 			<button type="button" class="chip" data-focus="all" aria-pressed="true">All</button>
 			{
 				FOCUS_ORDER.map((focus) => (
@@ -116,15 +113,6 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 				))
 			}
 		</div>
-		<p class="level-key">
-			{
-				LEVEL_ORDER.map((level) => (
-					<span>
-						<strong>{LEVEL_LABELS[level]}</strong> — {LEVEL_HINTS[level]}
-					</span>
-				))
-			}
-		</p>
 		<p class="filter-status" aria-live="polite" data-filter-status></p>
 	</div>
 
@@ -133,7 +121,9 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 			{
 				groups.map((group) => (
 					<li data-jump={group.id}>
-						<a href={`#${group.id}`}>{group.name}</a>
+						<a href={`#${group.id}`} style={`--c: ${group.color}`}>
+							{group.name}
+						</a>
 					</li>
 				))
 			}
@@ -142,9 +132,13 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 
 	{
 		groups.map((group) => (
-			<section class="topic-group" id={group.id} aria-labelledby={`${group.id}-title`} data-group>
-				<h2 class="topic-group-title" id={`${group.id}-title`}>{group.name}</h2>
-				<p class="topic-group-blurb">{group.blurb}</p>
+			<section class="topic-group" id={group.id} aria-labelledby={`${group.id}-title`} data-group style={`--c: ${group.color}`}>
+				<div class="topic-group-head">
+					<h2 class="topic-group-title" id={`${group.id}-title`}>
+						{group.name}
+					</h2>
+					<p class="topic-group-blurb">{group.blurb}</p>
+				</div>
 				<div class="topic-cards">
 					{group.topics.map((topic) => {
 						const Tag = topic.live ? "a" : "div";
@@ -156,21 +150,22 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 								data-levels={topic.levels.join(" ")}
 								data-focus={topic.focus.join(" ")}
 							>
-								<span class="card-code">
-									<span class="sr-only">Short link code </span>
-									{topic.code}
+								<span class="topic-card-icon">
+									<LineIcon name={topic.href} size={30} />
 								</span>
-								<TopicIcon href={topic.href} />
-								<span class="topic-card-name">{topic.title}</span>
-								<span class="topic-card-blurb">{topic.blurb}</span>
-								<span class="topic-card-meta">
-									{topic.levels.map((level) => (
-										<span class="tag tag--level">{LEVEL_LABELS[level]}</span>
-									))}
-									<span class="tag">{topic.minutes} min</span>
-									{topic.kind === "tool" && <span class="tag tag--strong">Practice</span>}
-									{topic.kind !== "tool" && hasQuiz(topic.href) && <span class="tag">Quiz</span>}
-									{!topic.live && <span class="tag">Coming soon</span>}
+								<span class="topic-card-text">
+									<span class="topic-card-name">{topic.title}</span>
+									<span class="topic-card-blurb">{topic.blurb}</span>
+								</span>
+								<span class="topic-card-foot">
+									<span class="level-meter" aria-hidden="true">
+										{LEVEL_ORDER.map((l) => (
+											<span class:list={{ on: topic.levels.includes(l) }} />
+										))}
+									</span>
+									<span class="topic-card-level">{levelText(topic)}</span>
+									{topic.kind === "tool" && <span class="topic-card-kind">Practice</span>}
+									{!topic.live && <span class="topic-card-kind">Coming soon</span>}
 								</span>
 							</Tag>
 						);
@@ -205,7 +200,7 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 
 	// Filters are a progressive enhancement: without JavaScript every lesson
 	// shows. The current filter is kept in the address (?level=…&focus=…), so a
-	// teacher can share a link that opens on, say, every Starter cybersecurity
+	// teacher can share a link that opens on, say, every Beginner cybersecurity
 	// lesson.
 	const root = document.querySelector<HTMLElement>("[data-filters]");
 	if (root) {
@@ -286,20 +281,63 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 		display: none !important;
 	}
 
+	/* --- Hero: a splash of the group colors ----------------------------- */
 	.hero {
+		position: relative;
 		text-align: center;
-		margin-bottom: var(--space-5);
+		margin: 0 auto var(--space-6);
+		padding: var(--space-4) 0 0;
 	}
 
 	.hero h1 {
 		margin: 0 0 var(--space-2);
-		font-size: clamp(1.75rem, 5vw, 2.5rem);
+		font-size: clamp(2.25rem, 7vw, 3.5rem);
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		background: linear-gradient(90deg, #ffae2e, #f472b6 35%, #a78bfa 65%, #60a5fa);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	/* Five little "bits", one per group color, sitting above the title. */
+	.hero-bits {
+		display: flex;
+		justify-content: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.hero-bits span {
+		width: 14px;
+		height: 14px;
+		border-radius: 4px;
+		background: var(--c);
+		box-shadow: 0 0 14px color-mix(in srgb, var(--c) 55%, transparent);
+		animation: bit-bob 3.2s ease-in-out infinite;
+	}
+
+	.hero-bits span:nth-child(2) { animation-delay: 0.25s; }
+	.hero-bits span:nth-child(3) { animation-delay: 0.5s; }
+	.hero-bits span:nth-child(4) { animation-delay: 0.75s; }
+	.hero-bits span:nth-child(5) { animation-delay: 1s; }
+
+	@keyframes bit-bob {
+		50% {
+			transform: translateY(-4px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-bits span {
+			animation: none;
+		}
 	}
 
 	.hero-lead {
 		margin: 0 auto;
 		max-width: 38rem;
-		font-size: 1.0625rem;
+		font-size: 1.125rem;
 		line-height: 1.6;
 	}
 
@@ -307,273 +345,6 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 		margin: var(--space-2) 0 0;
 		font-family: var(--font-mono);
 		font-size: 0.8125rem;
-		color: var(--color-text-muted);
-	}
-
-	/* Two short how-to cards: side by side from tablet width up. */
-	.how-to {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-		gap: var(--space-4);
-		max-width: 60rem;
-		margin: 0 auto var(--space-6);
-	}
-
-	.how-card {
-		padding: var(--space-4) var(--space-5);
-		border-radius: 12px;
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-	}
-
-	.how-card h3 {
-		margin: 0 0 var(--space-2);
-		font-size: 1rem;
-		color: var(--color-accent);
-	}
-
-	.how-card ol {
-		margin: 0;
-		padding-left: 1.25rem;
-		font-size: 0.9375rem;
-		line-height: 1.55;
-	}
-
-	.how-card li + li {
-		margin-top: var(--space-1);
-	}
-
-	.how-card strong {
-		color: var(--color-text);
-	}
-
-	/* Filter chips */
-	.filters {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--space-2);
-		margin: 0 0 var(--space-5);
-	}
-
-	.filter-row {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		align-items: center;
-		gap: var(--space-2);
-	}
-
-	.filter-label {
-		min-width: 3.5rem;
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--color-text-muted);
-	}
-
-	.chip {
-		min-height: 2.5rem;
-		padding: var(--space-1) var(--space-4);
-		border-radius: 999px;
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		color: var(--color-text);
-		font: inherit;
-		font-size: 0.875rem;
-		font-weight: 600;
-		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			background 0.15s ease;
-	}
-
-	.chip:hover,
-	.chip:focus-visible {
-		border-color: var(--color-accent);
-	}
-
-	.chip[aria-pressed="true"] {
-		background: var(--color-accent);
-		border-color: var(--color-accent);
-		color: var(--color-accent-contrast);
-	}
-
-	.level-key {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: var(--space-1) var(--space-4);
-		margin: var(--space-1) 0 0;
-		font-size: 0.8125rem;
-		color: var(--color-text-muted);
-	}
-
-	.level-key strong {
-		color: var(--color-text);
-	}
-
-	.filter-status {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		color: var(--color-text-muted);
-	}
-
-	/* Section shortcuts. Plain wrapping pills — they simply flow onto a
-	   second (or third) line when space runs out, so there's no breakpoint
-	   where they can collide or overflow. */
-	.group-jump {
-		margin: 0 0 var(--space-6);
-	}
-
-	.group-jump ul {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: var(--space-2);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.group-jump a {
-		display: inline-flex;
-		align-items: center;
-		min-height: 2.25rem;
-		padding: var(--space-1) var(--space-3);
-		border-radius: 999px;
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		color: var(--color-text);
-		font-size: 0.85rem;
-		font-weight: 600;
-		text-decoration: none;
-		white-space: nowrap;
-		transition: border-color 0.15s ease;
-	}
-
-	.group-jump a:hover,
-	.group-jump a:focus-visible {
-		border-color: var(--color-accent);
-	}
-
-	.topic-group {
-		scroll-margin-top: var(--space-4);
-		margin-bottom: var(--space-6);
-	}
-
-	.topic-group-blurb {
-		margin: 0 0 var(--space-3);
-		font-size: 0.9375rem;
-	}
-
-	.topic-group-title {
-		margin: 0 0 var(--space-2);
-		padding-bottom: var(--space-1);
-		border-bottom: 1px solid var(--color-border);
-		font-size: 0.8125rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--color-accent);
-	}
-
-	/* One consistent grid for every section: columns keep the same width
-	   and line up from section to section (4 across on wide screens, then
-	   3, 2 and 1 as space runs out). auto-fill — not auto-fit — keeps a
-	   short section's cards the same size as everyone else's. */
-	.topic-cards {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-		gap: var(--space-3);
-	}
-
-	.topic-card {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--space-1);
-		padding: var(--space-4) var(--space-3) var(--space-3);
-		border-radius: 10px;
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		text-decoration: none;
-		text-align: center;
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-
-	a.topic-card:hover,
-	a.topic-card:focus-visible {
-		border-color: var(--color-accent);
-		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 35%, transparent);
-		transform: translateY(-1px);
-	}
-
-	a.topic-card:active {
-		transform: scale(0.97);
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.1s ease-out;
-	}
-
-	.topic-card-name {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.875rem;
-		line-height: 1.25;
-		color: var(--color-text);
-	}
-
-	.topic-card-blurb {
-		flex: 1;
-		font-size: 0.8125rem;
-		line-height: 1.4;
-		color: var(--color-text-muted);
-	}
-
-	.topic-card--soon {
-		opacity: 0.6;
-	}
-
-	.topic-card-meta {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: var(--space-1);
-		margin-top: var(--space-2);
-	}
-
-	.tag {
-		padding: 2px var(--space-2);
-		border-radius: 999px;
-		border: 1px solid var(--color-border);
-		font-family: var(--font-mono);
-		font-size: 0.6875rem;
-		font-weight: 700;
-		letter-spacing: 0.03em;
-		color: var(--color-text-muted);
-	}
-
-	.tag--level {
-		color: var(--color-accent);
-		border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
-	}
-
-	.card-code {
-		position: absolute;
-		top: var(--space-2);
-		right: var(--space-2);
-		font-family: var(--font-mono);
-		font-size: 0.6875rem;
-		font-weight: 700;
 		color: var(--color-text-muted);
 	}
 
@@ -627,7 +398,6 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 	.code-go-msg {
 		flex-basis: 100%;
 		margin: 0;
-		min-height: 0;
 		font-size: 0.875rem;
 		color: var(--color-text-muted);
 	}
@@ -636,10 +406,350 @@ const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).ma
 		display: none;
 	}
 
-	.tag--strong {
+	/* --- How to use ------------------------------------------------------ */
+	.how-to {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+		gap: var(--space-4);
+		max-width: 60rem;
+		margin: 0 auto var(--space-6);
+	}
+
+	.how-card {
+		padding: var(--space-4) var(--space-5);
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.how-card h3 {
+		margin: 0 0 var(--space-2);
+		font-size: 1rem;
+		color: var(--color-text);
+	}
+
+	.how-card ol {
+		margin: 0;
+		padding-left: 1.25rem;
+		font-size: 0.9375rem;
+		line-height: 1.55;
+	}
+
+	.how-card li + li {
+		margin-top: var(--space-1);
+	}
+
+	.how-card strong {
+		color: var(--color-text);
+	}
+
+	/* --- Filters ----------------------------------------------------------- */
+	.filters {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0 0 var(--space-4);
+	}
+
+	.filter-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.filter-label {
+		min-width: 3.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.chip {
+		min-height: 2.5rem;
+		padding: var(--space-1) var(--space-4);
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font: inherit;
+		font-size: 0.875rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.chip:hover,
+	.chip:focus-visible {
+		border-color: var(--color-accent);
+	}
+
+	.chip[aria-pressed="true"] {
 		background: var(--color-accent);
 		border-color: var(--color-accent);
 		color: var(--color-accent-contrast);
+	}
+
+	.filter-status {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Section shortcuts: a colored dot per group ------------------------ */
+	.group-jump {
+		margin: 0 0 var(--space-6);
+	}
+
+	.group-jump ul {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-2);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.group-jump a {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: 2.5rem;
+		padding: var(--space-1) var(--space-4);
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--c) 40%, var(--color-border));
+		background: color-mix(in srgb, var(--c) 8%, var(--color-surface));
+		color: var(--color-text);
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: border-color 0.15s ease;
+	}
+
+	.group-jump a::before {
+		content: "";
+		width: 10px;
+		height: 10px;
+		border-radius: 3px;
+		background: var(--c);
+	}
+
+	.group-jump a:hover,
+	.group-jump a:focus-visible {
+		border-color: var(--c);
+	}
+
+	/* --- Groups and cards -------------------------------------------------- */
+	.topic-group {
+		scroll-margin-top: var(--space-4);
+		margin-bottom: var(--space-8);
+	}
+
+	.topic-group-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-4);
+		margin: 0 0 var(--space-4);
+		padding-bottom: var(--space-2);
+		border-bottom: 2px solid color-mix(in srgb, var(--c) 45%, transparent);
+	}
+
+	.topic-group-title {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0;
+		font-size: 1.25rem;
+		color: var(--c);
+	}
+
+	.topic-group-title::before {
+		content: "";
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		background: var(--c);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--c) 60%, transparent);
+	}
+
+	.topic-group-blurb {
+		margin: 0;
+		font-size: 0.9375rem;
+	}
+
+	/* One consistent grid for every section (4 across on wide screens, then
+	   3, 2, 1). auto-fill — not auto-fit — keeps a short section's cards the
+	   same size as everyone else's. */
+	.topic-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+		gap: var(--space-4);
+	}
+
+	.topic-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding: var(--space-5);
+		border-radius: 16px;
+		border: 1px solid var(--color-border);
+		background:
+			radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--c) 10%, transparent), transparent 60%),
+			var(--color-surface);
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease,
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	a.topic-card:hover,
+	a.topic-card:focus-visible {
+		border-color: var(--c);
+		box-shadow: 0 8px 28px -10px color-mix(in srgb, var(--c) 55%, transparent);
+		transform: translateY(-2px);
+	}
+
+	a.topic-card:active {
+		transform: scale(0.98);
+	}
+
+	.topic-card-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 56px;
+		height: 56px;
+		border-radius: 14px;
+		background: color-mix(in srgb, var(--c) 16%, var(--color-bg));
+		border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+		color: var(--c);
+	}
+
+	.topic-card-text {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.topic-card-name {
+		font-family: var(--font-sans);
+		font-size: 1.0625rem;
+		font-weight: 700;
+		line-height: 1.25;
+		color: var(--color-text);
+	}
+
+	.topic-card-blurb {
+		font-size: 0.875rem;
+		line-height: 1.45;
+		color: var(--color-text-muted);
+	}
+
+	.topic-card-foot {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	/* Three little bars: which levels the lesson suits, readable at a glance. */
+	.level-meter {
+		display: inline-flex;
+		gap: 3px;
+	}
+
+	.level-meter span {
+		width: 14px;
+		height: 6px;
+		border-radius: 999px;
+		background: var(--color-border);
+	}
+
+	.level-meter span.on {
+		background: var(--c);
+	}
+
+	.topic-card-kind {
+		margin-left: auto;
+		padding: 2px var(--space-2);
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--c) 50%, transparent);
+		color: var(--color-text);
+		font-size: 0.75rem;
+	}
+
+	.topic-card--soon {
+		opacity: 0.6;
+	}
+
+	/* Phones: compact horizontal cards (icon beside the text), and the chip
+	   rows scroll sideways instead of stacking up — much less scrolling. */
+	@media (max-width: 600px) {
+		.topic-card {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			column-gap: var(--space-3);
+			row-gap: var(--space-2);
+			padding: var(--space-4);
+		}
+
+		.topic-card-icon {
+			grid-row: span 2;
+			width: 48px;
+			height: 48px;
+		}
+
+		.topic-card-foot {
+			grid-column: 2;
+		}
+
+		.topic-cards {
+			gap: var(--space-3);
+		}
+
+		.filters {
+			align-items: stretch;
+		}
+
+		.filter-row,
+		.group-jump ul {
+			flex-wrap: nowrap;
+			justify-content: flex-start;
+			overflow-x: auto;
+			scrollbar-width: none;
+			margin-inline: calc(-1 * var(--space-4));
+			padding-inline: var(--space-4);
+		}
+
+		.filter-row::-webkit-scrollbar,
+		.group-jump ul::-webkit-scrollbar {
+			display: none;
+		}
+
+		.chip,
+		.group-jump a {
+			flex-shrink: 0;
+		}
+
+		.filter-status {
+			text-align: center;
+		}
 	}
 
 	.empty {
