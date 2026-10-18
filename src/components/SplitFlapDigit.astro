@@ -49,7 +49,10 @@ const { value } = Astro.props;
 		height: calc(var(--clock-tile-height) * 1);
 		flex-shrink: 0;
 		border-radius: 10%;
-		perspective: 240px;
+		/* Scales with the card, keeping the original 240px-at-96px ratio, so
+		   the flip looks the same at any size — a fixed 240px makes the
+		   turning leaf balloon toward you on a big projector-sized card. */
+		perspective: calc(var(--clock-tile-height) * 2.5);
 		background: #050810;
 		border: 1px solid #050810;
 		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45);
