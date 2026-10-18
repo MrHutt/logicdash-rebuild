@@ -1,5 +1,5 @@
-// Question bank for /learn/pseudocode-practice (part 1 of 4 — see also
-// pseudocodeQuestionsEasy/Medium/Challenging.ts). Every question uses the
+// Question bank for /learn/pseudocode-practice (part 1 of 5 — see also
+// pseudocodeQuestionsEasy/Medium/Challenging/ExamStyle.ts). Every question uses the
 // text-based pseudocode from the AP Computer Science Principles exam
 // reference sheet (the page itself deliberately doesn't name the exam):
 // ← for assignment, 1-based list indexes, REPEAT n TIMES / REPEAT UNTIL,
@@ -13,6 +13,7 @@
 import { EASY_QUESTIONS } from "./pseudocodeQuestionsEasy";
 import { MEDIUM_QUESTIONS } from "./pseudocodeQuestionsMedium";
 import { CHALLENGING_QUESTIONS } from "./pseudocodeQuestionsChallenging";
+import { EXAM_STYLE_QUESTIONS } from "./pseudocodeQuestionsExamStyle";
 
 export type PseudoCategory =
 	| "Variables & display"
@@ -816,10 +817,11 @@ ELSE
 	},
 ];
 
-/** The whole bank: the original set plus the three level files. */
+/** The whole bank: the original set, the three level files, and the exam-style formats. */
 export const PSEUDO_QUESTIONS: PseudoQuestion[] = [
 	...CORE_QUESTIONS,
 	...EASY_QUESTIONS,
 	...MEDIUM_QUESTIONS,
 	...CHALLENGING_QUESTIONS,
+	...EXAM_STYLE_QUESTIONS,
 ];
