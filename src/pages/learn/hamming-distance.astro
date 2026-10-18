@@ -1,5 +1,6 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../../lib/hammingGame";
 
 const patternA = "10110";
@@ -14,6 +15,34 @@ const comparisons = patternA.split("").map((bit, i) => ({
 	b: patternB[i],
 	same: bit === patternB[i],
 }));
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "What is the Hamming distance between 1010 and 1000?",
+		options: ["1", "2", "3", "0"],
+		explain: "Only the third position differs (1 vs 0), so the distance is 1.",
+	},
+	{
+		q: "What is the Hamming distance between 11001 and 10011?",
+		options: ["2", "3", "1", "0"],
+		explain: "Compare position by position: the 2nd and 4th differ. Two differences → a distance of 2.",
+	},
+	{
+		q: "What is the Hamming distance between a pattern and an exact copy of itself?",
+		options: ["0", "1", "It depends on the pattern", "The number of 1s in it"],
+		explain: "Nothing differs, so the distance is 0.",
+	},
+	{
+		q: "What is the largest possible Hamming distance between two 5-bit patterns?",
+		options: ["5", "32", "10", "1"],
+		explain: "At most, every one of the 5 positions is different.",
+	},
+	{
+		q: "Outside of puzzles, Hamming distance is used to…",
+		options: ["spot when data has been corrupted", "encrypt passwords", "make photos smaller", "speed up downloads"],
+		explain: "Richard Hamming invented it to help computers notice — and fix — bits that got flipped by mistake.",
+	},
+];
 ---
 
 <LearnArticle
@@ -94,6 +123,8 @@ const comparisons = patternA.split("").map((bit, i) => ({
 		</p>
 	</section>
 
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

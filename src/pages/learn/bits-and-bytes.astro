@@ -1,5 +1,6 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 import BitChip from "../../components/BitChip.astro";
 
 const byteExample = "10110010".split("");
@@ -9,6 +10,34 @@ const units = [
 	{ name: "Megabyte (MB)", approx: "≈ 1,000 kilobytes", example: "a few photos, or a short song" },
 	{ name: "Gigabyte (GB)", approx: "≈ 1,000 megabytes", example: "a couple of movies, or thousands of photos" },
 	{ name: "Terabyte (TB)", approx: "≈ 1,000 gigabytes", example: "a large external hard drive" },
+];
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "How many bits are in one byte?",
+		options: ["8", "4", "10", "16"],
+		explain: "A byte is a group of 8 bits, like 10110010.",
+	},
+	{
+		q: "How many different values can one byte represent?",
+		options: ["256", "255", "8", "128"],
+		explain: "2 multiplied by itself 8 times is 256 — from 00000000 up to 11111111.",
+	},
+	{
+		q: "How many different values can 3 bits represent?",
+		options: ["8", "3", "6", "9"],
+		explain: "Each bit doubles the options: 2, then 4, then 8.",
+	},
+	{
+		q: "LogicDash's Classic mode uses 5 bits (32 possible secrets). How many possible patterns would 7 bits give?",
+		options: ["128", "70", "64", "14"],
+		explain: "Two more bits means doubling twice: 32 → 64 → 128.",
+	},
+	{
+		q: "Which of these holds the most data?",
+		options: ["1 terabyte", "1 gigabyte", "1 megabyte", "1 kilobyte"],
+		explain: "Each step is about 1,000 times bigger: kilobyte, megabyte, gigabyte, terabyte.",
+	},
 ];
 ---
 
@@ -88,6 +117,8 @@ const units = [
 		</p>
 	</section>
 
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

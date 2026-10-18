@@ -16,7 +16,7 @@
 // the interactive demos build their markup client-side (innerHTML), which
 // Astro's scoped styles can't reach.
 import Layout from "../layouts/Layout.astro";
-import { LEARN_TOPICS, getAdjacentLearnTopics } from "../lib/learnTopics";
+import { LEARN_TOPICS, LEVEL_LABELS, FOCUS_LABELS, getAdjacentLearnTopics } from "../lib/learnTopics";
 
 interface Props {
 	/** The topic's href exactly as listed in learnTopics.ts, e.g. "/learn/compression". */
@@ -76,7 +76,7 @@ const content = rawContent.replace(
 <Layout title={pageTitle ?? topic.title} description={description} ogType="article" wide>
 	<div class="learn-article">
 		<nav class="breadcrumb" aria-label="Breadcrumb">
-			<a href="/learn">Learn</a>
+			<a href="/learn">Byte Lab</a>
 			<span aria-hidden="true">/</span>
 			<a href={`/learn#${groupAnchor}`}>{topic.group}</a>
 			<span aria-hidden="true">/</span>
@@ -85,6 +85,13 @@ const content = rawContent.replace(
 
 		<header class="hero">
 			<h1>{heading ?? topic.title}</h1>
+			<p class="lesson-meta">
+				<span class="lesson-meta-level">{topic.levels.map((l) => LEVEL_LABELS[l]).join(" · ")}</span>
+				<span aria-hidden="true">•</span>
+				<span>About {topic.minutes} min</span>
+				<span aria-hidden="true">•</span>
+				<span>{topic.focus.map((f) => FOCUS_LABELS[f]).join(", ")}</span>
+			</p>
 			{leadHtml ? <p class="hero-lead" set:html={leadHtml} /> : lead && <p class="hero-lead">{lead}</p>}
 		</header>
 
@@ -200,6 +207,22 @@ const content = rawContent.replace(
 		margin: 0 0 var(--space-3);
 		font-size: clamp(1.75rem, 4vw, 2.5rem);
 		line-height: 1.15;
+	}
+
+	.learn-article .lesson-meta {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-1) var(--space-2);
+		margin: 0 0 var(--space-4);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+
+	.learn-article .lesson-meta-level {
+		color: var(--color-accent);
+		font-weight: 700;
 	}
 
 	.learn-article .hero-lead {

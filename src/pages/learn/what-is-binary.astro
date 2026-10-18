@@ -1,11 +1,40 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 import BitChip from "../../components/BitChip.astro";
 
 const countingRows = Array.from({ length: 9 }, (_, decimal) => ({
 	decimal,
 	bits: decimal.toString(2).padStart(3, "0"),
 }));
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "Why do computers use binary?",
+		options: ["Electricity is easy to read as just two states — on or off", "Binary numbers are always shorter than decimal ones", "Computers can only count up to 1", "It was the first number system ever invented"],
+		explain: "Everything inside a computer is a switch that's either on or off, so two digits — 1 and 0 — fit perfectly.",
+	},
+	{
+		q: "What is binary 101 in decimal?",
+		options: ["5", "101", "3", "6"],
+		explain: "One 4, no 2s, one 1: 4 + 0 + 1 = 5.",
+	},
+	{
+		q: "In binary, each column to the left is worth…",
+		options: ["twice as much as the one to its right", "ten times as much as the one to its right", "one more than the one to its right", "the same as every other column"],
+		explain: "The columns go 1, 2, 4, 8, 16 — doubling each time — instead of 1, 10, 100 like decimal.",
+	},
+	{
+		q: "What is binary 110 in decimal?",
+		options: ["6", "110", "3", "5"],
+		explain: "One 4, one 2, no 1s: 4 + 2 = 6.",
+	},
+	{
+		q: "Counting in binary: 0, 1, … what comes next?",
+		options: ["10", "2", "11", "01"],
+		explain: "Binary has no digit 2, so after 1 it rolls over into a new column — just like 9 rolls over to 10 in decimal.",
+	},
+];
 ---
 
 <LearnArticle
@@ -68,6 +97,8 @@ const countingRows = Array.from({ length: 9 }, (_, decimal) => ({
 		</p>
 	</section>
 
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

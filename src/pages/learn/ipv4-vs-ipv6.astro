@@ -1,5 +1,6 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 import BitChip from "../../components/BitChip.astro";
 
 const ipv4Octets = "192.168.1.1".split(".").map((octet) => ({
@@ -18,6 +19,34 @@ const hexNibbles = hexSegment.split("").map((char) => ({
 	hex: char.toUpperCase(),
 	bits: parseInt(char, 16).toString(2).padStart(4, "0"),
 }));
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "How many bits are in an IPv4 address?",
+		options: ["32", "8", "128", "64"],
+		explain: "32 bits gives about 4.3 billion possible addresses.",
+	},
+	{
+		q: "In the address 192.168.1.1, why is every number between 0 and 255?",
+		options: ["Each number is one byte (8 bits)", "Routers can't count past 255", "It's a rule chosen at random", "Each number is a hexadecimal digit"],
+		explain: "8 bits can hold 256 different values: 0 to 255.",
+	},
+	{
+		q: "Why was IPv6 needed?",
+		options: ["The world was running out of IPv4 addresses as more devices came online", "IPv4 was too slow", "IPv4 couldn't send pictures", "IPv4 addresses were too long to type"],
+		explain: "4.3 billion addresses sounded endless in 1981 — until phones, TVs and doorbells all needed one.",
+	},
+	{
+		q: "IPv6 uses 128 bits instead of 32. How many more addresses does that give?",
+		options: ["Vastly more — every extra bit doubles the number", "Exactly four times as many", "96 more", "About the same"],
+		explain: "Four times the bits is NOT four times the addresses: 96 extra bits means doubling 96 more times.",
+	},
+	{
+		q: "How are IPv6 addresses usually written?",
+		options: ["In hexadecimal", "In plain binary", "As four decimal numbers", "In Roman numerals"],
+		explain: "128 bits would be 128 digits in binary, so hexadecimal — 4 bits per digit — keeps them shorter.",
+	},
+];
 ---
 
 <LearnArticle
@@ -207,6 +236,8 @@ const hexNibbles = hexSegment.split("").map((char) => ({
 		</p>
 	</section>
 
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

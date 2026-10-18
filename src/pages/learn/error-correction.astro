@@ -1,5 +1,6 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../../lib/hammingGame";
 
 const before = "10110010";
@@ -25,6 +26,34 @@ const realWorldExamples = [
 	{
 		name: "CDs and DVDs",
 		text: "able to keep playing even with small scratches on the disc",
+	},
+];
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "Which of these can flip a bit by accident while data is moving?",
+		options: ["Electrical interference or a weak signal", "A strong password", "Compressing the file", "A fast processor"],
+		explain: "Noise on a cable, a weak wireless signal, even cosmic rays can turn a 0 into a 1 or a 1 into a 0.",
+	},
+	{
+		q: "Why are extra check bits added to data?",
+		options: ["So the receiver can detect — and even fix — flipped bits", "To make the file smaller", "To hide the data from attackers", "To make it download faster"],
+		explain: "The check bits are calculated from the data, so if a bit flips they no longer line up — which reveals the error.",
+	},
+	{
+		q: "Do the check bits carry any new information?",
+		options: ["No — they're calculated from the data purely to check it", "Yes — they hold a hidden message", "Yes — they store the date it was sent", "No — they're random"],
+		explain: "They're worked out from the original bits, so they add no new meaning, only a way to check.",
+	},
+	{
+		q: "With an error-correcting code, if a single bit flips on the way, the receiving computer can…",
+		options: ["work out which bit flipped and flip it back, without asking for the data again", "only tell that something went wrong", "do nothing at all", "delete the data to be safe"],
+		explain: "Where the check bits stop lining up points to the exact bit that flipped.",
+	},
+	{
+		q: "Adding extra bits that aren't needed when nothing goes wrong is an example of…",
+		options: ["Redundancy", "Encryption", "Compression", "Abstraction"],
+		explain: "Extra copies or extra bits kept \"just in case\" are redundancy — it's what lets the system tolerate a fault.",
 	},
 ];
 ---
@@ -118,6 +147,8 @@ const realWorldExamples = [
 		</ul>
 	</section>
 
+
+	<ConceptQuiz questions={QUIZ} />
 </LearnArticle>
 
 <style>

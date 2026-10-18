@@ -31,6 +31,32 @@ export const GROUP_BLURBS: Record<LearnGroup, string> = {
 	Practice: "Hands-on practice — step through it yourself, as many times as you like.",
 };
 
+/**
+ * Who a lesson suits. Deliberately described by age/stage rather than by
+ * any exam board or course name:
+ * - starter:  first steps (roughly ages 11–14)
+ * - core:     the main high-school course content (roughly 14–16)
+ * - advanced: deeper ideas for older students and exam courses (16+)
+ */
+export type LearnLevel = "starter" | "core" | "advanced";
+export const LEVEL_ORDER: LearnLevel[] = ["starter", "core", "advanced"];
+export const LEVEL_LABELS: Record<LearnLevel, string> = { starter: "Starter", core: "Core", advanced: "Advanced" };
+export const LEVEL_HINTS: Record<LearnLevel, string> = {
+	starter: "First steps · about ages 11–14",
+	core: "Main course content · about ages 14–16",
+	advanced: "Deeper ideas · 16+ and exam courses",
+};
+
+/** Cross-cutting focus areas, so a teacher can pull together e.g. every cybersecurity lesson. */
+export type LearnFocus = "data" | "networks" | "cyber" | "programming";
+export const FOCUS_ORDER: LearnFocus[] = ["data", "networks", "cyber", "programming"];
+export const FOCUS_LABELS: Record<LearnFocus, string> = {
+	data: "Data & binary",
+	networks: "Networks & systems",
+	cyber: "Cybersecurity",
+	programming: "Programming & algorithms",
+};
+
 export interface LearnTopic {
 	title: string;
 	href: string;
@@ -43,6 +69,12 @@ export interface LearnTopic {
 	kind?: "lesson" | "tool";
 	/** Short concept phrases for the page's structured data ("teaches"). */
 	teaches?: string[];
+	/** Which stages it suits (most lessons have one). */
+	levels: LearnLevel[];
+	/** Focus areas it belongs to. */
+	focus: LearnFocus[];
+	/** Rough time to read and try the activities, in minutes. */
+	minutes: number;
 }
 
 // Array order within each group is the reading order — see HUB_ORDERED_TOPICS.
@@ -52,6 +84,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "What is Binary?",
 		href: "/learn/what-is-binary",
 		blurb: "The basics — how computers count with just 0s and 1s.",
+		levels: ["starter"],
+		focus: ["data"],
+		minutes: 5,
 		live: true,
 		group: "Binary & Data",
 		teaches: ["Binary numbers", "Bits"],
@@ -60,6 +95,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Counting in Binary",
 		href: "/learn/counting-in-binary",
 		blurb: "The rollover trick that makes binary counting click.",
+		levels: ["starter"],
+		focus: ["data"],
+		minutes: 8,
 		live: true,
 		group: "Binary & Data",
 		teaches: ["Counting in base 2"],
@@ -68,6 +106,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Bits, Bytes, and Beyond",
 		href: "/learn/bits-and-bytes",
 		blurb: "What a byte actually is, and how we measure data.",
+		levels: ["starter"],
+		focus: ["data"],
+		minutes: 8,
 		live: true,
 		group: "Binary & Data",
 		teaches: ["Bits and bytes", "Units of data"],
@@ -76,6 +117,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Binary ↔ Hex ↔ Decimal",
 		href: "/learn/binary-hex-decimal",
 		blurb: "Convert between number systems, and see how it works.",
+		levels: ["core"],
+		focus: ["data"],
+		minutes: 15,
 		live: true,
 		group: "Binary & Data",
 		teaches: ["Hexadecimal", "Number base conversion"],
@@ -84,6 +128,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "How Computers Store Text",
 		href: "/learn/how-computers-store-text",
 		blurb: "How your keyboard becomes binary.",
+		levels: ["core"],
+		focus: ["data"],
+		minutes: 12,
 		live: true,
 		group: "Binary & Data",
 		teaches: ["ASCII", "Unicode", "Text encoding"],
@@ -92,6 +139,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Compression",
 		href: "/learn/compression",
 		blurb: "How files get smaller — and when detail gets thrown away.",
+		levels: ["core"],
+		focus: ["data"],
+		minutes: 12,
 		live: true,
 		group: "Binary & Data",
 		teaches: ["Data compression", "Lossless compression", "Lossy compression"],
@@ -102,6 +152,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Hamming Distance, Explained",
 		href: "/learn/hamming-distance",
 		blurb: "The math behind every guess you make in LogicDash.",
+		levels: ["core"],
+		focus: ["data"],
+		minutes: 8,
 		live: true,
 		group: "Reliability & Correction",
 		teaches: ["Hamming distance"],
@@ -110,6 +163,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Error Correction, Explained",
 		href: "/learn/error-correction",
 		blurb: "How computers detect and fix mistakes in data.",
+		levels: ["advanced"],
+		focus: ["data"],
+		minutes: 12,
 		live: true,
 		group: "Reliability & Correction",
 		teaches: ["Error detection", "Error correction", "Parity bits"],
@@ -118,6 +174,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Redundancy & Fault Tolerance",
 		href: "/learn/redundancy-and-fault-tolerance",
 		blurb: "Spare parts and backup routes that keep things running.",
+		levels: ["core"],
+		focus: ["networks", "cyber"],
+		minutes: 10,
 		live: true,
 		group: "Reliability & Correction",
 		teaches: ["Redundancy", "Fault tolerance"],
@@ -128,6 +187,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Abstraction",
 		href: "/learn/abstraction",
 		blurb: "How we use complicated things without knowing every detail.",
+		levels: ["core"],
+		focus: ["programming"],
+		minutes: 10,
 		live: true,
 		group: "Networks & Systems",
 		teaches: ["Abstraction", "Procedural abstraction", "Data abstraction"],
@@ -136,6 +198,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Packets & Routing",
 		href: "/learn/packets-and-routing",
 		blurb: "How your data travels the internet in small pieces.",
+		levels: ["core"],
+		focus: ["networks"],
+		minutes: 10,
 		live: true,
 		group: "Networks & Systems",
 		teaches: ["Packets", "Routing", "Internet protocols"],
@@ -144,6 +209,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Bandwidth & Latency",
 		href: "/learn/bandwidth-and-latency",
 		blurb: "Why a fast connection can still feel slow.",
+		levels: ["core"],
+		focus: ["networks"],
+		minutes: 12,
 		live: true,
 		group: "Networks & Systems",
 		teaches: ["Bandwidth", "Latency"],
@@ -152,6 +220,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "IPv4 vs IPv6",
 		href: "/learn/ipv4-vs-ipv6",
 		blurb: "Why the internet needed a bigger address book.",
+		levels: ["core"],
+		focus: ["networks"],
+		minutes: 10,
 		live: true,
 		group: "Networks & Systems",
 		teaches: ["IP addresses", "IPv4", "IPv6"],
@@ -160,6 +231,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Scalability",
 		href: "/learn/scalability",
 		blurb: "What has to change when a system gets popular.",
+		levels: ["core"],
+		focus: ["networks"],
+		minutes: 8,
 		live: true,
 		group: "Networks & Systems",
 		teaches: ["Scalability"],
@@ -168,6 +242,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Speedup",
 		href: "/learn/speedup",
 		blurb: "Why four cooks aren't always four times faster.",
+		levels: ["advanced"],
+		focus: ["networks", "programming"],
+		minutes: 12,
 		live: true,
 		group: "Networks & Systems",
 		teaches: ["Parallel computing", "Speedup"],
@@ -176,6 +253,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Crowdsourcing & Distributed Computing",
 		href: "/learn/distributed-computing",
 		blurb: "Split one huge job across many helpers.",
+		levels: ["advanced"],
+		focus: ["networks"],
+		minutes: 12,
 		live: true,
 		group: "Networks & Systems",
 		teaches: ["Distributed computing", "Crowdsourcing", "Parallel computing"],
@@ -186,6 +266,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Encryption Basics",
 		href: "/learn/encryption-basics",
 		blurb: "Locking data so only the right key can read it.",
+		levels: ["starter"],
+		focus: ["cyber"],
+		minutes: 12,
 		live: true,
 		group: "Security",
 		teaches: ["Encryption", "Symmetric encryption", "Caesar cipher"],
@@ -194,6 +277,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Public-Key Cryptography",
 		href: "/learn/public-key-cryptography",
 		blurb: "How strangers share secrets without meeting first.",
+		levels: ["advanced"],
+		focus: ["cyber"],
+		minutes: 12,
 		live: true,
 		group: "Security",
 		teaches: ["Public-key encryption", "Asymmetric encryption"],
@@ -202,6 +288,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Password Strength & Entropy",
 		href: "/learn/password-strength",
 		blurb: "What makes a password hard to guess — and how hard.",
+		levels: ["starter"],
+		focus: ["cyber"],
+		minutes: 10,
 		live: true,
 		group: "Security",
 		teaches: ["Password strength", "Entropy", "Brute-force attacks"],
@@ -210,6 +299,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Phishing Red Flags",
 		href: "/learn/phishing",
 		blurb: "Spot the warning signs in a fake email.",
+		levels: ["starter"],
+		focus: ["cyber"],
+		minutes: 10,
 		live: true,
 		group: "Security",
 		teaches: ["Phishing", "Social engineering"],
@@ -220,6 +312,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Reading a Byte",
 		href: "/learn/reading-a-byte",
 		blurb: "Turn any byte into a real number, step by step.",
+		levels: ["starter"],
+		focus: ["data"],
+		minutes: 15,
 		live: true,
 		group: "Practice",
 		teaches: ["Binary to decimal conversion"],
@@ -228,6 +323,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Writing a Byte",
 		href: "/learn/writing-a-byte",
 		blurb: "Turn any number into binary, the way most people actually learn it.",
+		levels: ["core"],
+		focus: ["data"],
+		minutes: 15,
 		live: true,
 		group: "Practice",
 		teaches: ["Decimal to binary conversion"],
@@ -236,6 +334,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Binary Search",
 		href: "/learn/binary-search",
 		blurb: "The smartest way to find a number — halve it every time.",
+		levels: ["core"],
+		focus: ["programming"],
+		minutes: 12,
 		live: true,
 		group: "Practice",
 		teaches: ["Binary search", "Linear search", "Algorithm efficiency"],
@@ -244,6 +345,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Sorting Algorithms",
 		href: "/learn/sorting-algorithms",
 		blurb: "Watch a bubble sort put things in order, one swap at a time.",
+		levels: ["core", "advanced"],
+		focus: ["programming"],
+		minutes: 15,
 		live: true,
 		group: "Practice",
 		teaches: ["Sorting algorithms", "Bubble sort", "Algorithm efficiency"],
@@ -252,6 +356,9 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		title: "Pseudocode Practice",
 		href: "/learn/pseudocode-practice",
 		blurb: "Endless code-reading questions at three levels. Build a streak.",
+		levels: ["starter", "core", "advanced"],
+		focus: ["programming"],
+		minutes: 10,
 		live: true,
 		group: "Practice",
 		kind: "tool",

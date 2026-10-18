@@ -55,14 +55,14 @@ if (!structuredData && learnTopic) {
 				audience: { "@type": "EducationalAudience", educationalRole: "student" },
 				...(learnTopic.teaches ? { teaches: learnTopic.teaches } : {}),
 				...(isTool ? { applicationCategory: "EducationalApplication", operatingSystem: "Any (web browser)" } : {}),
-				isPartOf: { "@type": "CollectionPage", name: "Bit by Bit", url: learnHubURL },
+				isPartOf: { "@type": "CollectionPage", name: "Byte Lab", url: learnHubURL },
 				author: publisher,
 				publisher,
 			},
 			{
 				"@type": "BreadcrumbList",
 				itemListElement: [
-					{ "@type": "ListItem", position: 1, name: "Learn", item: learnHubURL },
+					{ "@type": "ListItem", position: 1, name: "Byte Lab", item: learnHubURL },
 					{ "@type": "ListItem", position: 2, name: learnTopic.title, item: canonicalURL.href },
 				],
 			},
@@ -72,7 +72,7 @@ if (!structuredData && learnTopic) {
 	structuredData = {
 		"@context": "https://schema.org",
 		"@type": "CollectionPage",
-		name: "Bit by Bit",
+		name: "Byte Lab",
 		description,
 		url: canonicalURL.href,
 		inLanguage: "en",
