@@ -58,7 +58,7 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		   full derivation. Height still simply follows from the 1:2
 		   aspect-ratio, so this tube ends up both wider AND taller than a
 		   flat segment tile, not just taller. */
-		width: clamp(2.7rem, 9.8vw, 4.4rem);
+		width: calc(var(--clock-tile-height) * 0.7333);
 		aspect-ratio: 1 / 2;
 		flex-shrink: 0;
 		overflow: hidden;

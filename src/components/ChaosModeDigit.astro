@@ -50,7 +50,7 @@ const blinkDelay = (Math.random() * -1.2).toFixed(2);
 		   the edge of the original ~58px-wide tile) — see that comment for
 		   the full derivation. Height simply follows from the unchanged
 		   3:5 aspect-ratio. */
-		width: clamp(2.57rem, 9.33vw, 4.2rem);
+		width: calc(var(--clock-tile-height) * 0.7);
 		aspect-ratio: 3 / 5;
 		flex-shrink: 0;
 		overflow: visible;
