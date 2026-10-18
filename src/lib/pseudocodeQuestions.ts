@@ -734,7 +734,7 @@ MOVE_FORWARD()`,
 		id: "robot-3",
 		level: "medium",
 		topics: ["Robot"],
-		prompt: "The robot starts facing right. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing right. Black squares are blocked. Which square does it end on?",
 		code: `REPEAT UNTIL (NOT CAN_MOVE("forward"))
 {
   MOVE_FORWARD()
@@ -795,7 +795,7 @@ ROTATE_LEFT()`,
 		id: "robot-6",
 		level: "medium",
 		topics: ["Robot"],
-		prompt: "The robot starts facing up. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing up. Black squares are blocked. Which square does it end on?",
 		code: `IF (CAN_MOVE("forward"))
 {
   MOVE_FORWARD()

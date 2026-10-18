@@ -962,7 +962,7 @@ REPEAT 2 TIMES
 		id: "m-rc-1",
 		level: "medium",
 		topics: ["Robot", "Selection"],
-		prompt: "The robot starts facing right. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing right. Black squares are blocked. Which square does it end on?",
 		code: `IF (CAN_MOVE("forward"))
 {
   MOVE_FORWARD()
@@ -990,7 +990,7 @@ ELSE
 		id: "m-rc-2",
 		level: "medium",
 		topics: ["Robot", "Selection"],
-		prompt: "The robot starts facing up. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing up. Black squares are blocked. Which square does it end on?",
 		code: `IF (CAN_MOVE("left"))
 {
   ROTATE_LEFT()
@@ -1015,7 +1015,7 @@ ELSE
 		id: "m-rc-3",
 		level: "medium",
 		topics: ["Robot", "Selection"],
-		prompt: "The robot starts facing up. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing up. Black squares are blocked. Which square does it end on?",
 		code: `IF (CAN_MOVE("forward"))
 {
   MOVE_FORWARD()
@@ -1046,7 +1046,7 @@ ELSE
 		id: "m-rc-4",
 		level: "medium",
 		topics: ["Robot", "Iteration", "Selection"],
-		prompt: "The robot starts facing right. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing right. Black squares are blocked. Which square does it end on?",
 		code: `REPEAT 3 TIMES
 {
   IF (CAN_MOVE("forward"))

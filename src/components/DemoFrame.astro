@@ -62,10 +62,15 @@ const topic = findLearnTopic(Astro.url.pathname);
 		const MIN_FONT_PX = 11;
 		const fits = () => frame.scrollHeight <= frame.clientHeight + 1 && frame.scrollWidth <= frame.clientWidth + 1;
 
+		// A demo can set data-fit-hold on the frame while it reveals content
+		// whose space it already reserved (e.g. an answer panel): the text may
+		// then shrink if it must, but never grows, so nothing jumps.
 		function fit() {
 			if (!isOpen()) return;
+			const held = frame.dataset.fitHold === "1" && frame.style.fontSize ? parseFloat(frame.style.fontSize) : 0;
 			frame.style.fontSize = "";
-			const max = parseFloat(getComputedStyle(frame).fontSize);
+			const max = held || parseFloat(getComputedStyle(frame).fontSize);
+			if (held) frame.style.fontSize = `${held}px`;
 			if (fits()) return;
 			let lo = MIN_FONT_PX;
 			let hi = max;

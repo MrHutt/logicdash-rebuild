@@ -72,7 +72,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 				<div class="pp-top-meta">
 					<span>Best on <span data-pp-best-level>Easy</span>: <strong data-pp-best>0</strong></span>
 					<span>Answered: <strong data-pp-answered>0</strong></span>
-					<span data-pp-waiting-wrap hidden>Coming back: <strong data-pp-waiting>0</strong></span>
+					<span data-pp-waiting-wrap>Coming back: <strong data-pp-waiting>0</strong></span>
 				</div>
 			</div>
 
@@ -108,7 +108,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 					</table>
 				</div>
 				<p class="pp-help-note">
-					Robot questions: the triangle is the robot, pointing the way it faces. Dark squares are blocked.
+					Robot questions: the triangle is the robot, pointing the way it faces. Black squares are blocked.
 					ROTATE_LEFT() and ROTATE_RIGHT() turn it without moving it. If it tries to move into a blocked square
 					or off the grid, it stays put and the program stops.
 				</p>
@@ -122,12 +122,15 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 					<div class="pp-grid" data-pp-grid hidden></div>
 				</div>
 				<div class="pp-options" data-pp-options role="group" aria-label="Answer choices"></div>
-				<div class="pp-feedback" data-pp-feedback aria-live="polite" hidden>
-					<p class="pp-verdict" data-pp-verdict></p>
+				<div class="pp-feedback is-pending" data-pp-feedback aria-live="polite">
+					<p class="pp-verdict" data-pp-verdict>
+						<span data-pp-verdict-good></span>
+						<span data-pp-verdict-bad></span>
+					</p>
 					<p class="pp-explanation" data-pp-explanation></p>
 				</div>
 				<div class="demo-controls">
-					<button type="button" class="demo-btn demo-btn--primary" data-pp-next hidden>Next question →</button>
+					<button type="button" class="demo-btn demo-btn--primary is-pending" data-pp-next>Next question →</button>
 				</div>
 			</article>
 
@@ -173,8 +176,11 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	const optionsEl = $("[data-pp-options]");
 	const feedbackEl = $("[data-pp-feedback]");
 	const verdictEl = $("[data-pp-verdict]");
+	const verdictGood = $("[data-pp-verdict-good]");
+	const verdictBad = $("[data-pp-verdict-bad]");
 	const explanationEl = $("[data-pp-explanation]");
 	const nextBtn = $<HTMLButtonElement>("[data-pp-next]");
+	const frameEl = nextBtn.closest<HTMLElement>("[data-demo-frame]")!;
 	const resetBtn = $<HTMLButtonElement>("[data-pp-reset]");
 
 	// --- Persistence (best-effort: private windows or blocked storage just
@@ -225,7 +231,6 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		bestLevelEl.textContent = LEVEL_NAMES[state.level];
 		answeredEl.textContent = String(state.answered);
 		const waiting = waitingCount(state, PSEUDO_QUESTIONS);
-		waitingWrap.hidden = waiting === 0;
 		waitingEl.textContent = String(waiting);
 	}
 
@@ -290,6 +295,13 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		);
 	}
 
+	/** Both verdicts name the answer, so they're about the same length and the reserved panel fits either. */
+	function verdictText(correct: boolean, pos: number) {
+		const opt = current!.options[current!.answer];
+		const named = opt.includes("\n") ? `${pos}` : `${pos}: ${opt}`;
+		return correct ? `✓ Correct — the answer is ${named}.` : `✗ Not quite — the answer is ${named}. This one will come back soon.`;
+	}
+
 	/** `moveFocus` is for user-triggered changes, so keyboard and screen-reader users land on the new question. */
 	function showQuestion(moveFocus = false) {
 		current = pickNext(state, PSEUDO_QUESTIONS);
@@ -321,11 +333,30 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 			optionsEl.append(btn);
 		});
 
-		feedbackEl.hidden = true;
-		nextBtn.hidden = true;
+		// The answer panel is laid out now — filled with this question's real
+		// explanation, just invisible — so revealing it later doesn't move or
+		// resize anything (and fullscreen doesn't have to re-fit the text).
+		const correctPos = optionOrder.indexOf(current.answer) + 1;
+		// Both verdicts are laid out in the same spot, so the panel is always
+		// the height of the longer one, whichever the student gets.
+		verdictEl.className = "pp-verdict";
+		verdictGood.textContent = verdictText(true, correctPos);
+		verdictBad.textContent = verdictText(false, correctPos);
+		explanationEl.textContent = current.explanation;
+		feedbackEl.classList.add("is-pending");
+		nextBtn.classList.add("is-pending");
+		delete frameEl.dataset.fitHold;
 		renderStats();
 		save();
-		if (moveFocus) promptEl.focus({ preventScroll: true });
+		if (moveFocus) {
+			promptEl.focus({ preventScroll: true });
+			// On the page, bring the new question's top back into view if the
+			// last answer left it scrolled off the top.
+			if (!document.querySelector(".demo-frame.is-fullscreen")) {
+				const top = promptEl.closest(".pp-card")!.getBoundingClientRect().top;
+				if (top < 0) window.scrollBy({ top: top - 16, behavior: "smooth" });
+			}
+		}
 	}
 
 	function answer(optIndex: number) {
@@ -350,12 +381,10 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 
 		const correctPos = optionOrder.indexOf(current.answer) + 1;
 		verdictEl.className = `pp-verdict ${correct ? "demo-verdict--good" : "demo-verdict--bad"}`;
-		verdictEl.textContent = correct
-			? "✓ Correct!"
-			: `✗ Not quite — the answer is ${correctPos}: ${current.options[current.answer]}. This one will come back soon.`;
 		explanationEl.textContent = current.explanation;
-		feedbackEl.hidden = false;
-		nextBtn.hidden = false;
+		frameEl.dataset.fitHold = "1";
+		feedbackEl.classList.remove("is-pending");
+		nextBtn.classList.remove("is-pending");
 		nextBtn.focus({ preventScroll: true });
 
 		if (result.milestone) showMilestone(result.milestone);
@@ -561,8 +590,21 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		color: var(--color-text);
 	}
 
+	/* A floating toast, so it never pushes the question down. */
+	.pp-tool {
+		position: relative;
+	}
+
 	.pp-tool .pp-milestone {
-		margin: 0.75em 0 0;
+		position: absolute;
+		top: 0.5em;
+		left: 50%;
+		z-index: 5;
+		width: max-content;
+		max-width: 90%;
+		margin: 0;
+		translate: -50% 0;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 		padding: 0.5em 1em;
 		border-radius: 10px;
 		border: 1px solid var(--color-accent);
@@ -714,12 +756,12 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 	.pp-tool .pp-grid {
 		--cols: 5;
 		display: grid;
-		grid-template-columns: repeat(var(--cols), 2.2em);
-		grid-auto-rows: 2.2em;
+		grid-template-columns: repeat(var(--cols), 2.6em);
+		grid-auto-rows: 2.6em;
 		gap: 2px;
 		padding: 2px;
 		border-radius: 6px;
-		background: var(--color-border);
+		background: #5b6075;
 		flex-shrink: 0;
 	}
 
@@ -728,18 +770,20 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--color-surface);
+		background: #e8eaf2;
+		color: #14161f;
 		font-family: var(--font-mono);
 		font-weight: 700;
 		font-size: 0.95em;
 	}
 
+	/* Like a printed exam grid: light open squares, solid black blocked ones. */
 	.pp-tool .pp-cell--label {
-		color: var(--color-text);
+		color: #14161f;
 	}
 
 	.pp-tool .pp-cell--blocked {
-		background: repeating-linear-gradient(135deg, #3a3e50 0 4px, #25283a 4px 8px);
+		background: #000;
 	}
 
 	.pp-tool .pp-robot {
@@ -748,7 +792,7 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: var(--color-accent);
+		color: #9c4400;
 		font-size: 1.3em;
 		line-height: 1;
 	}
@@ -850,6 +894,26 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
+	}
+
+	/* Laid out but invisible until the student answers. */
+	.pp-tool .pp-feedback.is-pending,
+	.pp-tool .demo-btn.is-pending {
+		visibility: hidden;
+	}
+
+	.pp-tool .pp-verdict {
+		display: grid;
+	}
+
+	.pp-tool .pp-verdict > span {
+		grid-area: 1 / 1;
+		visibility: hidden;
+	}
+
+	.pp-tool .pp-verdict.demo-verdict--good > [data-pp-verdict-good],
+	.pp-tool .pp-verdict.demo-verdict--bad > [data-pp-verdict-bad] {
+		visibility: visible;
 	}
 
 	.pp-tool .pp-verdict {

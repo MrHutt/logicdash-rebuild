@@ -803,7 +803,7 @@ DISPLAY(n)`,
 		id: "c-robot-1",
 		level: "challenging",
 		topics: ["Robot", "Iteration"],
-		prompt: "The robot starts facing up. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing up. Black squares are blocked. Which square does it end on?",
 		code: `REPEAT UNTIL (NOT CAN_MOVE("forward"))
 {
   MOVE_FORWARD()
@@ -827,7 +827,7 @@ REPEAT UNTIL (NOT CAN_MOVE("forward"))
 		id: "c-robot-2",
 		level: "challenging",
 		topics: ["Robot", "Iteration", "Selection"],
-		prompt: "The robot starts facing right. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing right. Black squares are blocked. Which square does it end on?",
 		code: `REPEAT 4 TIMES
 {
   IF (CAN_MOVE("forward"))
@@ -941,7 +941,7 @@ MOVE_FORWARD()`,
 		id: "c-robot-7",
 		level: "challenging",
 		topics: ["Robot", "Iteration", "Variables & display"],
-		prompt: "The robot starts facing right. Dark squares are blocked. What is displayed?",
+		prompt: "The robot starts facing right. Black squares are blocked. What is displayed?",
 		code: `steps ← 0
 REPEAT UNTIL (NOT CAN_MOVE("forward"))
 {
@@ -961,7 +961,7 @@ DISPLAY(steps)`,
 		id: "c-robot-8",
 		level: "challenging",
 		topics: ["Robot", "Iteration", "Selection"],
-		prompt: "The robot starts facing up. Dark squares are blocked. Which square does it end on?",
+		prompt: "The robot starts facing up. Black squares are blocked. Which square does it end on?",
 		code: `REPEAT 6 TIMES
 {
   IF (CAN_MOVE("right"))
