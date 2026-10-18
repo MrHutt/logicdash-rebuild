@@ -1221,6 +1221,10 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 	/* --- Display stage ------------------------------------------------------ */
 
 	.display-shell {
+		/* --u is "1px at the original design size" (96px digits). Glows,
+		   blurs and borders on the digits are written in --u, so they keep
+		   the same proportions however big fitClock makes the clock. */
+		--u: calc(var(--clock-tile-height, 96px) / 96);
 		position: relative;
 		display: flex;
 		flex-direction: column;
@@ -1390,9 +1394,9 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 	.chaos-display::before {
 		content: "";
 		position: absolute;
-		inset: -7px;
+		inset: calc(var(--u, 1px) * -7);
 		z-index: -1;
-		border-radius: 28px;
+		border-radius: calc(var(--u, 1px) * 28);
 		background: conic-gradient(
 			from var(--chaos-rainbow-angle),
 			#ff2fd4,
@@ -1437,8 +1441,8 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		line-height: 1;
 		color: #fff700;
 		text-shadow:
-			0 0 4px #fff700,
-			0 0 10px #ff2fd4;
+			0 0 calc(var(--u, 1px) * 4) #fff700,
+			0 0 calc(var(--u, 1px) * 10) #ff2fd4;
 		pointer-events: none;
 		animation: chaos-star-spin 1.4s linear infinite;
 	}
@@ -1491,9 +1495,9 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		border-radius: 50%;
 		background: #fff3d6;
 		box-shadow:
-			0 0 2px #fff3d6,
-			0 0 6px #ffae2e,
-			0 0 14px color-mix(in srgb, #ffae2e 60%, transparent);
+			0 0 calc(var(--u, 1px) * 2) #fff3d6,
+			0 0 calc(var(--u, 1px) * 6) #ffae2e,
+			0 0 calc(var(--u, 1px) * 14) color-mix(in srgb, #ffae2e 60%, transparent);
 		animation: segment-colon-flicker 4.5s ease-in-out infinite;
 	}
 
@@ -1555,9 +1559,9 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		border-radius: 50%;
 		background: #ff6a1a;
 		box-shadow:
-			0 0 2px #ff8a3d,
-			0 0 6px #ff5000,
-			0 0 14px rgba(255, 90, 0, 0.6);
+			0 0 calc(var(--u, 1px) * 2) #ff8a3d,
+			0 0 calc(var(--u, 1px) * 6) #ff5000,
+			0 0 calc(var(--u, 1px) * 14) rgba(255, 90, 0, 0.6);
 		animation: nixie-glyph-colon-flicker 4.5s ease-in-out infinite;
 	}
 
@@ -1601,8 +1605,8 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		border-radius: 1px;
 		background: #33ff33;
 		filter:
-			drop-shadow(0 0 1.5px #33ff33)
-			drop-shadow(0 0 4px rgba(51, 255, 51, 0.6));
+			drop-shadow(0 0 calc(var(--u, 1px) * 1.5) #33ff33)
+			drop-shadow(0 0 calc(var(--u, 1px) * 4) rgba(51, 255, 51, 0.6));
 	}
 
 	/* Dot Matrix's colon — same blocky dark-on-backlight material as its
@@ -1662,7 +1666,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		height: calc(var(--clock-tile-height) * 0.0917);
 		border-radius: 50%;
 		background: var(--chaos-color, #ff2fd4);
-		box-shadow: 0 0 8px var(--chaos-color, #ff2fd4);
+		box-shadow: 0 0 calc(var(--u, 1px) * 8) var(--chaos-color, #ff2fd4);
 		animation: chaos-colon-pulse 1.4s ease-in-out infinite;
 	}
 

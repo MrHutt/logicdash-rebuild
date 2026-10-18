@@ -61,7 +61,7 @@ const { value } = Astro.props;
 		/* A single soft, understated shadow — not the multi-layer stacked
 		   glow every other lit style here uses. Barely perceptible; this
 		   is refinement, not a light source. */
-		filter: drop-shadow(0 0 10px rgba(242, 237, 226, 0.18));
+		filter: drop-shadow(0 0 calc(var(--u, 1px) * 10) rgba(242, 237, 226, 0.18));
 	}
 
 	.refined-ghost {

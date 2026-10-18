@@ -58,7 +58,7 @@ const blinkDelay = (Math.random() * -1.2).toFixed(2);
 		/* Flat solid color block — no gradient — deliberately clashing
 		   against the text color set below. */
 		background: var(--chaos-bg, #1a1330);
-		border-width: 5px;
+		border-width: calc(var(--u, 1px) * 5);
 		border-style: solid;
 		/* Hard-cut (steps(1), not eased) color changes — a genuine blink
 		   through the whole palette, not a subtle dashed outline. */
@@ -106,9 +106,9 @@ const blinkDelay = (Math.random() * -1.2).toFixed(2);
 		   sticker effect, on purpose, and also what keeps the digit
 		   legible sitting on top of an equally-loud solid background. */
 		text-shadow:
-			0 0 8px var(--chaos-color, #ff2fd4),
-			2px 2px 0 #000,
-			-1px -1px 0 rgba(255, 255, 255, 0.6);
+			0 0 calc(var(--u, 1px) * 8) var(--chaos-color, #ff2fd4),
+			calc(var(--u, 1px) * 2) calc(var(--u, 1px) * 2) 0 #000,
+			calc(var(--u, 1px) * -1) calc(var(--u, 1px) * -1) 0 rgba(255, 255, 255, 0.6);
 		animation: chaos-wobble 2.1s steps(8, end) infinite;
 		animation-delay: var(--wobble-delay, 0s);
 	}
