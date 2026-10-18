@@ -1,0 +1,375 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "A program runs without crashing, but gives the wrong answer. What kind of error is that?",
+		options: ["A logic error", "A syntax error", "A hardware fault", "A typing speed error"],
+		explain: "The code is valid and it runs — it just does the wrong thing. Logic errors are often the hardest to spot.",
+	},
+	{
+		q: "\"Students who score 90 or more get an A.\" Which test value is most likely to catch a bug?",
+		options: ["90", "45", "100", "70"],
+		explain: "Bugs love boundaries. Testing exactly 90 (and 89) checks whether the code used > when it should have used ≥.",
+	},
+	{
+		q: "A procedure passed all 5 of its tests. What can you say for sure?",
+		options: ["It works for those 5 inputs — there could still be bugs", "It has no bugs at all", "It will never crash", "It's as fast as possible"],
+		explain: "Testing can show that bugs exist, but it can't prove there are none. Choose tests that cover edge cases to get the most out of them.",
+	},
+	{
+		q: "Which is the best way to find where a loop goes wrong?",
+		options: ["Trace it step by step, writing down each variable's value", "Delete the loop", "Run it faster", "Guess and change random lines"],
+		explain: "Tracing — by hand or by displaying values as it runs — shows exactly where what happens stops matching what you expected.",
+	},
+	{
+		q: "A list procedure works for [3, 4, 5]. Which extra test is most useful?",
+		options: ["An empty list []", "[3, 4, 5] again", "[30, 40, 50]", "[3, 4, 5, 3, 4, 5]"],
+		explain: "An empty list is an edge case that many programs forget. Running the same kind of input again teaches you little new.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/debugging-and-testing"
+	description="Debugging and testing explained: kinds of errors, how to trace code, and how to choose tests that catch bugs — with a find-the-bug challenge."
+	lead="Every programmer writes bugs. Good programmers are just good at finding them."
+>
+	<section class="block">
+		<p class="block-title">Three Kinds of Bug</p>
+		<ul class="block-list">
+			<li><em>Syntax errors</em> — the code breaks the language's rules, like a missing bracket. The program won't run at all.</li>
+			<li><em>Runtime errors</em> — the program starts, then crashes, for example by using a list index that doesn't exist.</li>
+			<li><em>Logic errors</em> — the program runs fine but gives the wrong answer. These are the sneaky ones.</li>
+		</ul>
+		<p class="block-callout">Debugging means finding and fixing errors. Testing means running a program on purpose to find them.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Choosing Good Tests</p>
+		<p class="block-text">
+			You can't test every possible input, so choose wisely. For "a score of 60 or more passes", test:
+		</p>
+		<ul class="block-list">
+			<li><em>Normal values</em> — 75, 30. Everyday cases.</li>
+			<li><em>Boundary values</em> — 59, 60, 61. Right at the edge, where most bugs hide.</li>
+			<li><em>Extreme or unusual values</em> — 0, 100, an empty list. Things the programmer may not have thought about.</li>
+		</ul>
+		<p class="block-text">For each test, decide the <em>expected</em> result first, then compare it with what the program actually does.</p>
+	</section>
+
+	<DemoFrame label="Find the bug" title="Find the bug">
+		<div class="db" data-db>
+			<p class="db-round" data-db-round></p>
+			<p class="db-spec" data-db-spec></p>
+			<div class="db-main">
+				<pre class="db-code" data-db-code aria-label="The code"></pre>
+				<div class="db-tests">
+					<p class="db-label">Run a test</p>
+					<div class="db-test-btns" data-db-test-btns></div>
+					<div class="table-wrap">
+						<table class="data-table db-table">
+							<thead><tr><th>Input</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
+							<tbody data-db-results></tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<p class="demo-status" data-db-status aria-live="polite"></p>
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-db-next hidden>Next bug →</button>
+				<button type="button" class="demo-btn" data-db-restart hidden>Start again</button>
+			</div>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Debugging Strategies</p>
+		<ul class="block-list">
+			<li><em>Trace by hand.</em> Go line by line, writing down every variable's value.</li>
+			<li><em>Display values as it runs.</em> Add a temporary DISPLAY to see what's really happening inside a loop.</li>
+			<li><em>Shrink the problem.</em> Find the smallest input that still goes wrong.</li>
+			<li><em>Explain it out loud.</em> Describing the code line by line to someone else (or a rubber duck!) often reveals the bug.</li>
+			<li><em>Change one thing at a time,</em> then test again.</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Passing Isn't Proof</p>
+		<p class="block-text">
+			If every test passes, that only proves the program works for <em>those</em> inputs. That's why the choice of
+			tests matters so much — and why programmers keep their tests and run them again every time they change the
+			code, to make sure a fix didn't break something else.
+		</p>
+		<p class="block-text">Sharpen your tracing skills with <a href="/learn/pseudocode-practice">Pseudocode Practice</a>.</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	interface Test {
+		label: string;
+		expected: string;
+		run: (fixed: boolean) => string;
+	}
+	interface Round {
+		spec: string;
+		code: string[];
+		bugLine: number;
+		fixedLine: string;
+		why: string;
+		tests: Test[];
+	}
+
+	const isPassing = (score: number, fixed: boolean) => String(fixed ? score >= 60 : score > 60);
+	const countEvens = (list: number[], fixed: boolean) => {
+		let count = 0;
+		for (let i = fixed ? 1 : 2; i <= list.length; i++) if (list[i - 1] % 2 === 0) count++;
+		return String(count);
+	};
+
+	const ROUNDS: Round[] = [
+		{
+			spec: "isPassing(score) should return true when the score is 60 or more.",
+			code: ["PROCEDURE isPassing(score)", "{", "  IF (score > 60)", "  {", "    RETURN(true)", "  }", "  RETURN(false)", "}"],
+			bugLine: 2,
+			fixedLine: "  IF (score ≥ 60)",
+			why: "It used > where the rule says \"60 or more\", so exactly 60 failed. Fixed to ≥.",
+			tests: [0, 45, 59, 60, 61, 100].map((n) => ({
+				label: String(n),
+				expected: String(n >= 60),
+				run: (fixed: boolean) => isPassing(n, fixed),
+			})),
+		},
+		{
+			spec: "countEvens(list) should return how many even numbers are in the list.",
+			code: [
+				"PROCEDURE countEvens(list)",
+				"{",
+				"  count ← 0",
+				"  i ← 2",
+				"  REPEAT UNTIL (i > LENGTH(list))",
+				"  {",
+				"    IF (list[i] MOD 2 = 0)",
+				"    {",
+				"      count ← count + 1",
+				"    }",
+				"    i ← i + 1",
+				"  }",
+				"  RETURN(count)",
+				"}",
+			],
+			bugLine: 3,
+			fixedLine: "  i ← 1",
+			why: "i started at 2, so the loop skipped the first item. Lists start at index 1 — fixed to i ← 1.",
+			tests: [[1, 3, 5], [7, 8], [], [2, 4, 6], [8, 7]].map((l) => ({
+				label: `[${l.join(", ")}]`,
+				expected: String(l.filter((n) => n % 2 === 0).length),
+				run: (fixed: boolean) => countEvens(l, fixed),
+			})),
+		},
+	];
+
+	const root = document.querySelector<HTMLElement>("[data-db]")!;
+	const roundEl = root.querySelector<HTMLElement>("[data-db-round]")!;
+	const specEl = root.querySelector<HTMLElement>("[data-db-spec]")!;
+	const codeEl = root.querySelector<HTMLElement>("[data-db-code]")!;
+	const testBtns = root.querySelector<HTMLElement>("[data-db-test-btns]")!;
+	const results = root.querySelector<HTMLElement>("[data-db-results]")!;
+	const status = root.querySelector<HTMLElement>("[data-db-status]")!;
+	const nextBtn = root.querySelector<HTMLButtonElement>("[data-db-next]")!;
+	const restartBtn = root.querySelector<HTMLButtonElement>("[data-db-restart]")!;
+
+	let r = 0;
+	let ran: number[] = [];
+	let bugSeen = false;
+	let fixed = false;
+
+	function start(roundIndex: number) {
+		r = roundIndex;
+		ran = [];
+		bugSeen = false;
+		fixed = false;
+		nextBtn.hidden = true;
+		restartBtn.hidden = true;
+		status.textContent = "Pick test inputs. For each one, is the actual result what it should be?";
+		render();
+	}
+
+	function render() {
+		const round = ROUNDS[r];
+		roundEl.textContent = `Bug ${r + 1} of ${ROUNDS.length}`;
+		specEl.textContent = round.spec;
+		codeEl.innerHTML = round.code
+			.map((line, k) => {
+				const text = fixed && k === round.bugLine ? round.fixedLine : line;
+				const cls = fixed && k === round.bugLine ? "is-fixed" : bugSeen && !fixed ? "is-pickable" : "";
+				const safe = text.replace(/</g, "&lt;");
+				return bugSeen && !fixed
+					? `<button type="button" class="db-line ${cls}" data-line="${k}">${safe}</button>`
+					: `<span class="db-line ${cls}">${safe}</span>`;
+			})
+			.join("");
+		codeEl.querySelectorAll<HTMLButtonElement>("button[data-line]").forEach((b) => b.addEventListener("click", () => pickLine(Number(b.dataset.line))));
+
+		testBtns.innerHTML = round.tests
+			.map((t, k) => `<button type="button" class="demo-btn ${ran.includes(k) ? "is-ran" : ""}" data-test="${k}">${t.label}</button>`)
+			.join("");
+		testBtns.querySelectorAll<HTMLButtonElement>("[data-test]").forEach((b) => b.addEventListener("click", () => runTest(Number(b.dataset.test))));
+
+		results.innerHTML = ran
+			.map((k) => {
+				const t = round.tests[k];
+				const actual = t.run(fixed);
+				const ok = actual === t.expected;
+				return `<tr><td class="num">${t.label}</td><td class="num">${t.expected}</td><td class="num">${actual}</td><td class="${ok ? "demo-verdict--good" : "demo-verdict--bad"}">${ok ? "✓ pass" : "✗ FAIL"}</td></tr>`;
+			})
+			.join("") || `<tr><td colspan="4" class="db-empty">No tests run yet</td></tr>`;
+	}
+
+	function runTest(k: number) {
+		if (!ran.includes(k)) ran.push(k);
+		const round = ROUNDS[r];
+		const t = round.tests[k];
+		const failed = t.run(fixed) !== t.expected;
+		if (failed && !bugSeen) {
+			bugSeen = true;
+			status.textContent = `Bug found! The input ${t.label} should give ${t.expected}, but the code gives ${t.run(fixed)}. Now tap the line you think is wrong.`;
+		} else if (!bugSeen) {
+			status.textContent = `${t.label} passes. Try another input — which ones are most likely to go wrong?`;
+		} else if (fixed) {
+			status.textContent = `${t.label} passes with the fix.`;
+		}
+		render();
+	}
+
+	function pickLine(k: number) {
+		const round = ROUNDS[r];
+		if (k !== round.bugLine) {
+			status.textContent = "Not that line. Trace the failing test through the code one line at a time — where does it first go differently from what you'd expect?";
+			return;
+		}
+		fixed = true;
+		ran = round.tests.map((_, i) => i);
+		status.textContent = `✓ That's it. ${round.why} All the tests now pass.`;
+		render();
+		if (r < ROUNDS.length - 1) nextBtn.hidden = false;
+		else {
+			restartBtn.hidden = false;
+			status.textContent += " Both bugs fixed — and both only showed up on edge cases.";
+		}
+	}
+
+	nextBtn.addEventListener("click", () => start(r + 1));
+	restartBtn.addEventListener("click", () => start(0));
+	start(0);
+</script>
+
+<style is:global>
+	.db {
+		text-align: center;
+	}
+
+	.db-round {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.db-spec {
+		margin: 0.35em 0 0;
+		font-weight: 700;
+	}
+
+	.db-main {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: flex-start;
+		gap: 1em;
+		margin-top: 1em;
+	}
+
+	.db-code {
+		display: flex;
+		flex-direction: column;
+		flex: 0 1 20em;
+		margin: 0;
+		padding: 0.6em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-family: var(--font-mono);
+		font-size: 0.88em;
+		line-height: 1.45;
+		text-align: left;
+		overflow-x: auto;
+	}
+
+	.db-line {
+		display: block;
+		padding: 0 0.4em;
+		border: 1px solid transparent;
+		border-radius: 4px;
+		background: none;
+		color: var(--color-text);
+		font: inherit;
+		text-align: left;
+		white-space: pre;
+	}
+
+	button.db-line {
+		cursor: pointer;
+		border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+		margin-bottom: 2px;
+	}
+
+	button.db-line:hover,
+	button.db-line:focus-visible {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+	}
+
+	.db-line.is-fixed {
+		background: color-mix(in srgb, var(--color-success) 18%, transparent);
+		border-color: var(--color-success);
+	}
+
+	.db-tests {
+		flex: 1 1 18em;
+	}
+
+	.db-label {
+		margin: 0 0 0.35em;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.db-test-btns {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.35em;
+	}
+
+	.db-test-btns .demo-btn.is-ran {
+		opacity: 0.6;
+	}
+
+	.db .table-wrap {
+		margin-top: 0.75em;
+	}
+
+	.db-table th,
+	.db-table td {
+		text-align: center;
+	}
+
+	.db-empty {
+		color: var(--color-text-muted);
+	}
+</style>

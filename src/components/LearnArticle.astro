@@ -1180,9 +1180,13 @@ const content = rawContent.replace(
 			{ passive: true },
 		);
 
-		// Tabbing into an off-screen slide brings that slide into view.
+		// Tabbing into an off-screen slide brings that slide into view. Only
+		// for keyboard focus: moving the strip during a tap or click would
+		// pull the button out from under the pointer and lose the click.
+		let pointerAt = 0;
+		blocks.addEventListener("pointerdown", () => (pointerAt = performance.now()), { capture: true, passive: true });
 		blocks.addEventListener("focusin", (event) => {
-			if (!slides) return;
+			if (!slides || performance.now() - pointerAt < 800) return;
 			const i = sections.findIndex((el) => el.contains(event.target as Node));
 			if (i >= 0 && i !== current) {
 				blocks.scrollLeft = sections[i].offsetLeft - blocks.offsetLeft;
@@ -1203,6 +1207,12 @@ const content = rawContent.replace(
 		sections.forEach((el) => observer.observe(el));
 
 		let nudged = false;
+		// The nudge must never move things under someone who's already
+		// interacting, so any touch, click, key or wheel cancels it.
+		let interacted = false;
+		["pointerdown", "keydown", "wheel", "touchstart"].forEach((type) =>
+			document.addEventListener(type, () => (interacted = true), { once: true, passive: true }),
+		);
 		function applyMode() {
 			slides = slideQuery.matches;
 			article!.classList.toggle("is-slides", slides);
@@ -1213,7 +1223,7 @@ const content = rawContent.replace(
 			if (slides && !learned && !nudged && !reduceMotion && current === 0) {
 				nudged = true;
 				window.setTimeout(() => {
-					if (current !== 0 || !slides) return;
+					if (current !== 0 || !slides || interacted || blocks!.scrollLeft > 1) return;
 					blocks!.style.scrollSnapType = "none";
 					blocks!.scrollTo({ left: 56, behavior: "smooth" });
 					window.setTimeout(() => blocks!.scrollTo({ left: 0, behavior: "smooth" }), 450);

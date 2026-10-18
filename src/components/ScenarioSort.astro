@@ -1,0 +1,247 @@
+---
+// "Which one is it?" activity: one short scenario at a time, the student
+// picks a category, and gets the answer with a one-line reason before
+// moving on. Ends with a score and "Try again". Sits in a DemoFrame, so it
+// can be projected fullscreen and done as a whole class. Everything is
+// sized in em (see DemoFrame's sizing contract).
+import DemoFrame from "./DemoFrame.astro";
+
+export interface Scenario {
+	text: string;
+	/** Index into `choices`. */
+	answer: number;
+	explain: string;
+}
+
+interface Props {
+	title?: string;
+	label: string;
+	prompt: string;
+	choices: string[];
+	scenarios: Scenario[];
+}
+
+const { title = "Try it yourself", label, prompt, choices, scenarios } = Astro.props;
+---
+
+<DemoFrame title={title} label={label}>
+	<div class="ss" data-ss data-scenarios={JSON.stringify(scenarios)} data-choices={JSON.stringify(choices)}>
+		<p class="ss-progress" data-ss-progress></p>
+		<p class="ss-prompt">{prompt}</p>
+		<p class="ss-card" data-ss-card aria-live="polite"></p>
+		<div class="ss-choices" role="group" aria-label="Choices" data-ss-choices>
+			{
+				choices.map((c, i) => (
+					<button type="button" class="ss-choice" data-ss-choice={i}>
+						{c}
+					</button>
+				))
+			}
+		</div>
+		<div class="ss-feedback is-pending" data-ss-feedback aria-live="polite">
+			<p class="ss-verdict" data-ss-verdict></p>
+			<p class="ss-explain" data-ss-explain></p>
+		</div>
+		<div class="demo-controls">
+			<button type="button" class="demo-btn demo-btn--primary" data-ss-next hidden>Next →</button>
+			<button type="button" class="demo-btn" data-ss-restart hidden>Try again</button>
+		</div>
+	</div>
+</DemoFrame>
+
+<script>
+	document.querySelectorAll<HTMLElement>("[data-ss]").forEach((root) => {
+		const scenarios = JSON.parse(root.dataset.scenarios!) as { text: string; answer: number; explain: string }[];
+		const choices = JSON.parse(root.dataset.choices!) as string[];
+		const progress = root.querySelector<HTMLElement>("[data-ss-progress]")!;
+		const card = root.querySelector<HTMLElement>("[data-ss-card]")!;
+		const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-ss-choice]"));
+		const feedback = root.querySelector<HTMLElement>("[data-ss-feedback]")!;
+		const verdict = root.querySelector<HTMLElement>("[data-ss-verdict]")!;
+		const explain = root.querySelector<HTMLElement>("[data-ss-explain]")!;
+		const nextBtn = root.querySelector<HTMLButtonElement>("[data-ss-next]")!;
+		const restartBtn = root.querySelector<HTMLButtonElement>("[data-ss-restart]")!;
+		const frame = root.closest<HTMLElement>("[data-demo-frame]");
+		let i = 0;
+		let score = 0;
+		let answered = false;
+
+		function show() {
+			answered = false;
+			const s = scenarios[i];
+			progress.textContent = `${i + 1} of ${scenarios.length} · Score: ${score}`;
+			card.textContent = s.text;
+			card.hidden = false;
+			buttons.forEach((b) => {
+				b.disabled = false;
+				b.hidden = false;
+				b.classList.remove("is-right", "is-wrong");
+			});
+			// Lay the answer panel out now (invisible), so revealing it later
+			// doesn't move anything; see Pseudocode Practice for the same idea.
+			feedback.hidden = false;
+			feedback.classList.add("is-pending");
+			verdict.className = "ss-verdict";
+			verdict.textContent = `✗ Not quite — it's ${choices[s.answer]}.`;
+			explain.textContent = s.explain;
+			if (frame) delete frame.dataset.fitHold;
+			nextBtn.hidden = true;
+			restartBtn.hidden = true;
+		}
+
+		function pick(choice: number) {
+			if (answered) return;
+			answered = true;
+			const s = scenarios[i];
+			const right = choice === s.answer;
+			if (right) score++;
+			buttons.forEach((b, j) => {
+				b.disabled = true;
+				if (j === s.answer) b.classList.add("is-right");
+				else if (j === choice) b.classList.add("is-wrong");
+			});
+			verdict.className = `ss-verdict ${right ? "demo-verdict--good" : "demo-verdict--bad"}`;
+			verdict.textContent = right ? `✓ Yes — ${choices[s.answer]}.` : `✗ Not quite — it's ${choices[s.answer]}.`;
+			explain.textContent = s.explain;
+			if (frame) frame.dataset.fitHold = "1";
+			feedback.classList.remove("is-pending");
+			progress.textContent = `${i + 1} of ${scenarios.length} · Score: ${score}`;
+			nextBtn.textContent = i === scenarios.length - 1 ? "See my score →" : "Next →";
+			nextBtn.hidden = false;
+			nextBtn.focus({ preventScroll: true });
+		}
+
+		function finish() {
+			progress.textContent = `Done · Score: ${score} of ${scenarios.length}`;
+			card.textContent =
+				score === scenarios.length
+					? `${score} out of ${scenarios.length} — perfect.`
+					: `${score} out of ${scenarios.length}. Try again to see the ones you missed.`;
+			buttons.forEach((b) => (b.hidden = true));
+			feedback.hidden = true;
+			nextBtn.hidden = true;
+			restartBtn.hidden = false;
+			restartBtn.focus({ preventScroll: true });
+		}
+
+		buttons.forEach((b) => b.addEventListener("click", () => pick(Number(b.dataset.ssChoice))));
+		nextBtn.addEventListener("click", () => {
+			if (i < scenarios.length - 1) {
+				i++;
+				show();
+			} else finish();
+		});
+		restartBtn.addEventListener("click", () => {
+			i = 0;
+			score = 0;
+			show();
+		});
+		show();
+	});
+</script>
+
+<style is:global>
+	.ss {
+		max-width: 44em;
+		margin: 0 auto;
+		text-align: center;
+	}
+
+	.ss-progress {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.ss-prompt {
+		margin: 0.5em 0 0;
+		font-size: 0.95em;
+		color: var(--color-text-muted);
+	}
+
+	.ss-card {
+		margin: 0.75em 0 0;
+		padding: 1em 1.25em;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-size: 1.1em;
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	.ss-choices {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 11em), 1fr));
+		gap: 0.5em;
+		margin-top: 1em;
+	}
+
+	.ss-choice {
+		min-height: 3em;
+		padding: 0.5em 0.75em;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		background: var(--color-surface);
+		color: var(--color-text);
+		font: inherit;
+		font-size: 0.95em;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.ss-choice:hover:not(:disabled),
+	.ss-choice:focus-visible {
+		border-color: var(--color-accent);
+	}
+
+	.ss-choice:disabled {
+		cursor: default;
+	}
+
+	.ss-choice:disabled:not(.is-right):not(.is-wrong) {
+		opacity: 0.5;
+	}
+
+	.ss-choice.is-right {
+		border-color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
+	}
+
+	.ss-choice.is-right::before {
+		content: "✓ ";
+	}
+
+	.ss-choice.is-wrong {
+		border-color: var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface));
+	}
+
+	.ss-choice.is-wrong::before {
+		content: "✗ ";
+	}
+
+	.ss-feedback {
+		margin-top: 1em;
+		padding: 0.75em 1em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		text-align: left;
+	}
+
+	.ss-feedback.is-pending {
+		visibility: hidden;
+	}
+
+	.ss-verdict {
+		margin: 0 0 0.25em;
+		font-weight: 700;
+	}
+
+	.ss-explain {
+		margin: 0;
+		line-height: 1.5;
+	}
+</style>

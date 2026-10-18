@@ -1,0 +1,261 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const RAW = [
+	"Pizza", "pizza", " Pizza", "PIZZA", "piza", "Tacos", "tacos", "Taco", "Burgers", "burger",
+	"Burgers", "Pasta", "pasta ", "Salad", "Pizza", "Tacos", "Burgers", "Pizza", "Sushi", "sushi",
+];
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "A photo file stores the date it was taken and the GPS location. That information is…",
+		options: ["Metadata", "Compression", "Encryption", "A bug"],
+		explain: "Metadata is data about data. The photo is the data; the date, location and camera model describe it.",
+	},
+	{
+		q: "A survey has the answers \"NYC\", \"New York\" and \"new york city\". Before counting, you should…",
+		options: ["Clean the data so they're all written the same way", "Delete the whole survey", "Count them as three different cities", "Encrypt them"],
+		explain: "They're the same answer written three ways. Counting them separately would split one big group into three small ones.",
+	},
+	{
+		q: "To find students' favorite sport, someone only asks the basketball team. What's the problem?",
+		options: ["The sample is biased — it doesn't represent all students", "The sample is too big", "Sports can't be stored as data", "Nothing — any group works"],
+		explain: "Who you ask shapes the answer. A biased sample can give a confident, wrong result.",
+	},
+	{
+		q: "A school notices that students who use the library more get higher grades. Can it say the library causes higher grades?",
+		options: ["No — the data shows a link, not proof of a cause", "Yes — the data proves it", "Only if the library is big", "Only for math"],
+		explain: "Students who already study a lot might both use the library more and get better grades. A pattern in data isn't the same as a cause.",
+	},
+	{
+		q: "Why might a program trained on old hiring data make unfair choices?",
+		options: ["It can learn the unfair patterns that are already in the data", "Old data is always deleted", "Programs can't read hiring data", "Because computers dislike people"],
+		explain: "A program that learns from data copies the patterns in it — including unfair ones. Biased data in, biased decisions out.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/data-and-bias"
+	description="Data, metadata and bias explained: what metadata is, why data needs cleaning, and how biased samples mislead — with a hands-on cleaning demo."
+	lead="Data can answer big questions — but only if it's tidy, and only if it came from the right people."
+>
+	<section class="block">
+		<p class="block-title">Data About Data</p>
+		<p class="block-text">
+			Take a photo on your phone and it saves more than the picture. It also saves when it was taken, where, which
+			phone took it, and how big the file is. That extra information is called <em>metadata</em>: data that
+			describes other data.
+		</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead><tr><th>The data</th><th>Some of its metadata</th></tr></thead>
+				<tbody>
+					<tr><td>A photo</td><td>Date and time, GPS location, camera model, file size</td></tr>
+					<tr><td>A song</td><td>Title, artist, length, year</td></tr>
+					<tr><td>A message</td><td>Sender, receiver, time sent</td></tr>
+				</tbody>
+			</table>
+		</div>
+		<p class="block-text">
+			Metadata is useful — it's how your phone groups photos by place, and how a music app sorts songs by artist.
+			But it can also reveal more than you meant to share. A photo posted online might quietly include exactly where
+			you were standing.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Messy Data</p>
+		<p class="block-text">
+			Real data is untidy. People type the same answer in different ways, leave blanks, make typos, or enter things
+			twice. Before you can trust any count or chart, you have to <em>clean</em> the data: fix or remove the mess so
+			that the same answer is always written the same way.
+		</p>
+		<p class="block-callout">Cleaning data means making it consistent and complete before you analyze it.</p>
+	</section>
+
+	<DemoFrame label="Data cleaning demo">
+		<div class="dc" data-dc data-raw={JSON.stringify(RAW)}>
+			<p class="dc-intro">20 students answered "What's your favorite lunch?" Here's what they typed:</p>
+			<p class="dc-raw" data-dc-raw></p>
+			<div class="demo-controls" role="group" aria-label="Cleaning steps">
+				<button type="button" class="demo-btn" data-dc-step="1">1. Remove extra spaces</button>
+				<button type="button" class="demo-btn" data-dc-step="2">2. Make capitals match</button>
+				<button type="button" class="demo-btn" data-dc-step="3">3. Fix spelling and plurals</button>
+				<button type="button" class="demo-btn" data-dc-reset>Start over</button>
+			</div>
+			<div class="dc-chart" data-dc-chart aria-live="polite"></div>
+			<p class="demo-status" data-dc-status></p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Bias: Who Did You Ask?</p>
+		<p class="block-text">
+			Even perfectly clean data can mislead if it came from the wrong people. If you only ask the basketball team
+			about their favorite sport, basketball will win — but that doesn't tell you about the whole school. This is
+			called a <em>biased sample</em>.
+		</p>
+		<ul class="block-list">
+			<li>An online poll only hears from people who are online and choose to answer.</li>
+			<li>A survey at 7 a.m. misses everyone who isn't up yet.</li>
+			<li>A study of one city may not apply to the whole country.</li>
+		</ul>
+		<p class="block-text">
+			Bias matters even more when a program <em>learns</em> from data. If the examples it learns from are unfair or
+			one-sided, its decisions will be too. See <a href="/learn/bias-and-digital-divide">Bias &amp; the Digital Divide</a>.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">A Pattern Isn't a Cause</p>
+		<p class="block-text">
+			Data often shows two things rising together: more ice-cream sales and more sunburns, for example. That
+			doesn't mean ice cream causes sunburn — hot weather causes both. When you find a pattern, ask what else could
+			explain it before deciding one thing <em>causes</em> the other.
+		</p>
+		<p class="block-callout">Good questions to ask any data: Is it clean? Who was included? And does the pattern really mean what it seems to?</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-dc]")!;
+	const raw = JSON.parse(root.dataset.raw!) as string[];
+	const rawEl = root.querySelector<HTMLElement>("[data-dc-raw]")!;
+	const chart = root.querySelector<HTMLElement>("[data-dc-chart]")!;
+	const status = root.querySelector<HTMLElement>("[data-dc-status]")!;
+	const stepBtns = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-dc-step]"));
+	let done = 0;
+
+	const FIXES: Record<string, string> = { piza: "pizza", taco: "tacos", burger: "burgers" };
+	function clean(value: string, steps: number) {
+		let v = value;
+		if (steps >= 1) v = v.trim();
+		if (steps >= 2) v = v.toLowerCase();
+		if (steps >= 3) v = FIXES[v] ?? v;
+		return v;
+	}
+	const show = (v: string) => `"${v.replace(/ /g, "·")}"`;
+
+	const MESSAGES = [
+		"Before cleaning, the same lunch is split across lots of spellings. Pizza and Burgers look tied for first.",
+		'Spaces removed: " Pizza" and "pasta " now match their neighbors. Still messy.',
+		"Capitals matched: Pizza, pizza and PIZZA are now one answer. Pizza pulls ahead.",
+		"Spelling fixed: piza, Taco and burger join their groups. Pizza is the clear favorite — a different story from the raw data.",
+	];
+
+	function render() {
+		const values = raw.map((v) => clean(v, done));
+		rawEl.innerHTML = values.map((v) => `<span class="dc-chip">${show(v)}</span>`).join(" ");
+		const counts = new Map<string, number>();
+		values.forEach((v) => counts.set(v, (counts.get(v) ?? 0) + 1));
+		const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+		const max = sorted[0][1];
+		chart.innerHTML = `<p class="dc-chart-title">${counts.size} different answers</p>${sorted
+			.map(
+				([name, n]) =>
+					`<div class="dc-row"><span class="dc-name">${show(name)}</span><span class="dc-bar"><span style="width:${(n / max) * 100}%"></span></span><span class="dc-n">${n}</span></div>`,
+			)
+			.join("")}`;
+		status.textContent = MESSAGES[done];
+		stepBtns.forEach((b) => {
+			const n = Number(b.dataset.dcStep);
+			b.disabled = n !== done + 1;
+			b.classList.toggle("demo-btn--primary", n === done + 1);
+			b.textContent = b.textContent!.replace(/^✓ /, "");
+			if (n <= done) b.textContent = `✓ ${b.textContent}`;
+		});
+	}
+
+	stepBtns.forEach((b) =>
+		b.addEventListener("click", () => {
+			done = Number(b.dataset.dcStep);
+			render();
+		}),
+	);
+	root.querySelector("[data-dc-reset]")!.addEventListener("click", () => {
+		done = 0;
+		render();
+	});
+	render();
+</script>
+
+<style is:global>
+	.dc {
+		text-align: center;
+	}
+
+	.dc-intro {
+		margin: 0;
+		color: var(--color-text-muted);
+	}
+
+	.dc-raw {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.35em;
+		margin: 0.75em 0 0;
+	}
+
+	.dc-chip {
+		padding: 0.15em 0.5em;
+		border-radius: 6px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-family: var(--font-mono);
+		font-size: 0.85em;
+		color: var(--color-text);
+	}
+
+	.dc-chart {
+		max-width: 32em;
+		margin: 1em auto 0;
+		text-align: left;
+	}
+
+	.dc-chart-title {
+		margin: 0 0 0.5em;
+		font-weight: 700;
+		text-align: center;
+	}
+
+	.dc-row {
+		display: grid;
+		grid-template-columns: 7.5em 1fr 2em;
+		align-items: center;
+		gap: 0.5em;
+		margin-top: 0.3em;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+	}
+
+	.dc-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.dc-bar {
+		height: 1em;
+		border-radius: 4px;
+		background: var(--color-bg);
+		overflow: hidden;
+	}
+
+	.dc-bar span {
+		display: block;
+		height: 100%;
+		background: var(--color-accent);
+		transition: width 0.3s ease;
+	}
+
+	.dc-n {
+		font-weight: 700;
+		text-align: right;
+	}
+</style>

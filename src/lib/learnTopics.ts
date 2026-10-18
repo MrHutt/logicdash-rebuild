@@ -13,12 +13,16 @@ export type LearnGroup =
 	| "Reliability & Correction"
 	| "Networks & Systems"
 	| "Security"
+	| "Programming & Algorithms"
+	| "Computing & Society"
 	| "Practice";
 export const GROUP_ORDER: LearnGroup[] = [
 	"Binary & Data",
 	"Reliability & Correction",
 	"Networks & Systems",
 	"Security",
+	"Programming & Algorithms",
+	"Computing & Society",
 	"Practice",
 ];
 
@@ -28,6 +32,8 @@ export const GROUP_BLURBS: Record<LearnGroup, string> = {
 	"Reliability & Correction": "How computers notice mistakes, fix them, and keep going when parts fail.",
 	"Networks & Systems": "How data travels, and how big systems stay fast as they grow.",
 	Security: "Keeping data private and spotting the tricks people use to steal it.",
+	"Programming & Algorithms": "How programs are built, tested, and made fast — and the problems no program can solve.",
+	"Computing & Society": "How computing affects people: fairness, access, and who owns what.",
 	Practice: "Hands-on practice — step through it yourself, as many times as you like.",
 };
 
@@ -41,7 +47,9 @@ export const GROUP_COLORS: Record<LearnGroup, string> = {
 	"Reliability & Correction": "#a3e635",
 	"Networks & Systems": "#a78bfa",
 	Security: "#f472b6",
-	Practice: "#60a5fa",
+	"Programming & Algorithms": "#60a5fa",
+	"Computing & Society": "#fb923c",
+	Practice: "#34d399",
 };
 
 /**
@@ -62,13 +70,14 @@ export const LEVEL_HINTS: Record<LearnLevel, string> = {
 };
 
 /** Cross-cutting focus areas, so a teacher can pull together e.g. every cybersecurity lesson. */
-export type LearnFocus = "data" | "networks" | "cyber" | "programming";
-export const FOCUS_ORDER: LearnFocus[] = ["data", "networks", "cyber", "programming"];
+export type LearnFocus = "data" | "networks" | "cyber" | "programming" | "impact";
+export const FOCUS_ORDER: LearnFocus[] = ["data", "networks", "cyber", "programming", "impact"];
 export const FOCUS_LABELS: Record<LearnFocus, string> = {
 	data: "Data & binary",
 	networks: "Networks & systems",
 	cyber: "Cybersecurity",
 	programming: "Programming & algorithms",
+	impact: "Impact & ethics",
 };
 
 export interface LearnTopic {
@@ -229,6 +238,18 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		teaches: ["Abstraction", "Procedural abstraction", "Data abstraction"],
 	},
 	{
+		title: "Inside the CPU",
+		href: "/learn/inside-the-cpu",
+		code: "3C6",
+		blurb: "Fetch, decode, execute — what the processor does billions of times a second.",
+		levels: ["core"],
+		focus: ["networks"],
+		minutes: 12,
+		live: true,
+		group: "Networks & Systems",
+		teaches: ["CPU", "Fetch-decode-execute cycle", "Memory"],
+	},
+	{
 		title: "Packets & Routing",
 		href: "/learn/packets-and-routing",
 		code: "3F5",
@@ -377,6 +398,30 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		teaches: ["Decimal to binary conversion"],
 	},
 	{
+		title: "Lists & Loops",
+		href: "/learn/lists-and-loops",
+		code: "5E2",
+		blurb: "Storing many values in one list, and repeating steps without repeating code.",
+		levels: ["starter", "core"],
+		focus: ["programming"],
+		minutes: 12,
+		live: true,
+		group: "Programming & Algorithms",
+		teaches: ["Lists", "Iteration", "Traversing a list"],
+	},
+	{
+		title: "Debugging & Testing",
+		href: "/learn/debugging-and-testing",
+		code: "6E4",
+		blurb: "Find the bug, then pick tests that would have caught it.",
+		levels: ["core"],
+		focus: ["programming"],
+		minutes: 12,
+		live: true,
+		group: "Programming & Algorithms",
+		teaches: ["Debugging", "Testing", "Edge cases"],
+	},
+	{
 		title: "Binary Search",
 		href: "/learn/binary-search",
 		code: "7A6",
@@ -385,7 +430,7 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		focus: ["programming"],
 		minutes: 12,
 		live: true,
-		group: "Practice",
+		group: "Programming & Algorithms",
 		teaches: ["Binary search", "Linear search", "Algorithm efficiency"],
 	},
 	{
@@ -397,7 +442,7 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		focus: ["programming"],
 		minutes: 15,
 		live: true,
-		group: "Practice",
+		group: "Programming & Algorithms",
 		teaches: ["Sorting algorithms", "Bubble sort", "Algorithm efficiency"],
 	},
 	{
@@ -412,6 +457,90 @@ export const LEARN_TOPICS: LearnTopic[] = [
 		group: "Practice",
 		kind: "tool",
 		teaches: ["Pseudocode", "Reading code", "Tracing programs"],
+	},
+	{
+		title: "Logic Gates & Truth Tables",
+		href: "/learn/logic-gates",
+		code: "1F3",
+		blurb: "AND, OR and NOT — the tiny decisions every computer is built from.",
+		levels: ["starter", "core"],
+		focus: ["data", "programming"],
+		minutes: 12,
+		live: true,
+		group: "Binary & Data",
+		teaches: ["Logic gates", "Boolean logic", "Truth tables"],
+	},
+	{
+		title: "Data, Metadata & Bias",
+		href: "/learn/data-and-bias",
+		code: "2E7",
+		blurb: "Data about data, cleaning messy data, and how data can mislead.",
+		levels: ["core"],
+		focus: ["data", "impact"],
+		minutes: 12,
+		live: true,
+		group: "Binary & Data",
+		teaches: ["Metadata", "Data cleaning", "Bias in data"],
+	},
+	{
+		title: "Your Digital Footprint",
+		href: "/learn/digital-footprint",
+		code: "4A9",
+		blurb: "What you leave behind online, and how to keep it under control.",
+		levels: ["starter"],
+		focus: ["cyber", "impact"],
+		minutes: 10,
+		live: true,
+		group: "Security",
+		teaches: ["Personal data", "Digital footprint", "Privacy"],
+	},
+	{
+		title: "Simulations & Randomness",
+		href: "/learn/simulations",
+		code: "7F2",
+		blurb: "Flip a thousand coins in a second — and learn what simulations leave out.",
+		levels: ["core"],
+		focus: ["programming", "data"],
+		minutes: 12,
+		live: true,
+		group: "Programming & Algorithms",
+		teaches: ["Simulations", "Random numbers"],
+	},
+	{
+		title: "Hard & Impossible Problems",
+		href: "/learn/hard-problems",
+		code: "9E3",
+		blurb: "Problems too slow to solve exactly, and one no program can ever solve.",
+		levels: ["advanced"],
+		focus: ["programming"],
+		minutes: 12,
+		live: true,
+		group: "Programming & Algorithms",
+		teaches: ["Reasonable and unreasonable time", "Heuristics", "Undecidable problems"],
+	},
+	{
+		title: "Bias & the Digital Divide",
+		href: "/learn/bias-and-digital-divide",
+		code: "1A5",
+		blurb: "Who gets left out by technology — and how bias sneaks into code.",
+		levels: ["starter", "core"],
+		focus: ["impact"],
+		minutes: 10,
+		live: true,
+		group: "Computing & Society",
+		teaches: ["Digital divide", "Computing bias"],
+	},
+	{
+		title: "Copyright, Creative Commons & Open Source",
+		href: "/learn/copyright-and-open-source",
+		code: "2C9",
+		blurb: "What you can reuse, what you can't, and how creators share on purpose.",
+		levels: ["starter", "core"],
+		focus: ["impact"],
+		minutes: 10,
+		live: true,
+		group: "Computing & Society",
+		teaches: ["Copyright", "Creative Commons", "Open source"],
 	},
 ];
 

@@ -159,3 +159,60 @@ UK spelling.
 - Fullscreen fit: 15 states × 6 sizes, all fit
 - No sideways scroll on any page at 320 / 768 / 1920px
 - No JavaScript errors
+
+---
+
+## Round 5 — ten new lessons, clearer swiping
+
+**Swiping (phones and tablets).** In slide mode a student always has:
+- the section bar with ← →, the section name and "2 of 7"
+- segment ticks under the bar
+- the next section's edge peeking in from the right
+- a "Next: …" button at the bottom.
+
+First-time visitors also get a one-line hint ("Swipe or tap → for the next section") and one gentle nudge of the strip. Both stop once they've moved a section, and the browser remembers that across lessons. The nudge never runs with reduced motion, or once someone is already interacting.
+
+**Fixed along the way:** tapping a button in a neighboring slide could move the strip mid-tap and lose the click. The slide now only jumps to follow focus for keyboard focus.
+
+**New lessons (35 total).** Each has reading sections, a hands-on demo and a 5-question quiz.
+
+| Lesson | Group | Demo |
+|---|---|---|
+| Logic Gates & Truth Tables | Binary & Data | Switches, an AND/OR/NOT gate and a lamp. Find every input that lights it. Truth-table rows show only after you've tried them. |
+| Data, Metadata & Bias | Binary & Data | Clean a messy 20-answer survey in 3 steps. The "winner" changes from a tie to Pizza (7). |
+| Inside the CPU | Networks & Systems | An 8-cell computer: step through fetch, decode and execute. LOAD/ADD/STORE with your own numbers. |
+| Your Digital Footprint | Security | Spot the clues in six posts from a made-up student. |
+| Lists & Loops | Programming & Algorithms | Step through total, largest and count programs item by item, with the current line highlighted. |
+| Debugging & Testing | Programming & Algorithms | Two find-the-bug rounds. Choose tests, spot the failure, tap the wrong line, see every test rerun. Both bugs only show on edge cases. |
+| Simulations & Randomness | Programming & Algorithms | Coin, die and two-dice simulator (1 to 1,000 runs), with a marker for the expected share. |
+| Hard & Impossible Problems | Programming & Algorithms | Delivery route: nearest-stop shortcut vs checking all 720 orders. A slider shows the number of orders growing up to 30 stops. |
+| Bias & the Digital Divide | Computing & Society | Sort 6 scenarios: digital divide or computing bias? |
+| Copyright, Creative Commons & Open Source | Computing & Society | "Can I use it?" — 7 licensing scenarios. |
+
+**Other changes:**
+- New groups: **Programming & Algorithms** (blue; Binary Search and Sorting moved here) and **Computing & Society** (orange). Practice is now green.
+- New topic filter: **Impact & ethics**.
+- New shared `ScenarioSort` component. It reserves its feedback space so revealing an answer doesn't move anything.
+- New icons and short codes:
+
+  | Lesson | Code |
+  |---|---|
+  | Logic Gates & Truth Tables | 1F3 |
+  | Data, Metadata & Bias | 2E7 |
+  | Inside the CPU | 3C6 |
+  | Your Digital Footprint | 4A9 |
+  | Lists & Loops | 5E2 |
+  | Debugging & Testing | 6E4 |
+  | Simulations & Randomness | 7F2 |
+  | Hard & Impossible Problems | 9E3 |
+  | Bias & the Digital Divide | 1A5 |
+  | Copyright, Creative Commons & Open Source | 2C9 |
+
+**Testing:**
+- New lessons: 37 end-to-end checks covering every demo's behavior and correct answers, plus all 10 quizzes.
+- Earlier suites: 30 end-to-end, 20 short-link (all 35 codes), 16 slide, and 11 swipe-cue checks.
+- Fullscreen fit: 11 new demo states × 6 screen sizes, all fit.
+- No sideways scroll at 320 / 390 / 768 / 1366 / 1920px.
+- All meta descriptions ≤ 160 characters. The sitemap has 49 URLs.
+- New group colors pass AA (7.97:1 and 9.38:1).
+- No licensed course names in the built site.

@@ -1,0 +1,317 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "scores ← [70, 85, 90]. In this pseudocode, what is scores[1]?",
+		options: ["70", "85", "90", "An error"],
+		explain: "In this pseudocode, lists start at index 1, so scores[1] is the first item.",
+	},
+	{
+		q: "What does LENGTH(scores) give for scores ← [70, 85, 90, 60]?",
+		options: ["4", "3", "60", "305"],
+		explain: "LENGTH counts how many items are in the list — here, four.",
+	},
+	{
+		q: "Why use a loop to add up 100 test scores, instead of 100 separate lines?",
+		options: ["The same short code works for a list of any length", "Loops make the answer more accurate", "Loops use less electricity", "You can't add numbers without a loop"],
+		explain: "A loop repeats the same steps for every item. The code stays short, and it still works if the list grows to 1,000 scores.",
+	},
+	{
+		q: "total ← 0, then FOR EACH n IN [2, 4, 6] { total ← total + n }. What is total at the end?",
+		options: ["12", "6", "0", "2"],
+		explain: "0 + 2 = 2, then 2 + 4 = 6, then 6 + 6 = 12.",
+	},
+	{
+		q: "Which loop is the best fit for \"keep asking for a password until it's correct\"?",
+		options: ["REPEAT UNTIL", "REPEAT 3 TIMES", "FOR EACH", "No loop is needed"],
+		explain: "You don't know in advance how many tries it will take, so you repeat until a condition is true.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/lists-and-loops"
+	description="Lists and loops explained simply: storing many values in one list, using indexes, and repeating steps with REPEAT and FOR EACH — with a step-through demo."
+	lead="Need to work with 30 test scores? You don't want 30 variables — or 30 copies of the same code."
+>
+	<section class="block">
+		<p class="block-title">One Name, Many Values</p>
+		<p class="block-text">
+			A <em>list</em> keeps many values together under one name. Each item has a position called its{" "}
+			<em>index</em>. In this pseudocode, the first item is at index 1:
+		</p>
+		<pre class="code-block">{`scores ← [72, 95, 88, 61]
+DISPLAY(scores[1])
+DISPLAY(scores[3])
+DISPLAY(LENGTH(scores))`}</pre>
+		<p class="block-text">
+			That displays 72 (the first item), 88 (the third) and 4 (how many items there are). Lists can also change while
+			a program runs:
+		</p>
+		<ul class="block-list">
+			<li><span class="mono-highlight">APPEND(scores, 80)</span> adds 80 to the end.</li>
+			<li><span class="mono-highlight">INSERT(scores, 2, 50)</span> puts 50 at index 2 and shifts the rest along.</li>
+			<li><span class="mono-highlight">REMOVE(scores, 1)</span> takes out the first item and shifts the rest back.</li>
+		</ul>
+		<p class="block-text">
+			Some languages count from 0 instead of 1 — always check which one you're using. Using an index that doesn't
+			exist, like <span class="mono-highlight">scores[5]</span> in a list of four, is an error.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Loops: Repeat Without Rewriting</p>
+		<p class="block-text">A <em>loop</em> runs the same steps again and again. There are three kinds you'll see:</p>
+		<ul class="block-list">
+			<li><span class="mono-highlight">REPEAT n TIMES</span> — when you know how many times.</li>
+			<li><span class="mono-highlight">REPEAT UNTIL (condition)</span> — when you stop once something becomes true.</li>
+			<li><span class="mono-highlight">FOR EACH item IN list</span> — once for every item in a list, in order.</li>
+		</ul>
+		<p class="block-callout">Going through a list one item at a time is called traversing the list.</p>
+	</section>
+
+	<DemoFrame label="List and loop demo">
+		<div class="ll" data-ll>
+			<div class="demo-field">
+				<label for="ll-program">Program</label>
+				<select id="ll-program" class="demo-select" data-ll-program>
+					<option value="total">Add them all up</option>
+					<option value="max">Find the largest</option>
+					<option value="count">Count scores of 80 or more</option>
+				</select>
+			</div>
+			<div class="ll-main">
+				<pre class="ll-code" data-ll-code></pre>
+				<div class="ll-right">
+					<p class="ll-label">scores</p>
+					<div class="ll-list" data-ll-list></div>
+					<div class="demo-stats" data-ll-vars></div>
+				</div>
+			</div>
+			<p class="demo-status" data-ll-status aria-live="polite"></p>
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-ll-step>Next item →</button>
+				<button type="button" class="demo-btn" data-ll-run>Run all</button>
+				<button type="button" class="demo-btn" data-ll-reset>Start over</button>
+				<button type="button" class="demo-btn" data-ll-new>New list</button>
+			</div>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Patterns Worth Knowing</p>
+		<p class="block-text">Most list programs are one of a few patterns:</p>
+		<ul class="block-list">
+			<li><em>Total</em> — start at 0 and add each item.</li>
+			<li><em>Largest or smallest</em> — remember the best so far, and replace it when you find a better one.</li>
+			<li><em>Count</em> — start at 0 and add 1 whenever an item matches a condition.</li>
+			<li><em>Filter</em> — build a new list containing only the items you want.</li>
+		</ul>
+		<p class="block-text">
+			Practice reading these with <a href="/learn/pseudocode-practice">Pseudocode Practice</a>, or see how lists get
+			searched in <a href="/learn/binary-search">Binary Search</a>.
+		</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-ll]")!;
+	const programSel = root.querySelector<HTMLSelectElement>("[data-ll-program]")!;
+	const codeEl = root.querySelector<HTMLElement>("[data-ll-code]")!;
+	const listEl = root.querySelector<HTMLElement>("[data-ll-list]")!;
+	const varsEl = root.querySelector<HTMLElement>("[data-ll-vars]")!;
+	const status = root.querySelector<HTMLElement>("[data-ll-status]")!;
+	const stepBtn = root.querySelector<HTMLButtonElement>("[data-ll-step]")!;
+	const runBtn = root.querySelector<HTMLButtonElement>("[data-ll-run]")!;
+
+	type Program = "total" | "max" | "count";
+	const CODE: Record<Program, string[]> = {
+		total: ["total ← 0", "FOR EACH n IN scores", "{", "  total ← total + n", "}", "DISPLAY(total)"],
+		max: ["max ← scores[1]", "FOR EACH n IN scores", "{", "  IF (n > max)", "  {", "    max ← n", "  }", "}", "DISPLAY(max)"],
+		count: ["count ← 0", "FOR EACH n IN scores", "{", "  IF (n ≥ 80)", "  {", "    count ← count + 1", "  }", "}", "DISPLAY(count)"],
+	};
+	const VAR: Record<Program, string> = { total: "total", max: "max", count: "count" };
+
+	let scores = [72, 95, 88, 61, 84];
+	let program: Program = "total";
+	let i = -1; // index of the item just processed (0-based internally)
+	let value = 0;
+	let done = false;
+	let activeLine = 0;
+
+	function reset() {
+		program = programSel.value as Program;
+		i = -1;
+		done = false;
+		value = program === "max" ? scores[0] : 0;
+		activeLine = 0;
+		status.textContent =
+			program === "max"
+				? `Start: max is set to the first score, ${scores[0]}. Press Next item.`
+				: `Start: ${VAR[program]} is 0. Press Next item.`;
+		render();
+	}
+
+	function step() {
+		if (done) return;
+		if (i + 1 >= scores.length) {
+			done = true;
+			activeLine = CODE[program].length - 1;
+			status.textContent = `The loop has visited every item. DISPLAY(${VAR[program]}) shows ${value}.`;
+			render();
+			return;
+		}
+		i++;
+		const n = scores[i];
+		const pos = `item ${i + 1} (scores[${i + 1}] = ${n})`;
+		if (program === "total") {
+			const before = value;
+			value += n;
+			activeLine = 3;
+			status.textContent = `${pos}: total ← ${before} + ${n} = ${value}.`;
+		} else if (program === "max") {
+			if (n > value) {
+				status.textContent = `${pos}: ${n} > ${value}, so max becomes ${n}.`;
+				value = n;
+				activeLine = 5;
+			} else {
+				status.textContent = `${pos}: ${n} > ${value} is false, so max stays ${value}.`;
+				activeLine = 3;
+			}
+		} else {
+			if (n >= 80) {
+				value += 1;
+				activeLine = 5;
+				status.textContent = `${pos}: ${n} ≥ 80, so count goes up to ${value}.`;
+			} else {
+				activeLine = 3;
+				status.textContent = `${pos}: ${n} ≥ 80 is false, so count stays ${value}.`;
+			}
+		}
+		render();
+	}
+
+	function render() {
+		codeEl.innerHTML = CODE[program]
+			.map((line, k) => `<span class="${k === activeLine ? "is-active" : ""}">${line.replace(/</g, "&lt;")}</span>`)
+			.join("\n");
+		listEl.innerHTML = scores
+			.map(
+				(n, k) =>
+					`<div class="ll-item ${k === i && !done ? "is-current" : ""} ${k < i || (done && k <= i) ? "is-done" : ""}"><span class="ll-index">${k + 1}</span><span class="ll-value">${n}</span></div>`,
+			)
+			.join("");
+		varsEl.innerHTML = `<div class="demo-stat"><span class="demo-stat-value">${i >= 0 ? scores[i] : "—"}</span><span class="demo-stat-label">n</span></div><div class="demo-stat"><span class="demo-stat-value">${value}</span><span class="demo-stat-label">${VAR[program]}</span></div>`;
+		stepBtn.disabled = runBtn.disabled = done;
+		stepBtn.textContent = i + 1 >= scores.length && !done ? "Finish →" : "Next item →";
+	}
+
+	stepBtn.addEventListener("click", step);
+	runBtn.addEventListener("click", () => {
+		let guard = 0;
+		while (!done && guard++ < 20) step();
+	});
+	root.querySelector("[data-ll-reset]")!.addEventListener("click", reset);
+	root.querySelector("[data-ll-new]")!.addEventListener("click", () => {
+		const len = 4 + Math.floor(Math.random() * 3);
+		scores = Array.from({ length: len }, () => 40 + Math.floor(Math.random() * 61));
+		reset();
+	});
+	programSel.addEventListener("change", reset);
+	reset();
+</script>
+
+<style is:global>
+	.ll {
+		text-align: center;
+	}
+
+	.ll-main {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: flex-start;
+		gap: 1em;
+		margin-top: 1em;
+	}
+
+	.ll-code {
+		flex: 0 1 18em;
+		margin: 0;
+		padding: 0.75em 1em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+		line-height: 1.5;
+		text-align: left;
+		white-space: pre;
+		overflow-x: auto;
+	}
+
+	.ll-code span {
+		display: inline-block;
+		width: 100%;
+		border-radius: 4px;
+	}
+
+	.ll-code span.is-active {
+		background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+		color: #fff3d6;
+	}
+
+	.ll-right {
+		flex: 1 1 16em;
+	}
+
+	.ll-label {
+		margin: 0 0 0.35em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.ll-list {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.35em;
+	}
+
+	.ll-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 3em;
+		padding: 0.3em 0.4em;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.ll-index {
+		font-size: 0.7em;
+		color: var(--color-text-muted);
+	}
+
+	.ll-value {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.1em;
+	}
+
+	.ll-item.is-done {
+		opacity: 0.55;
+	}
+
+	.ll-item.is-current {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+	}
+</style>
