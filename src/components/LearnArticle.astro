@@ -31,9 +31,11 @@ interface Props {
 	heading?: string;
 	/** Optional override for the <title> (defaults to the topic's title). */
 	pageTitle?: string;
+	/** Set false for tool pages (e.g. Pseudocode Practice): no section bar or swipeable slides. */
+	sections?: boolean;
 }
 
-const { href, description, lead, heading, pageTitle } = Astro.props;
+const { href, description, lead, heading, pageTitle, sections = true } = Astro.props;
 const topic = LEARN_TOPICS.find((t) => t.href === href);
 if (!topic) throw new Error(`LearnArticle: no topic registered for ${href} in learnTopics.ts`);
 const { prev, next } = getAdjacentLearnTopics(href);
@@ -106,6 +108,7 @@ const content = rawContent.replace(
 			    you are. Phones/tablets: the same row plus Back/Next, and the
 			    sections become swipeable slides. Without JavaScript the lesson
 			    is simply one long page. */}
+			{sections && (<>
 			<nav class="section-bar" aria-label="Sections in this lesson" data-section-bar hidden>
 				<button type="button" class="section-step" data-section-prev aria-label="Previous section">←</button>
 				<ol class="section-chips" data-section-chips></ol>
@@ -121,17 +124,20 @@ const content = rawContent.replace(
 				<span class="swipe-hint-icon" aria-hidden="true">↔</span>
 				Swipe or tap <span class="swipe-hint-key" aria-hidden="true">→</span><span class="sr-only">Next</span> for the next section
 			</p>
+			</>)}
 
 			<div class="blocks" data-blocks>
 				<Fragment set:html={content} />
 			</div>
 
+			{sections && (
 			<div class="slide-nav" data-slide-nav hidden>
 				<button type="button" class="slide-nav-btn" data-slide-prev>← Back</button>
 				<button type="button" class="slide-nav-btn slide-nav-btn--next" data-slide-next>
 					Next: <span data-slide-next-title></span> →
 				</button>
 			</div>
+			)}
 
 			<nav class="more-in-group" aria-labelledby="more-in-group-title">
 				<p class="more-in-group-title" id="more-in-group-title">More in {topic.group}</p>

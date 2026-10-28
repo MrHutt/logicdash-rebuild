@@ -120,7 +120,7 @@ const SPEC: Record<string, (q: Question) => void> = {
 	},
 	"li-remove-bug": (q) => {
 		for (const o of q.options) {
-			const m = o.text.match(/removeAll\(\[(.*)\], (\d+)\)/)!;
+			const m = o.text.match(/\w+\(\[(.*)\], (\d+)\)/)!;
 			const list = m[1] ? m[1].split(", ").map(Number) : [];
 			const t = Number(m[2]);
 			const rule = `[${list.filter((x) => x !== t).join(", ")}]`;
@@ -131,7 +131,7 @@ const SPEC: Record<string, (q: Question) => void> = {
 		const limit = Number(q.options[0].text.match(/, (\d+)\)$/)![1]);
 		for (const o of q.options) {
 			const list = (o.text.match(/\[(.*)\]/)![1] || "").split(", ").filter(Boolean).map(Number);
-			ok(q, (out(`${q.code}\nDISPLAY(${o.text})`) !== String(list.filter((x) => x < limit).length)) === o.correct, `option ${o.text}`);
+			ok(q, (out(`${q.code}\nDISPLAY(${o.text})`) !== String(list.filter((x) => (/less than/.test(q.prompt) ? x < limit : x > limit)).length)) === o.correct, `option ${o.text}`);
 		}
 	},
 	"ro-choose-code": (q) => {

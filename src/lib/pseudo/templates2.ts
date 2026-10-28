@@ -389,31 +389,37 @@ export const LIST_TEMPLATES: Template[] = [
 		build(r) {
 			const t = r.int(2, 9);
 			const [a, b] = r.distinct(2, 10, 30);
+			const [name, list, target, i] = r.pick([
+				["removeAll", "list", "target", "i"],
+				["deleteAll", "items", "value", "k"],
+				["dropAll", "nums", "x", "pos"],
+				["stripAll", "data", "item", "j"],
+			]);
 			const code = L(
-				"PROCEDURE removeAll(list, target)",
+				`PROCEDURE ${name}(${list}, ${target})`,
 				"{",
-				"  i ← 1",
-				"  REPEAT UNTIL (i > LENGTH(list))",
+				`  ${i} ← 1`,
+				`  REPEAT UNTIL (${i} > LENGTH(${list}))`,
 				"  {",
-				"    IF (list[i] = target)",
+				`    IF (${list}[${i}] = ${target})`,
 				"    {",
-				"      REMOVE(list, i)",
+				`      REMOVE(${list}, ${i})`,
 				"    }",
-				"    i ← i + 1",
+				`    ${i} ← ${i} + 1`,
 				"  }",
-				"  RETURN(list)",
+				`  RETURN(${list})`,
 				"}",
 			);
-			const call = (l: number[]) => `removeAll(${listText(l)}, ${t})`;
+			const call = (l: number[]) => `${name}(${listText(l)}, ${t})`;
 			return {
-				prompt: "removeAll should remove every copy of target. Which call shows that it has a bug?",
+				prompt: `${name} should remove every copy of ${target}. Which call shows that it has a bug?`,
 				code,
 				options: options(call([t, t, a]), [
 					{ text: call([t, a, t]), why: "The copies aren't next to each other, so nothing is skipped and the result is correct." },
 					{ text: call([a, b]), why: "There's nothing to remove, so the bug never shows." },
 					{ text: call([a, t]), why: "Only one copy — it is removed correctly." },
 				]),
-				explanation: `After REMOVE, the next item slides into position i — but i still goes up by 1, so that item is never checked. Two copies side by side show it: ${call([t, t, a])} returns ${listText([t, a])} instead of ${listText([a])}.`,
+				explanation: `After REMOVE, the next item slides into position ${i} — but ${i} still goes up by 1, so that item is never checked. Two copies side by side show it: ${call([t, t, a])} returns ${listText([t, a])} instead of ${listText([a])}.`,
 				trace: { code: L(code, `DISPLAY(${call([t, t, a])})`), note: `Tracing ${call([t, t, a])}.` },
 			};
 		},
@@ -604,21 +610,30 @@ export const PROCEDURE_TEMPLATES: Template[] = [
 		skill: "Finding an input that exposes a bug",
 		level: "challenging",
 		type: "bug-input",
-		structure: "Pick the call where ≤ vs < makes a difference",
+		structure: "Pick the call where ≤ vs < (or ≥ vs >) makes a difference",
 		build(r) {
 			const limit = r.int(10, 20);
-			const code = L("PROCEDURE countBelow(list, limit)", "{", "  count ← 0", "  FOR EACH n IN list", "  {", "    IF (n ≤ limit)", "    {", "      count ← count + 1", "    }", "  }", "  RETURN(count)", "}");
-			const call = (l: number[]) => `countBelow(${listText(l)}, ${limit})`;
-			const expose = [limit - 3, limit, limit + 4];
+			const below = r.bool();
+			const name = below ? r.pick(["countBelow", "countUnder"]) : r.pick(["countAbove", "countOver"]);
+			const [list, lim] = r.pick([
+				["list", "limit"],
+				["nums", "cutoff"],
+				["scores", "bar"],
+			]);
+			const [wrongOp, rightOp, words] = below ? ["≤", "<", "less than"] : ["≥", ">", "greater than"];
+			const code = L(`PROCEDURE ${name}(${list}, ${lim})`, "{", "  count ← 0", `  FOR EACH n IN ${list}`, "  {", `    IF (n ${wrongOp} ${lim})`, "    {", "      count ← count + 1", "    }", "  }", "  RETURN(count)", "}");
+			const call = (l: number[]) => `${name}(${listText(l)}, ${limit})`;
+			const s = below ? 1 : -1; // mirror the test lists for the "greater than" version
+			const expose = [limit - 3 * s, limit, limit + 4 * s];
 			return {
-				prompt: "countBelow should count the items that are less than limit. Which call shows that it has a bug?",
+				prompt: `${name} should count the items that are ${words} ${lim}. Which call shows that it has a bug?`,
 				code,
 				options: options(call(expose), [
-					{ text: call([limit - 5, limit - 1, limit + 2]), why: "No item equals the limit, so ≤ and < give the same count — the bug stays hidden." },
-					{ text: call([limit + 1, limit + 6]), why: "Nothing is near the limit, so the code and the rule agree (0)." },
+					{ text: call([limit - 5 * s, limit - 1 * s, limit + 2 * s]), why: `No item equals ${limit}, so ${wrongOp} and ${rightOp} give the same count — the bug stays hidden.` },
+					{ text: call([limit + 1 * s, limit + 6 * s]), why: "Nothing passes the test either way, so the code and the rule agree (0)." },
 					{ text: call([]), why: "An empty list gives 0 either way." },
 				]),
-				explanation: `"Less than" means <, but the code uses ≤, so an item equal to ${limit} is counted by mistake. ${call(expose)} returns 2 instead of 1.`,
+				explanation: `"${words[0].toUpperCase() + words.slice(1)}" means ${rightOp}, but the code uses ${wrongOp}, so an item equal to ${limit} is counted by mistake. ${call(expose)} returns 2 instead of 1.`,
 				trace: { code: L(code, `DISPLAY(${call(expose)})`), note: `Tracing ${call(expose)}.` },
 			};
 		},

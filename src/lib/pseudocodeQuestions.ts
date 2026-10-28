@@ -695,7 +695,7 @@ DISPLAY(addUp([1, 2, 3, 4]))`,
 		id: "robot-1",
 		level: "easy",
 		topics: ["Robot"],
-		prompt: "The robot (triangle) starts facing up. Which square does it end on?",
+		prompt: "The robot starts facing up. Which square does it end on?",
 		code: `MOVE_FORWARD()
 MOVE_FORWARD()
 ROTATE_RIGHT()

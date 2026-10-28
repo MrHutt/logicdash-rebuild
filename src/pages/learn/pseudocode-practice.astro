@@ -1,99 +1,210 @@
 ---
 import LearnArticle from "../../components/LearnArticle.astro";
 import DemoFrame from "../../components/DemoFrame.astro";
-import { PSEUDO_CATEGORIES, PSEUDO_LEVELS, PSEUDO_QUESTIONS } from "../../lib/pseudocodeQuestions";
+import { LEVELS, LEVEL_HINTS, LEVEL_LABELS, TOPICS, TOPIC_LABELS } from "../../lib/pseudo/core";
+import { LEGEND_BLOCKED, LEGEND_ROBOT, LEGEND_TARGET } from "../../lib/pseudo/robotSvg";
 
 const cheatSheet = [
 	{ code: "a ← 5", means: "Store 5 in the variable a" },
-	{ code: "DISPLAY(a)", means: "Show a's value (followed by a space)" },
-	{ code: "a MOD b", means: "The remainder when a is divided by b" },
+	{ code: "DISPLAY(a)", means: "Show a's value, followed by a space" },
+	{ code: "a / b", means: "Ordinary division: 17 / 5 is 3.4" },
+	{ code: "a MOD b", means: "The remainder: 17 MOD 5 is 2 (same precedence as * and /)" },
 	{ code: "= ≠ < > ≤ ≥", means: "Compare two values (true or false)" },
 	{ code: "AND  OR  NOT", means: "Combine or flip true/false values" },
+	{ code: "IF (c) … ELSE …", means: "Run the first block if c is true, otherwise the second" },
 	{ code: "REPEAT n TIMES", means: "Run the block exactly n times" },
-	{ code: "REPEAT UNTIL (c)", means: "Check c first; keep running the block until c is true" },
-	{ code: "list[1]", means: "The FIRST item — lists here start at 1, not 0" },
-	{ code: "APPEND / INSERT / REMOVE", means: "Add to the end / add at an index / delete at an index" },
+	{ code: "REPEAT UNTIL (c)", means: "Check c before each pass; stop as soon as c is true" },
+	{ code: "FOR EACH x IN list", means: "Run the block once for each item, first to last" },
+	{ code: "list[1]", means: "The FIRST item — lists start at 1. Index < 1 or > LENGTH is an error" },
+	{ code: "APPEND(list, v)", means: "Add v to the end" },
+	{ code: "INSERT(list, i, v)", means: "Put v at index i; later items shift right" },
+	{ code: "REMOVE(list, i)", means: "Delete the item at index i; later items shift left" },
 	{ code: "LENGTH(list)", means: "How many items are in the list" },
 	{ code: "RETURN(x)", means: "Send x back from a procedure and stop it immediately" },
-	{ code: "CAN_MOVE(\"forward\")", means: "true if the robot's next square is open" },
+	{ code: "RANDOM(a, b)", means: "A random whole number from a to b, including both" },
 ];
-
-const LEVEL_INFO = {
-	easy: { label: "Easy", hint: "One idea at a time" },
-	medium: { label: "Medium", hint: "Two ideas combined" },
-	challenging: { label: "Challenging", hint: "Longer code, several ideas" },
-};
-const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUESTIONS.filter((q) => q.level === l).length]));
 ---
 
 <LearnArticle
 	href="/learn/pseudocode-practice"
-	description="Endless pseudocode practice at three levels: code-reading questions on variables, MOD, loops, lists, procedures and robots. Streaks, not scores."
-	lead="Read the code, predict what it does. There's no end and no score — just keep going and build a streak."
+	description="Pseudocode practice at three levels: read code, predict the result, and learn from every answer. Topics, mixed practice and a review of your mistakes."
+	sections={false}
 >
-	<section class="block">
-		<p class="block-title">How This Works</p>
-		<ul class="block-list">
-			<li>
-				<em>Pick a level.</em> Easy questions test one idea at a time. Medium ones combine two. Challenging
-				ones use longer code that mixes several ideas — the kind of tracing you'll meet in a real computer
-				science course.
-			</li>
-			<li><em>Miss one?</em> Read the explanation. That question will come back again soon — and keep coming back until you get it.</li>
-			<li><em>Get one right?</em> It shows up less often for a while, but it can still return later.</li>
-			<li>There's no final score. Just a streak of right answers in a row. Hit 2, 4, 8, 16… for a milestone.</li>
-		</ul>
-		<p class="block-text">
-			Your progress is saved in this browser only. Keyboard shortcuts: <span class="mono-highlight">1–4</span>{" "}
-			to answer, <span class="mono-highlight">Enter</span> for the next question.
-		</p>
-	</section>
+	<DemoFrame label="Pseudocode practice" title="Pseudocode Practice">
+		<div class="pp" data-pp>
+			<!-- ============================ Start ============================ -->
+			<section class="pp-start" data-pp-start aria-labelledby="pp-start-title">
+				<h2 class="sr-only" id="pp-start-title">Start practicing</h2>
+				<p class="pp-instr">
+					Read the code, predict the result, then choose an answer. Check the explanation before continuing.{" "}
+					<strong>Lists start at 1.</strong>
+				</p>
 
-	<DemoFrame label="Pseudocode practice" title="Practice">
-		<div class="pp-tool" data-pp-tool>
-			<div class="pp-levels" role="radiogroup" aria-label="Difficulty">
-				{
-					PSEUDO_LEVELS.map((level) => (
-						<button type="button" class="pp-level" role="radio" aria-checked="false" data-pp-level={level}>
-							<span class="pp-level-name">{LEVEL_INFO[level].label}</span>
-							<span class="pp-level-hint">
-								{LEVEL_INFO[level].hint} · {levelCounts[level]} questions
-							</span>
-						</button>
-					))
-				}
-			</div>
-
-			<div class="pp-top">
-				<div class="pp-streak" aria-live="polite">
-					<span class="pp-streak-value" data-pp-streak>0</span>
-					<span class="pp-streak-label">in a row</span>
+				<div class="pp-continue" data-pp-continue hidden>
+					<button type="button" class="pp-btn pp-btn--primary pp-btn--wide" data-pp-continue-btn>
+						Continue practice <span class="pp-continue-label" data-pp-continue-label></span>
+					</button>
 				</div>
-				<div class="pp-top-meta">
-					<span>Best on <span data-pp-best-level>Easy</span>: <strong data-pp-best>0</strong></span>
-					<span>Answered: <strong data-pp-answered>0</strong></span>
-					<span data-pp-waiting-wrap>Coming back: <strong data-pp-waiting>0</strong></span>
+
+				<div class="pp-routes" role="radiogroup" aria-label="How do you want to practice?">
+					<button type="button" class="pp-route" role="radio" aria-checked="true" data-pp-route="topic">
+						<span class="pp-route-name">Practice a topic</span>
+						<span class="pp-route-hint">Choose a topic and level</span>
+					</button>
+					<button type="button" class="pp-route" role="radio" aria-checked="false" data-pp-route="mixed">
+						<span class="pp-route-name">Mixed practice</span>
+						<span class="pp-route-hint">Every topic, one level</span>
+					</button>
+					<button type="button" class="pp-route" role="radio" aria-checked="false" data-pp-route="review">
+						<span class="pp-route-name">Review mistakes</span>
+						<span class="pp-route-hint" data-pp-review-hint>No mistakes to review yet</span>
+					</button>
 				</div>
-			</div>
 
-			<p class="pp-milestone" data-pp-milestone role="status" hidden></p>
-
-			<details class="pp-topics">
-				<summary>Topics: <span data-pp-topic-summary>all</span></summary>
-				<div class="pp-topic-chips">
-					{
-						PSEUDO_CATEGORIES.map((cat) => (
-							<button type="button" class="pp-chip" data-pp-topic={cat} aria-pressed="true">
-								{cat} <span class="pp-chip-count" data-pp-topic-count={cat}></span>
-							</button>
-						))
-					}
+				<div class="pp-setup" data-pp-setup>
+					<fieldset class="pp-field" data-pp-topic-field>
+						<legend>Topic</legend>
+						<div class="pp-topics">
+							{
+								TOPICS.map((t) => (
+									<label class="pp-topic">
+										<input type="radio" name="pp-topic" value={t} />
+										<span class="pp-topic-name">{TOPIC_LABELS[t]}</span>
+										<span class="pp-topic-state" data-pp-topic-state={t} />
+									</label>
+								))
+							}
+						</div>
+					</fieldset>
+					<fieldset class="pp-field">
+						<legend>Level</legend>
+						<div class="pp-levels">
+							{
+								LEVELS.map((l) => (
+									<label class="pp-level">
+										<input type="radio" name="pp-level" value={l} />
+										<span class="pp-level-name">{LEVEL_LABELS[l]}</span>
+										<span class="pp-level-hint">{LEVEL_HINTS[l]}</span>
+									</label>
+								))
+							}
+						</div>
+					</fieldset>
+					<p class="pp-setup-note" data-pp-setup-note aria-live="polite"></p>
+					<div class="pp-actions">
+						<button type="button" class="pp-btn pp-btn--primary" data-pp-begin>Start practicing →</button>
+						<button type="button" class="pp-link" data-pp-help-open aria-controls="pp-help">Pseudocode help</button>
+					</div>
 				</div>
-			</details>
 
-			<details class="pp-topics pp-help">
-				<summary>Notation help</summary>
-				<div class="table-wrap pp-help-table">
+				<details class="pp-progress">
+					<summary>Your progress by topic</summary>
+					<ul class="pp-progress-list" data-pp-progress-list></ul>
+					<p class="pp-small">
+						These are practice indicators based on your recent first tries — not a prediction of test results. Progress is
+						saved in this browser only.
+					</p>
+				</details>
+			</section>
+
+			<!-- =========================== Session =========================== -->
+			<section class="pp-session" data-pp-session hidden aria-label="Practice question">
+				<div class="pp-bar">
+					<p class="pp-scope"><span data-pp-scope></span> <button type="button" class="pp-link" data-pp-change>Change</button></p>
+					<div class="pp-bar-right">
+						<label class="pp-level-select">
+							<span>Level</span>
+							<select data-pp-level-select>
+								{LEVELS.map((l) => <option value={l}>{LEVEL_LABELS[l]}</option>)}
+							</select>
+						</label>
+						<button type="button" class="pp-link" data-pp-help-open aria-controls="pp-help">Pseudocode help</button>
+					</div>
+				</div>
+				<p class="pp-stats" data-pp-stats></p>
+
+				<div class="pp-advice" data-pp-advice hidden role="status">
+					<p data-pp-advice-text></p>
+					<div class="pp-actions">
+						<button type="button" class="pp-btn pp-btn--primary" data-pp-advice-yes></button>
+						<button type="button" class="pp-btn" data-pp-advice-no>Not now</button>
+					</div>
+				</div>
+
+				<article class="pp-card" data-pp-card>
+					<p class="pp-meta" data-pp-meta></p>
+					<p class="pp-prompt" data-pp-prompt tabindex="-1"></p>
+					<div class="pp-body" data-pp-body>
+						<pre class="pp-code" data-pp-code tabindex="0" aria-label="Code"></pre>
+						<figure class="pp-figure" data-pp-figure hidden>
+							<div class="pp-grid" data-pp-grid></div>
+							<figcaption class="pp-legend">
+								<span><Fragment set:html={LEGEND_ROBOT} /> Robot (points the way it faces)</span>
+								<span><Fragment set:html={LEGEND_BLOCKED} /> Blocked</span>
+								<span><Fragment set:html={LEGEND_TARGET} /> Labeled square</span>
+							</figcaption>
+						</figure>
+					</div>
+					<div class="pp-options" data-pp-options role="group" aria-label="Answer choices"></div>
+					<div class="pp-next-row">
+						<span class="pp-keys" aria-hidden="true">Keys: 1–4 answer · Enter next · T trace</span>
+						<button type="button" class="pp-btn pp-btn--primary" data-pp-next disabled>Next question →</button>
+					</div>
+					<div class="pp-feedback" data-pp-feedback aria-live="polite" hidden>
+						<p class="pp-verdict" data-pp-verdict></p>
+						<p class="pp-picked" data-pp-picked></p>
+						<p class="pp-expl" data-pp-expl></p>
+						<p class="pp-why" data-pp-why hidden></p>
+						<button type="button" class="pp-btn" data-pp-trace-btn aria-expanded="false" aria-controls="pp-trace" hidden>Show trace</button>
+					</div>
+					<div class="pp-trace" id="pp-trace" data-pp-trace hidden>
+						<p class="pp-trace-note" data-pp-trace-note></p>
+						<div class="pp-trace-controls">
+							<button type="button" class="pp-btn" data-pp-t-back>← Back</button>
+							<button type="button" class="pp-btn pp-btn--primary" data-pp-t-step>Step →</button>
+							<button type="button" class="pp-btn" data-pp-t-play>Play</button>
+							<button type="button" class="pp-btn" data-pp-t-reset>Reset</button>
+							<span class="pp-trace-count" data-pp-t-count aria-live="polite"></span>
+						</div>
+						<p class="pp-trace-now" data-pp-t-now></p>
+						<div class="pp-trace-body">
+							<pre class="pp-code pp-trace-code" data-pp-t-code tabindex="0" aria-label="Code being traced"></pre>
+							<div class="pp-trace-side">
+								<div class="pp-trace-grid" data-pp-t-grid hidden></div>
+								<div data-pp-t-vars-box>
+									<p class="pp-trace-label">Variables</p>
+									<p class="pp-trace-vars" data-pp-t-vars></p>
+								</div>
+								<div data-pp-t-out-box>
+									<p class="pp-trace-label">Output so far</p>
+									<p class="pp-trace-out" data-pp-t-out></p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</article>
+
+				<article class="pp-checkpoint" data-pp-checkpoint hidden tabindex="-1" aria-labelledby="pp-cp-title">
+					<h3 id="pp-cp-title">Checkpoint</h3>
+					<p class="pp-cp-score" data-pp-cp-score></p>
+					<p data-pp-cp-skills></p>
+					<p class="pp-cp-next" data-pp-cp-next></p>
+					<div class="pp-actions">
+						<button type="button" class="pp-btn pp-btn--primary" data-pp-cp-continue>Continue</button>
+						<button type="button" class="pp-btn" data-pp-cp-review>Review mistakes</button>
+						<button type="button" class="pp-btn" data-pp-cp-level hidden></button>
+						<button type="button" class="pp-btn" data-pp-cp-change>Change topic</button>
+					</div>
+				</article>
+			</section>
+
+			<!-- ============================= Help ============================ -->
+			<section class="pp-help" id="pp-help" data-pp-help hidden aria-labelledby="pp-help-title" tabindex="-1">
+				<div class="pp-help-head">
+					<h3 id="pp-help-title">Pseudocode help</h3>
+					<button type="button" class="pp-btn" data-pp-help-close>Close</button>
+				</div>
+				<div class="table-wrap">
 					<table class="data-table">
 						<tbody>
 							{
@@ -107,641 +218,976 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 						</tbody>
 					</table>
 				</div>
-				<p class="pp-help-note">
-					Robot questions: the triangle is the robot, pointing the way it faces. Black squares are blocked.
-					ROTATE_LEFT() and ROTATE_RIGHT() turn it without moving it. If it tries to move into a blocked square
-					or off the grid, it stays put and the program stops.
+				<p class="pp-small">
+					<strong>Robot:</strong> MOVE_FORWARD() moves one square the way the robot faces. ROTATE_LEFT() and ROTATE_RIGHT()
+					turn it 90° in place. CAN_MOVE("left"), ("right"), ("forward") or ("backward") checks the square on that side
+					<em>of the robot</em>. If the robot tries to move into a blocked square or off the grid, it stays where it is and the
+					program ends.
 				</p>
-			</details>
+				<p class="pp-small"><strong>Keys:</strong> 1–4 choose an answer · Enter or N next question · T show or hide the trace.</p>
+			</section>
 
-			<article class="pp-card">
-				<p class="pp-card-cat" data-pp-cat></p>
-				<p class="pp-card-prompt" data-pp-prompt tabindex="-1"></p>
-				<div class="pp-card-body">
-					<pre class="pp-code" data-pp-code hidden></pre>
-					<div class="pp-grid" data-pp-grid hidden></div>
-				</div>
-				<div class="pp-options" data-pp-options role="group" aria-label="Answer choices"></div>
-				<div class="pp-feedback is-pending" data-pp-feedback aria-live="polite">
-					<p class="pp-verdict" data-pp-verdict>
-						<span data-pp-verdict-good></span>
-						<span data-pp-verdict-bad></span>
-					</p>
-					<p class="pp-explanation" data-pp-explanation></p>
-				</div>
-				<div class="demo-controls">
-					<button type="button" class="demo-btn demo-btn--primary is-pending" data-pp-next>Next question →</button>
-				</div>
-			</article>
-
-			<p class="pp-reset-row">
-				<button type="button" class="pp-reset" data-pp-reset>Reset my progress</button>
-			</p>
+			<p class="pp-storage-note" data-pp-storage-note hidden>Your browser isn't letting this page save progress, so it will reset when you leave.</p>
 		</div>
 	</DemoFrame>
 
+	<section class="block">
+		<p class="block-title">For Teachers</p>
+		<ul class="block-list">
+			<li>
+				<em>Levels describe reasoning, not number size.</em> Easy: one idea in short code. Medium: two ideas, or more
+				to keep track of. Challenging: several ideas together, edge cases, or reasoning about what an algorithm does.
+			</li>
+			<li>
+				<em>Mistakes come back as new examples.</em> A missed skill returns after two or three other questions with
+				different code or values, so students re-reason rather than remember an answer.
+			</li>
+			<li>
+				<em>Progress is a practice indicator.</em> "Ready for a harder challenge" appears after at least 8 correct
+				first tries in the last 10 at a level, across at least 3 kinds of question. It's a nudge, not a grade.
+			</li>
+			<li>
+				The notation follows the exam reference sheet: ← for assignment, ordinary division, MOD, 1-based lists, and the
+				robot rules. Use <em>Pseudocode help</em> during practice.
+			</li>
+		</ul>
+	</section>
 </LearnArticle>
 
 <script>
-	import { PSEUDO_CATEGORIES, PSEUDO_QUESTIONS, type PseudoQuestion, type PseudoCategory, type PseudoLevel } from "../../lib/pseudocodeQuestions";
+	import { questionById } from "../../lib/pseudo/bank";
+	import { LEVELS, LEVEL_LABELS, TOPICS, TOPIC_LABELS, TYPE_LABELS, type Level, type Question, type Topic } from "../../lib/pseudo/core";
+	import { run, type TraceStep } from "../../lib/pseudo/interpreter";
 	import {
+		STORAGE_KEY,
+		SKILL_STATE_LABELS,
+		checkpoint,
+		checkpointDue,
+		closeCheckpoint,
+		dismissAdvice,
 		freshState,
+		levelSuggestion,
+		loadState,
 		pickNext,
-		markShown,
+		poolSize,
 		recordAnswer,
-		waitingCount,
-		loadPracticeState,
-		setLevel,
-		type PracticeState,
-	} from "../../lib/pseudocodePractice";
+		reviewFor,
+		topicProgress,
+		type ReviewItem,
+		type Route,
+		type Settings,
+		type State,
+	} from "../../lib/pseudo/progress";
+	import { robotSvg } from "../../lib/pseudo/robotSvg";
 
-	const STORAGE_KEY = "logicdash:pseudocode-practice:v1";
-	const root = document.querySelector<HTMLElement>("[data-pp-tool]")!;
-	const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
-	const streakEl = $("[data-pp-streak]");
-	const bestEl = $("[data-pp-best]");
-	const bestLevelEl = $("[data-pp-best-level]");
-	const levelButtons = root.querySelectorAll<HTMLButtonElement>("[data-pp-level]");
-	const LEVEL_NAMES: Record<PseudoLevel, string> = { easy: "Easy", medium: "Medium", challenging: "Challenging" };
-	const answeredEl = $("[data-pp-answered]");
-	const waitingWrap = $("[data-pp-waiting-wrap]");
-	const waitingEl = $("[data-pp-waiting]");
-	const milestoneEl = $("[data-pp-milestone]");
-	const topicSummary = $("[data-pp-topic-summary]");
-	const topicChips = root.querySelectorAll<HTMLButtonElement>("[data-pp-topic]");
-	const catEl = $("[data-pp-cat]");
-	const promptEl = $("[data-pp-prompt]");
-	const codeEl = $<HTMLPreElement>("[data-pp-code]");
-	const gridEl = $("[data-pp-grid]");
-	const optionsEl = $("[data-pp-options]");
-	const feedbackEl = $("[data-pp-feedback]");
-	const verdictEl = $("[data-pp-verdict]");
-	const verdictGood = $("[data-pp-verdict-good]");
-	const verdictBad = $("[data-pp-verdict-bad]");
-	const explanationEl = $("[data-pp-explanation]");
-	const nextBtn = $<HTMLButtonElement>("[data-pp-next]");
-	const frameEl = nextBtn.closest<HTMLElement>("[data-demo-frame]")!;
-	const resetBtn = $<HTMLButtonElement>("[data-pp-reset]");
+	const root = document.querySelector<HTMLElement>("[data-pp]")!;
+	const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+	const $$ = <T extends HTMLElement = HTMLElement>(sel: string) => Array.from(root.querySelectorAll<T>(sel));
+	const frame = root.closest<HTMLElement>("[data-demo-frame]")!;
+	const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-	// --- Persistence (best-effort: private windows or blocked storage just
-	// mean progress lasts for this visit only). ---------------------------
-	function load(): PracticeState {
+	// --- Storage (best effort) --------------------------------------------------
+	let storageOk = true;
+	function load(): State {
 		try {
 			const raw = localStorage.getItem(STORAGE_KEY);
 			if (raw) {
-				const parsed = loadPracticeState(JSON.parse(raw));
-				if (parsed) {
-					parsed.categories = parsed.categories.filter((c) => PSEUDO_CATEGORIES.includes(c));
-					if (parsed.categories.length === 0) parsed.categories = [...PSEUDO_CATEGORIES];
-					return parsed;
-				}
+				const s = loadState(JSON.parse(raw));
+				if (s) return s;
+				// Unreadable data is kept aside rather than silently erased.
+				localStorage.setItem(`${STORAGE_KEY}:unreadable`, raw);
 			}
 		} catch {
-			/* ignore */
+			storageOk = false;
 		}
-		return freshState(PSEUDO_CATEGORIES);
+		return freshState();
 	}
-
 	function save() {
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 		} catch {
-			/* ignore */
+			storageOk = false;
+			$("[data-pp-storage-note]").hidden = false;
 		}
 	}
 
 	let state = load();
-	let current: PseudoQuestion | null = null;
+	if (!storageOk) $("[data-pp-storage-note]").hidden = false;
+	let settings: Settings = state.settings ?? { route: "topic", topic: "variables", level: "easy" };
+	let route: Route = state.settings ? settings.route : "topic";
+	let current: Question | null = null;
+	let currentReview: ReviewItem | null = null;
 	let answered = false;
-	let optionOrder: number[] = [];
-	let milestoneTimer: number | undefined;
+	let order: number[] = [];
 
-	function shuffled(n: number): number[] {
-		const order = Array.from({ length: n }, (_, i) => i);
-		for (let i = n - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[order[i], order[j]] = [order[j], order[i]];
-		}
-		return order;
+	// =========================================================== Start screen
+	const startEl = $("[data-pp-start]");
+	const sessionEl = $("[data-pp-session]");
+	const routeBtns = $$<HTMLButtonElement>("[data-pp-route]");
+	const topicField = $("[data-pp-topic-field]");
+	const topicInputs = $$<HTMLInputElement>('input[name="pp-topic"]');
+	const levelInputs = $$<HTMLInputElement>('input[name="pp-level"]');
+	const setupNote = $("[data-pp-setup-note]");
+	const beginBtn = $<HTMLButtonElement>("[data-pp-begin]");
+
+	// Brings a part of the practice into view when it changes, so a student
+	// who scrolled down to read feedback isn't left looking at the old card.
+	// Fullscreen fits everything on screen already, so it's skipped there.
+	function reveal(el: HTMLElement, always = false) {
+		if (frame.classList.contains("is-fullscreen")) return;
+		const top = el.getBoundingClientRect().top;
+		if (!always && top >= 0 && top < window.innerHeight * 0.5) return;
+		window.scrollTo({ top: window.scrollY + top - 12, behavior: reduceMotion ? "auto" : "smooth" });
 	}
+
+	const scopeText = (s: Settings) =>
+		s.route === "review" ? `Review mistakes · ${LEVEL_LABELS[s.level]}` : `${s.route === "topic" ? TOPIC_LABELS[s.topic] : "Mixed"} · ${LEVEL_LABELS[s.level]}`;
+
+	function renderStart() {
+		const cont = $("[data-pp-continue]");
+		cont.hidden = !state.settings;
+		if (state.settings) $("[data-pp-continue-label]").textContent = `— ${scopeText(state.settings)}`;
+		const reviewCount = state.review.length;
+		$("[data-pp-review-hint]").textContent = reviewCount ? `${reviewCount} skill${reviewCount === 1 ? "" : "s"} to revisit` : "No mistakes to review yet";
+		routeBtns.forEach((b) => {
+			const on = b.dataset.ppRoute === route;
+			b.setAttribute("aria-checked", String(on));
+			b.tabIndex = on ? 0 : -1;
+		});
+		topicField.hidden = route !== "topic";
+		topicInputs.forEach((i) => (i.checked = i.value === settings.topic));
+		levelInputs.forEach((i) => (i.checked = i.value === settings.level));
+		for (const t of TOPICS) {
+			const p = topicProgress(state, t);
+			const el = root.querySelector<HTMLElement>(`[data-pp-topic-state="${t}"]`)!;
+			el.textContent = SKILL_STATE_LABELS[p.state];
+			el.dataset.state = p.state;
+		}
+		if (route === "review" && reviewCount === 0) {
+			setupNote.textContent = "Nothing to review yet — mistakes you make will appear here. Try a topic or mixed practice first.";
+			beginBtn.disabled = true;
+		} else {
+			const n = route === "review" ? reviewCount : poolSize({ ...settings, route });
+			setupNote.textContent = route === "review" ? `You'll get fresh examples of ${n} skill${n === 1 ? "" : "s"} you missed.` : "";
+			beginBtn.disabled = false;
+		}
+		const list = $("[data-pp-progress-list]");
+		list.innerHTML = TOPICS.map((t) => {
+			const p = topicProgress(state, t);
+			const detail = p.firstTries ? `${p.correct} of ${p.firstTries} first tries right${p.level ? ` · last at ${LEVEL_LABELS[p.level]}` : ""}` : "Not started";
+			return `<li><span class="pp-progress-topic">${TOPIC_LABELS[t]}</span><span class="pp-badge" data-state="${p.state}">${SKILL_STATE_LABELS[p.state]}</span><span class="pp-progress-detail">${detail}</span></li>`;
+		}).join("");
+	}
+
+	function chooseRoute(r: Route, focus = false) {
+		route = r;
+		renderStart();
+		if (focus) root.querySelector<HTMLButtonElement>(`[data-pp-route="${r}"]`)?.focus();
+	}
+	routeBtns.forEach((b, i) => {
+		b.addEventListener("click", () => chooseRoute(b.dataset.ppRoute as Route));
+		b.addEventListener("keydown", (e) => {
+			const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+			if (!step) return;
+			e.preventDefault();
+			chooseRoute(routeBtns[(i + step + routeBtns.length) % routeBtns.length].dataset.ppRoute as Route, true);
+		});
+	});
+	topicInputs.forEach((i) => i.addEventListener("change", () => ((settings = { ...settings, topic: i.value as Topic }), renderStart())));
+	levelInputs.forEach((i) => i.addEventListener("change", () => ((settings = { ...settings, level: i.value as Level }), renderStart())));
+
+	function startSession(s: Settings) {
+		settings = s;
+		route = s.route;
+		state = { ...state, settings: s };
+		save();
+		startEl.hidden = true;
+		sessionEl.hidden = false;
+		$<HTMLSelectElement>("[data-pp-level-select]").value = s.level;
+		showQuestion(true);
+		reveal(sessionEl, true);
+	}
+	beginBtn.addEventListener("click", () => startSession({ ...settings, route }));
+	$("[data-pp-continue-btn]").addEventListener("click", () => startSession(state.settings!));
+
+	function backToStart() {
+		stopPlay();
+		sessionEl.hidden = true;
+		startEl.hidden = false;
+		current = null;
+		renderStart();
+		reveal(startEl);
+		routeBtns.find((b) => b.dataset.ppRoute === route)?.focus({ preventScroll: true });
+	}
+	$("[data-pp-change]").addEventListener("click", backToStart);
+
+	// ================================================================ Session
+	const metaEl = $("[data-pp-meta]");
+	const promptEl = $("[data-pp-prompt]");
+	const codeEl = $("[data-pp-code]");
+	const figureEl = $("[data-pp-figure]");
+	const gridEl = $("[data-pp-grid]");
+	const optionsEl = $("[data-pp-options]");
+	const nextBtn = $<HTMLButtonElement>("[data-pp-next]");
+	const feedbackEl = $("[data-pp-feedback]");
+	const traceBtn = $<HTMLButtonElement>("[data-pp-trace-btn]");
+	const traceEl = $("[data-pp-trace]");
+	const cardEl = $("[data-pp-card]");
+	const cpEl = $("[data-pp-checkpoint]");
 
 	function renderStats() {
-		streakEl.textContent = String(state.streak);
-		bestEl.textContent = String(state.bestByLevel[state.level] ?? 0);
-		bestLevelEl.textContent = LEVEL_NAMES[state.level];
-		answeredEl.textContent = String(state.answered);
-		const waiting = waitingCount(state, PSEUDO_QUESTIONS);
-		waitingEl.textContent = String(waiting);
+		const inSet = state.attempts.length - state.setStart;
+		const setRight = state.attempts.slice(state.setStart).filter((a) => a.correct).length;
+		$("[data-pp-scope]").textContent = scopeText(settings);
+		$("[data-pp-stats]").textContent = `This set: ${inSet} of 10 · ${setRight} right first time · Streak ${state.streak}`;
 	}
 
-	function renderLevels() {
-		levelButtons.forEach((btn) => {
-			const on = btn.dataset.ppLevel === state.level;
-			btn.setAttribute("aria-checked", String(on));
-			btn.tabIndex = on ? 0 : -1;
-		});
+	function renderAdvice() {
+		const box = $("[data-pp-advice]");
+		const sug = settings.route === "review" ? null : levelSuggestion(state, settings);
+		box.hidden = !sug;
+		if (!sug) return;
+		$("[data-pp-advice-text]").textContent = `${sug.reason} ${sug.kind === "up" ? `Ready to try ${LEVEL_LABELS[sug.to]}?` : `Want to try ${LEVEL_LABELS[sug.to]} for a while?`}`;
+		const yes = $<HTMLButtonElement>("[data-pp-advice-yes]");
+		yes.textContent = `Switch to ${LEVEL_LABELS[sug.to]}`;
+		yes.onclick = () => changeLevel(sug.to);
 	}
+	$("[data-pp-advice-no]").addEventListener("click", () => {
+		state = dismissAdvice(state);
+		save();
+		renderAdvice();
+	});
 
-	function renderTopics() {
-		root.querySelectorAll<HTMLElement>("[data-pp-topic-count]").forEach((el) => {
-			const cat = el.dataset.ppTopicCount as PseudoCategory;
-			const n = PSEUDO_QUESTIONS.filter((q) => q.level === state.level && q.topics.includes(cat)).length;
-			el.textContent = `(${n})`;
-		});
-		topicChips.forEach((chip) => {
-			chip.setAttribute("aria-pressed", String(state.categories.includes(chip.dataset.ppTopic as PseudoCategory)));
-		});
-		topicSummary.textContent =
-			state.categories.length === PSEUDO_CATEGORIES.length ? "all" : `${state.categories.length} of ${PSEUDO_CATEGORIES.length}`;
+	function changeLevel(level: Level) {
+		settings = { ...settings, level };
+		state = { ...state, settings };
+		save();
+		$<HTMLSelectElement>("[data-pp-level-select]").value = level;
+		renderAdvice();
+		// An unanswered question is simply replaced; nothing is recorded.
+		showQuestion(true);
 	}
+	$<HTMLSelectElement>("[data-pp-level-select]").addEventListener("change", (e) => changeLevel((e.target as HTMLSelectElement).value as Level));
 
-	function renderGrid(q: PseudoQuestion) {
-		gridEl.innerHTML = "";
-		if (!q.grid) {
-			gridEl.hidden = true;
-			return;
-		}
-		const { rows, robot } = q.grid;
-		gridEl.hidden = false;
-		gridEl.style.setProperty("--cols", String(rows[0].length));
-		const facingWord = { up: "up", down: "down", left: "left", right: "right" }[robot.facing];
-		gridEl.setAttribute("role", "img");
-		const labels: string[] = [];
-		rows.forEach((row, r) => {
-			Array.from(row).forEach((ch, c) => {
-				const cell = document.createElement("span");
-				cell.className = "pp-cell";
-				if (ch === "#") cell.classList.add("pp-cell--blocked");
-				if (/[A-D]/.test(ch)) {
-					cell.textContent = ch;
-					cell.classList.add("pp-cell--label");
-					labels.push(`${ch} at row ${r + 1}, column ${c + 1}`);
-				}
-				if (r === robot.row && c === robot.col) {
-					const bot = document.createElement("span");
-					bot.className = `pp-robot pp-robot--${robot.facing}`;
-					bot.textContent = "▲";
-					cell.append(bot);
-				}
-				gridEl.append(cell);
-			});
-		});
-		const blocked = rows.flatMap((row, r) => Array.from(row).flatMap((ch, c) => (ch === "#" ? [`row ${r + 1}, column ${c + 1}`] : [])));
-		gridEl.setAttribute(
-			"aria-label",
-			`A ${rows.length} by ${rows[0].length} grid. The robot is at row ${robot.row + 1}, column ${robot.col + 1}, facing ${facingWord}.` +
-				(labels.length ? ` Squares: ${labels.join("; ")}.` : "") +
-				(blocked.length ? ` Blocked: ${blocked.join("; ")}.` : ""),
-		);
-	}
+	const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-	/** Both verdicts name the answer, so they're about the same length and the reserved panel fits either. */
-	function verdictText(correct: boolean, pos: number) {
-		const opt = current!.options[current!.answer];
-		const named = opt.includes("\n") ? `${pos}` : `${pos}: ${opt}`;
-		return correct ? `✓ Correct — the answer is ${named}.` : `✗ Not quite — the answer is ${named}. This one will come back soon.`;
-	}
-
-	/** `moveFocus` is for user-triggered changes, so keyboard and screen-reader users land on the new question. */
 	function showQuestion(moveFocus = false) {
-		current = pickNext(state, PSEUDO_QUESTIONS);
-		state = markShown(state, current.id);
+		stopPlay();
+		if (settings.route === "review" && reviewFor(state, null).length === 0) {
+			settings = { ...settings, route: "mixed" };
+			state = { ...state, settings };
+			save();
+		}
+		const pick = pickNext(state, settings);
+		current = pick.question;
+		currentReview = pick.review;
 		answered = false;
-		optionOrder = shuffled(current.options.length);
+		delete frame.dataset.fitHold;
+		cpEl.hidden = true;
+		cardEl.hidden = false;
 
-		catEl.textContent = `${LEVEL_NAMES[current.level]} · ${current.topics.join(" + ")}`;
+		metaEl.innerHTML = `<span>${esc(TOPIC_LABELS[current.topic])}</span><span>${LEVEL_LABELS[current.level]}</span><span>${TYPE_LABELS[current.type]}</span>${currentReview ? '<span class="pp-tag">Review: new example</span>' : ""}`;
 		promptEl.textContent = current.prompt;
 		codeEl.hidden = !current.code;
 		codeEl.textContent = current.code ?? "";
-		renderGrid(current);
+		if (current.grid) {
+			figureEl.hidden = false;
+			gridEl.innerHTML = robotSvg(current.grid);
+		} else {
+			figureEl.hidden = true;
+			gridEl.innerHTML = "";
+		}
+		$("[data-pp-body]").classList.toggle("has-grid", !!current.grid);
 
+		order = current.fixedOrder ? [0, 1, 2, 3] : shuffle([0, 1, 2, 3]);
 		optionsEl.innerHTML = "";
-		optionOrder.forEach((optIndex, pos) => {
+		order.forEach((oi, pos) => {
+			const o = current!.options[oi];
 			const btn = document.createElement("button");
 			btn.type = "button";
-			btn.className = "pp-option";
-			btn.dataset.optIndex = String(optIndex);
-			const key = document.createElement("span");
-			key.className = "pp-option-key";
-			key.textContent = String(pos + 1);
-			key.setAttribute("aria-hidden", "true");
-			const text = document.createElement("span");
-			text.className = "pp-option-text";
-			text.textContent = current!.options[optIndex];
-			btn.append(key, text);
-			btn.addEventListener("click", () => answer(optIndex));
+			btn.className = `pp-option${o.code ? " pp-option--code" : ""}`;
+			btn.dataset.oi = String(oi);
+			btn.innerHTML = `<span class="pp-key" aria-hidden="true">${pos + 1}</span><span class="pp-option-text">${esc(o.text)}</span><span class="pp-option-tag" aria-hidden="true"></span>`;
+			btn.setAttribute("aria-label", `Answer ${pos + 1}: ${o.text}`);
+			btn.addEventListener("click", () => answer(oi));
 			optionsEl.append(btn);
 		});
 
-		// The answer panel is laid out now — filled with this question's real
-		// explanation, just invisible — so revealing it later doesn't move or
-		// resize anything (and fullscreen doesn't have to re-fit the text).
-		const correctPos = optionOrder.indexOf(current.answer) + 1;
-		// Both verdicts are laid out in the same spot, so the panel is always
-		// the height of the longer one, whichever the student gets.
-		verdictEl.className = "pp-verdict";
-		verdictGood.textContent = verdictText(true, correctPos);
-		verdictBad.textContent = verdictText(false, correctPos);
-		explanationEl.textContent = current.explanation;
-		feedbackEl.classList.add("is-pending");
-		nextBtn.classList.add("is-pending");
-		delete frameEl.dataset.fitHold;
+		nextBtn.disabled = true;
+		feedbackEl.hidden = true;
+		traceBtn.hidden = true;
+		traceEl.hidden = true;
+		traceBtn.setAttribute("aria-expanded", "false");
+		traceBtn.textContent = "Show trace";
 		renderStats();
-		save();
+		renderAdvice();
 		if (moveFocus) {
 			promptEl.focus({ preventScroll: true });
-			// On the page, bring the new question's top back into view if the
-			// last answer left it scrolled off the top.
-			if (!document.querySelector(".demo-frame.is-fullscreen")) {
-				const top = promptEl.closest(".pp-card")!.getBoundingClientRect().top;
-				if (top < 0) window.scrollBy({ top: top - 16, behavior: "smooth" });
-			}
+			reveal(cardEl);
 		}
 	}
 
-	function answer(optIndex: number) {
+	function shuffle(a: number[]) {
+		for (let i = a.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[a[i], a[j]] = [a[j], a[i]];
+		}
+		return a;
+	}
+
+	function answer(oi: number) {
+		// One attempt per question: later clicks or key presses are ignored.
 		if (!current || answered) return;
 		answered = true;
-		const correct = optIndex === current.answer;
-		const result = recordAnswer(state, current.id, correct);
-		state = result.state;
-
-		optionsEl.querySelectorAll<HTMLButtonElement>(".pp-option").forEach((btn) => {
-			const i = Number(btn.dataset.optIndex);
-			btn.disabled = true;
-			const key = btn.querySelector(".pp-option-key")!;
-			if (i === current!.answer) {
-				btn.classList.add("pp-option--correct");
-				key.textContent = "✓"; // the mark replaces the number, so color isn't the only cue
-			} else if (i === optIndex) {
-				btn.classList.add("pp-option--incorrect");
-				key.textContent = "✗";
-			}
-		});
-
-		const correctPos = optionOrder.indexOf(current.answer) + 1;
-		verdictEl.className = `pp-verdict ${correct ? "demo-verdict--good" : "demo-verdict--bad"}`;
-		explanationEl.textContent = current.explanation;
-		frameEl.dataset.fitHold = "1";
-		feedbackEl.classList.remove("is-pending");
-		nextBtn.classList.remove("is-pending");
-		nextBtn.focus({ preventScroll: true });
-
-		if (result.milestone) showMilestone(result.milestone);
-		renderStats();
+		const q = current;
+		const chosen = q.options[oi];
+		const correctIdx = q.options.findIndex((o) => o.correct);
+		const ok = chosen.correct;
+		state = recordAnswer(state, q, ok, currentReview);
 		save();
-	}
 
-	function showMilestone(n: number) {
-		const power = Math.log2(n);
-		milestoneEl.textContent = `Streak of ${n}! That's 2${toSuperscript(power)} in a row.`;
-		milestoneEl.hidden = false;
-		milestoneEl.classList.remove("is-pop");
-		void milestoneEl.offsetWidth; // restart the animation
-		milestoneEl.classList.add("is-pop");
-		window.clearTimeout(milestoneTimer);
-		milestoneTimer = window.setTimeout(() => (milestoneEl.hidden = true), 4000);
-	}
-
-	function toSuperscript(n: number): string {
-		const map = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-		return String(n)
-			.split("")
-			.map((d) => map[Number(d)])
-			.join("");
-	}
-
-	nextBtn.addEventListener("click", () => showQuestion(true));
-
-	topicChips.forEach((chip) => {
-		chip.addEventListener("click", () => {
-			const cat = chip.dataset.ppTopic as PseudoCategory;
-			const on = state.categories.includes(cat);
-			if (on && state.categories.length === 1) return; // always keep at least one topic
-			state = { ...state, categories: on ? state.categories.filter((c) => c !== cat) : [...state.categories, cat] };
-			renderTopics();
-			save();
-			// Move on if the current question's topic was just switched off.
-			if (current && !current.topics.some((t) => state.categories.includes(t))) showQuestion(true);
-			else renderStats();
+		$$<HTMLButtonElement>(".pp-option").forEach((btn) => {
+			const i = Number(btn.dataset.oi);
+			btn.disabled = true;
+			const tag = btn.querySelector(".pp-option-tag")!;
+			if (i === correctIdx) {
+				btn.classList.add("is-correct");
+				tag.textContent = i === oi ? "✓ Your answer — correct" : "✓ Correct answer";
+			} else if (i === oi) {
+				btn.classList.add("is-wrong");
+				tag.textContent = "✗ Your answer";
+			}
+			const label = i === correctIdx ? (i === oi ? "your answer, correct" : "correct answer") : i === oi ? "your answer, not correct" : "";
+			if (label) btn.setAttribute("aria-label", `${btn.getAttribute("aria-label")} — ${label}`);
 		});
-	});
 
-	resetBtn.addEventListener("click", () => {
-		if (!window.confirm("Reset your streak, best streak, and question history?")) return;
-		state = freshState(PSEUDO_CATEGORIES, state.level);
-		renderLevels();
-		renderTopics();
+		frame.dataset.fitHold = "1";
+		const posOf = (i: number) => order.indexOf(i) + 1;
+		const short = (o: { text: string; code?: boolean }) => (o.code || o.text.includes("\n") || o.text.length > 60 ? "" : `: ${o.text}`);
+		const verdict = $("[data-pp-verdict]");
+		verdict.className = `pp-verdict ${ok ? "demo-verdict--good" : "demo-verdict--bad"}`;
+		verdict.textContent = ok ? "✓ Correct" : "✗ Not quite";
+		$("[data-pp-picked]").textContent = ok
+			? `You chose ${posOf(oi)}${short(chosen)}.`
+			: `You chose ${posOf(oi)}${short(chosen)}. The correct answer is ${posOf(correctIdx)}${short(q.options[correctIdx])}.`;
+		$("[data-pp-expl]").textContent = q.explanation;
+		const why = $("[data-pp-why]");
+		why.hidden = ok || !chosen.why;
+		why.textContent = !ok && chosen.why ? `About your answer: ${chosen.why}` : "";
+		if (!ok) why.insertAdjacentText("beforeend", currentReview || !q.skill ? "" : " This skill will come back soon with a different example.");
+		if (!ok && !chosen.why) {
+			why.hidden = false;
+			why.textContent = "This skill will come back soon with a different example.";
+		}
+		traceBtn.hidden = !q.trace;
+		feedbackEl.hidden = false;
+		nextBtn.disabled = false;
+		nextBtn.textContent = checkpointDue(state) ? "See your checkpoint →" : "Next question →";
+		nextBtn.focus({ preventScroll: true });
+		renderStats();
+	}
+
+	function next() {
+		if (!answered) return;
+		if (checkpointDue(state)) showCheckpoint();
+		else showQuestion(true);
+	}
+	nextBtn.addEventListener("click", next);
+
+	// ============================================================ Checkpoint
+	function showCheckpoint() {
+		stopPlay();
+		const cp = checkpoint(state, settings);
+		cardEl.hidden = true;
+		cpEl.hidden = false;
+		$("[data-pp-cp-score]").textContent = `You got ${cp.correct} of ${cp.total} right on the first try.`;
+		$("[data-pp-cp-skills]").textContent = cp.trickySkills.length ? `Skills that caused difficulty: ${cp.trickySkills.join("; ")}.` : "No skills caused difficulty in this set.";
+		$("[data-pp-cp-next]").textContent = `Next step: ${cp.recommendation.text}`;
+		const reviewBtn = $<HTMLButtonElement>("[data-pp-cp-review]");
+		reviewBtn.hidden = state.review.length === 0;
+		const lvlBtn = $<HTMLButtonElement>("[data-pp-cp-level]");
+		lvlBtn.hidden = !cp.recommendation.level;
+		if (cp.recommendation.level) {
+			lvlBtn.textContent = `Switch to ${LEVEL_LABELS[cp.recommendation.level]}`;
+			lvlBtn.onclick = () => {
+				state = closeCheckpoint(state);
+				changeLevel(cp.recommendation.level!);
+			};
+		}
+		cpEl.focus({ preventScroll: true });
+		reveal(cpEl);
+	}
+	$("[data-pp-cp-continue]").addEventListener("click", () => {
+		state = closeCheckpoint(state);
+		save();
 		showQuestion(true);
 	});
-
-	// 1–4 answer, Enter / N moves on — ignored while typing in a form field
-	// or while the topic chips have focus.
-	document.addEventListener("keydown", (event) => {
-		const target = event.target as HTMLElement;
-		if (target.closest("input, select, textarea, summary, .pp-topics, .pp-levels") || event.metaKey || event.ctrlKey || event.altKey) return;
-		if (!answered && /^[1-4]$/.test(event.key)) {
-			const btn = optionsEl.querySelectorAll<HTMLButtonElement>(".pp-option")[Number(event.key) - 1];
-			btn?.click();
-		} else if (answered && (event.key === "Enter" || event.key.toLowerCase() === "n") && target !== nextBtn) {
-			event.preventDefault();
-			showQuestion(true);
-		}
+	$("[data-pp-cp-review]").addEventListener("click", () => {
+		state = closeCheckpoint(state);
+		startSession({ ...settings, route: "review" });
+	});
+	$("[data-pp-cp-change]").addEventListener("click", () => {
+		state = closeCheckpoint(state);
+		save();
+		backToStart();
 	});
 
-	// Level picker: a radio group, so arrow keys move between levels too.
-	function chooseLevel(level: PseudoLevel, focus = false) {
-		if (level !== state.level) {
-			state = setLevel(state, level);
-			renderLevels();
-			renderTopics();
-			showQuestion(!focus);
-		}
-		if (focus) root.querySelector<HTMLButtonElement>(`[data-pp-level="${level}"]`)?.focus();
+	// ================================================================= Trace
+	let steps: TraceStep[] = [];
+	let at = 0;
+	let playTimer: number | undefined;
+	let traceLines: string[] = [];
+
+	function openTrace() {
+		if (!current?.trace) return;
+		const t = current.trace;
+		const r = run(t.code, { grid: t.grid, inputs: t.inputs, trace: true, maxSteps: 300 });
+		steps = r.steps;
+		if (r.ended === "limit") steps.push({ line: steps.at(-1)?.line ?? 0, text: "…and so on. This loop would never stop, so the trace ends here.", vars: steps.at(-1)?.vars ?? {}, output: steps.at(-1)?.output ?? [] });
+		if (r.ended === "blocked") steps.at(-1) && (steps.at(-1)!.text = "Blocked: the square ahead is blocked or off the grid. The robot stays put and the program ends.");
+		traceLines = t.code.split("\n");
+		$("[data-pp-trace-note]").textContent = t.note ?? "Step through the code to see each value change.";
+		$("[data-pp-t-grid]").hidden = !t.grid;
+		// A robot program with no variables or output doesn't need empty panels.
+		$("[data-pp-t-vars-box]").hidden = !!t.grid && steps.every((st) => Object.keys(st.vars).length === 0);
+		$("[data-pp-t-out-box]").hidden = !!t.grid && steps.every((st) => st.output.length === 0);
+		at = 0;
+		traceEl.hidden = false;
+		traceBtn.setAttribute("aria-expanded", "true");
+		traceBtn.textContent = "Hide trace";
+		renderTrace();
 	}
+	function closeTrace() {
+		stopPlay();
+		traceEl.hidden = true;
+		traceBtn.setAttribute("aria-expanded", "false");
+		traceBtn.textContent = "Show trace";
+	}
+	traceBtn.addEventListener("click", () => (traceEl.hidden ? openTrace() : closeTrace()));
 
-	levelButtons.forEach((btn, i) => {
-		btn.addEventListener("click", () => chooseLevel(btn.dataset.ppLevel as PseudoLevel));
-		btn.addEventListener("keydown", (event) => {
-			const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
-			if (!step) return;
-			event.preventDefault();
-			const next = levelButtons[(i + step + levelButtons.length) % levelButtons.length];
-			chooseLevel(next.dataset.ppLevel as PseudoLevel, true);
-		});
+	function renderTrace() {
+		const step = steps[at - 1]; // at = number of steps taken (0 = start)
+		const prev = steps[at - 2];
+		$("[data-pp-t-count]").textContent = `Step ${at} of ${steps.length}`;
+		$("[data-pp-t-now]").textContent = step ? step.text : "Start: nothing has run yet. Press Step.";
+		$("[data-pp-t-code]").innerHTML = traceLines.map((l, i) => `<span class="${step && step.line === i ? "is-active" : ""}">${esc(l) || " "}</span>`).join("\n");
+		const vars = step ? Object.entries(step.vars) : [];
+		$("[data-pp-t-vars]").innerHTML = vars.length
+			? vars.map(([k, v]) => `<span class="pp-var${prev?.vars[k] !== v ? " is-changed" : ""}"><span>${esc(k)}</span> = ${esc(v)}</span>`).join(" ")
+			: '<span class="pp-muted">none yet</span>';
+		const outNow = step ? step.output.join(" ") : "";
+		$("[data-pp-t-out]").innerHTML = outNow ? esc(outNow) : '<span class="pp-muted">nothing yet</span>';
+		const t = current?.trace;
+		if (t?.grid) {
+			const trail = [t.grid.robot, ...steps.slice(0, at).map((s) => s.robot!).filter(Boolean)];
+			const robot = step?.robot ?? t.grid.robot;
+			$("[data-pp-t-grid]").innerHTML = robotSvg(t.grid, robot, { trail, crashed: !!step && /Blocked/.test(step.text) });
+		}
+		$<HTMLButtonElement>("[data-pp-t-back]").disabled = at === 0;
+		$<HTMLButtonElement>("[data-pp-t-step]").disabled = at >= steps.length;
+		$<HTMLButtonElement>("[data-pp-t-play]").disabled = at >= steps.length;
+		$("[data-pp-t-code] .is-active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+	}
+	function stopPlay() {
+		window.clearInterval(playTimer);
+		playTimer = undefined;
+		$("[data-pp-t-play]").textContent = "Play";
+	}
+	$("[data-pp-t-step]").addEventListener("click", () => {
+		stopPlay();
+		if (at < steps.length) at++;
+		renderTrace();
+	});
+	$("[data-pp-t-back]").addEventListener("click", () => {
+		stopPlay();
+		if (at > 0) at--;
+		renderTrace();
+	});
+	$("[data-pp-t-reset]").addEventListener("click", () => {
+		stopPlay();
+		at = 0;
+		renderTrace();
+	});
+	$("[data-pp-t-play]").addEventListener("click", () => {
+		if (playTimer) return stopPlay();
+		if (at >= steps.length) at = 0;
+		$("[data-pp-t-play]").textContent = "Pause";
+		// Reduced motion: still steps (it's the content), just more slowly and without transitions.
+		playTimer = window.setInterval(
+			() => {
+				if (at >= steps.length) return stopPlay();
+				at++;
+				renderTrace();
+			},
+			reduceMotion ? 1600 : 900,
+		);
 	});
 
-	renderLevels();
-	renderTopics();
-	showQuestion();
+	// ================================================================= Help
+	const helpEl = $("[data-pp-help]");
+	let helpReturn: HTMLElement | null = null;
+	$$("[data-pp-help-open]").forEach((b) =>
+		b.addEventListener("click", () => {
+			helpReturn = b;
+			helpEl.hidden = false;
+			$$("[data-pp-help-open]").forEach((x) => x.setAttribute("aria-expanded", "true"));
+			helpEl.focus({ preventScroll: false });
+		}),
+	);
+	function closeHelp() {
+		helpEl.hidden = true;
+		$$("[data-pp-help-open]").forEach((x) => x.setAttribute("aria-expanded", "false"));
+		helpReturn?.focus({ preventScroll: true });
+	}
+	$("[data-pp-help-close]").addEventListener("click", closeHelp);
+
+	// ============================================================== Keyboard
+	document.addEventListener("keydown", (e) => {
+		const target = e.target as HTMLElement;
+		if (e.metaKey || e.ctrlKey || e.altKey) return;
+		if (e.key === "Escape" && !helpEl.hidden) return closeHelp();
+		if (sessionEl.hidden || cardEl.hidden || target.closest("input, select, textarea")) return;
+		if (!answered && /^[1-4]$/.test(e.key)) {
+			$$<HTMLButtonElement>(".pp-option")[Number(e.key) - 1]?.click();
+		} else if (answered && (e.key === "Enter" || e.key.toLowerCase() === "n") && !target.closest("button")) {
+			e.preventDefault();
+			next();
+		} else if (answered && e.key.toLowerCase() === "n" && target.closest("button")) {
+			e.preventDefault();
+			next();
+		} else if (answered && e.key.toLowerCase() === "t" && current?.trace) {
+			traceEl.hidden ? openTrace() : closeTrace();
+		}
+	});
+
+	// Test hook for the browser checks (tests/ui.test.mjs). The question bank
+	// is in the page anyway, so this gives nothing away.
+	if (new URLSearchParams(location.search).has("pp-test")) (window as unknown as { __ppCurrent: () => Question | null }).__ppCurrent = () => current;
+
+	renderStart();
 </script>
 
 <style is:global>
-	.pp-tool .pp-levels {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.5em;
-		margin-bottom: 1em;
+	.pp {
+		--pp-gap: 0.75em;
 	}
 
-	.pp-tool .pp-level {
-		display: flex;
-		flex-direction: column;
+	.pp .sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+	}
+
+	.pp [hidden] {
+		display: none !important;
+	}
+
+	.pp-instr {
+		margin: 0 0 1em;
+		font-size: 1.02em;
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	.pp-btn {
+		display: inline-flex;
 		align-items: center;
-		gap: 0.25em;
-		min-height: 3.2em;
-		padding: 0.5em 0.5em;
-		border-radius: 10px;
+		justify-content: center;
+		gap: 0.4em;
+		min-height: 2.75em;
+		padding: 0.45em 1em;
 		border: 1px solid var(--color-border);
+		border-radius: 10px;
 		background: var(--color-bg);
 		color: var(--color-text);
 		font-family: var(--font-sans);
 		font-size: 0.95em;
-		cursor: pointer;
-		text-align: center;
-	}
-
-	.pp-tool .pp-level:hover,
-	.pp-tool .pp-level:focus-visible {
-		border-color: var(--color-accent);
-	}
-
-	.pp-tool .pp-level[aria-checked="true"] {
-		border-color: var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg));
-		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
-	}
-
-	.pp-tool .pp-level-name {
 		font-weight: 700;
-		font-size: 1em;
+		cursor: pointer;
 	}
 
-	.pp-tool .pp-level[aria-checked="true"] .pp-level-name::before {
-		content: "✓ ";
+	.pp-btn:hover:not(:disabled),
+	.pp-btn:focus-visible {
+		border-color: var(--color-accent);
+	}
+
+	.pp-btn:focus-visible,
+	.pp-link:focus-visible,
+	.pp-route:focus-visible,
+	.pp-option:focus-visible {
+		outline: 3px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.pp-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+
+	.pp-btn--primary {
+		border-color: var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-accent-contrast);
+	}
+
+	.pp-btn--primary:hover:not(:disabled) {
+		background: #ffc04f;
+	}
+
+	.pp-btn--wide {
+		width: 100%;
+		justify-content: flex-start;
+	}
+
+	.pp-link {
+		padding: 0.2em 0.1em;
+		border: none;
+		background: none;
 		color: var(--color-accent);
+		font: inherit;
+		font-size: 0.92em;
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		cursor: pointer;
 	}
 
-	.pp-tool .pp-level-hint {
-		font-size: 0.78em;
-		line-height: 1.3;
-		color: var(--color-text-muted);
+	.pp-continue {
+		margin-bottom: 1em;
 	}
 
-	@media (max-width: 480px) {
-		.pp-tool .pp-level-hint {
-			display: none;
-		}
+	.pp-continue-label {
+		font-weight: 600;
 	}
 
-	.pp-tool .pp-help-table {
-		margin-top: 0.5em;
-		font-size: 0.95em;
-	}
-
-	.pp-tool .pp-help-note {
-		margin: 0.5em 0 0;
-		font-size: 0.95em;
-		line-height: 1.5;
-		color: var(--color-text-muted);
-	}
-
-	.pp-tool .pp-top {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5em 1em;
-	}
-
-	.pp-tool .pp-streak {
-		display: flex;
-		align-items: baseline;
+	.pp-routes {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12em), 1fr));
 		gap: 0.5em;
 	}
 
-	.pp-tool .pp-streak-value {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 2.2em;
-		line-height: 1;
-		color: #fff3d6;
-		text-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 55%, transparent);
-	}
-
-	.pp-tool .pp-streak-label {
-		font-size: 0.85em;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--color-text-muted);
-	}
-
-	.pp-tool .pp-top-meta {
+	.pp-route {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25em 1em;
-		font-size: 0.88em;
-		color: var(--color-text-muted);
-	}
-
-	.pp-tool .pp-top-meta strong {
-		font-family: var(--font-mono);
+		flex-direction: column;
+		gap: 0.2em;
+		padding: 0.75em 1em;
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		background: var(--color-bg);
 		color: var(--color-text);
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
 	}
 
-	/* A floating toast, so it never pushes the question down. */
-	.pp-tool {
-		position: relative;
-	}
-
-	.pp-tool .pp-milestone {
-		position: absolute;
-		top: 0.5em;
-		left: 50%;
-		z-index: 5;
-		width: max-content;
-		max-width: 90%;
-		margin: 0;
-		translate: -50% 0;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-		padding: 0.5em 1em;
-		border-radius: 10px;
-		border: 1px solid var(--color-accent);
+	.pp-route[aria-checked="true"] {
+		border-color: var(--color-accent);
 		background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
-		text-align: center;
-		font-family: var(--font-mono);
+		box-shadow: inset 4px 0 0 var(--color-accent);
+	}
+
+	.pp-route-name {
 		font-weight: 700;
-		color: #fff3d6;
 	}
 
-	.pp-tool .pp-milestone.is-pop {
-		animation: pp-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-
-	@keyframes pp-pop {
-		from {
-			transform: scale(0.85);
-			opacity: 0;
-		}
-		to {
-			transform: none;
-			opacity: 1;
-		}
-	}
-
-	.pp-tool .pp-topics {
-		margin-top: 0.75em;
-		font-size: 0.9em;
-		color: var(--color-text-muted);
-	}
-
-	.pp-tool .pp-topics summary {
-		cursor: pointer;
-		min-height: 2.2em;
-		display: flex;
-		align-items: center;
-		gap: 0.25em;
-		font-weight: 600;
-	}
-
-	.pp-tool .pp-topics summary::before {
-		content: "▸";
-		color: var(--color-accent);
-	}
-
-	.pp-tool .pp-topics[open] summary::before {
-		content: "▾";
-	}
-
-	.pp-tool .pp-topics summary::-webkit-details-marker {
-		display: none;
-	}
-
-	.pp-tool .pp-topics summary {
-		list-style: none;
-	}
-
-	.pp-tool .pp-topic-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5em;
-		margin-top: 0.5em;
-	}
-
-	.pp-tool .pp-chip {
-		min-height: 2.4em;
-		padding: 0.25em 0.75em;
-		border-radius: 999px;
-		border: 1px dashed var(--color-border);
-		background: transparent;
-		color: var(--color-text-muted);
-		font-family: var(--font-sans);
-		font-size: 0.95em;
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.pp-tool .pp-chip[aria-pressed="true"] {
-		border-style: solid;
-		border-color: var(--color-accent);
-		color: var(--color-text);
-	}
-
-	.pp-tool .pp-chip[aria-pressed="true"]::before {
-		content: "✓ ";
-		color: var(--color-accent);
-	}
-
-	.pp-tool .pp-chip-count {
-		font-family: var(--font-mono);
+	.pp-route-hint {
 		font-size: 0.85em;
 		color: var(--color-text-muted);
 	}
 
-	.pp-tool .pp-card {
+	.pp-setup {
 		margin-top: 1em;
-		padding: 1em 1em 1em;
+		padding: 1em;
 		border-radius: 12px;
 		border: 1px solid var(--color-border);
 		background: var(--color-bg);
 	}
 
-	.pp-tool .pp-card-cat {
+	.pp-field {
+		margin: 0 0 1em;
+		padding: 0;
+		border: none;
+	}
+
+	.pp-field legend {
+		margin-bottom: 0.5em;
+		font-size: 0.8em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-topics,
+	.pp-levels {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 11.5em), 1fr));
+		gap: 0.4em;
+	}
+
+	.pp-topic,
+	.pp-level {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15em;
+		padding: 0.55em 0.75em;
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		background: var(--color-surface);
+		cursor: pointer;
+	}
+
+	.pp-topic input,
+	.pp-level input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.pp-topic:has(input:checked),
+	.pp-level:has(input:checked) {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+	}
+
+	.pp-topic:has(input:focus-visible),
+	.pp-level:has(input:focus-visible) {
+		outline: 3px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.pp-topic-name,
+	.pp-level-name {
+		font-weight: 700;
+		font-size: 0.95em;
+	}
+
+	.pp-topic-state,
+	.pp-level-hint {
+		font-size: 0.8em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-topic-state[data-state="ready"] {
+		color: var(--color-success);
+	}
+
+	.pp-topic-state[data-state="review"] {
+		color: #ffd27a;
+	}
+
+	.pp-setup-note {
+		margin: 0 0 0.75em;
+		font-size: 0.9em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-setup-note:empty {
+		display: none;
+	}
+
+	.pp-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5em 1em;
+	}
+
+	.pp-progress {
+		margin-top: 1em;
+		font-size: 0.92em;
+	}
+
+	.pp-progress summary {
+		cursor: pointer;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.pp-progress-list {
+		display: grid;
+		gap: 0.3em;
+		margin: 0.75em 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.pp-progress-list li {
+		display: grid;
+		grid-template-columns: minmax(9em, 1fr) auto;
+		gap: 0.1em 0.75em;
+		align-items: center;
+		padding: 0.4em 0.6em;
+		border-radius: 8px;
+		background: var(--color-bg);
+	}
+
+	.pp-progress-detail {
+		grid-column: 1 / -1;
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-badge {
+		font-size: 0.8em;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.pp-badge[data-state="ready"] {
+		color: var(--color-success);
+	}
+
+	.pp-badge[data-state="review"] {
+		color: #ffd27a;
+	}
+
+	.pp-badge[data-state="building"] {
+		color: var(--color-text);
+	}
+
+	.pp-small {
+		margin: 0.75em 0 0;
+		font-size: 0.85em;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Session ------------------------------------------------------------ */
+	.pp-bar {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.5em 1em;
+	}
+
+	.pp-scope {
 		margin: 0;
-		font-size: 0.78em;
+		font-weight: 700;
+	}
+
+	.pp-bar-right {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5em 1em;
+	}
+
+	.pp-level-select {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		font-size: 0.9em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-level-select select {
+		min-height: 2.4em;
+		padding: 0.2em 0.5em;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font: inherit;
+	}
+
+	.pp-stats {
+		margin: 0.35em 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.8em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-advice {
+		margin-top: 0.75em;
+		padding: 0.75em 1em;
+		border-radius: 10px;
+		border: 1px solid color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg));
+	}
+
+	.pp-advice p {
+		margin: 0 0 0.5em;
+	}
+
+	.pp-card,
+	.pp-checkpoint {
+		margin-top: 0.75em;
+		padding: 1em 1.1em;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.pp-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25em 0.75em;
+		margin: 0 0 0.4em;
+		font-size: 0.75em;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--color-accent);
 	}
 
-	.pp-tool .pp-card-prompt:focus {
-		outline: none;
+	.pp-meta span + span::before {
+		content: "·";
+		margin-right: 0.75em;
+		color: var(--color-text-muted);
 	}
 
-	.pp-tool .pp-card-prompt {
-		margin: 0.25em 0 0;
+	.pp-tag {
+		color: #ffd27a;
+	}
+
+	.pp-prompt {
+		margin: 0 0 0.75em;
 		font-size: 1.1em;
 		font-weight: 700;
-		line-height: 1.4;
+		line-height: 1.45;
 		color: var(--color-text);
 	}
 
-	.pp-tool .pp-card-body {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-start;
-		justify-content: center;
-		gap: 1em;
-		margin-top: 0.75em;
+	.pp-prompt:focus {
+		outline: none;
 	}
 
-	.pp-tool .pp-code {
-		flex: 1 1 16em;
-		max-width: 100%;
+	.pp-body {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.75em;
+	}
+
+	/* Fullscreen on a narrow, portrait screen: everything has to fit without
+	   scrolling, so the stacked grid gets smaller (it is still large enough to
+	   read, since all text shrinks with it). */
+	@container (max-width: 39.99em) {
+		.is-fullscreen .pp-grid .rg {
+			max-width: 15em;
+		}
+	}
+
+	@container (min-width: 40em) {
+		.pp-body.has-grid {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			align-items: start;
+		}
+	}
+
+	.pp-card {
+		container-type: inline-size;
+	}
+
+	.pp-code {
 		margin: 0;
 		padding: 0.75em 1em;
+		max-width: 100%;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
@@ -749,81 +1195,120 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		font-size: 1em;
 		line-height: 1.5;
 		color: var(--color-text);
+		white-space: pre;
 		overflow-x: auto;
 		tab-size: 2;
 	}
 
-	.pp-tool .pp-grid {
-		--cols: 5;
-		display: grid;
-		grid-template-columns: repeat(var(--cols), 2.6em);
-		grid-auto-rows: 2.6em;
-		gap: 2px;
-		padding: 2px;
-		border-radius: 6px;
-		background: #5b6075;
-		flex-shrink: 0;
+	.pp-figure {
+		margin: 0;
 	}
 
-	.pp-tool .pp-cell {
-		position: relative;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: #e8eaf2;
-		color: #14161f;
+	.pp-grid .rg,
+	.pp-trace-grid .rg {
+		display: block;
+		width: 100%;
+		/* Cells stay about the same size whatever the grid's width. */
+		max-width: min(22em, calc(var(--rg-cols, 5) * 4.1em + 2.3em));
+		height: auto;
+		margin: 0 auto;
+	}
+
+	.rg-open {
+		fill: #e8eaf2;
+	}
+
+	.rg-trail {
+		fill: #d4dae9;
+	}
+
+	.rg-line {
+		stroke: #5b6075;
+		stroke-width: 1.5;
+		shape-rendering: crispEdges;
+	}
+
+	.rg-num {
+		fill: #9aa0b4;
 		font-family: var(--font-mono);
+		font-size: 12px;
+		text-anchor: middle;
+	}
+
+	.rg-target {
+		fill: none;
+		stroke: #6b4a12;
+		stroke-width: 2;
+		stroke-dasharray: 4 3;
+	}
+
+	.rg-letter {
+		fill: #14161f;
+		font-family: var(--font-mono);
+		font-size: 18px;
 		font-weight: 700;
-		font-size: 0.95em;
+		text-anchor: middle;
 	}
 
-	/* Like a printed exam grid: light open squares, solid black blocked ones. */
-	.pp-tool .pp-cell--label {
-		color: #14161f;
+	.rg-letter--small {
+		font-size: 10px;
+		text-anchor: start;
 	}
 
-	.pp-tool .pp-cell--blocked {
-		background: #000;
+	.rg-robot path {
+		fill: #9c4400;
+		stroke: #fff;
+		stroke-width: 2;
+		stroke-linejoin: round;
 	}
 
-	.pp-tool .pp-robot {
-		position: absolute;
-		inset: 0;
+	.rg-robot circle {
+		fill: #fff;
+	}
+
+	.rg-robot--stopped path {
+		fill: #7a1f3a;
+	}
+
+	.pp-legend {
 		display: flex;
-		align-items: center;
+		flex-wrap: wrap;
 		justify-content: center;
-		color: #9c4400;
-		font-size: 1.3em;
-		line-height: 1;
+		gap: 0.35em 1em;
+		margin-top: 0.5em;
+		font-size: 0.78em;
+		color: var(--color-text-muted);
 	}
 
-	.pp-tool .pp-robot--right {
-		transform: rotate(90deg);
+	.pp-legend span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35em;
 	}
 
-	.pp-tool .pp-robot--down {
-		transform: rotate(180deg);
+	.rg-key {
+		width: 1.4em;
+		height: 1.4em;
+		border-radius: 3px;
 	}
 
-	.pp-tool .pp-robot--left {
-		transform: rotate(270deg);
-	}
-
-	.pp-tool .pp-options {
+	.pp-options {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 13em), 1fr));
-		gap: 0.5em;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 14em), 1fr));
+		gap: 0.75em 0.5em;
 		margin-top: 1em;
 	}
 
-	.pp-tool .pp-option {
-		display: flex;
+	.pp-option {
+		position: relative;
+		display: grid;
+		grid-template-columns: auto 1fr;
 		align-items: center;
-		gap: 0.75em;
-		min-height: 3em;
-		padding: 0.5em 0.75em;
-		border-radius: 10px;
+		column-gap: 0.75em;
+		min-height: 3.1em;
+		padding: 0.55em 0.8em;
 		border: 1px solid var(--color-border);
+		border-radius: 10px;
 		background: var(--color-surface);
 		color: var(--color-text);
 		font-family: var(--font-mono);
@@ -831,35 +1316,36 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		font-size: 0.95em;
 		text-align: left;
 		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
-	.pp-tool .pp-option:hover:not(:disabled),
-	.pp-tool .pp-option:focus-visible {
+	.pp-option:hover:not(:disabled) {
 		border-color: var(--color-accent);
-		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
 	}
 
-	.pp-tool .pp-option:active:not(:disabled) {
-		transform: scale(0.97);
-	}
-
-	.pp-tool .pp-option:disabled {
+	.pp-option:disabled {
 		cursor: default;
 	}
 
-	.pp-tool .pp-option:disabled:not(.pp-option--correct):not(.pp-option--incorrect) {
-		opacity: 0.5;
+	.pp-option:disabled:not(.is-correct):not(.is-wrong) {
+		opacity: 0.55;
 	}
 
-	.pp-tool .pp-option-key {
+	.pp-option--code .pp-option-text {
+		font-weight: 600;
+		white-space: pre;
+		overflow-x: auto;
+		line-height: 1.45;
+	}
+
+	.pp-option-text {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.pp-key {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		flex-shrink: 0;
 		width: 1.7em;
 		height: 1.7em;
 		border-radius: 6px;
@@ -868,154 +1354,244 @@ const levelCounts = Object.fromEntries(PSEUDO_LEVELS.map((l) => [l, PSEUDO_QUEST
 		color: var(--color-text-muted);
 	}
 
-	.pp-tool .pp-option--correct {
-		border-color: var(--color-success);
+	/* A badge sitting on the option's top border: it appears after answering
+	   without changing any heights, so Next never moves. */
+	.pp-option-tag {
+		position: absolute;
+		top: 0;
+		right: 0.75em;
+		transform: translateY(-55%);
+		padding: 0 0.45em;
+		border-radius: 6px;
+		background: var(--color-surface);
+		font-family: var(--font-sans);
+		font-size: 0.75em;
+		font-weight: 700;
+		line-height: 1.5;
+		white-space: nowrap;
+	}
+
+	.pp-option-tag:empty {
+		display: none;
+	}
+
+	.pp-option.is-correct {
+		border: 2px solid var(--color-success);
 		background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
 	}
 
-	.pp-tool .pp-option--incorrect {
-		border-color: var(--color-danger);
-		background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface));
-	}
-
-	.pp-tool .pp-option--correct .pp-option-key {
-		border-color: var(--color-success);
+	.pp-option.is-correct .pp-option-tag {
 		color: var(--color-success);
 	}
 
-	.pp-tool .pp-option--incorrect .pp-option-key {
-		border-color: var(--color-danger);
+	.pp-option.is-wrong {
+		border: 2px dashed var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
+	}
+
+	.pp-option.is-wrong .pp-option-tag {
 		color: var(--color-danger);
 	}
 
-	.pp-tool .pp-feedback {
-		margin-top: 1em;
+	.pp-next-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 0.5em 1em;
+		margin-top: 0.75em;
+	}
+
+	.pp-keys {
+		margin-right: auto;
+		font-size: 0.78em;
+		color: var(--color-text-muted);
+	}
+
+	@media (hover: none) {
+		.pp-keys {
+			display: none;
+		}
+	}
+
+	.pp-feedback {
+		margin-top: 0.75em;
 		padding: 0.75em 1em;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
 	}
 
-	/* Laid out but invisible until the student answers. */
-	.pp-tool .pp-feedback.is-pending,
-	.pp-tool .demo-btn.is-pending {
-		visibility: hidden;
-	}
-
-	.pp-tool .pp-verdict {
-		display: grid;
-	}
-
-	.pp-tool .pp-verdict > span {
-		grid-area: 1 / 1;
-		visibility: hidden;
-	}
-
-	.pp-tool .pp-verdict.demo-verdict--good > [data-pp-verdict-good],
-	.pp-tool .pp-verdict.demo-verdict--bad > [data-pp-verdict-bad] {
-		visibility: visible;
-	}
-
-	.pp-tool .pp-verdict {
-		margin: 0 0 0.25em;
-		font-weight: 700;
-		font-size: 1em;
-	}
-
-	.pp-tool .pp-explanation {
+	.pp-verdict {
 		margin: 0;
-		font-size: 0.98em;
+		font-weight: 700;
+		font-size: 1.05em;
+	}
+
+	.pp-picked,
+	.pp-expl,
+	.pp-why {
+		margin: 0.4em 0 0;
 		line-height: 1.55;
-		color: var(--color-text);
 	}
 
-	.pp-tool .pp-reset-row {
-		margin: 1em 0 0;
-		text-align: right;
+	.pp-why {
+		padding-left: 0.75em;
+		border-left: 3px solid #ffd27a;
 	}
 
-	.pp-tool .pp-reset {
-		min-height: 2.2em;
-		padding: 0.25em 0.5em;
-		border: none;
-		background: none;
+	.pp-feedback .pp-btn {
+		margin-top: 0.75em;
+	}
+
+	/* --- Trace -------------------------------------------------------------- */
+	.pp-trace {
+		margin-top: 0.75em;
+		padding: 0.75em 1em;
+		border-radius: 10px;
+		border: 1px dashed var(--color-border);
+	}
+
+	.pp-trace-note {
+		margin: 0 0 0.5em;
+		font-size: 0.9em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-trace-controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4em;
+	}
+
+	.pp-trace-count {
+		margin-left: auto;
+		font-family: var(--font-mono);
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-trace-now {
+		margin: 0.6em 0;
+		padding: 0.45em 0.7em;
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+		font-weight: 600;
+	}
+
+	.pp-trace-body {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.75em;
+	}
+
+	@container (min-width: 40em) {
+		.pp-trace-body {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
+	}
+
+	.pp-trace-code {
+		max-height: 22em;
+		overflow: auto;
+	}
+
+	.pp-trace-code span {
+		display: inline-block;
+		min-width: 100%;
+		border-radius: 4px;
+	}
+
+	.pp-trace-code span.is-active {
+		background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+		box-shadow: inset 3px 0 0 var(--color-accent);
+	}
+
+	.pp-trace-label {
+		margin: 0.5em 0 0.2em;
+		font-size: 0.75em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.pp-trace-vars,
+	.pp-trace-out {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35em;
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+	}
+
+	.pp-var {
+		padding: 0.15em 0.5em;
+		border-radius: 6px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		overflow-wrap: anywhere;
+	}
+
+	.pp-var.is-changed {
+		border-color: var(--color-accent);
+		border-width: 2px;
+	}
+
+	.pp-muted {
 		color: var(--color-text-muted);
 		font-family: var(--font-sans);
+	}
+
+	/* --- Checkpoint and help ------------------------------------------------ */
+	.pp-checkpoint h3,
+	.pp-help h3 {
+		margin: 0 0 0.5em;
+		font-size: 1.1em;
+	}
+
+	.pp-checkpoint:focus,
+	.pp-help:focus {
+		outline: none;
+	}
+
+	.pp-cp-score {
+		font-size: 1.1em;
+		font-weight: 700;
+	}
+
+	.pp-cp-next {
+		padding: 0.5em 0.75em;
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+	}
+
+	.pp-help {
+		margin-top: 1em;
+		padding: 1em;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.pp-help-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1em;
+	}
+
+	.pp-storage-note {
+		margin: 0.75em 0 0;
 		font-size: 0.85em;
-		text-decoration: underline;
-		cursor: pointer;
+		color: #ffd27a;
 	}
 
-	.pp-tool .pp-reset:hover,
-	.pp-tool .pp-reset:focus-visible {
-		color: var(--color-text);
-	}
-</style>
-
-<style is:global>
-	/* Fullscreen (projecting to a class): hide the settings so the question
-	   itself gets the space, and on a landscape screen put the code on the
-	   left with the answers beside it. DemoFrame then scales the text so the
-	   whole card fits without scrolling. */
-	.demo-frame.is-fullscreen .pp-tool .pp-topics,
-	.demo-frame.is-fullscreen .pp-tool .pp-reset-row,
-	.demo-frame.is-fullscreen .pp-tool .pp-level-hint {
+	/* Fullscreen (projecting): the question gets the room. */
+	.demo-frame.is-fullscreen .pp-start .pp-progress,
+	.demo-frame.is-fullscreen .pp-keys {
 		display: none;
-	}
-
-	.demo-frame.is-fullscreen .pp-tool .pp-levels {
-		margin-bottom: 0.5em;
-	}
-
-	.demo-frame.is-fullscreen .pp-tool .pp-level {
-		min-height: 2.4em;
-		padding: 0.25em 0.5em;
-	}
-
-	.demo-frame.is-fullscreen .pp-tool .pp-card {
-		margin-top: 0.5em;
-	}
-
-	@media (min-aspect-ratio: 5/4) {
-		.demo-frame.is-fullscreen .pp-tool .pp-card {
-			display: grid;
-			grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-			grid-template-areas:
-				"cat cat"
-				"prompt prompt"
-				"body options"
-				"body feedback"
-				"body next";
-			grid-template-rows: auto auto auto auto 1fr;
-			column-gap: 1.5em;
-			align-items: start;
-		}
-
-		.demo-frame.is-fullscreen .pp-tool .pp-card-cat {
-			grid-area: cat;
-		}
-
-		.demo-frame.is-fullscreen .pp-tool .pp-card-prompt {
-			grid-area: prompt;
-		}
-
-		.demo-frame.is-fullscreen .pp-tool .pp-card-body {
-			grid-area: body;
-			justify-content: flex-start;
-		}
-
-		.demo-frame.is-fullscreen .pp-tool .pp-options {
-			grid-area: options;
-			grid-template-columns: 1fr;
-		}
-
-		.demo-frame.is-fullscreen .pp-tool .pp-feedback {
-			grid-area: feedback;
-		}
-
-		.demo-frame.is-fullscreen .pp-tool .pp-card > .demo-controls {
-			grid-area: next;
-			justify-content: flex-start;
-		}
 	}
 </style>
