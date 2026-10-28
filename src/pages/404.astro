@@ -1,0 +1,63 @@
+---
+// Not-found page. Also a safety net for lesson short links: if a code like
+// /5a2 or /5A2/ reaches here (for example on a host without the .htaccess
+// rules), the script looks it up case-insensitively and forwards to the
+// lesson. Only known lesson codes are matched — nothing else is rewritten.
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Page not found" description="That page doesn't exist on LogicDash.">
+	<section class="nf">
+		<h1>Page not found</h1>
+		<p data-nf-msg>That page doesn't exist. It may have moved.</p>
+		<p class="nf-links">
+			<a href="/">Play LogicDash</a>
+			<a href="/learn/">Byte Lab lessons</a>
+			<a href="/tools/">Classroom tools</a>
+		</p>
+	</section>
+</Layout>
+
+<script>
+	import { normalizeCode } from "../lib/lessonCodes";
+
+	const path = location.pathname;
+	// Short-link shape only: one segment of three characters, optional slash.
+	if (/^\/[0-9a-z]{3}\/?$/i.test(path)) {
+		const code = normalizeCode(path);
+		const msg = document.querySelector<HTMLElement>("[data-nf-msg]");
+		fetch("/lesson-codes.json")
+			.then((r) => (r.ok ? r.json() : {}))
+			.then((codes: Record<string, string>) => {
+				const href = codes[code];
+				if (href) location.replace(`${href}/${location.search}${location.hash}`);
+				else if (msg) msg.textContent = `There's no lesson with the code ${code}. Check the code and try again.`;
+			})
+			.catch(() => {});
+	}
+</script>
+
+<style>
+	.nf {
+		max-width: 36rem;
+		margin: var(--space-8) auto;
+		text-align: center;
+	}
+
+	.nf h1 {
+		margin: 0 0 var(--space-3);
+	}
+
+	.nf-links {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-4);
+		margin-top: var(--space-5);
+	}
+
+	.nf-links a {
+		color: var(--color-accent);
+		font-weight: 600;
+	}
+</style>

@@ -182,6 +182,7 @@ const levelText = (topic: LearnTopic) => {
 </Layout>
 
 <script>
+	import { normalizeCode } from "../../lib/lessonCodes";
 	// "Got a lesson code?" — the same codes as the logicdash.io/5A2 short links.
 	const codeForm = document.querySelector<HTMLFormElement>("[data-code-form]");
 	if (codeForm) {
@@ -191,7 +192,7 @@ const levelText = (topic: LearnTopic) => {
 		const msg = codeForm.querySelector<HTMLElement>("[data-code-msg]")!;
 		codeForm.addEventListener("submit", (event) => {
 			event.preventDefault();
-			const code = input.value.trim().toUpperCase().replace(/^.*\//, "");
+			const code = normalizeCode(input.value);
 			const href = codes[code];
 			if (href) location.href = href;
 			else msg.textContent = code ? `No lesson has the code ${code}. Check it and try again.` : "Type the 3-character code.";
