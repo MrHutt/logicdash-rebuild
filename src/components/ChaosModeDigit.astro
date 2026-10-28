@@ -109,6 +109,11 @@ const blinkDelay = (Math.random() * -1.2).toFixed(2);
 			0 0 calc(var(--u, 1px) * 8) var(--chaos-color, #ff2fd4),
 			calc(var(--u, 1px) * 2) calc(var(--u, 1px) * 2) 0 #000,
 			calc(var(--u, 1px) * -1) calc(var(--u, 1px) * -1) 0 rgba(255, 255, 255, 0.6);
+		/* Neon-on-neon is only ~1.7-2:1, so a solid black outline is what
+		   actually carries legibility — the digit's edge is black against a
+		   bright tile, which reads from the back of the room. */
+		-webkit-text-stroke: calc(var(--u, 1px) * 5) #000;
+		paint-order: stroke fill;
 		animation: chaos-wobble 2.1s steps(8, end) infinite;
 		animation-delay: var(--wobble-delay, 0s);
 	}

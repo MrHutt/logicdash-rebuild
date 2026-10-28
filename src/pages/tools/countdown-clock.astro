@@ -1732,7 +1732,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		opacity: 0;
 		border-radius: 22px;
 		background:
-			radial-gradient(ellipse at center, rgba(168, 51, 219, 0.42) 0%, rgba(107, 24, 161, 0.5) 100%);
+			radial-gradient(ellipse at center, rgba(168, 51, 219, 0.22) 0%, rgba(107, 24, 161, 0.28) 100%);
 		transition: opacity 0.2s ease;
 	}
 
@@ -2329,7 +2329,10 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 	}
 
 	.display-stage[data-style="vfd"] .segment {
-		fill: #123b38;
+		/* Barely-there unlit segments: the teal hue stands out against the
+		   warm near-black tile once Brightness lifts it, so even #123b38
+		   drew a visible "8" behind every digit at Max. */
+		fill: #07130f;
 	}
 
 	.display-stage[data-style="vfd"] .segment.is-on {
@@ -2350,7 +2353,8 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 	   more authentic period look. LED/LCD don't get these; they're plain
 	   7-segment displays. */
 	.display-stage[data-style="vfd"] .segment-accent {
-		stroke: rgba(143, 216, 204, 0.16);
+		/* Kept faint: at 0.16 the split middle read as a bar across every 0. */
+		stroke: rgba(143, 216, 204, 0.07);
 		stroke-width: 1.5;
 		opacity: 1;
 	}
@@ -2386,9 +2390,12 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		display: none;
 	}
 
+	/* Unlit segments stay only just visible (~1.1:1 against the panel even
+	   at Max brightness). At the old 0.5 alpha they read as a red "8" behind
+	   every digit, and lit-vs-unlit fell to ~3.4:1 at Max. */
 	.display-stage[data-style="led"] .segment,
 	.display-stage[data-style="sinclair"] .segment {
-		fill: rgba(120, 20, 20, 0.5);
+		fill: rgba(110, 18, 18, 0.22);
 	}
 
 	.display-stage[data-style="led"] .segment.is-on,
@@ -2409,6 +2416,16 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 	   translucent color-filter layer, revealed only for this style. */
 	.display-stage[data-style="sinclair"] .tint-overlay {
 		opacity: 1;
+	}
+
+	/* The purple filter sits over the digits too, so they're lifted a
+	   little brighter than LED's to stay at ~5:1 through it. */
+	.display-stage[data-style="sinclair"] .segment.is-on {
+		fill: #ff5c5c;
+	}
+
+	.display-stage[data-style="sinclair"] .segment-colon-dot {
+		background: #ff5c5c;
 	}
 
 	/* --- LCD: muted grey-on-grey, no glow at all, gapped segments --------
