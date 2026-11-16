@@ -1,0 +1,336 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "An algorithm's steps grow like n² as the input size n grows. Is that reasonable time?",
+		options: ["Yes — it grows like a polynomial", "No — anything with a square is unreasonable", "Only if n is less than 10", "It depends on the computer's color"],
+		explain: "Steps that grow like n, n² or n³ count as reasonable time. Growth like 2ⁿ or n! does not.",
+	},
+	{
+		q: "A delivery app can't check every possible route, so it always goes to the nearest stop next. That approach is called…",
+		options: ["A heuristic", "Encryption", "An undecidable problem", "A syntax error"],
+		explain: "A heuristic gives a good-enough answer quickly, without promising the very best one.",
+	},
+	{
+		q: "Adding one more stop to a delivery route multiplies the number of possible routes. What kind of growth is that?",
+		options: ["Unreasonable (faster than any polynomial)", "Reasonable", "No growth", "Linear"],
+		explain: "Each extra stop multiplies the routes by roughly the number of stops, so the total explodes. That's unreasonable time for exact answers.",
+	},
+	{
+		q: "What does it mean for a problem to be undecidable?",
+		options: ["No algorithm can always give a correct yes-or-no answer for every input", "It takes more than an hour to solve", "Nobody has tried to solve it", "It needs a faster computer"],
+		explain: "It's not about speed. It's been proven that no algorithm can ever solve it correctly in every case — no matter how fast the computer.",
+	},
+	{
+		q: "Which is a famous example of an undecidable problem?",
+		options: ["Deciding whether any program will eventually stop or run forever", "Sorting a list of names", "Adding two numbers", "Finding the largest number in a list"],
+		explain: "This is the halting problem. Sorting, adding and finding the largest are all solvable in reasonable time.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/hard-problems"
+	description="Hard and impossible problems: reasonable vs unreasonable time, heuristics, and undecidable problems like the halting problem."
+	lead="Some problems take a computer a second. Some would take longer than the age of the universe. And a few can't be solved at all."
+>
+	<section class="block">
+		<p class="block-title">Reasonable and Unreasonable Time</p>
+		<p class="block-text">
+			Computer scientists judge an algorithm by how its number of steps grows as the input gets bigger. Double the
+			size of a list, and:
+		</p>
+		<ul class="block-list">
+			<li>finding the largest item takes about twice as many steps (it grows like <em>n</em>),</li>
+			<li>a simple sort might take about four times as many (it grows like <em>n²</em>).</li>
+		</ul>
+		<p class="block-text">
+			Growth like n, n² or n³ is called <em>reasonable time</em>. But some problems grow far faster — like 2ⁿ, or
+			n! ("n factorial", which is n × (n − 1) × … × 1). That's <em>unreasonable time</em>: fine for tiny inputs,
+			hopeless for big ones, no matter how fast the computer.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Delivery Driver's Problem</p>
+		<p class="block-text">
+			A driver has to visit several stops and come back. What's the shortest route? The only sure way to know is to
+			try every possible order — and the number of orders explodes as stops are added.
+		</p>
+	</section>
+
+	<DemoFrame label="Route planning demo">
+		<div class="hp" data-hp>
+			<svg class="hp-map" viewBox="0 0 100 62" data-hp-map role="img" aria-label="Map of the depot and six stops"></svg>
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-hp-quick>Shortcut: nearest stop next</button>
+				<button type="button" class="demo-btn demo-btn--primary" data-hp-best>Check every route</button>
+				<button type="button" class="demo-btn" data-hp-new>New map</button>
+			</div>
+			<div class="demo-stats">
+				<div class="demo-stat"><span class="demo-stat-value" data-hp-quick-len>—</span><span class="demo-stat-label">Shortcut length</span></div>
+				<div class="demo-stat"><span class="demo-stat-value" data-hp-best-len>—</span><span class="demo-stat-label">Best length</span></div>
+			</div>
+			<p class="demo-status" data-hp-status aria-live="polite"></p>
+
+			<div class="hp-growth">
+				<div class="demo-field">
+					<label for="hp-n">How many stops?</label>
+					<input id="hp-n" class="demo-range" type="range" min="4" max="30" value="6" data-hp-n />
+					<span class="hp-n" data-hp-n-out>6</span>
+				</div>
+				<p class="hp-growth-text" data-hp-growth aria-live="polite"></p>
+			</div>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Good Enough: Heuristics</p>
+		<p class="block-text">
+			When the exact answer would take too long, programs use a <em>heuristic</em>: a shortcut that finds a good
+			answer quickly, even if it's not always the best. "Always drive to the nearest stop next" is one. Map apps,
+			delivery companies and airline schedules all rely on heuristics every day.
+		</p>
+		<p class="block-callout">A heuristic trades a guarantee of the best answer for an answer you can actually get in time.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Problems No Program Can Solve</p>
+		<p class="block-text">
+			Some problems aren't just slow — they're <em>undecidable</em>. That means it has been proven that no algorithm
+			can give the right yes-or-no answer for every possible input.
+		</p>
+		<p class="block-text">
+			The most famous is the <em>halting problem</em>: "Will this program eventually stop, or run forever?" For a
+			specific program you can often tell. But in 1936, Alan Turing proved that no single program can answer that
+			question correctly for <em>every</em> program. It isn't that nobody has found the trick yet — there is no trick
+			to find.
+		</p>
+		<p class="block-text">
+			So there are three kinds of problem: ones computers solve quickly, ones they can only solve quickly with a
+			good-enough heuristic, and ones no computer will ever fully solve.
+		</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-hp]")!;
+	const svg = root.querySelector<SVGSVGElement>("[data-hp-map]")!;
+	const quickLen = root.querySelector<HTMLElement>("[data-hp-quick-len]")!;
+	const bestLen = root.querySelector<HTMLElement>("[data-hp-best-len]")!;
+	const status = root.querySelector<HTMLElement>("[data-hp-status]")!;
+	const nInput = root.querySelector<HTMLInputElement>("[data-hp-n]")!;
+	const nOut = root.querySelector<HTMLElement>("[data-hp-n-out]")!;
+	const growth = root.querySelector<HTMLElement>("[data-hp-growth]")!;
+
+	type Pt = { x: number; y: number };
+	let pts: Pt[] = [];
+	let quickRoute: number[] | null = null;
+	let bestRoute: number[] | null = null;
+
+	const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
+	const routeLen = (r: number[]) => r.reduce((sum, p, i) => (i === 0 ? 0 : sum + dist(pts[r[i - 1]], pts[p])), 0);
+
+	function newMap() {
+		pts = [];
+		let tries = 0;
+		while (pts.length < 7 && tries++ < 500) {
+			const p = { x: 8 + Math.random() * 84, y: 8 + Math.random() * 46 };
+			if (pts.every((q) => dist(p, q) > 14)) pts.push(p);
+		}
+		quickRoute = bestRoute = null;
+		quickLen.textContent = bestLen.textContent = "—";
+		status.textContent = "The square is the depot. Try the shortcut, then check every route.";
+		draw();
+	}
+
+	function nearest(): number[] {
+		const route = [0];
+		const left = new Set(pts.map((_, i) => i).slice(1));
+		while (left.size) {
+			const here = pts[route[route.length - 1]];
+			let best = -1;
+			for (const i of left) if (best < 0 || dist(here, pts[i]) < dist(here, pts[best])) best = i;
+			route.push(best);
+			left.delete(best);
+		}
+		return [...route, 0];
+	}
+
+	function bestOfAll(): { route: number[]; checked: number } {
+		const stops = pts.map((_, i) => i).slice(1);
+		let best: number[] = [];
+		let bestL = Infinity;
+		let checked = 0;
+		const permute = (arr: number[], k: number) => {
+			if (k === arr.length) {
+				checked++;
+				const r = [0, ...arr, 0];
+				const l = routeLen(r);
+				if (l < bestL) {
+					bestL = l;
+					best = r;
+				}
+				return;
+			}
+			for (let i = k; i < arr.length; i++) {
+				[arr[k], arr[i]] = [arr[i], arr[k]];
+				permute(arr, k + 1);
+				[arr[k], arr[i]] = [arr[i], arr[k]];
+			}
+		};
+		permute(stops, 0);
+		return { route: best, checked };
+	}
+
+	const pathD = (r: number[]) => r.map((p, i) => `${i ? "L" : "M"}${pts[p].x.toFixed(1)} ${pts[p].y.toFixed(1)}`).join(" ");
+
+	function draw() {
+		const lines =
+			(bestRoute ? `<path class="hp-route hp-route--best" d="${pathD(bestRoute)}"/>` : "") +
+			(quickRoute ? `<path class="hp-route hp-route--quick" d="${pathD(quickRoute)}"/>` : "");
+		const dots = pts
+			.map((p, i) =>
+				i === 0
+					? `<rect class="hp-depot" x="${p.x - 2.6}" y="${p.y - 2.6}" width="5.2" height="5.2" rx="1"/>`
+					: `<circle class="hp-stop" cx="${p.x}" cy="${p.y}" r="2.4"/><text class="hp-num" x="${p.x}" y="${p.y + 1}">${i}</text>`,
+			)
+			.join("");
+		svg.innerHTML = lines + dots;
+	}
+
+	root.querySelector("[data-hp-quick]")!.addEventListener("click", () => {
+		quickRoute = nearest();
+		quickLen.textContent = routeLen(quickRoute).toFixed(0);
+		status.textContent = "The shortcut (dashed) was instant: at each stop, just drive to the closest one left.";
+		if (bestRoute) compare();
+		draw();
+	});
+
+	root.querySelector("[data-hp-best]")!.addEventListener("click", () => {
+		const { route, checked } = bestOfAll();
+		bestRoute = route;
+		bestLen.textContent = routeLen(route).toFixed(0);
+		status.textContent = `Checked all ${checked.toLocaleString()} possible orders to find the best (solid) route.`;
+		if (quickRoute) compare();
+		draw();
+	});
+
+	function compare() {
+		const q = routeLen(quickRoute!);
+		const b = routeLen(bestRoute!);
+		const pct = Math.round(((q - b) / b) * 100);
+		status.textContent +=
+			pct <= 0 ? " This time the shortcut found the best route!" : ` The shortcut's route is ${pct}% longer — good enough, and found instantly.`;
+	}
+
+	root.querySelector("[data-hp-new]")!.addEventListener("click", newMap);
+
+	function factorial(n: number) {
+		let f = 1;
+		for (let i = 2; i <= n; i++) f *= i;
+		return f;
+	}
+
+	function humanTime(sec: number) {
+		const AGE_OF_UNIVERSE = 4.35e17;
+		if (sec < 1e-3) return "less than a thousandth of a second";
+		if (sec < 1) return "less than a second";
+		if (sec < 60) return `about ${Math.round(sec)} seconds`;
+		if (sec < 3600) return `about ${Math.round(sec / 60)} minutes`;
+		if (sec < 86400) return `about ${Math.round(sec / 3600)} hours`;
+		if (sec < 3.15e7) return `about ${Math.round(sec / 86400)} days`;
+		const years = sec / 3.15e7;
+		if (years < 1e6) return `about ${Math.round(years).toLocaleString()} years`;
+		if (years < 1e9) return `about ${Math.round(years / 1e6).toLocaleString()} million years`;
+		if (sec < AGE_OF_UNIVERSE) return `about ${(years / 1e9).toFixed(1)} billion years`;
+		return `about ${Math.round(sec / AGE_OF_UNIVERSE).toLocaleString()} times the age of the universe`;
+	}
+
+	function updateGrowth() {
+		const n = Number(nInput.value);
+		nOut.textContent = String(n);
+		const routes = factorial(n);
+		const shown = routes < 1e15 ? routes.toLocaleString() : routes.toExponential(1).replace("e+", " × 10^");
+		growth.textContent = `${n} stops: ${shown} possible orders. Checking a billion every second would take ${humanTime(routes / 1e9)}.`;
+	}
+	nInput.addEventListener("input", updateGrowth);
+
+	newMap();
+	updateGrowth();
+</script>
+
+<style is:global>
+	.hp {
+		text-align: center;
+	}
+
+	.hp-map {
+		display: block;
+		width: 100%;
+		max-width: 34em;
+		margin: 0 auto;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.hp-route {
+		fill: none;
+		stroke-width: 0.8;
+		stroke-linejoin: round;
+	}
+
+	.hp-route--best {
+		stroke: var(--color-success);
+		stroke-width: 1.4;
+	}
+
+	.hp-route--quick {
+		stroke: var(--color-accent);
+		stroke-dasharray: 2 1.4;
+	}
+
+	.hp-depot {
+		fill: var(--color-text);
+	}
+
+	.hp-stop {
+		fill: var(--color-surface);
+		stroke: var(--color-text);
+		stroke-width: 0.5;
+	}
+
+	.hp-num {
+		fill: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 2.6px;
+		font-weight: 700;
+		text-anchor: middle;
+		dominant-baseline: middle;
+	}
+
+	.hp-growth {
+		margin-top: 1.25em;
+		padding-top: 1em;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.hp-n {
+		min-width: 2em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.hp-growth-text {
+		margin: 0.5em auto 0;
+		max-width: 36em;
+		line-height: 1.5;
+	}
+</style>

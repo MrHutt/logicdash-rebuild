@@ -60,7 +60,7 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		   comment in Layout.astro. It's a reference for other styles' font
 		   sizing, not a shared constraint on this one — this is just its
 		   plain original box. */
-		width: clamp(2.2rem, 8vw, 3.6rem);
+		width: calc(var(--clock-tile-height) * 0.6);
 		aspect-ratio: 3 / 5;
 		flex-shrink: 0;
 		overflow: hidden;

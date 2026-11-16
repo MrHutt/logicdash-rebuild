@@ -1,0 +1,400 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "A door alarm should ring only when the alarm is switched on AND the door is open. Which gate is that?",
+		options: ["AND", "OR", "NOT", "None — it needs a CPU"],
+		explain: "Both conditions have to be true at the same time, which is exactly what AND checks.",
+	},
+	{
+		q: "What does A OR B give when A is 1 and B is 1?",
+		options: ["1", "0", "2", "It depends on the gate's speed"],
+		explain: "OR is 1 when at least one input is 1 — and both being 1 still counts. Logic gates only ever output 0 or 1.",
+	},
+	{
+		q: "How many rows does the truth table for a gate with 2 inputs have?",
+		options: ["4", "2", "3", "8"],
+		explain: "Each input can be 0 or 1, so there are 2 × 2 = 4 combinations: 00, 01, 10, 11. Three inputs would need 8.",
+	},
+	{
+		q: "In a program, IF (NOT raining) { DISPLAY(\"Go outside\") }. When is \"Go outside\" displayed?",
+		options: ["When raining is false", "When raining is true", "Always", "Never"],
+		explain: "NOT flips the value, so NOT raining is true exactly when raining is false.",
+	},
+	{
+		q: "Which output does A AND (NOT B) give when A = 1 and B = 1?",
+		options: ["0", "1", "It can't be worked out", "2"],
+		explain: "NOT B is 0, and 1 AND 0 is 0. Work from the inside out, just like brackets in math.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/logic-gates"
+	description="Logic gates explained simply: AND, OR and NOT, truth tables, and how the same logic appears in code — with a hands-on gate you can switch yourself."
+	lead="Every decision a computer makes — from adding numbers to showing this page — is built from tiny switches that answer yes or no."
+>
+	<section class="block">
+		<p class="block-title">Yes or No, 1 or 0</p>
+		<p class="block-text">
+			A computer's chips contain billions of tiny electronic switches. Each one is either on or off — 1 or 0. A{" "}
+			<em>logic gate</em> takes one or two of those 1s and 0s as inputs and gives a single 1 or 0 back out.
+		</p>
+		<p class="block-text">There are only a few kinds, and you already use them in everyday sentences:</p>
+		<ul class="block-list">
+			<li><em>AND</em> — "You can go out if your homework is done AND your room is tidy." Both must be true.</li>
+			<li><em>OR</em> — "We'll cancel if it rains OR it snows." At least one must be true.</li>
+			<li><em>NOT</em> — "If it's NOT raining, we'll walk." It flips the answer.</li>
+		</ul>
+		<p class="block-callout">A logic gate turns inputs of 1 and 0 into a single output of 1 or 0, following one simple rule.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Truth Tables</p>
+		<p class="block-text">
+			A <em>truth table</em> lists every possible input and the output you get. With two inputs there are four rows,
+			because each input can be 0 or 1.
+		</p>
+		<div class="gate-tables">
+			<div class="table-wrap">
+				<table class="data-table">
+					<caption class="gate-caption">A AND B</caption>
+					<thead><tr><th>A</th><th>B</th><th>Out</th></tr></thead>
+					<tbody>
+						<tr><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+						<tr><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+						<tr><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+						<tr><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="table-wrap">
+				<table class="data-table">
+					<caption class="gate-caption">A OR B</caption>
+					<thead><tr><th>A</th><th>B</th><th>Out</th></tr></thead>
+					<tbody>
+						<tr><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+						<tr><td class="num">0</td><td class="num">1</td><td class="num">1</td></tr>
+						<tr><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+						<tr><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="table-wrap">
+				<table class="data-table">
+					<caption class="gate-caption">NOT A</caption>
+					<thead><tr><th>A</th><th>Out</th></tr></thead>
+					<tbody>
+						<tr><td class="num">0</td><td class="num">1</td></tr>
+						<tr><td class="num">1</td><td class="num">0</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<p class="block-text">
+			A quick way to remember: AND is only 1 when <em>everything</em> is 1. OR is only 0 when <em>everything</em> is 0.
+		</p>
+	</section>
+
+	<DemoFrame label="Logic gate demo">
+		<div class="lg" data-lg>
+			<div class="demo-controls lg-gates" role="group" aria-label="Choose a gate">
+				<button type="button" class="demo-btn" data-lg-gate="AND" aria-pressed="true">AND</button>
+				<button type="button" class="demo-btn" data-lg-gate="OR" aria-pressed="false">OR</button>
+				<button type="button" class="demo-btn" data-lg-gate="NOT" aria-pressed="false">NOT</button>
+			</div>
+
+			<div class="lg-circuit">
+				<div class="lg-inputs">
+					<button type="button" class="lg-switch" data-lg-input="A" aria-pressed="false">
+						<span class="lg-switch-name">A</span>
+						<span class="lg-switch-value" data-lg-value>0</span>
+					</button>
+					<button type="button" class="lg-switch" data-lg-input="B" aria-pressed="false">
+						<span class="lg-switch-name">B</span>
+						<span class="lg-switch-value" data-lg-value>0</span>
+					</button>
+				</div>
+				<div class="lg-gate" data-lg-gate-label>AND</div>
+				<div class="lg-lamp" data-lg-lamp>
+					<span class="lg-lamp-bulb" aria-hidden="true"></span>
+					<span class="lg-lamp-text" data-lg-out>Out: 0</span>
+				</div>
+			</div>
+
+			<p class="lg-challenge" data-lg-challenge></p>
+
+			<div class="table-wrap lg-table-wrap">
+				<table class="data-table lg-table">
+					<thead data-lg-head></thead>
+					<tbody data-lg-body></tbody>
+				</table>
+			</div>
+			<p class="demo-status" data-lg-status aria-live="polite"></p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">The Same Logic, in Code</p>
+		<p class="block-text">
+			Programs use exactly the same three words to make decisions. In pseudocode they combine conditions inside an IF:
+		</p>
+		<pre class="code-block">{`IF (age ≥ 13 AND hasPermission)
+{
+  DISPLAY("Account created")
+}
+
+IF (NOT loggedIn)
+{
+  DISPLAY("Please log in")
+}`}</pre>
+		<p class="block-text">
+			Each condition is either true or false — a 1 or a 0 — and AND, OR and NOT combine them just like the gates
+			above. A long condition is worked out from the inside out, the same way brackets work in math.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">From Gates to Computers</p>
+		<p class="block-text">
+			One gate can't do much. But wire a few together and you can add two bits. Wire thousands together and you can
+			add big numbers, compare them, and remember them. A modern processor contains billions of gates — and every
+			one is still just answering "1 or 0?"
+		</p>
+		<p class="block-text">
+			That's another example of <a href="/learn/abstraction">abstraction</a>: nobody designs a phone one gate at a
+			time. Engineers build small parts from gates, bigger parts from those, and so on up.
+		</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-lg]")!;
+	const gateBtns = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-lg-gate]"));
+	const switches = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-lg-input]"));
+	const gateLabel = root.querySelector<HTMLElement>("[data-lg-gate-label]")!;
+	const lamp = root.querySelector<HTMLElement>("[data-lg-lamp]")!;
+	const outEl = root.querySelector<HTMLElement>("[data-lg-out]")!;
+	const head = root.querySelector<HTMLElement>("[data-lg-head]")!;
+	const body = root.querySelector<HTMLElement>("[data-lg-body]")!;
+	const challenge = root.querySelector<HTMLElement>("[data-lg-challenge]")!;
+	const status = root.querySelector<HTMLElement>("[data-lg-status]")!;
+
+	type Gate = "AND" | "OR" | "NOT";
+	let gate: Gate = "AND";
+	const inputs = { A: 0, B: 0 };
+	let found = new Set<string>();
+	// Rows the student has actually tried — results only show once tried,
+	// so the table never gives the answers away.
+	let tried = new Set<string>();
+
+	const compute = (a: number, b: number) => (gate === "AND" ? a & b : gate === "OR" ? a | b : a ? 0 : 1);
+	const rows = () => (gate === "NOT" ? [[0], [1]] : [[0, 0], [0, 1], [1, 0], [1, 1]]);
+	const key = (r: number[]) => r.join("");
+	const lightRows = () => rows().filter((r) => compute(r[0], r[1] ?? 0) === 1);
+
+	function render() {
+		const out = compute(inputs.A, inputs.B);
+		gateLabel.textContent = gate === "NOT" ? "NOT A" : `A ${gate} B`;
+		switches[1].hidden = gate === "NOT";
+		switches.forEach((s) => {
+			const v = inputs[s.dataset.lgInput as "A" | "B"];
+			s.setAttribute("aria-pressed", String(v === 1));
+			s.querySelector("[data-lg-value]")!.textContent = String(v);
+			s.setAttribute("aria-label", `Input ${s.dataset.lgInput}: ${v}. Tap to switch.`);
+		});
+		lamp.classList.toggle("is-on", out === 1);
+		outEl.textContent = `Out: ${out}`;
+
+		const current = gate === "NOT" ? key([inputs.A]) : key([inputs.A, inputs.B]);
+		tried.add(current);
+		if (out === 1) found.add(current);
+		const need = lightRows().length;
+
+		head.innerHTML = gate === "NOT" ? "<tr><th>A</th><th>Out</th><th>Lit it?</th></tr>" : "<tr><th>A</th><th>B</th><th>Out</th><th>Lit it?</th></tr>";
+		body.innerHTML = rows()
+			.map((r) => {
+				const k = key(r);
+				const o = compute(r[0], r[1] ?? 0);
+				const isCurrent = k === current;
+				const seen = tried.has(k);
+				const mark = !seen ? "not tried" : o === 1 ? "✓ lit" : "no";
+				return `<tr class="${isCurrent ? "is-current" : ""}">${r.map((v) => `<td class="num">${v}</td>`).join("")}<td class="num">${seen ? o : "?"}</td><td>${mark}</td></tr>`;
+			})
+			.join("");
+
+		challenge.textContent = `Challenge: find every way to light the lamp with ${gate === "NOT" ? "NOT" : gate}. Found ${Math.min(found.size, need)} of ${need}.`;
+		if (found.size >= need) status.textContent = `✓ You found them all. ${gate === "AND" ? "AND only lights when every input is 1." : gate === "OR" ? "OR lights whenever at least one input is 1." : "NOT lights only when its input is 0."} Try another gate.`;
+		else status.textContent = out === 1 ? "The lamp is on. Can you find another way?" : "Lamp off. Flip the switches.";
+	}
+
+	switches.forEach((s) =>
+		s.addEventListener("click", () => {
+			const name = s.dataset.lgInput as "A" | "B";
+			inputs[name] = inputs[name] ? 0 : 1;
+			render();
+		}),
+	);
+	gateBtns.forEach((b) =>
+		b.addEventListener("click", () => {
+			gate = b.dataset.lgGate as Gate;
+			gateBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+			found = new Set();
+			tried = new Set();
+			inputs.A = 0;
+			inputs.B = 0;
+			render();
+		}),
+	);
+	render();
+</script>
+
+<style is:global>
+	.gate-tables {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+		gap: var(--space-3);
+	}
+
+	.gate-tables .table-wrap {
+		margin: var(--space-2) 0 0;
+	}
+
+	.gate-caption {
+		padding: var(--space-2) var(--space-3) 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		text-align: left;
+		color: var(--color-text);
+	}
+
+	.lg {
+		text-align: center;
+	}
+
+	.lg .demo-btn[aria-pressed="true"] {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 22%, var(--color-bg));
+		color: #fff3d6;
+	}
+
+	.lg-gates {
+		margin-top: 0;
+	}
+
+	.lg-circuit {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1em;
+		margin: 1em 0 0;
+		flex-wrap: wrap;
+	}
+
+	.lg-inputs {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+	}
+
+	.lg-switch {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.75em;
+		min-width: 6.5em;
+		min-height: 3em;
+		padding: 0.25em 0.75em;
+		border: 2px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 1em;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.lg-switch[aria-pressed="true"] {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+	}
+
+	.lg-switch-value {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.8em;
+		height: 1.8em;
+		border-radius: 6px;
+		border: 1px solid var(--color-border);
+	}
+
+	.lg-switch[aria-pressed="true"] .lg-switch-value {
+		border-color: var(--color-accent);
+		color: #fff3d6;
+	}
+
+	.lg-gate {
+		padding: 0.75em 1em;
+		border-radius: 0 2em 2em 0;
+		border: 2px solid var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+		min-width: 6em;
+	}
+
+	.lg-lamp {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35em;
+	}
+
+	.lg-lamp-bulb {
+		width: 2.6em;
+		height: 2.6em;
+		border-radius: 50%;
+		border: 2px solid var(--color-border);
+		background: #1c1f2c;
+		transition:
+			background 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	.lg-lamp.is-on .lg-lamp-bulb {
+		border-color: #ffd27a;
+		background: #ffae2e;
+		box-shadow: 0 0 1.2em rgba(255, 174, 46, 0.75);
+	}
+
+	.lg-lamp-text {
+		font-family: var(--font-mono);
+		font-weight: 700;
+	}
+
+	.lg-challenge {
+		margin: 1em 0 0;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.lg-table-wrap {
+		max-width: 22em;
+		margin: 0.75em auto 0;
+	}
+
+	.lg-table td,
+	.lg-table th {
+		text-align: center;
+	}
+
+	.lg-table tr.is-current td {
+		background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+	}
+</style>

@@ -1,0 +1,469 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import RelatedLink from "../../components/RelatedLink.astro";
+
+const HELPER_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
+---
+
+<LearnArticle
+	href="/learn/distributed-computing"
+	description="Crowdsourcing and distributed computing explained: split one huge job across many helpers, watch the time drop, and see where the extra helpers stop paying off."
+	lead="Some jobs are too big for one person — or one computer. So split them up and hand out the pieces."
+>
+	<section class="block">
+		<p class="block-title">Many Hands</p>
+		<p class="block-text">
+			Imagine counting every bird in a whole country on a single day. One person could never do it. But
+			thousands of volunteers, each counting in their own neighborhood and sending in their numbers,
+			can — and bird-watching groups really do run counts like this every year.
+		</p>
+		<p class="block-text">
+			Computers use the same idea. When a job is too big for one machine, it's split into pieces and
+			shared out across many machines connected by a network. Each one works on its own piece, and the
+			results are combined at the end.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Three Related Ideas</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<tbody>
+					<tr>
+						<td><em>Parallel computing</em></td>
+						<td>One computer with several processors working on parts of a job at the same time.</td>
+					</tr>
+					<tr>
+						<td><em>Distributed computing</em></td>
+						<td>Many separate computers, connected by a network, sharing one big job.</td>
+					</tr>
+					<tr>
+						<td><em>Crowdsourcing</em></td>
+						<td>Many <em>people</em> each contributing a small piece — often volunteers, often online.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<DemoFrame label="Distributed computing demo">
+		<div class="dc-demo" data-dc-demo data-helper-options={JSON.stringify(HELPER_OPTIONS)}>
+			<p class="dc-task">The job: count every <span class="mono-highlight">1</span> in this list of 120 bits.</p>
+
+			<div class="demo-field">
+				<label for="dc-helpers">Helpers</label>
+				<input id="dc-helpers" class="demo-range dc-helpers" type="range" min="0" max={HELPER_OPTIONS.length - 1} value="0" data-dc-helpers />
+				<output for="dc-helpers" class="dc-helpers-value" data-dc-helpers-value>1</output>
+			</div>
+
+			<div class="demo-field dc-predict">
+				<label for="dc-predict">Predict first: how many seconds will it take?</label>
+				<input id="dc-predict" class="demo-input dc-predict-input" type="number" min="0" step="0.1" inputmode="decimal" placeholder="optional" data-dc-predict />
+			</div>
+
+			<div class="dc-workers" data-dc-workers></div>
+
+			<div class="demo-stats">
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-dc-timer>0.0 s</span>
+					<span class="demo-stat-label">Time</span>
+				</div>
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-dc-total>—</span>
+					<span class="demo-stat-label">Ones found</span>
+				</div>
+			</div>
+			<p class="demo-status" data-dc-status aria-live="polite">Pick how many helpers, then press Start.</p>
+
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-dc-start>Start</button>
+				<button type="button" class="demo-btn" data-dc-new>New list</button>
+			</div>
+
+			<div class="dc-history" data-dc-history-wrap hidden>
+				<p class="dc-history-title">Your runs</p>
+				<table class="dc-history-table">
+					<thead>
+						<tr><th>Helpers</th><th>Time</th><th>Speedup</th></tr>
+					</thead>
+					<tbody data-dc-history></tbody>
+				</table>
+			</div>
+			<p class="demo-note">Each bit takes a helper 0.1 seconds to check. Handing out the work and adding up everyone's answers takes a little time too — more helpers, more to organize.</p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">What You Probably Noticed</p>
+		<ul class="block-list">
+			<li>
+				<em>More helpers, less time</em> — at first, dramatically. Two helpers nearly halve the time.
+			</li>
+			<li>
+				<em>But the gains shrink.</em> Every helper has to be handed their piece and report back, and
+				that organizing takes time that doesn't get shared. With lots of helpers, the organizing starts to
+				cancel out the benefit.
+			</li>
+			<li>
+				<em>Everyone waits for the slowest helper.</em> The job isn't done until the last piece is
+				finished.
+			</li>
+		</ul>
+		<p class="block-text">
+			These are exactly the ideas from the Speedup page — here you can see them happen.
+		</p>
+		<RelatedLink href="/learn/speedup" label="The ideas behind it" />
+	</section>
+
+	<section class="block">
+		<p class="block-title">Real-World Examples</p>
+		<ul class="block-list">
+			<li>
+				<em>Search engines</em> spread the job of searching the web across thousands of computers, which
+				is how you get answers in a fraction of a second.
+			</li>
+			<li>
+				<em>Volunteer computing</em> projects let people donate their home computer's spare time to
+				science — for example, simulating how proteins fold to help medical research.
+			</li>
+			<li>
+				<em>Citizen science</em> websites ask volunteers to sort through photos of galaxies, animals caught
+				on wildlife cameras, or old handwritten records — work computers still find tricky.
+			</li>
+			<li>
+				<em>Online encyclopedias and map apps</em> are crowdsourced: millions of people add facts,
+				fix mistakes, and report traffic jams.
+			</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Not Every Job Splits Up</p>
+		<p class="block-text">
+			Counting works beautifully because each piece is independent — helper 3 doesn't need to know what
+			helper 7 found. Some jobs aren't like that. Baking a cake: you can't ice it before it's baked, no
+			matter how many bakers you have. When each step depends on the one before, extra helpers can't do
+			much.
+		</p>
+		<p class="block-callout">
+			Distributed computing shines when a big job can be broken into lots of independent pieces.
+		</p>
+		<p class="block-text">
+			It also solves a second problem: size. Some jobs involve more data than any single computer could
+			store, or would take one computer years to finish. Spreading the data and the work across many
+			machines makes those problems possible at all — not just faster.
+		</p>
+	</section>
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-dc-demo]")!;
+	const OPTIONS: number[] = JSON.parse(root.dataset.helperOptions!);
+	const helpersInput = root.querySelector<HTMLInputElement>("[data-dc-helpers]")!;
+	const helpersValue = root.querySelector<HTMLElement>("[data-dc-helpers-value]")!;
+	const workersEl = root.querySelector<HTMLElement>("[data-dc-workers]")!;
+	const timerEl = root.querySelector<HTMLElement>("[data-dc-timer]")!;
+	const totalEl = root.querySelector<HTMLElement>("[data-dc-total]")!;
+	const statusEl = root.querySelector<HTMLElement>("[data-dc-status]")!;
+	const startBtn = root.querySelector<HTMLButtonElement>("[data-dc-start]")!;
+	const newBtn = root.querySelector<HTMLButtonElement>("[data-dc-new]")!;
+	const historyWrap = root.querySelector<HTMLElement>("[data-dc-history-wrap]")!;
+	const historyEl = root.querySelector<HTMLElement>("[data-dc-history]")!;
+	const predictInput = root.querySelector<HTMLInputElement>("[data-dc-predict]")!;
+
+	const N = 120;
+	const SECONDS_PER_BIT = 0.1;
+	const OVERHEAD_PER_HELPER = 0.1; // half to hand out work, half to combine results
+	const REAL_MS_PER_SIM_SECOND = 350; // 1 helper ≈ 4 seconds of animation
+
+	let bits: number[] = [];
+	let helpers = 1;
+	let frame = 0;
+	let running = false;
+	const runs: { helpers: number; time: number }[] = [];
+
+	function newBits() {
+		bits = Array.from({ length: N }, () => (Math.random() < 0.45 ? 1 : 0));
+	}
+
+	/** Contiguous, equal-as-possible chunks — one per helper. */
+	function chunks(count: number): number[][] {
+		const out: number[][] = [];
+		const size = Math.ceil(N / count);
+		for (let start = 0; start < N; start += size) {
+			out.push(Array.from({ length: Math.min(size, N - start) }, (_, i) => start + i));
+		}
+		return out;
+	}
+
+	function totalTime(count: number) {
+		return count * OVERHEAD_PER_HELPER + Math.ceil(N / count) * SECONDS_PER_BIT;
+	}
+
+	function buildWorkers() {
+		workersEl.innerHTML = "";
+		workersEl.dataset.count = String(helpers);
+		chunks(helpers).forEach((indices, h) => {
+			const card = document.createElement("div");
+			card.className = "dc-worker";
+			const head = document.createElement("p");
+			head.className = "dc-worker-head";
+			head.innerHTML = `<span>Helper ${h + 1}</span><span class="dc-worker-count" data-dc-count="${h}"></span>`;
+			const grid = document.createElement("div");
+			grid.className = "dc-bits";
+			grid.setAttribute("aria-hidden", "true");
+			indices.forEach((i) => {
+				const tile = document.createElement("span");
+				tile.className = "dc-bit";
+				tile.dataset.index = String(i);
+				tile.textContent = String(bits[i]);
+				grid.append(tile);
+			});
+			card.append(head, grid);
+			workersEl.append(card);
+		});
+	}
+
+	function setHelpers() {
+		helpers = OPTIONS[Number(helpersInput.value)];
+		helpersValue.textContent = String(helpers);
+		if (!running) {
+			buildWorkers();
+			timerEl.textContent = "0.0 s";
+			totalEl.textContent = "—";
+		}
+	}
+
+	function renderHistory() {
+		historyWrap.hidden = runs.length === 0;
+		historyEl.innerHTML = "";
+		const baseline = totalTime(1);
+		[...runs]
+			.sort((a, b) => a.helpers - b.helpers)
+			.forEach((run) => {
+				const tr = document.createElement("tr");
+				tr.innerHTML = `<td>${run.helpers}</td><td>${run.time.toFixed(1)} s</td><td>${(baseline / run.time).toFixed(1)}×</td>`;
+				historyEl.append(tr);
+			});
+	}
+
+	function start() {
+		if (running) return;
+		running = true;
+		startBtn.disabled = true;
+		newBtn.disabled = true;
+		helpersInput.disabled = true;
+		predictInput.disabled = true;
+		buildWorkers();
+
+		const parts = chunks(helpers);
+		const splitTime = (helpers * OVERHEAD_PER_HELPER) / 2;
+		const workTime = Math.ceil(N / helpers) * SECONDS_PER_BIT;
+		const finishTime = totalTime(helpers);
+		const tiles = Array.from(workersEl.querySelectorAll<HTMLElement>(".dc-bit"));
+		const tileByIndex = new Map(tiles.map((t) => [Number(t.dataset.index), t]));
+		const t0 = performance.now();
+		statusEl.textContent = helpers === 1 ? "Working through the list alone…" : "Handing out the work…";
+
+		const tick = (now: number) => {
+			const sim = Math.min(finishTime, (now - t0) / REAL_MS_PER_SIM_SECOND);
+			timerEl.textContent = `${sim.toFixed(1)} s`;
+			const checked = Math.max(0, Math.floor((sim - splitTime) / SECONDS_PER_BIT));
+
+			parts.forEach((indices, h) => {
+				const done = Math.min(indices.length, checked);
+				let ones = 0;
+				indices.forEach((index, k) => {
+					const tile = tileByIndex.get(index)!;
+					tile.classList.toggle("is-checked", k < done);
+					tile.classList.toggle("is-current", k === done && done < indices.length && sim >= splitTime);
+					if (k < done) ones += bits[index];
+				});
+				const countEl = workersEl.querySelector<HTMLElement>(`[data-dc-count="${h}"]`)!;
+				countEl.textContent = sim >= splitTime ? `${ones} found` : "";
+			});
+
+			if (sim >= splitTime + workTime && sim < finishTime && helpers > 1) {
+				statusEl.textContent = "Adding up everyone's answers…";
+			} else if (sim >= splitTime && sim < splitTime + workTime && helpers > 1) {
+				statusEl.textContent = `${helpers} helpers counting at the same time…`;
+			}
+
+			if (sim < finishTime) {
+				frame = requestAnimationFrame(tick);
+				return;
+			}
+			const total = bits.reduce((a, b) => a + b, 0);
+			totalEl.textContent = String(total);
+			runs.push({ helpers, time: finishTime });
+			renderHistory();
+			const guess = Number(predictInput.value);
+			const predictionNote =
+				predictInput.value.trim() !== "" && Number.isFinite(guess)
+					? Math.abs(guess - finishTime) <= 0.3
+						? ` You predicted ${guess} s — spot on!`
+						: ` You predicted ${guess} s (${guess > finishTime ? "slower" : "faster"} than it really was).`
+					: "";
+			statusEl.textContent = `Done: ${total} ones counted in ${finishTime.toFixed(1)} seconds with ${helpers} helper${helpers === 1 ? "" : "s"}.${predictionNote} Try a different number of helpers.`;
+			predictInput.value = "";
+			running = false;
+			startBtn.disabled = false;
+			newBtn.disabled = false;
+			helpersInput.disabled = false;
+			predictInput.disabled = false;
+			startBtn.textContent = "Run again";
+		};
+		frame = requestAnimationFrame(tick);
+	}
+
+	helpersInput.addEventListener("input", setHelpers);
+	startBtn.addEventListener("click", start);
+	newBtn.addEventListener("click", () => {
+		cancelAnimationFrame(frame);
+		newBits();
+		buildWorkers();
+		timerEl.textContent = "0.0 s";
+		totalEl.textContent = "—";
+		statusEl.textContent = "A fresh list of bits. Press Start.";
+	});
+
+	newBits();
+	setHelpers();
+</script>
+
+<style is:global>
+	.dc-demo .dc-predict-input {
+		width: 7em;
+	}
+
+	.dc-demo .dc-task {
+		margin: 0 0 0.25em;
+		text-align: center;
+		font-size: 1em;
+		color: var(--color-text);
+	}
+
+	.dc-demo .dc-helpers {
+		width: min(16em, 60%);
+	}
+
+	.dc-demo .dc-helpers-value {
+		min-width: 1.6em;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1.4em;
+		color: #fff3d6;
+	}
+
+	.dc-demo .dc-workers {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5em;
+		margin-top: 1em;
+	}
+
+	.dc-demo .dc-worker {
+		padding: 0.5em 0.5em 0.5em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.dc-demo .dc-workers[data-count="1"] .dc-worker {
+		width: 100%;
+	}
+
+	.dc-demo .dc-worker-head {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5em;
+		margin: 0 0 0.25em;
+		font-size: 0.78em;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.dc-demo .dc-worker-count {
+		font-family: var(--font-mono);
+		color: var(--color-accent);
+	}
+
+	.dc-demo .dc-bits {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.25em;
+		max-width: 16em;
+	}
+
+	.dc-demo .dc-workers[data-count="1"] .dc-bits {
+		max-width: none;
+	}
+
+	.dc-demo .dc-bit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.45em;
+		height: 1.45em;
+		border-radius: 4px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.8em;
+		color: var(--color-text);
+	}
+
+	/* A checked bit just fades back — every bit gets the same treatment, so
+	   the only "signal" is how far each helper has got. */
+	.dc-demo .dc-bit.is-checked {
+		opacity: 0.35;
+	}
+
+	.dc-demo .dc-bit.is-current {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+	}
+
+	.dc-demo .dc-history {
+		margin: 1em auto 0;
+		max-width: 22em;
+	}
+
+	.dc-demo .dc-history-title {
+		margin: 0 0 0.25em;
+		text-align: center;
+		font-size: 0.78em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.dc-demo .dc-history-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-family: var(--font-mono);
+		font-size: 0.92em;
+	}
+
+	.dc-demo .dc-history-table th {
+		padding: 0.25em 0.5em;
+		font-family: var(--font-sans);
+		font-size: 0.8em;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-text-muted);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.dc-demo .dc-history-table td {
+		padding: 0.25em 0.5em;
+		text-align: center;
+		color: var(--color-text);
+		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+	}
+</style>

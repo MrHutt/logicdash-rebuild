@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://logicdash.io/sitemap-index.xml

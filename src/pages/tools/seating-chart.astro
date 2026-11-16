@@ -1,122 +1,211 @@
 ---
-// Unpublished classroom tool — reachable only by direct URL, same treatment
-// as /tools/countdown-clock and /tools/student-picker: not linked from
-// Header.astro/Footer.astro, and excluded from the sitemap (see the
-// sitemap() filter in astro.config.mjs). /tools/ is also disallowed
-// wholesale in public/robots.txt already, so no robots.txt change was
-// needed for this page specifically.
+// Published classroom tool — linked from the /tools hub page, indexable.
+//
+// A teacher's seating-chart workflow in four steps (class → room → purpose
+// → optional rules), with the chart beside the steps on wide screens. The
+// seating logic lives in src/lib/seatingChart.ts and src/lib/layoutEngine.ts;
+// class lists are shared with /tools/student-picker via src/lib/rosterStore.ts
+// and never leave the teacher's browser.
 import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout
+	wide
 	title="Seating Chart"
-	description="A classroom seating chart generator — four layout templates, exam/group/general modes, keep-apart/keep-together/pinned rules, and no-repeat-neighbor tracking."
+	description="A free classroom seating chart maker: paste your class list, pick rows, pods, pairs or a U-shape, add keep-apart rules, then project or print the chart."
 >
 	<div class="seating-tool" data-seating-root>
-		<h1 class="seating-title">Seating Chart</h1>
-
-		<section class="setup-panel">
-			<div class="panel-card">
-				<p class="panel-title">Layout Template</p>
-				<div class="template-grid" data-template-grid>
-					<button type="button" class="template-btn" data-template-btn="rows" aria-pressed="true">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-							<rect x="3" y="4.5" width="18" height="4" rx="1"></rect>
-							<rect x="3" y="10" width="18" height="4" rx="1"></rect>
-							<rect x="3" y="15.5" width="18" height="4" rx="1"></rect>
-						</svg>
-						<span>Rows</span>
-					</button>
-					<button type="button" class="template-btn" data-template-btn="pods" aria-pressed="false">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-							<rect x="3.5" y="3.5" width="7" height="7" rx="1"></rect>
-							<rect x="13.5" y="3.5" width="7" height="7" rx="1"></rect>
-							<rect x="3.5" y="13.5" width="7" height="7" rx="1"></rect>
-							<rect x="13.5" y="13.5" width="7" height="7" rx="1"></rect>
-						</svg>
-						<span>Pods</span>
-					</button>
-					<button type="button" class="template-btn" data-template-btn="pairs" aria-pressed="false">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-							<rect x="2.5" y="8" width="8" height="8" rx="1"></rect>
-							<rect x="13.5" y="8" width="8" height="8" rx="1"></rect>
-						</svg>
-						<span>Pairs</span>
-					</button>
-					<button type="button" class="template-btn" data-template-btn="u-shape" aria-pressed="false">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-							<path d="M5 4 V16 H9 V8 H15 V16 H19 V4"></path>
-						</svg>
-						<span>U-Shape</span>
-					</button>
-				</div>
-				<div class="param-fields" data-param-fields></div>
-			</div>
-
-			<div class="panel-card">
-				<p class="panel-title">Mode</p>
-				<div class="mode-toggle" data-mode-toggle>
-					<button type="button" class="mode-btn" data-mode-btn="exam" aria-selected="false">Exam</button>
-					<button type="button" class="mode-btn" data-mode-btn="group" aria-selected="false">Group</button>
-					<button type="button" class="mode-btn" data-mode-btn="general" aria-selected="true">General</button>
-				</div>
-			</div>
-
-			<div class="panel-card">
-				<p class="panel-title">Roster</p>
-				<select class="select-input" data-roster-select aria-label="Roster"></select>
-				<p class="panel-hint">
-					Rosters are shared with <a href="/tools/student-picker">Student Picker</a> — add students there.
-				</p>
-				<p class="empty-hint" data-roster-empty hidden>No rosters yet.</p>
-			</div>
-
-			<div class="panel-card">
-				<p class="panel-title">Rules (<span data-rule-count>0</span>)</p>
-				<div class="rule-form" data-rule-form>
-					<label class="field-label-row">
-						<span class="field-label">Rule type</span>
-						<select class="select-input" data-rule-type-select>
-							<option value="keep-apart">Keep Apart</option>
-							<option value="keep-together">Keep Together</option>
-							<option value="pinned">Pinned Seat</option>
-							<option value="skill-balance">Skill Tier</option>
-						</select>
-					</label>
-					<div class="rule-fields" data-rule-fields></div>
-					<p class="rule-error" data-rule-error hidden></p>
-					<button type="button" class="btn btn--ghost" data-add-rule>Add Rule</button>
-				</div>
-				<ul class="rule-list" data-rule-list></ul>
-				<p class="empty-hint" data-rule-empty>No rules added yet.</p>
-			</div>
-
-			<div class="panel-card">
-				<label class="norepeat-toggle">
-					<input type="checkbox" data-avoid-repeat-toggle />
-					<span>Avoid repeat neighbors across generations</span>
-				</label>
-			</div>
-
-			<div class="generate-row">
-				<button type="button" class="btn" data-generate-btn>Generate Seating Chart</button>
-				<button type="button" class="btn btn--ghost" data-regenerate-btn disabled>Regenerate</button>
-			</div>
-		</section>
-
-		<section class="chart-section">
-			<p class="violation-warning" data-violation-warning hidden>
-				Some constraints couldn't all be satisfied this time.
+		<header class="seating-header">
+			<h1 class="seating-title">Seating Chart</h1>
+			<p class="seating-lead">
+				Make a fair, random seating plan in under a minute — then swap anyone by hand, project it, or print it.
 			</p>
-			<p class="capacity-hint" data-capacity-hint hidden></p>
-			<div class="chart-stage" data-chart-stage></div>
-			<p class="empty-hint" data-chart-empty>Set up your roster and rules above, then generate a chart.</p>
+		</header>
+
+		<div class="seating-layout">
+			<!-- ============================ Setup steps ============================ -->
+			<section class="setup-panel" aria-label="Set up the seating chart">
+				<!-- Step 1: class -->
+				<div class="step-card">
+					<h2 class="step-title"><span class="step-num">1</span> Your class</h2>
+
+					<div class="roster-picker" data-roster-picker>
+						<label class="field">
+							<span class="field-label">Class list</span>
+							<select class="select-input" data-roster-select></select>
+						</label>
+						<div class="inline-actions">
+							<button type="button" class="link-btn" data-edit-roster>Edit names</button>
+							<button type="button" class="link-btn" data-new-roster>+ New class</button>
+						</div>
+					</div>
+
+					<div class="roster-editor" data-roster-editor hidden>
+						<label class="field">
+							<span class="field-label">Class name</span>
+							<input class="text-input" type="text" maxlength="40" placeholder="e.g. Period 3 CS" data-roster-name />
+						</label>
+						<label class="field">
+							<span class="field-label">Student names — one per line (or paste from a spreadsheet)</span>
+							<textarea class="text-input roster-textarea" rows="8" spellcheck="false" data-roster-text></textarea>
+						</label>
+						<p class="field-error" data-roster-error hidden></p>
+						<div class="inline-actions">
+							<button type="button" class="btn btn--primary" data-save-roster>Save class</button>
+							<button type="button" class="btn" data-cancel-roster>Cancel</button>
+							<button type="button" class="link-btn" data-sample-roster>Fill in sample names</button>
+						</div>
+					</div>
+
+					<div class="student-chips-wrap" data-chips-wrap hidden>
+						<p class="hint">Tap a name to mark someone absent today — they won't be given a seat.</p>
+						<ul class="student-chips" data-student-chips></ul>
+					</div>
+
+					<p class="hint privacy-hint">
+						Names are saved only on this device, and shared with the <a href="/tools/student-picker/">Student Picker</a>.
+					</p>
+				</div>
+
+				<!-- Step 2: room -->
+				<div class="step-card">
+					<h2 class="step-title"><span class="step-num">2</span> Room layout</h2>
+					<div class="template-grid" role="radiogroup" aria-label="Layout">
+						<button type="button" class="template-btn" role="radio" data-template-btn="rows" aria-checked="true">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+								<rect x="3" y="4.5" width="18" height="4" rx="1"></rect>
+								<rect x="3" y="10" width="18" height="4" rx="1"></rect>
+								<rect x="3" y="15.5" width="18" height="4" rx="1"></rect>
+							</svg>
+							<span>Rows</span>
+						</button>
+						<button type="button" class="template-btn" role="radio" data-template-btn="pods" aria-checked="false">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+								<rect x="3.5" y="3.5" width="7" height="7" rx="1"></rect>
+								<rect x="13.5" y="3.5" width="7" height="7" rx="1"></rect>
+								<rect x="3.5" y="13.5" width="7" height="7" rx="1"></rect>
+								<rect x="13.5" y="13.5" width="7" height="7" rx="1"></rect>
+							</svg>
+							<span>Groups (pods)</span>
+						</button>
+						<button type="button" class="template-btn" role="radio" data-template-btn="pairs" aria-checked="false">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+								<rect x="2.5" y="8" width="8" height="8" rx="1"></rect>
+								<rect x="13.5" y="8" width="8" height="8" rx="1"></rect>
+							</svg>
+							<span>Pairs</span>
+						</button>
+						<button type="button" class="template-btn" role="radio" data-template-btn="u-shape" aria-checked="false">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+								<path d="M5 20 V8 H9 V16 H15 V8 H19 V20"></path>
+							</svg>
+							<span>U-shape</span>
+						</button>
+					</div>
+					<div class="param-fields" data-param-fields></div>
+					<p class="capacity" data-capacity aria-live="polite"></p>
+				</div>
+
+				<!-- Step 3: purpose -->
+				<div class="step-card">
+					<h2 class="step-title"><span class="step-num">3</span> What's it for?</h2>
+					<div class="mode-options" role="radiogroup" aria-label="Purpose">
+						<button type="button" class="mode-option" role="radio" data-mode-btn="general" aria-checked="true">
+							<span class="mode-name">Everyday</span>
+							<span class="mode-desc">A fresh random mix that follows your rules.</span>
+						</button>
+						<button type="button" class="mode-option" role="radio" data-mode-btn="group" aria-checked="false">
+							<span class="mode-name">Group work</span>
+							<span class="mode-desc">With pods, spreads stronger and weaker students evenly (set skill levels in Rules).</span>
+						</button>
+						<button type="button" class="mode-option" role="radio" data-mode-btn="exam" aria-checked="false">
+							<span class="mode-name">Test day</span>
+							<span class="mode-desc">Leaves empty seats between students when there's room, and treats "keep apart" as top priority.</span>
+						</button>
+					</div>
+				</div>
+
+				<!-- Step 4: rules -->
+				<details class="step-card step-card--rules">
+					<summary class="step-title">
+						<span class="step-num">4</span> Rules <span class="optional">(optional)</span>
+						<span class="rule-count" data-rule-count-badge hidden></span>
+					</summary>
+					<p class="hint">
+						<strong>Keep apart</strong>: never side by side. <strong>Keep together</strong>: always side by side.{" "}
+						<strong>Fixed seat</strong>: e.g. near the front for a student who needs it. <strong>Skill level</strong>: used by Group work.
+					</p>
+					<div class="rule-form">
+						<label class="field">
+							<span class="field-label">Rule type</span>
+							<select class="select-input" data-rule-type-select>
+								<option value="keep-apart">Keep apart</option>
+								<option value="keep-together">Keep together</option>
+								<option value="pinned">Fixed seat</option>
+								<option value="skill-balance">Skill level (Group work)</option>
+							</select>
+						</label>
+						<div class="rule-fields" data-rule-fields></div>
+						<p class="field-error" data-rule-error hidden></p>
+						<button type="button" class="btn" data-add-rule>Add rule</button>
+					</div>
+					<ul class="rule-list" data-rule-list></ul>
+					<label class="check-row">
+						<input type="checkbox" data-avoid-repeat-toggle checked />
+						<span>Try not to repeat last time's neighbors</span>
+					</label>
+				</details>
+
+				<button type="button" class="btn btn--primary btn--big" data-generate-btn>Make seating chart</button>
+			</section>
+
+			<!-- ============================ Chart ============================ -->
+			<section class="chart-panel" data-chart-panel aria-label="Seating chart">
+				<div class="chart-toolbar" data-chart-toolbar hidden>
+					<button type="button" class="btn" data-regenerate-btn><span aria-hidden="true">⟳</span> Shuffle again</button>
+					<button type="button" class="btn" data-flip-btn><span aria-hidden="true">⇅</span> Flip</button>
+					<button type="button" class="btn" data-print-btn><span aria-hidden="true">⎙</span> Print</button>
+					<button type="button" class="btn" data-fullscreen-btn><span aria-hidden="true">⛶</span> Fullscreen</button>
+					<button type="button" class="btn chart-exit" data-exit-fullscreen><span aria-hidden="true">✕</span> Exit</button>
+				</div>
+
+				<div class="chart-sheet" data-chart-sheet>
+					<p class="print-heading" data-print-heading></p>
+					<div class="room-front" data-room-front>Front of room · board</div>
+					<div class="chart-stage" data-chart-stage></div>
+					<p class="chart-empty" data-chart-empty>
+						Your chart will appear here. Add your class in step 1, then press <strong>Make seating chart</strong>.
+					</p>
+				</div>
+
+				<p class="chart-status" data-chart-status aria-live="polite"></p>
+				<p class="hint chart-swap-hint" data-swap-hint hidden>
+					To move someone, tap their seat, then tap the seat you want them in — the two swap.
+				</p>
+			</section>
+		</div>
+
+		<section class="seating-help" aria-labelledby="seating-help-title">
+			<h2 class="seating-help-title" id="seating-help-title">Tips for teachers</h2>
+			<ul class="seating-help-list">
+				<li><strong>First time?</strong> Press <em>+ New class</em> → <em>Fill in sample names</em> to see how it works.</li>
+				<li><strong>Not enough seats?</strong> Step 2 tells you how many seats you have for how many students present.</li>
+				<li><strong>Project it</strong> with <em>Fullscreen</em> so students can find their seats; use <em>Flip</em> if your board is at the other end of the plan.</li>
+				<li><strong>Each class's last chart is saved</strong> on this device — open the page next lesson and it's still there.</li>
+			</ul>
 		</section>
 	</div>
 </Layout>
 
 <script>
-	import { loadRosters, loadActiveRosterName, type Roster } from "../../lib/rosterStore";
+	import {
+		loadRosters,
+		saveRoster,
+		deleteRoster,
+		loadActiveRosterName,
+		saveActiveRosterName,
+		type Roster,
+	} from "../../lib/rosterStore";
 	import {
 		buildLayout,
 		defaultParams,
@@ -124,7 +213,6 @@ import Layout from "../../layouts/Layout.astro";
 		uShapeArms,
 		type LayoutTemplate,
 		type LayoutConfig,
-		type SeatLayout,
 	} from "../../lib/layoutEngine";
 	import {
 		generateSeatingChart,
@@ -136,290 +224,352 @@ import Layout from "../../layouts/Layout.astro";
 	} from "../../lib/seatingChart";
 
 	const root = document.querySelector<HTMLElement>("[data-seating-root]")!;
+	const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
 
-	// --- Element refs ------------------------------------------------------
-
+	const rosterSelect = $<HTMLSelectElement>("[data-roster-select]");
+	const rosterPicker = $("[data-roster-picker]");
+	const rosterEditor = $("[data-roster-editor]");
+	const rosterNameInput = $<HTMLInputElement>("[data-roster-name]");
+	const rosterText = $<HTMLTextAreaElement>("[data-roster-text]");
+	const rosterError = $("[data-roster-error]");
+	const chipsWrap = $("[data-chips-wrap]");
+	const chipsEl = $("[data-student-chips]");
+	const editBtn = $<HTMLButtonElement>("[data-edit-roster]");
 	const templateButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-template-btn]"));
-	const paramFieldsEl = root.querySelector<HTMLElement>("[data-param-fields]")!;
+	const paramFieldsEl = $("[data-param-fields]");
+	const capacityEl = $("[data-capacity]");
 	const modeButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-mode-btn]"));
+	const ruleTypeSelect = $<HTMLSelectElement>("[data-rule-type-select]");
+	const ruleFieldsEl = $("[data-rule-fields]");
+	const ruleErrorEl = $("[data-rule-error]");
+	const addRuleBtn = $<HTMLButtonElement>("[data-add-rule]");
+	const ruleListEl = $("[data-rule-list]");
+	const ruleBadge = $("[data-rule-count-badge]");
+	const avoidRepeatToggle = $<HTMLInputElement>("[data-avoid-repeat-toggle]");
+	const generateBtn = $<HTMLButtonElement>("[data-generate-btn]");
+	const toolbar = $("[data-chart-toolbar]");
+	const chartStage = $("[data-chart-stage]");
+	const chartEmpty = $("[data-chart-empty]");
+	const chartStatus = $("[data-chart-status]");
+	const swapHint = $("[data-swap-hint]");
+	const roomFront = $("[data-room-front]");
+	const printHeading = $("[data-print-heading]");
 
-	const rosterSelect = root.querySelector<HTMLSelectElement>("[data-roster-select]")!;
-	const rosterEmptyEl = root.querySelector<HTMLElement>("[data-roster-empty]")!;
+	// ------------------------------------------------------------------ state
 
-	const ruleTypeSelect = root.querySelector<HTMLSelectElement>("[data-rule-type-select]")!;
-	const ruleFieldsEl = root.querySelector<HTMLElement>("[data-rule-fields]")!;
-	const ruleErrorEl = root.querySelector<HTMLElement>("[data-rule-error]")!;
-	const addRuleBtn = root.querySelector<HTMLButtonElement>("[data-add-rule]")!;
-	const ruleListEl = root.querySelector<HTMLElement>("[data-rule-list]")!;
-	const ruleEmptyEl = root.querySelector<HTMLElement>("[data-rule-empty]")!;
-	const ruleCountEl = root.querySelector<HTMLElement>("[data-rule-count]")!;
-
-	const avoidRepeatToggle = root.querySelector<HTMLInputElement>("[data-avoid-repeat-toggle]")!;
-	const generateBtn = root.querySelector<HTMLButtonElement>("[data-generate-btn]")!;
-	const regenerateBtn = root.querySelector<HTMLButtonElement>("[data-regenerate-btn]")!;
-
-	const violationWarningEl = root.querySelector<HTMLElement>("[data-violation-warning]")!;
-	const capacityHintEl = root.querySelector<HTMLElement>("[data-capacity-hint]")!;
-	const chartStageEl = root.querySelector<HTMLElement>("[data-chart-stage]")!;
-	const chartEmptyEl = root.querySelector<HTMLElement>("[data-chart-empty]")!;
-
-	// --- State ---------------------------------------------------------
-
-	let currentRoster: Roster = { name: "", students: [] };
+	let roster: Roster = { name: "", students: [] };
 	let template: LayoutTemplate = "rows";
 	let params: Record<string, number> = defaultParams("rows");
 	let mode: Mode = "general";
 	let rules: Rule[] = [];
-	let ruleIdCounter = 0;
+	let ruleId = 0;
+	let flipped = false;
+	let editingName: string | null = null; // roster being edited (null = new)
 
-	// Snapshot captured on Generate — Regenerate re-runs the algorithm
-	// against exactly this, without re-reading the live form state (so
-	// fiddling with fields after generating doesn't silently change what
-	// Regenerate produces).
-	let lastGenerate: { layout: SeatLayout; config: LayoutConfig; students: string[]; mode: Mode; rules: Rule[]; avoidRepeatNeighbors: boolean } | null = null;
+	interface SavedChart {
+		config: LayoutConfig;
+		assignments: (string | null)[];
+		date: string;
+		flipped: boolean;
+	}
+	let chart: SavedChart | null = null;
+	let selectedSeat: number | null = null;
 
-	function escapeHtml(value: string): string {
-		return value.replace(
-			/[&<>"']/g,
-			(char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!,
-		);
+	const CHART_KEY = "logicdash-seating-chart-last:";
+	const SETUP_KEY = "logicdash-seating-chart-setup";
+
+	const escapeHtml = (v: string) =>
+		v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+	const present = () => roster.students.filter((s) => !s.absent).map((s) => s.name);
+	const config = (): LayoutConfig => ({ template, params: { ...params } });
+
+	function saveSetup() {
+		try {
+			localStorage.setItem(SETUP_KEY, JSON.stringify({ template, params, mode, flipped }));
+		} catch {
+			/* ignore */
+		}
 	}
 
-	function eligibleStudents(): string[] {
-		return currentRoster.students.filter((s) => !s.absent).map((s) => s.name);
-	}
-
-	function currentLayoutConfig(): LayoutConfig {
-		return { template, params: { ...params } };
-	}
-
-	// --- Roster ------------------------------------------------------------
+	// ------------------------------------------------------------- step 1: class
 
 	function renderRosterSelect() {
 		const all = loadRosters();
 		const names = Object.keys(all).sort((a, b) => a.localeCompare(b));
-		rosterEmptyEl.hidden = names.length > 0;
-		rosterSelect.hidden = names.length === 0;
 		if (names.length === 0) {
-			currentRoster = { name: "", students: [] };
-			rosterSelect.innerHTML = "";
+			roster = { name: "", students: [] };
+			rosterPicker.hidden = true;
+			openEditor(null);
 			return;
 		}
-		if (!names.includes(currentRoster.name)) {
+		rosterPicker.hidden = false;
+		if (!all[roster.name]) {
 			const active = loadActiveRosterName();
-			currentRoster = all[active && all[active] ? active : names[0]];
+			roster = all[active && all[active] ? active : names[0]];
+		} else {
+			roster = all[roster.name];
 		}
 		rosterSelect.innerHTML = names
+			.map((n) => `<option value="${escapeHtml(n)}" ${n === roster.name ? "selected" : ""}>${escapeHtml(n)} (${all[n].students.length})</option>`)
+			.join("");
+		renderChips();
+	}
+
+	function renderChips() {
+		chipsWrap.hidden = roster.students.length === 0 || !rosterEditor.hidden;
+		chipsEl.innerHTML = roster.students
 			.map(
-				(name) =>
-					`<option value="${escapeHtml(name)}" ${name === currentRoster.name ? "selected" : ""}>${escapeHtml(name)}</option>`,
+				(s, i) =>
+					`<li><button type="button" class="student-chip${s.absent ? " is-absent" : ""}" data-chip="${i}" aria-pressed="${s.absent}">${escapeHtml(s.name)}${s.absent ? '<span class="chip-tag">absent</span>' : ""}</button></li>`,
+			)
+			.join("");
+		renderCapacity();
+		renderRuleFields();
+		generateBtn.disabled = present().length === 0;
+	}
+
+	chipsEl.addEventListener("click", (event) => {
+		const btn = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-chip]");
+		if (!btn) return;
+		const s = roster.students[Number(btn.dataset.chip)];
+		s.absent = !s.absent;
+		saveRoster(roster);
+		// Rules naming someone who's now absent are dropped (they can't apply).
+		const here = new Set(present());
+		rules = rules.filter((r) => r.studentNames.every((n) => here.has(n)));
+		renderRuleList();
+		renderChips();
+		root.querySelector<HTMLButtonElement>(`[data-chip="${btn.dataset.chip}"]`)?.focus();
+	});
+
+	rosterSelect.addEventListener("change", () => {
+		roster = loadRosters()[rosterSelect.value] ?? roster;
+		saveActiveRosterName(roster.name);
+		rules = [];
+		renderRuleList();
+		renderChips();
+		restoreChart();
+	});
+
+	function openEditor(existing: Roster | null) {
+		editingName = existing ? existing.name : null;
+		rosterNameInput.value = existing ? existing.name : "";
+		rosterText.value = existing ? existing.students.map((s) => s.name).join("\n") : "";
+		rosterError.hidden = true;
+		rosterEditor.hidden = false;
+		chipsWrap.hidden = true;
+		(existing ? rosterText : rosterNameInput).focus({ preventScroll: true });
+		$<HTMLButtonElement>("[data-cancel-roster]").hidden = Object.keys(loadRosters()).length === 0;
+	}
+
+	function closeEditor() {
+		rosterEditor.hidden = true;
+		renderChips();
+	}
+
+	$("[data-new-roster]").addEventListener("click", () => openEditor(null));
+	editBtn.addEventListener("click", () => openEditor(roster.name ? roster : null));
+	$("[data-cancel-roster]").addEventListener("click", closeEditor);
+
+	const SAMPLE = [
+		"Ava", "Ben", "Chloe", "Dev", "Ella", "Finn", "Grace", "Hugo", "Isla", "Jay", "Kai", "Lena",
+		"Milo", "Nia", "Omar", "Priya", "Quinn", "Rosa", "Sam", "Tara", "Umar", "Vik", "Wren", "Zoe",
+	];
+	$("[data-sample-roster]").addEventListener("click", () => {
+		if (!rosterNameInput.value.trim()) rosterNameInput.value = "Sample class";
+		rosterText.value = SAMPLE.join("\n");
+	});
+
+	$("[data-save-roster]").addEventListener("click", () => {
+		const name = rosterNameInput.value.trim();
+		// Accept one per line, or comma/tab separated (pasted from a sheet).
+		const names = rosterText.value
+			.split(/[\n\t,]+/)
+			.map((n) => n.trim().replace(/\s+/g, " "))
+			.filter(Boolean);
+		const unique = [...new Set(names)];
+		if (!name) return showRosterError("Give the class a name, e.g. “Period 3”.");
+		if (unique.length === 0) return showRosterError("Add at least one student name.");
+		const all = loadRosters();
+		if (name !== editingName && all[name]) return showRosterError("You already have a class with that name.");
+		const absentBefore = new Set((editingName && all[editingName]?.students.filter((s) => s.absent).map((s) => s.name)) || []);
+		// Renamed: save under the new name, remove the old entry.
+		if (editingName && editingName !== name) deleteRoster(editingName);
+		roster = { name, students: unique.map((n) => ({ name: n, absent: absentBefore.has(n) })) };
+		saveRoster(roster);
+		saveActiveRosterName(name);
+		const dupes = names.length - unique.length;
+		rosterEditor.hidden = true;
+		renderRosterSelect();
+		chartStatus.textContent = `Saved “${name}” with ${unique.length} students${dupes ? ` (${dupes} duplicate name${dupes === 1 ? "" : "s"} removed)` : ""}.`;
+		restoreChart();
+	});
+
+	function showRosterError(message: string) {
+		rosterError.textContent = message;
+		rosterError.hidden = false;
+	}
+
+	// -------------------------------------------------------------- step 2: room
+
+	function renderParamFields() {
+		paramFieldsEl.innerHTML = PARAM_FIELDS[template]
+			.map(
+				(f) => `
+			<label class="field field--number">
+				<span class="field-label">${f.label}</span>
+				<span class="stepper">
+					<button type="button" class="stepper-btn" data-step="${f.key}" data-delta="-1" aria-label="Fewer ${f.label.toLowerCase()}">−</button>
+					<input type="number" class="number-input" min="${f.min}" max="${f.max}" value="${params[f.key]}" data-param-input="${f.key}" />
+					<button type="button" class="stepper-btn" data-step="${f.key}" data-delta="1" aria-label="More ${f.label.toLowerCase()}">+</button>
+				</span>
+			</label>`,
 			)
 			.join("");
 	}
 
-	rosterSelect.addEventListener("change", () => {
-		const all = loadRosters();
-		currentRoster = all[rosterSelect.value] ?? { name: rosterSelect.value, students: [] };
-		// Rules referencing a student no longer on the selected roster (or now
-		// absent) no longer make sense — drop them rather than leave a rule
-		// silently pointing at nobody.
-		const eligible = new Set(eligibleStudents());
-		rules = rules.filter((rule) => rule.studentNames.every((name) => eligible.has(name)));
-		renderRuleFields();
+	function setParam(key: string, value: number) {
+		const f = PARAM_FIELDS[template].find((x) => x.key === key)!;
+		params[key] = Math.min(f.max, Math.max(f.min, Number.isFinite(value) ? Math.round(value) : f.min));
+		const input = paramFieldsEl.querySelector<HTMLInputElement>(`[data-param-input="${key}"]`);
+		if (input) input.value = String(params[key]);
+		rules = rules.filter((r) => r.type !== "pinned" || (r.seatIndex ?? 0) < buildLayout(config()).seatCount);
 		renderRuleList();
-		updateGenerateAvailability();
-	});
-
-	// --- Template & params ---------------------------------------------------
-
-	function renderParamFields() {
-		const fields = PARAM_FIELDS[template];
-		paramFieldsEl.innerHTML = fields
-			.map(
-				(field) => `
-			<label class="field-label-row" data-param-field="${field.key}">
-				<span class="field-label">${field.label}</span>
-				<input
-					type="number"
-					class="number-input"
-					min="${field.min}"
-					max="${field.max}"
-					value="${params[field.key] ?? field.min}"
-					data-param-input="${field.key}"
-				/>
-			</label>
-		`,
-			)
-			.join("");
+		renderCapacity();
+		renderRuleFields();
+		saveSetup();
 	}
 
 	paramFieldsEl.addEventListener("change", (event) => {
-		const target = event.target as HTMLInputElement;
-		const key = target.dataset.paramInput;
-		if (!key) return;
-		const field = PARAM_FIELDS[template].find((f) => f.key === key)!;
-		const value = Math.round(Number(target.value));
-		params[key] = Number.isFinite(value) ? Math.min(field.max, Math.max(field.min, value)) : field.min;
-		target.value = String(params[key]);
-		renderRuleFields();
+		const input = event.target as HTMLInputElement;
+		if (input.dataset.paramInput) setParam(input.dataset.paramInput, Number(input.value));
 	});
+	paramFieldsEl.addEventListener("click", (event) => {
+		const btn = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-step]");
+		if (btn) setParam(btn.dataset.step!, params[btn.dataset.step!] + Number(btn.dataset.delta));
+	});
+
+	function renderCapacity() {
+		const seats = buildLayout(config()).seatCount;
+		const n = present().length;
+		if (n === 0) {
+			capacityEl.textContent = `${seats} seats.`;
+			capacityEl.className = "capacity";
+			return;
+		}
+		const spare = seats - n;
+		capacityEl.textContent =
+			spare >= 0
+				? `${seats} seats for ${n} students — ${spare === 0 ? "a perfect fit" : `${spare} spare`}. ✓`
+				: `${seats} seats for ${n} students — ${-spare} short. Add more seats.`;
+		capacityEl.className = spare >= 0 ? "capacity capacity--ok" : "capacity capacity--short";
+	}
 
 	function setTemplate(next: LayoutTemplate) {
 		template = next;
 		params = defaultParams(next);
-		templateButtons.forEach((btn) => btn.setAttribute("aria-pressed", btn.dataset.templateBtn === next ? "true" : "false"));
+		templateButtons.forEach((b) => b.setAttribute("aria-checked", String(b.dataset.templateBtn === next)));
+		rules = rules.filter((r) => r.type !== "pinned");
 		renderParamFields();
-		// A pinned rule's seat index only makes sense for the layout it was
-		// created under — switching templates invalidates any pinned seats.
-		rules = rules.filter((rule) => rule.type !== "pinned");
-		renderRuleFields();
 		renderRuleList();
+		renderCapacity();
+		renderRuleFields();
+		saveSetup();
 	}
+	templateButtons.forEach((b) => b.addEventListener("click", () => setTemplate(b.dataset.templateBtn as LayoutTemplate)));
 
-	templateButtons.forEach((btn) => btn.addEventListener("click", () => setTemplate(btn.dataset.templateBtn as LayoutTemplate)));
-
-	// --- Mode ------------------------------------------------------------
+	// ----------------------------------------------------------- step 3: purpose
 
 	function setMode(next: Mode) {
 		mode = next;
-		modeButtons.forEach((btn) => btn.setAttribute("aria-selected", btn.dataset.modeBtn === next ? "true" : "false"));
+		modeButtons.forEach((b) => b.setAttribute("aria-checked", String(b.dataset.modeBtn === next)));
+		saveSetup();
 	}
+	modeButtons.forEach((b) => b.addEventListener("click", () => setMode(b.dataset.modeBtn as Mode)));
 
-	modeButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.modeBtn as Mode)));
+	// ------------------------------------------------------------- step 4: rules
 
-	// --- Rule form -----------------------------------------------------------
-
-	function studentOptions(selectedIndex = 0): string {
-		const students = eligibleStudents();
-		return students
-			.map((name, i) => `<option value="${escapeHtml(name)}" ${i === selectedIndex ? "selected" : ""}>${escapeHtml(name)}</option>`)
+	function options(selected = 0) {
+		return present()
+			.map((n, i) => `<option value="${escapeHtml(n)}" ${i === selected ? "selected" : ""}>${escapeHtml(n)}</option>`)
 			.join("");
-	}
-
-	function seatOptions(): string {
-		const layout = buildLayout(currentLayoutConfig());
-		return Array.from({ length: layout.seatCount }, (_, i) => `<option value="${i}">Seat ${i + 1}</option>`).join("");
 	}
 
 	function renderRuleFields() {
 		const type = ruleTypeSelect.value as RuleType;
-		const students = eligibleStudents();
+		const names = present();
 		ruleErrorEl.hidden = true;
-
-		if (students.length === 0) {
-			ruleFieldsEl.innerHTML = `<p class="panel-hint">Add students to this roster first.</p>`;
+		if (names.length === 0) {
+			ruleFieldsEl.innerHTML = `<p class="hint">Add your class in step 1 first.</p>`;
 			addRuleBtn.disabled = true;
 			return;
 		}
-
+		const student = (label: string, i: number, sel: number) =>
+			`<label class="field"><span class="field-label">${label}</span><select class="select-input" data-rule-student="${i}">${options(sel)}</select></label>`;
 		if (type === "keep-apart" || type === "keep-together") {
-			ruleFieldsEl.innerHTML = `
-				<label class="field-label-row">
-					<span class="field-label">Student A</span>
-					<select class="select-input" data-rule-student="0">${studentOptions(0)}</select>
-				</label>
-				<label class="field-label-row">
-					<span class="field-label">Student B</span>
-					<select class="select-input" data-rule-student="1">${studentOptions(Math.min(1, students.length - 1))}</select>
-				</label>
-			`;
-			addRuleBtn.disabled = students.length < 2;
+			ruleFieldsEl.innerHTML = student("Student", 0, 0) + student("and", 1, Math.min(1, names.length - 1));
+			addRuleBtn.disabled = names.length < 2;
 		} else if (type === "pinned") {
-			ruleFieldsEl.innerHTML = `
-				<label class="field-label-row">
-					<span class="field-label">Student</span>
-					<select class="select-input" data-rule-student="0">${studentOptions(0)}</select>
-				</label>
-				<label class="field-label-row">
-					<span class="field-label">Seat</span>
-					<select class="select-input" data-rule-seat>${seatOptions()}</select>
-				</label>
-			`;
+			const seats = buildLayout(config()).seatCount;
+			ruleFieldsEl.innerHTML =
+				student("Student", 0, 0) +
+				`<label class="field"><span class="field-label">Seat number</span><select class="select-input" data-rule-seat>${Array.from(
+					{ length: seats },
+					(_, i) => `<option value="${i}">Seat ${i + 1}</option>`,
+				).join("")}</select></label>`;
 			addRuleBtn.disabled = false;
 		} else {
-			ruleFieldsEl.innerHTML = `
-				<label class="field-label-row">
-					<span class="field-label">Student</span>
-					<select class="select-input" data-rule-student="0">${studentOptions(0)}</select>
-				</label>
-				<label class="field-label-row">
-					<span class="field-label">Skill tier</span>
-					<select class="select-input" data-rule-tier>
-						<option value="1">Tier 1</option>
-						<option value="2">Tier 2</option>
-						<option value="3">Tier 3</option>
-					</select>
-				</label>
-			`;
+			ruleFieldsEl.innerHTML =
+				student("Student", 0, 0) +
+				`<label class="field"><span class="field-label">Skill level</span><select class="select-input" data-rule-tier><option value="1">1 – needs support</option><option value="2">2 – on track</option><option value="3">3 – confident</option></select></label>`;
 			addRuleBtn.disabled = false;
 		}
 	}
-
 	ruleTypeSelect.addEventListener("change", renderRuleFields);
 
-	function ruleSummary(rule: Rule): string {
-		if (rule.type === "keep-apart") return `Keep apart: ${rule.studentNames[0]} &amp; ${rule.studentNames[1]}`;
-		if (rule.type === "keep-together") return `Keep together: ${rule.studentNames[0]} &amp; ${rule.studentNames[1]}`;
-		if (rule.type === "pinned") return `Pinned: ${rule.studentNames[0]} → Seat ${(rule.seatIndex ?? 0) + 1}`;
-		return `Skill tier ${rule.skillTier}: ${rule.studentNames[0]}`;
+	function ruleText(r: Rule) {
+		const [a, b] = r.studentNames.map(escapeHtml);
+		if (r.type === "keep-apart") return `Keep apart: ${a} &amp; ${b}`;
+		if (r.type === "keep-together") return `Keep together: ${a} &amp; ${b}`;
+		if (r.type === "pinned") return `Fixed seat: ${a} → seat ${(r.seatIndex ?? 0) + 1}`;
+		return `Skill level ${r.skillTier}: ${a}`;
 	}
 
 	function renderRuleList() {
-		ruleCountEl.textContent = String(rules.length);
-		ruleEmptyEl.hidden = rules.length > 0;
 		ruleListEl.innerHTML = rules
 			.map(
-				(rule) => `
-			<li class="rule-row" data-rule-id="${rule.id}">
-				<span class="rule-summary">${ruleSummary(rule)}</span>
-				<button type="button" class="remove-btn" data-remove-rule aria-label="Remove rule">×</button>
-			</li>
-		`,
+				(r) =>
+					`<li class="rule-row" data-rule-id="${r.id}"><span>${ruleText(r)}</span><button type="button" class="remove-btn" data-remove-rule aria-label="Remove rule">×</button></li>`,
 			)
 			.join("");
-	}
-
-	function showRuleError(message: string) {
-		ruleErrorEl.textContent = message;
-		ruleErrorEl.hidden = false;
+		ruleBadge.hidden = rules.length === 0;
+		ruleBadge.textContent = String(rules.length);
 	}
 
 	addRuleBtn.addEventListener("click", () => {
 		const type = ruleTypeSelect.value as RuleType;
+		const pick = (i: number) => ruleFieldsEl.querySelector<HTMLSelectElement>(`[data-rule-student="${i}"]`)?.value ?? "";
 		ruleErrorEl.hidden = true;
-
 		if (type === "keep-apart" || type === "keep-together") {
-			const a = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="0"]')!.value;
-			const b = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="1"]')!.value;
+			const a = pick(0);
+			const b = pick(1);
 			if (!a || !b || a === b) {
-				showRuleError("Pick two different students.");
+				ruleErrorEl.textContent = "Pick two different students.";
+				ruleErrorEl.hidden = false;
 				return;
 			}
-			rules.push({ id: `rule-${++ruleIdCounter}`, type, studentNames: [a, b] });
+			rules.push({ id: `r${++ruleId}`, type, studentNames: [a, b] });
 		} else if (type === "pinned") {
-			const name = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="0"]')!.value;
+			const name = pick(0);
 			const seatIndex = Number(ruleFieldsEl.querySelector<HTMLSelectElement>("[data-rule-seat]")!.value);
-			if (!name) {
-				showRuleError("Pick a student.");
-				return;
-			}
-			// Only one pin per student, and only one student per seat — a new
-			// pin replaces any earlier one that conflicts with it.
-			rules = rules.filter(
-				(rule) => !(rule.type === "pinned" && (rule.studentNames[0] === name || rule.seatIndex === seatIndex)),
-			);
-			rules.push({ id: `rule-${++ruleIdCounter}`, type, studentNames: [name], seatIndex });
+			rules = rules.filter((r) => !(r.type === "pinned" && (r.studentNames[0] === name || r.seatIndex === seatIndex)));
+			rules.push({ id: `r${++ruleId}`, type, studentNames: [name], seatIndex });
 		} else {
-			const name = ruleFieldsEl.querySelector<HTMLSelectElement>('[data-rule-student="0"]')!.value;
+			const name = pick(0);
 			const skillTier = Number(ruleFieldsEl.querySelector<HTMLSelectElement>("[data-rule-tier]")!.value) as 1 | 2 | 3;
-			if (!name) {
-				showRuleError("Pick a student.");
-				return;
-			}
-			rules = rules.filter((rule) => !(rule.type === "skill-balance" && rule.studentNames[0] === name));
-			rules.push({ id: `rule-${++ruleIdCounter}`, type, studentNames: [name], skillTier });
+			rules = rules.filter((r) => !(r.type === "skill-balance" && r.studentNames[0] === name));
+			rules.push({ id: `r${++ruleId}`, type, studentNames: [name], skillTier });
 		}
-
 		renderRuleList();
 	});
 
@@ -427,418 +577,458 @@ import Layout from "../../layouts/Layout.astro";
 		const target = event.target as HTMLElement;
 		const row = target.closest<HTMLElement>("[data-rule-id]");
 		if (!row || !target.closest("[data-remove-rule]")) return;
-		rules = rules.filter((rule) => rule.id !== row.dataset.ruleId);
+		rules = rules.filter((r) => r.id !== row.dataset.ruleId);
 		renderRuleList();
-		renderRuleFields();
 	});
 
-	// --- Chart rendering -------------------------------------------------
+	// --------------------------------------------------------------- chart
 
-	function seatCellHtml(index: number, name: string | null, pinned: boolean, revealIndex: number): string {
-		const classes = ["seat-cell"];
-		if (!name) classes.push("seat-cell--empty");
-		if (pinned) classes.push("seat-cell--pinned");
-		return `
-			<div class="${classes.join(" ")}" style="--seat-i: ${Math.min(revealIndex, 40)}">
-				<span class="seat-index">${index + 1}</span>
-				<span class="seat-name">${name ? escapeHtml(name) : "—"}</span>
-			</div>
-		`;
+	function seatHtml(i: number): string {
+		const name = chart!.assignments[i];
+		const cls = ["seat", name ? "" : "seat--empty", selectedSeat === i ? "is-selected" : ""].filter(Boolean).join(" ");
+		const label = name ? `Seat ${i + 1}: ${name}` : `Seat ${i + 1}: empty`;
+		return `<button type="button" class="${cls}" data-seat="${i}" aria-label="${escapeHtml(label)}" aria-pressed="${selectedSeat === i}"><span class="seat-num" aria-hidden="true">${i + 1}</span><span class="seat-name" aria-hidden="true">${name ? escapeHtml(name) : "empty"}</span></button>`;
 	}
 
-	function renderChart(config: LayoutConfig, layout: SeatLayout, assignments: (string | null)[], pinnedSeats: Set<number>) {
-		let html = "";
-		let revealIndex = 0;
-
-		if (config.template === "rows") {
-			const cols = config.params.cols;
-			html = `<div class="rows-grid" style="--cols: ${cols}">${assignments
-				.map((name, i) => seatCellHtml(i, name, pinnedSeats.has(i), revealIndex++))
-				.join("")}</div>`;
-		} else if (config.template === "pods") {
-			const podSize = config.params.podSize;
-			const podCount = config.params.podCount;
-			const pods: string[] = [];
-			for (let p = 0; p < podCount; p++) {
-				const seats = Array.from({ length: podSize }, (_, k) => p * podSize + k);
-				pods.push(
-					`<div class="pod-box">${seats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}</div>`,
-				);
-			}
-			html = `<div class="pods-grid">${pods.join("")}</div>`;
-		} else if (config.template === "pairs") {
-			const pairCount = config.params.pairCount;
-			const pairs: string[] = [];
-			for (let p = 0; p < pairCount; p++) {
-				const seats = [p * 2, p * 2 + 1];
-				pairs.push(
-					`<div class="pair-box">${seats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}</div>`,
-				);
-			}
-			html = `<div class="pairs-grid">${pairs.join("")}</div>`;
-		} else {
-			const { left, top, right } = uShapeArms(config.params.seatCount);
-			const leftSeats = Array.from({ length: left }, (_, i) => i);
-			const topSeats = Array.from({ length: top }, (_, i) => left + i);
-			const rightSeats = Array.from({ length: right }, (_, i) => left + top + i);
-			html = `
-				<div class="ushape-layout">
-					<div class="ushape-top">
-						${topSeats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}
-					</div>
-					<div class="ushape-arms">
-						<div class="ushape-left">
-							${[...leftSeats]
-								.reverse()
-								.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++))
-								.join("")}
-						</div>
-						<div class="ushape-right">
-							${rightSeats.map((seat) => seatCellHtml(seat, assignments[seat], pinnedSeats.has(seat), revealIndex++)).join("")}
-						</div>
-					</div>
-				</div>
-			`;
+	function renderChart() {
+		if (!chart) {
+			chartStage.innerHTML = "";
+			chartEmpty.hidden = false;
+			toolbar.hidden = true;
+			swapHint.hidden = true;
+			roomFront.hidden = true;
+			return;
 		}
-
-		chartStageEl.innerHTML = html;
-		chartStageEl.classList.remove("is-revealing");
-		void chartStageEl.offsetWidth;
-		chartStageEl.classList.add("is-revealing");
-		chartEmptyEl.hidden = true;
-		chartStageEl.hidden = false;
+		const { config: c } = chart;
+		const range = (from: number, n: number) => Array.from({ length: n }, (_, k) => from + k);
+		let html = "";
+		if (c.template === "rows") {
+			html = `<div class="rows-grid" style="--cols:${c.params.cols}">${range(0, chart.assignments.length).map(seatHtml).join("")}</div>`;
+		} else if (c.template === "pods") {
+			// Balanced grid of pods: e.g. 6 pods → 3 across, 2 down.
+			const podCols = Math.min(4, Math.ceil(Math.sqrt(c.params.podCount)));
+			html = `<div class="pods-grid" style="--pod-cols:${podCols}">${range(0, c.params.podCount)
+				.map((p) => `<div class="pod" style="--pod:${c.params.podSize}">${range(p * c.params.podSize, c.params.podSize).map(seatHtml).join("")}</div>`)
+				.join("")}</div>`;
+		} else if (c.template === "pairs") {
+			html = `<div class="pairs-grid">${range(0, c.params.pairCount)
+				.map((p) => `<div class="pair">${seatHtml(p * 2)}${seatHtml(p * 2 + 1)}</div>`)
+				.join("")}</div>`;
+		} else {
+			// U-shape opens toward the front of the room: the arms point at the
+			// board, the base row is at the back.
+			const { left, top, right } = uShapeArms(c.params.seatCount);
+			html = `<div class="ushape" style="--u-top:${top}">
+				<div class="u-arm">${range(0, left).map(seatHtml).join("")}</div>
+				<div class="u-mid"></div>
+				<div class="u-arm">${range(left + top, right).reverse().map(seatHtml).join("")}</div>
+				<div class="u-base">${range(left, top).map(seatHtml).join("")}</div>
+			</div>`;
+		}
+		chartStage.innerHTML = html;
+		chartEmpty.hidden = true;
+		toolbar.hidden = false;
+		swapHint.hidden = false;
+		roomFront.hidden = false;
+		root.querySelector("[data-chart-sheet]")!.classList.toggle("is-flipped", chart.flipped);
+		printHeading.textContent = `Seating chart — ${roster.name} — ${new Date(chart.date).toLocaleDateString()}`;
 	}
 
-	// --- Generate / Regenerate -----------------------------------------------
-
-	function updateGenerateAvailability() {
-		generateBtn.disabled = eligibleStudents().length === 0;
+	function saveChart() {
+		if (!chart || !roster.name) return;
+		try {
+			localStorage.setItem(CHART_KEY + roster.name, JSON.stringify(chart));
+		} catch {
+			/* ignore */
+		}
 	}
 
-	function runGenerate(layout: SeatLayout, config: LayoutConfig, students: string[], useMode: Mode, useRules: Rule[], avoidRepeat: boolean) {
-		const recentAdjacency = recentAdjacencySet(currentRoster.name);
+	function restoreChart() {
+		selectedSeat = null;
+		chart = null;
+		try {
+			const raw = roster.name ? localStorage.getItem(CHART_KEY + roster.name) : null;
+			if (raw) chart = JSON.parse(raw) as SavedChart;
+		} catch {
+			chart = null;
+		}
+		renderChart();
+		if (chart) chartStatus.textContent = `Showing ${roster.name}'s last chart from ${new Date(chart.date).toLocaleDateString()}.`;
+	}
+
+	function generate() {
+		const names = present();
+		if (names.length === 0) return;
+		const c = config();
+		const layout = buildLayout(c);
 		const result = generateSeatingChart({
 			layout,
-			students,
-			mode: useMode,
-			rules: useRules,
-			avoidRepeatNeighbors: avoidRepeat,
-			recentAdjacency,
+			students: names,
+			mode,
+			rules,
+			avoidRepeatNeighbors: avoidRepeatToggle.checked,
+			recentAdjacency: recentAdjacencySet(roster.name),
 		});
-		pushAdjacencyHistory(currentRoster.name, result.adjacencyPairs);
-
-		const pinnedSeats = new Set(
-			useRules.filter((r) => r.type === "pinned" && r.seatIndex !== undefined).map((r) => r.seatIndex!),
-		);
-		renderChart(config, layout, result.assignments, pinnedSeats);
-
-		violationWarningEl.hidden = result.satisfied;
-
-		const seatedCount = result.assignments.filter(Boolean).length;
-		const unseated = students.length - seatedCount;
-		if (unseated > 0) {
-			capacityHintEl.hidden = false;
-			capacityHintEl.textContent = `${students.length} students, ${layout.seatCount} seats — ${unseated} student${unseated === 1 ? "" : "s"} won't be seated.`;
-		} else {
-			capacityHintEl.hidden = true;
+		pushAdjacencyHistory(roster.name, result.adjacencyPairs);
+		chart = { config: c, assignments: result.assignments, date: new Date().toISOString(), flipped };
+		selectedSeat = null;
+		renderChart();
+		saveChart();
+		const seated = result.assignments.filter(Boolean).length;
+		const parts = [`${seated} students seated.`];
+		if (seated < names.length) parts.push(`${names.length - seated} without a seat — add more seats in step 2.`);
+		// Only the teacher's own rules count here; "don't repeat neighbors" is
+		// a best effort and isn't worth a warning.
+		const seatOf = new Map(result.assignments.map((n, i) => [n, i] as const));
+		const broken = rules.filter((r) => {
+			if (r.type !== "keep-apart" && r.type !== "keep-together") return false;
+			const [a, b] = r.studentNames.map((n) => seatOf.get(n));
+			if (a === undefined || b === undefined) return false;
+			const together = layout.adjacency[a]?.includes(b) ?? false;
+			return r.type === "keep-apart" ? together : !together;
+		});
+		if (broken.length) parts.push(`${broken.length} rule${broken.length === 1 ? "" : "s"} couldn't be met this time — press Shuffle again.`);
+		chartStatus.textContent = parts.join(" ");
+		if (window.matchMedia("(max-width: 1099px)").matches) {
+			root.querySelector("[data-chart-panel]")!.scrollIntoView({ behavior: "smooth", block: "start" });
 		}
-
-		regenerateBtn.disabled = false;
 	}
 
-	generateBtn.addEventListener("click", () => {
-		const students = eligibleStudents();
-		if (students.length === 0) return;
-		const config = currentLayoutConfig();
-		const layout = buildLayout(config);
-		const avoidRepeat = avoidRepeatToggle.checked;
-		const ruleSnapshot = rules.map((r) => ({ ...r, studentNames: [...r.studentNames] }));
-		lastGenerate = { layout, config, students, mode, rules: ruleSnapshot, avoidRepeatNeighbors: avoidRepeat };
-		runGenerate(layout, config, students, mode, ruleSnapshot, avoidRepeat);
+	generateBtn.addEventListener("click", generate);
+	$("[data-regenerate-btn]").addEventListener("click", generate);
+
+	// Tap two seats to swap them (a teacher's final say over the random plan).
+	chartStage.addEventListener("click", (event) => {
+		const btn = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-seat]");
+		if (!btn || !chart) return;
+		const i = Number(btn.dataset.seat);
+		if (selectedSeat === null) {
+			if (!chart.assignments[i]) return;
+			selectedSeat = i;
+			chartStatus.textContent = `${chart.assignments[i]} selected — now tap the seat to move them to.`;
+		} else if (selectedSeat === i) {
+			selectedSeat = null;
+			chartStatus.textContent = "Swap cancelled.";
+		} else {
+			const a = chart.assignments[selectedSeat];
+			const b = chart.assignments[i];
+			chart.assignments[selectedSeat] = b;
+			chart.assignments[i] = a;
+			chartStatus.textContent = b ? `Swapped ${a} and ${b}.` : `Moved ${a} to seat ${i + 1}.`;
+			selectedSeat = null;
+			saveChart();
+		}
+		renderChart();
+		root.querySelector<HTMLButtonElement>(`[data-seat="${i}"]`)?.focus();
 	});
 
-	regenerateBtn.addEventListener("click", () => {
-		if (!lastGenerate) return;
-		runGenerate(
-			lastGenerate.layout,
-			lastGenerate.config,
-			lastGenerate.students,
-			lastGenerate.mode,
-			lastGenerate.rules,
-			lastGenerate.avoidRepeatNeighbors,
-		);
+	$("[data-flip-btn]").addEventListener("click", () => {
+		flipped = !flipped;
+		if (chart) chart.flipped = flipped;
+		renderChart();
+		saveChart();
+		saveSetup();
 	});
 
-	// --- Init ------------------------------------------------------------
+	$("[data-print-btn]").addEventListener("click", () => window.print());
+
+	// Fullscreen: just the chart, sized for the projector.
+	function exitFullscreen() {
+		document.body.classList.remove("seating-fullscreen");
+		if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+	}
+	$("[data-fullscreen-btn]").addEventListener("click", () => {
+		document.body.classList.add("seating-fullscreen");
+		document.documentElement.requestFullscreen?.().catch(() => {});
+		$<HTMLButtonElement>("[data-exit-fullscreen]").focus();
+	});
+	$("[data-exit-fullscreen]").addEventListener("click", exitFullscreen);
+	document.addEventListener("fullscreenchange", () => {
+		if (!document.fullscreenElement) document.body.classList.remove("seating-fullscreen");
+	});
+	document.addEventListener("keydown", (event) => {
+		if (event.key !== "Escape") return;
+		if (document.body.classList.contains("seating-fullscreen")) exitFullscreen();
+		else if (selectedSeat !== null) {
+			selectedSeat = null;
+			renderChart();
+			chartStatus.textContent = "Swap cancelled.";
+		}
+	});
+
+	// ----------------------------------------------------------------- init
 
 	(function init() {
-		renderRosterSelect();
+		try {
+			const setup = JSON.parse(localStorage.getItem(SETUP_KEY) ?? "null");
+			if (setup && PARAM_FIELDS[setup.template as LayoutTemplate]) {
+				template = setup.template;
+				params = { ...defaultParams(template), ...setup.params };
+				mode = setup.mode ?? "general";
+				flipped = !!setup.flipped;
+			}
+		} catch {
+			/* ignore */
+		}
+		templateButtons.forEach((b) => b.setAttribute("aria-checked", String(b.dataset.templateBtn === template)));
+		setMode(mode);
 		renderParamFields();
-		renderRuleFields();
+		renderRosterSelect();
 		renderRuleList();
-		updateGenerateAvailability();
+		renderCapacity();
+		restoreChart();
 	})();
 </script>
 
-<!--
-  is:global (not scoped) — like student-picker.astro, most of this page's
-  content (param fields, rule list rows, seat cells) is built client-side via
-  innerHTML rather than rendered by Astro's own template, so none of it ever
-  receives Astro's scope attribute. A scoped <style> here would compile its
-  selectors to require that attribute and silently fail to match any of this
-  dynamic content.
--->
 <style is:global>
+	/* Built partly with innerHTML (seats, rule rows), so styles are global
+	   and namespaced under .seating-tool. Spacing uses the 4px scale. */
+
 	.seating-tool {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 1.25rem;
-		padding: 1rem 0 2rem;
+		gap: var(--space-5);
 	}
 
-	.seating-title {
-		margin: 0;
-		font-size: clamp(1.4rem, 4.5vw, 1.8rem);
-		text-align: center;
-	}
-
-	/* Custom focus-visible ring across every interactive element on this
-	   page — buttons/selects/inputs otherwise rely on inconsistent
-	   browser defaults, and the spec calls for clearly visible keyboard
-	   focus. */
 	.seating-tool button:focus-visible,
 	.seating-tool select:focus-visible,
 	.seating-tool input:focus-visible,
+	.seating-tool textarea:focus-visible,
+	.seating-tool summary:focus-visible,
 	.seating-tool a:focus-visible {
 		outline: 2px solid var(--color-accent);
 		outline-offset: 2px;
 	}
 
+	.seating-header {
+		text-align: center;
+	}
+
+	.seating-title {
+		margin: 0 0 var(--space-2);
+		font-size: clamp(1.75rem, 4vw, 2.5rem);
+	}
+
+	.seating-lead {
+		margin: 0 auto;
+		max-width: 40rem;
+		font-size: 1.0625rem;
+	}
+
+	.seating-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-5);
+		align-items: start;
+	}
+
+	@media (min-width: 1100px) {
+		.seating-layout {
+			grid-template-columns: 24rem minmax(0, 1fr);
+		}
+
+		.chart-panel {
+			position: sticky;
+			top: var(--space-4);
+		}
+	}
+
+	/* ------------------------------------------------------------- steps */
+
 	.setup-panel {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 0.85rem;
-		width: 100%;
+		gap: var(--space-3);
 	}
 
-	.panel-card {
+	.step-card {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 0.7rem;
-		width: 100%;
-		max-width: 32rem;
-		padding: 1.1rem 1.25rem;
-		border-radius: 16px;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		border-radius: 12px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
 	}
 
-	.panel-title {
-		margin: 0;
-		font-size: 0.78rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--color-accent);
-		text-align: center;
-	}
-
-	.panel-hint {
-		margin: -0.3rem 0 0;
-		font-size: 0.78rem;
-		color: var(--color-text-muted);
-		text-align: center;
-	}
-
-	.panel-hint a {
-		color: var(--color-accent);
-	}
-
-	.empty-hint {
-		margin: 0;
-		font-size: 0.85rem;
-		color: var(--color-text-muted);
-		text-align: center;
-	}
-
-	/* --- Template picker ---------------------------------------------------- */
-
-	.template-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 0.6rem;
-		width: 100%;
-	}
-
-	.template-btn {
+	.step-title {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 0.4rem;
-		padding: 0.75rem 0.5rem;
-		border: 1px solid var(--color-border);
-		border-radius: 12px;
-		background: var(--color-bg);
-		color: var(--color-text-muted);
-		font-family: var(--font-mono);
+		gap: var(--space-2);
+		margin: 0;
+		font-size: 1.0625rem;
 		font-weight: 700;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			color 0.15s ease,
-			background 0.15s ease,
-			box-shadow 0.15s ease;
-	}
-
-	.template-btn svg {
-		width: 1.8rem;
-		height: 1.8rem;
-	}
-
-	.template-btn:hover {
-		border-color: var(--color-accent);
 		color: var(--color-text);
 	}
 
-	.template-btn[aria-pressed="true"] {
-		border-color: var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
-		color: #fff3d6;
-		box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 35%, transparent);
+	details.step-card > summary {
+		cursor: pointer;
+		list-style: none;
 	}
 
-	/* --- Form controls (shared visual language with student-picker.astro) -- */
+	details.step-card > summary::-webkit-details-marker {
+		display: none;
+	}
 
-	.field-label-row {
+	details.step-card > summary::after {
+		content: "▸";
+		margin-left: auto;
+		color: var(--color-accent);
+	}
+
+	details.step-card[open] > summary::after {
+		content: "▾";
+	}
+
+	.step-num {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 50%;
+		background: var(--color-accent);
+		color: #241202;
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+	}
+
+	.optional {
+		font-weight: 400;
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
+	.rule-count {
+		padding: 0 var(--space-2);
+		border-radius: 999px;
+		background: var(--color-surface-alt);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-accent);
+	}
+
+	.field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.3rem;
-		width: 100%;
+		gap: var(--space-1);
+		min-width: 0;
 	}
 
 	.field-label {
-		font-size: 0.78rem;
+		font-size: 0.875rem;
 		font-weight: 600;
 		color: var(--color-text-muted);
 	}
 
-	.param-fields {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		width: 100%;
-	}
-
-	.param-fields .field-label-row {
-		flex: 1 1 8rem;
-	}
-
 	.select-input,
+	.text-input,
 	.number-input {
 		width: 100%;
-		box-sizing: border-box;
-		padding: 0.55rem 0.7rem;
+		min-height: 2.75rem;
+		padding: var(--space-2) var(--space-3);
 		border-radius: 8px;
 		border: 1px solid var(--color-border);
 		background: var(--color-bg);
 		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 1rem;
+	}
+
+	.roster-textarea {
+		min-height: 10rem;
 		font-family: var(--font-mono);
-		font-size: 0.9rem;
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease;
+		line-height: 1.5;
+		resize: vertical;
 	}
 
-	.select-input:focus,
-	.number-input:focus {
-		outline: none;
-		border-color: var(--color-accent);
-		box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
-	}
-
-	.number-input::-webkit-inner-spin-button,
-	.number-input::-webkit-outer-spin-button {
-		appearance: none;
-		-webkit-appearance: none;
+	.hint {
 		margin: 0;
-	}
-
-	/* --- Mode tabs (identical pattern to student-picker's mode-toggle) ------ */
-
-	.mode-toggle {
-		display: inline-flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.2rem;
-		padding: 0.25rem;
-		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		background: var(--color-bg);
-	}
-
-	.mode-btn {
-		padding: 0.45rem 1.1rem;
-		border: none;
-		border-radius: 999px;
-		background: transparent;
+		font-size: 0.875rem;
+		line-height: 1.5;
 		color: var(--color-text-muted);
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		cursor: pointer;
-		transition:
-			background 0.15s ease,
-			color 0.15s ease;
 	}
 
-	.mode-btn[aria-selected="true"] {
-		background: color-mix(in srgb, var(--color-accent) 24%, var(--color-bg));
-		color: #fff3d6;
-		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
-		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	.hint a {
+		color: var(--color-accent);
+		font-weight: 600;
 	}
 
-	.mode-btn:not([aria-selected="true"]):hover {
-		color: var(--color-text);
-	}
-
-	/* --- Rules --------------------------------------------------------------- */
-
-	.rule-form {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-		width: 100%;
-	}
-
-	.rule-fields {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.6rem;
-	}
-
-	.rule-fields .field-label-row {
-		flex: 1 1 9rem;
-	}
-
-	.rule-error {
+	.field-error {
 		margin: 0;
-		font-size: 0.8rem;
+		font-size: 0.9375rem;
 		color: var(--color-danger);
 	}
 
-	.rule-list {
+	.inline-actions {
 		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-		width: 100%;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2) var(--space-4);
+	}
+
+	.link-btn {
+		min-height: 2.25rem;
+		padding: 0;
+		border: none;
+		background: none;
+		color: var(--color-accent);
+		font-family: var(--font-sans);
+		font-size: 0.9375rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.link-btn:hover {
+		text-decoration: underline;
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		min-height: 2.75rem;
+		padding: var(--space-2) var(--space-4);
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 0.9375rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+	}
+
+	.btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.btn--primary {
+		border-color: var(--color-accent);
+		background: #ffae2e;
+		color: #241202;
+	}
+
+	.btn--primary:hover:not(:disabled) {
+		background: #ffc04f;
+	}
+
+	.btn--big {
+		min-height: 3.5rem;
+		font-size: 1.125rem;
+	}
+
+	/* Student chips */
+	.student-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -846,308 +1036,601 @@ import Layout from "../../layouts/Layout.astro";
 		overflow-y: auto;
 	}
 
+	.student-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		min-height: 2.25rem;
+		padding: var(--space-1) var(--space-3);
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 0.9375rem;
+		cursor: pointer;
+	}
+
+	.student-chip.is-absent {
+		border-style: dashed;
+		color: var(--color-text-muted);
+		text-decoration: line-through;
+	}
+
+	.chip-tag {
+		font-size: 0.75rem;
+		text-decoration: none;
+		color: var(--color-danger);
+	}
+
+	/* Templates & params */
+	.template-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-2);
+	}
+
+	.template-btn {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: 3rem;
+		padding: var(--space-2) var(--space-3);
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 0.9375rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.template-btn svg {
+		width: 1.5rem;
+		height: 1.5rem;
+		flex-shrink: 0;
+	}
+
+	.template-btn[aria-checked="true"],
+	.mode-option[aria-checked="true"] {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg));
+	}
+
+	.param-fields {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+		gap: var(--space-3);
+	}
+
+	.stepper {
+		display: flex;
+		gap: var(--space-1);
+	}
+
+	.stepper .number-input {
+		text-align: center;
+		font-family: var(--font-mono);
+		-moz-appearance: textfield;
+	}
+
+	.stepper .number-input::-webkit-inner-spin-button,
+	.stepper .number-input::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+	}
+
+	.stepper-btn {
+		flex-shrink: 0;
+		width: 2.75rem;
+		min-height: 2.75rem;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-size: 1.25rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.stepper-btn:hover {
+		border-color: var(--color-accent);
+	}
+
+	.capacity {
+		margin: 0;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.capacity--ok {
+		color: var(--color-success);
+	}
+
+	.capacity--short {
+		color: var(--color-danger);
+	}
+
+	/* Modes */
+	.mode-options {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.mode-option {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-1);
+		padding: var(--space-3);
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.mode-name {
+		font-weight: 700;
+		font-size: 0.9375rem;
+	}
+
+	.mode-option[aria-checked="true"] .mode-name::before {
+		content: "✓ ";
+		color: var(--color-accent);
+	}
+
+	.mode-desc {
+		font-size: 0.875rem;
+		line-height: 1.4;
+		color: var(--color-text-muted);
+	}
+
+	/* Rules */
+	.rule-form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.rule-fields {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+		gap: var(--space-3);
+	}
+
+	.rule-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.rule-list:empty {
+		display: none;
+	}
+
 	.rule-row {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.6rem;
-		padding: 0.5rem 0.6rem;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-3);
 		border-radius: 8px;
-		border: 1px solid var(--color-border);
 		background: var(--color-bg);
-	}
-
-	.rule-summary {
-		font-size: 0.85rem;
+		font-size: 0.9375rem;
 	}
 
 	.remove-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.6rem;
-		height: 1.6rem;
-		flex-shrink: 0;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 50%;
 		border: 1px solid var(--color-border);
-		border-radius: 6px;
 		background: transparent;
 		color: var(--color-text-muted);
-		font-size: 1rem;
-		line-height: 1;
+		font-size: 1.125rem;
 		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			color 0.15s ease;
 	}
 
-	.remove-btn:hover {
-		border-color: var(--color-danger);
-		color: var(--color-danger);
-	}
-
-	/* --- Avoid-repeat toggle -------------------------------------------------- */
-
-	.norepeat-toggle {
+	.check-row {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.85rem;
-		color: var(--color-text-muted);
+		gap: var(--space-2);
+		min-height: 2.75rem;
+		font-size: 0.9375rem;
+		color: var(--color-text);
 		cursor: pointer;
-		user-select: none;
 	}
 
-	.norepeat-toggle input[type="checkbox"] {
-		width: 1rem;
-		height: 1rem;
+	.check-row input {
+		width: 1.25rem;
+		height: 1.25rem;
 		accent-color: var(--color-accent);
-		cursor: pointer;
 	}
 
-	/* --- Generate / Regenerate ------------------------------------------------ */
+	/* ------------------------------------------------------------- chart */
 
-	.generate-row {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.6rem;
-	}
-
-	.btn {
-		padding: 0.5rem 1.2rem;
-		border: 1px solid var(--color-accent);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
-		color: #fff3d6;
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.85rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		cursor: pointer;
-		text-shadow: 0 0 6px var(--color-accent);
-		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
-		transition:
-			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-			box-shadow 0.15s ease,
-			background 0.15s ease,
-			opacity 0.15s ease;
-	}
-
-	.btn:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
-		box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 70%, transparent);
-	}
-
-	.btn:active:not(:disabled) {
-		transform: scale(0.96);
-	}
-
-	.btn:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-		text-shadow: none;
-		box-shadow: none;
-	}
-
-	.btn--ghost {
-		background: transparent;
-		color: var(--color-accent);
-		text-shadow: none;
-		box-shadow: none;
-	}
-
-	.btn--ghost:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--color-accent) 14%, transparent);
-		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
-	}
-
-	/* --- Chart stage ----------------------------------------------------------- */
-
-	.chart-section {
+	.chart-panel {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 0.75rem;
-		width: 100%;
+		gap: var(--space-3);
+		min-width: 0;
 	}
 
-	.violation-warning {
-		margin: 0;
-		padding: 0.5rem 0.9rem;
-		border-radius: 8px;
-		border: 1px solid var(--color-danger);
-		background: color-mix(in srgb, var(--color-danger) 12%, transparent);
-		color: var(--color-danger);
-		font-size: 0.85rem;
-		text-align: center;
-	}
-
-	.capacity-hint {
-		margin: 0;
-		font-size: 0.8rem;
-		color: var(--color-text-muted);
-		text-align: center;
-	}
-
-	.chart-stage {
-		width: 100%;
+	.chart-toolbar {
 		display: flex;
-		justify-content: center;
+		flex-wrap: wrap;
+		gap: var(--space-2);
 	}
 
-	.chart-stage[hidden] {
+	.chart-exit {
 		display: none;
 	}
 
-	.seat-cell {
+	.chart-sheet {
+		container-type: inline-size;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.15rem;
-		min-width: 4.5rem;
-		min-height: 3.2rem;
-		padding: 0.4rem 0.5rem;
-		border-radius: 10px;
+		gap: var(--space-4);
+		padding: var(--space-4);
+		border-radius: 12px;
 		border: 1px solid var(--color-border);
 		background: var(--color-surface);
-		box-sizing: border-box;
+		min-height: 16rem;
 	}
 
-	.seat-index {
-		font-family: var(--font-mono);
-		font-size: 0.65rem;
-		color: var(--color-text-muted);
+	.chart-sheet.is-flipped {
+		flex-direction: column-reverse;
 	}
 
-	.seat-name {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.85rem;
-		color: var(--color-text);
+	.print-heading {
+		display: none;
+	}
+
+	.room-front {
+		padding: var(--space-2);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		border: 1px solid var(--color-accent);
 		text-align: center;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		max-width: 100%;
-	}
-
-	.seat-cell--empty .seat-name {
-		color: var(--color-text-muted);
-	}
-
-	/* Pinned seats get an amber glow, matching the approved mockup's
-	   "pinned-seat glow" treatment. */
-	.seat-cell--pinned {
-		border-color: var(--color-accent);
-		box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 55%, transparent);
-	}
-
-	.seat-cell--pinned .seat-name {
+		font-weight: 700;
+		font-size: 0.9375rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
 		color: #fff3d6;
 	}
 
-	/* Reveal animation for a freshly (re)generated chart — a quick staggered
-	   fade/scale-in per seat. Skipped entirely under prefers-reduced-motion. */
-	.chart-stage.is-revealing .seat-cell {
-		animation: seat-reveal 0.3s ease-out backwards;
-		animation-delay: calc(var(--seat-i, 0) * 12ms);
+	.chart-empty {
+		margin: auto;
+		max-width: 26rem;
+		text-align: center;
+		font-size: 1rem;
 	}
 
-	@keyframes seat-reveal {
-		from {
-			opacity: 0;
-			transform: scale(0.85);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1);
-		}
+	.chart-status {
+		min-height: 1.5rem;
+		margin: 0;
+		font-size: 0.9375rem;
+		color: var(--color-text);
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.chart-stage.is-revealing .seat-cell {
-			animation: none;
-		}
-	}
-
-	/* Rows */
-	.rows-grid {
-		display: grid;
-		grid-template-columns: repeat(var(--cols, 6), minmax(4rem, 1fr));
-		gap: 0.5rem;
-		width: 100%;
-		max-width: 48rem;
-	}
-
-	/* Pods */
-	.pods-grid {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 1rem;
-		width: 100%;
-		max-width: 48rem;
-	}
-
-	.pod-box {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 0.4rem;
-		padding: 0.6rem;
-		border-radius: 14px;
-		border: 1px dashed var(--color-border);
-	}
-
-	/* Pairs */
-	.pairs-grid {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.75rem;
-		width: 100%;
-		max-width: 48rem;
-	}
-
-	.pair-box {
-		display: flex;
-		gap: 0.3rem;
-		padding: 0.4rem;
-		border-radius: 12px;
-		border: 1px dashed var(--color-border);
-	}
-
-	/* U-Shape — a horseshoe formed from a top row plus two arms hanging
-	   below it, open at the bottom-center (the "gap in the middle front"
-	   the spec describes). */
-	.ushape-layout {
+	/* Seats scale with the chart's width (container query units), so they
+	   read from the back of a room in fullscreen and still fit a phone. */
+	.seat {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.75rem;
-		width: 100%;
-		max-width: 48rem;
-	}
-
-	.ushape-top {
-		display: flex;
-		flex-wrap: wrap;
 		justify-content: center;
-		gap: 0.5rem;
+		gap: 0.15em;
+		min-width: 0;
+		min-height: 3.25rem;
+		padding: 0.4em 0.3em;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: clamp(0.8125rem, 1.9cqi, 2.25rem);
+		cursor: pointer;
 	}
 
-	.ushape-arms {
-		display: flex;
-		justify-content: space-between;
-		width: 100%;
-		gap: 1.5rem;
+	.seat:hover {
+		border-color: var(--color-accent);
 	}
 
-	.ushape-left,
-	.ushape-right {
+	.seat.is-selected {
+		border-color: var(--color-accent);
+		border-width: 2px;
+		background: color-mix(in srgb, var(--color-accent) 25%, var(--color-bg));
+		box-shadow: 0 0 12px rgba(255, 174, 46, 0.5);
+	}
+
+	.seat--empty {
+		border-style: dashed;
+		color: var(--color-text-muted);
+	}
+
+	.seat-num {
+		font-family: var(--font-mono);
+		font-size: 0.7em;
+		color: var(--color-text-muted);
+	}
+
+	/* Long names wrap onto a second line rather than being cut off. */
+	.seat-name {
+		max-width: 100%;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		overflow-wrap: anywhere;
+		text-align: center;
+		line-height: 1.15;
+		font-weight: 700;
+	}
+
+	.seat--empty .seat-name {
+		font-weight: 400;
+		font-style: italic;
+	}
+
+	.rows-grid {
+		display: grid;
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+		gap: var(--space-2);
+	}
+
+	.pods-grid {
+		display: grid;
+		grid-template-columns: repeat(var(--pod-cols, 3), minmax(0, 1fr));
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.pods-grid {
+			grid-template-columns: repeat(min(var(--pod-cols, 3), 2), minmax(0, 1fr));
+		}
+	}
+
+	.pod {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-1);
+		padding: var(--space-2);
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface-alt);
+	}
+
+	.pairs-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+		gap: var(--space-3) var(--space-4);
+	}
+
+	.pair {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-1);
+		padding: var(--space-1);
+		border-radius: 12px;
+		background: var(--color-surface-alt);
+	}
+
+	.ushape {
+		display: grid;
+		grid-template-columns: minmax(5rem, 1fr) 2fr minmax(5rem, 1fr);
+		grid-template-areas:
+			"left mid right"
+			"base base base";
+		gap: var(--space-2) var(--space-4);
+	}
+
+	.u-arm {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: var(--space-2);
+	}
+
+	.u-arm:first-child {
+		grid-area: left;
+	}
+
+	.u-arm:nth-child(3) {
+		grid-area: right;
+	}
+
+	.u-mid {
+		grid-area: mid;
+	}
+
+	.u-base {
+		grid-area: base;
+		display: grid;
+		grid-template-columns: repeat(var(--u-top), minmax(0, 1fr));
+		gap: var(--space-2);
+	}
+
+	/* Flipped: the board is at the bottom, so the U's base row goes on top. */
+	.chart-sheet.is-flipped .ushape {
+		grid-template-areas:
+			"base base base"
+			"left mid right";
+	}
+
+	/* ------------------------------------------------------------- help */
+
+	.seating-help {
+		padding: var(--space-5);
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.seating-help-title {
+		margin: 0 0 var(--space-3);
+		font-size: 1.125rem;
+	}
+
+	.seating-help-list {
+		margin: 0;
+		padding-left: var(--space-5);
+		color: var(--color-text-muted);
+		line-height: 1.6;
+	}
+
+	.seating-help-list li + li {
+		margin-top: var(--space-2);
+	}
+
+	.seating-help-list strong {
+		color: var(--color-text);
+	}
+
+	/* ------------------------------------------------------- fullscreen */
+
+	body.seating-fullscreen {
+		overflow: hidden;
+	}
+
+	body.seating-fullscreen .chart-panel {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		padding: var(--space-4);
+		background: #000;
+		overflow-y: auto;
+	}
+
+	body.seating-fullscreen .chart-toolbar .btn:not(.chart-exit) {
+		display: none;
+	}
+
+	body.seating-fullscreen .chart-exit {
+		display: inline-flex;
+		margin-left: auto;
+	}
+
+	body.seating-fullscreen .chart-sheet {
+		flex: 1;
+		border: none;
+		background: transparent;
+	}
+
+	body.seating-fullscreen .room-front {
+		font-size: 1.5rem;
+	}
+
+	/* Fullscreen: the seats stretch to fill the whole screen. */
+	body.seating-fullscreen .chart-panel {
+		display: flex;
+		flex-direction: column;
+	}
+
+	body.seating-fullscreen .chart-stage {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	body.seating-fullscreen .rows-grid,
+	body.seating-fullscreen .pods-grid,
+	body.seating-fullscreen .pairs-grid,
+	body.seating-fullscreen .ushape {
+		flex: 1;
+		grid-auto-rows: 1fr;
+	}
+
+	body.seating-fullscreen .pod,
+	body.seating-fullscreen .pair {
+		grid-auto-rows: 1fr;
+	}
+
+	body.seating-fullscreen .seat {
+		min-height: 4rem;
+		height: 100%;
+		font-size: clamp(1rem, 2.6cqi, 3rem);
+	}
+
+	body.seating-fullscreen .chart-swap-hint,
+	body.seating-fullscreen .chart-status {
+		display: none;
+	}
+
+	/* ------------------------------------------------------------ print */
+
+	@media print {
+		@page {
+			margin: 12mm;
+		}
+
+		body {
+			background: #fff !important;
+			color: #000 !important;
+		}
+
+		.site-header,
+		.site-footer,
+		.seating-header,
+		.setup-panel,
+		.seating-help,
+		.chart-toolbar,
+		.chart-status,
+		.chart-swap-hint {
+			display: none !important;
+		}
+
+		main {
+			max-width: none !important;
+			padding: 0 !important;
+		}
+
+		.seating-layout {
+			display: block !important;
+		}
+
+		.chart-sheet {
+			border: none !important;
+			background: #fff !important;
+			padding: 0 !important;
+		}
+
+		.print-heading {
+			display: block;
+			margin: 0 0 4mm;
+			font-size: 14pt;
+			font-weight: 700;
+			color: #000;
+		}
+
+		.room-front {
+			background: #eee !important;
+			border-color: #000 !important;
+			color: #000 !important;
+		}
+
+		.pod,
+		.pair {
+			background: #fff !important;
+			border: 1px solid #999 !important;
+		}
+
+		.seat {
+			background: #fff !important;
+			border: 1px solid #000 !important;
+			color: #000 !important;
+			font-size: 11pt !important;
+			break-inside: avoid;
+		}
+
+		.seat-num {
+			color: #444 !important;
+		}
 	}
 </style>

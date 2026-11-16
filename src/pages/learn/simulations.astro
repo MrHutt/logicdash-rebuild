@@ -1,0 +1,274 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "Why might a city use a traffic simulation before building a new road?",
+		options: ["To test ideas quickly and cheaply without building anything", "Because simulations are always 100% accurate", "To make traffic slower", "Simulations can only be used for games"],
+		explain: "A simulation lets you try many \"what if\" ideas safely and cheaply. It won't be perfect, but it helps compare options.",
+	},
+	{
+		q: "Which values could RANDOM(1, 6) give?",
+		options: ["1, 2, 3, 4, 5 or 6", "0 to 6", "1 to 5", "Only 1 or 6"],
+		explain: "RANDOM(a, b) gives a random whole number from a to b, including both ends.",
+	},
+	{
+		q: "You flip a coin 10 times in a simulation and get 7 heads. What's the best explanation?",
+		options: ["Small samples vary a lot — with more flips it gets closer to half", "The coin program is broken", "Heads is more likely than tails", "Simulations can't flip coins"],
+		explain: "Short runs are often lopsided. Over thousands of flips, the share of heads settles near 50%.",
+	},
+	{
+		q: "A simulation of a disease spreading leaves out that some people stay home when sick. What does that mean?",
+		options: ["Its results may be less accurate, because a simplifying assumption was made", "It will be exactly right", "It can't run", "It's no longer a simulation"],
+		explain: "Every simulation simplifies the real world. Leaving out details makes it faster to build, but can change the answer.",
+	},
+	{
+		q: "When you roll two dice and add them, which total comes up most often?",
+		options: ["7", "12", "2", "They're all equally likely"],
+		explain: "More combinations make 7 (1+6, 2+5, 3+4, 4+3, 5+2, 6+1) than any other total. 2 and 12 have only one way each.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/simulations"
+	description="Simulations and random numbers explained: why we simulate, how RANDOM works, and what simulations leave out — with a dice simulator."
+	lead="Want to know what happens if you flip a coin a thousand times? You could spend an afternoon flipping — or let a computer do it in a blink."
+>
+	<section class="block">
+		<p class="block-title">Trying Things Without Doing Them</p>
+		<p class="block-text">
+			A <em>simulation</em> is a program that imitates something from the real world, so you can explore what might
+			happen without actually doing it. Simulations are used to:
+		</p>
+		<ul class="block-list">
+			<li>predict the weather and plan for storms,</li>
+			<li>test how traffic would flow with a new road or traffic light,</li>
+			<li>train pilots without risking a real plane,</li>
+			<li>model how a disease might spread, and what slows it down.</li>
+		</ul>
+		<p class="block-callout">Simulations let us test ideas that would be too slow, too costly, or too dangerous to try for real.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Randomness in Code</p>
+		<p class="block-text">
+			Real life is full of chance, so many simulations use random numbers. In pseudocode,{" "}
+			<span class="mono-highlight">RANDOM(a, b)</span> gives a random whole number from a to b, including both ends:
+		</p>
+		<pre class="code-block">{`roll ← RANDOM(1, 6)
+IF (roll = 6)
+{
+  DISPLAY("You win!")
+}`}</pre>
+		<p class="block-text">
+			Each run of that code has a 1 in 6 chance of displaying "You win!". Run it once and anything can happen. Run it
+			thousands of times and patterns appear — try it:
+		</p>
+	</section>
+
+	<DemoFrame label="Coin and dice simulator">
+		<div class="sim" data-sim>
+			<div class="demo-controls sim-modes" role="group" aria-label="What to simulate">
+				<button type="button" class="demo-btn" data-sim-mode="coin" aria-pressed="true">Flip a coin</button>
+				<button type="button" class="demo-btn" data-sim-mode="die" aria-pressed="false">Roll a die</button>
+				<button type="button" class="demo-btn" data-sim-mode="two" aria-pressed="false">Roll two dice, add them</button>
+			</div>
+			<p class="sim-code" data-sim-code></p>
+			<div class="sim-chart" data-sim-chart></div>
+			<div class="demo-stats">
+				<div class="demo-stat"><span class="demo-stat-value" data-sim-total>0</span><span class="demo-stat-label">Trials</span></div>
+			</div>
+			<p class="demo-status" data-sim-status aria-live="polite"></p>
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-sim-run="1">Run 1</button>
+				<button type="button" class="demo-btn demo-btn--primary" data-sim-run="10">Run 10</button>
+				<button type="button" class="demo-btn demo-btn--primary" data-sim-run="100">Run 100</button>
+				<button type="button" class="demo-btn demo-btn--primary" data-sim-run="1000">Run 1,000</button>
+				<button type="button" class="demo-btn" data-sim-reset>Reset</button>
+			</div>
+			<p class="demo-note">The dashed line on each bar shows the share you'd expect in the long run.</p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">What Simulations Leave Out</p>
+		<p class="block-text">
+			Every simulation is an <a href="/learn/abstraction">abstraction</a>: it keeps the details that seem to matter
+			and leaves the rest out. A traffic simulation might treat every driver the same, or ignore rain. That makes it
+			possible to build — but it also means the results are only as good as those choices.
+		</p>
+		<ul class="block-list">
+			<li>Wrong or missing assumptions lead to wrong predictions.</li>
+			<li>A simulation can be <a href="/learn/data-and-bias">biased</a> by the data it's built from.</li>
+			<li>Results should be checked against the real world whenever possible.</li>
+		</ul>
+		<p class="block-callout">A simulation is a useful guess, not a guarantee.</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	type Mode = "coin" | "die" | "two";
+	const SETUP: Record<Mode, { labels: string[]; expected: number[]; code: string; roll: () => number }> = {
+		coin: {
+			labels: ["Heads", "Tails"],
+			expected: [1 / 2, 1 / 2],
+			code: "flip ← RANDOM(1, 2)   (1 = heads, 2 = tails)",
+			roll: () => Math.floor(Math.random() * 2),
+		},
+		die: {
+			labels: ["1", "2", "3", "4", "5", "6"],
+			expected: Array(6).fill(1 / 6),
+			code: "roll ← RANDOM(1, 6)",
+			roll: () => Math.floor(Math.random() * 6),
+		},
+		two: {
+			labels: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+			expected: [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1].map((n) => n / 36),
+			code: "total ← RANDOM(1, 6) + RANDOM(1, 6)",
+			roll: () => Math.floor(Math.random() * 6) + Math.floor(Math.random() * 6),
+		},
+	};
+
+	const root = document.querySelector<HTMLElement>("[data-sim]")!;
+	const chart = root.querySelector<HTMLElement>("[data-sim-chart]")!;
+	const totalEl = root.querySelector<HTMLElement>("[data-sim-total]")!;
+	const status = root.querySelector<HTMLElement>("[data-sim-status]")!;
+	const codeEl = root.querySelector<HTMLElement>("[data-sim-code]")!;
+	const modeBtns = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-sim-mode]"));
+	let mode: Mode = "coin";
+	let counts: number[] = [];
+
+	function reset() {
+		counts = SETUP[mode].labels.map(() => 0);
+		codeEl.textContent = SETUP[mode].code;
+		status.textContent = "Press a Run button to start.";
+		render();
+	}
+
+	function run(n: number) {
+		for (let k = 0; k < n; k++) counts[SETUP[mode].roll()]++;
+		render();
+		const total = counts.reduce((a, b) => a + b, 0);
+		const worst = Math.max(...counts.map((c, i) => Math.abs(c / total - SETUP[mode].expected[i])));
+		const off = Math.round(worst * 100);
+		if (total < 30) status.textContent = `Only ${total} so far — small runs are often lopsided. Keep going.`;
+		else if (off <= 2) status.textContent = `${total.toLocaleString()} trials: every bar is within ${off}% of what we'd expect. More trials, steadier results.`;
+		else status.textContent = `${total.toLocaleString()} trials: the furthest bar is ${off}% away from what we'd expect. Run more and watch it settle.`;
+		if (mode === "two" && total >= 300) status.textContent += " Notice 7 is the most common total.";
+	}
+
+	function render() {
+		const total = counts.reduce((a, b) => a + b, 0);
+		const { labels, expected } = SETUP[mode];
+		const maxShare = Math.max(...expected, ...counts.map((c) => (total ? c / total : 0))) * 1.15;
+		chart.style.setProperty("--cols", String(labels.length));
+		chart.innerHTML = labels
+			.map((label, i) => {
+				const share = total ? counts[i] / total : 0;
+				return `<div class="sim-col"><span class="sim-pct">${total ? Math.round(share * 100) + "%" : ""}</span><span class="sim-bar-wrap"><span class="sim-expected" style="bottom:${(expected[i] / maxShare) * 100}%"></span><span class="sim-bar" style="height:${(share / maxShare) * 100}%"></span></span><span class="sim-label">${label}</span></div>`;
+			})
+			.join("");
+		chart.setAttribute(
+			"aria-label",
+			total ? labels.map((l, i) => `${l}: ${counts[i]}`).join(", ") : "No trials yet",
+		);
+		totalEl.textContent = total.toLocaleString();
+	}
+
+	modeBtns.forEach((b) =>
+		b.addEventListener("click", () => {
+			mode = b.dataset.simMode as Mode;
+			modeBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+			reset();
+		}),
+	);
+	root.querySelectorAll<HTMLButtonElement>("[data-sim-run]").forEach((b) => b.addEventListener("click", () => run(Number(b.dataset.simRun))));
+	root.querySelector("[data-sim-reset]")!.addEventListener("click", reset);
+	chart.setAttribute("role", "img");
+	reset();
+</script>
+
+<style is:global>
+	.sim {
+		text-align: center;
+	}
+
+	.sim .demo-btn[aria-pressed="true"] {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 22%, var(--color-bg));
+		color: #fff3d6;
+	}
+
+	.sim-modes {
+		margin-top: 0;
+	}
+
+	.sim-code {
+		margin: 0.75em 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+		color: var(--color-text-muted);
+	}
+
+	.sim-chart {
+		display: grid;
+		grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+		gap: 0.35em;
+		max-width: 36em;
+		height: 11em;
+		margin: 1em auto 0;
+	}
+
+	.sim-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25em;
+		min-width: 0;
+	}
+
+	.sim-pct {
+		min-height: 1.2em;
+		font-family: var(--font-mono);
+		font-size: 0.75em;
+		color: var(--color-text-muted);
+	}
+
+	.sim-bar-wrap {
+		position: relative;
+		flex: 1;
+		width: 100%;
+		max-width: 4em;
+		border-radius: 6px 6px 0 0;
+		background: var(--color-bg);
+		overflow: hidden;
+	}
+
+	.sim-bar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: var(--color-accent);
+		transition: height 0.25s ease;
+	}
+
+	.sim-expected {
+		position: absolute;
+		left: 0;
+		right: 0;
+		z-index: 1;
+		border-top: 2px dashed var(--color-text);
+	}
+
+	.sim-label {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85em;
+	}
+</style>

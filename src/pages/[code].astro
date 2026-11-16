@@ -1,0 +1,42 @@
+---
+// Short links: logicdash.io/5A2 → the lesson with that code (see `code` in
+// learnTopics.ts). The site is static, so each code is a tiny redirect page,
+// built in upper and lower case because people type both. Kept out of the
+// sitemap and marked noindex; the canonical points at the real lesson.
+import { LEARN_TOPICS } from "../lib/learnTopics";
+
+export function getStaticPaths() {
+	return LEARN_TOPICS.filter((topic) => topic.live).flatMap((topic) =>
+		[topic.code.toUpperCase(), topic.code.toLowerCase()].map((code) => ({
+			params: { code },
+			props: { href: topic.href, title: topic.title },
+		})),
+	);
+}
+
+const { href, title } = Astro.props;
+const target = `${href}/`;
+const canonical = new URL(target, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title} · LogicDash</title>
+		<meta name="robots" content="noindex" />
+		<link rel="canonical" href={canonical} />
+		<meta http-equiv="refresh" content={`0; url=${target}`} />
+		<script is:inline define:vars={{ target }}>
+			location.replace(target + location.search + location.hash);
+		</script>
+		<style>
+			body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0b0d13; color: #e8eaf2; font: 16px/1.5 system-ui, sans-serif; }
+			a { color: #ffae2e; }
+		</style>
+	</head>
+	<body>
+		<p>Opening <a href={target}>{title}</a>…</p>
+	</body>
+</html>

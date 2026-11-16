@@ -1,0 +1,236 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+// A made-up profile. Each post looks harmless; each gives something away.
+const POSTS = [
+	{ text: "Can't believe I'm finally 14!! Best birthday ever 🎂 March 3rd", leak: "Your full date of birth — often used to check who you are, and to guess passwords." },
+	{ text: "First day back at Riverside Middle! (photo of me in the school hoodie)", leak: "Your school's name — and so roughly where you live and where you are every weekday." },
+	{ text: "Biscuit turned 5 today 🐶 best dog in the world", leak: "Your pet's name — one of the most common passwords and security-question answers." },
+	{ text: "Off to Florida for two whole weeks!! ✈️", leak: "That your home will be empty, and for exactly how long." },
+	{ text: "Morning run done — same route every day at 6:45", leak: "A daily routine: where you'll be, and when, every single day." },
+	{ text: "New phone, new selfie (photo taken in my front yard)", leak: "Photos can carry hidden location metadata — this one could pinpoint your house." },
+];
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "What is a digital footprint?",
+		options: ["The trail of information you leave online", "A virus that tracks your steps", "A type of password", "The size of your phone's storage"],
+		explain: "Everything you post, search, like and share — plus what others post about you — makes up your digital footprint.",
+	},
+	{
+		q: "Which of these is personally identifiable information (PII)?",
+		options: ["Your home address", "Your favorite color", "The weather today", "A movie's title"],
+		explain: "PII is information that can identify a specific person, like a full name, address, date of birth or ID number.",
+	},
+	{
+		q: "Why is \"Biscuit2010\" a risky password for someone who posts about their dog Biscuit?",
+		options: ["Anyone who reads their posts can guess it", "It's too long", "Passwords can't include numbers", "Dogs' names are illegal in passwords"],
+		explain: "Passwords built from details you've shared publicly are easy to guess. See Password Strength & Entropy.",
+	},
+	{
+		q: "You delete an embarrassing post after an hour. Is it definitely gone?",
+		options: ["Not necessarily — it may have been copied, shared or screenshotted", "Yes, deleting removes every copy", "Only if you delete your account", "Yes, after 24 hours"],
+		explain: "Once something is shared, you no longer control every copy. Think before you post.",
+	},
+	{
+		q: "What's the best way to reduce what strangers can see?",
+		options: ["Use privacy settings and share less personal detail", "Post more often", "Use the same password everywhere", "Turn location on for every app"],
+		explain: "Private accounts, fewer personal details, and turning off location tags for photos all shrink your footprint.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/digital-footprint"
+	description="Your digital footprint explained: what you leave behind online, why small details add up, and how to protect your privacy."
+	lead="Every post, like and photo leaves a trace. One trace says little. Put them together and they can say a lot."
+>
+	<section class="block">
+		<p class="block-title">The Trail You Leave</p>
+		<p class="block-text">
+			Your <em>digital footprint</em> is everything about you that ends up online: your posts and photos, your
+			comments and likes, the accounts you sign up for — and what other people post about you.
+		</p>
+		<p class="block-text">Some of it you leave on purpose. Some of it you don't notice:</p>
+		<ul class="block-list">
+			<li>Websites and apps record what you click, search and buy.</li>
+			<li>Photos can carry hidden <a href="/learn/data-and-bias">metadata</a>, like exactly where they were taken.</li>
+			<li>Apps may share your location, even when you're not using them.</li>
+		</ul>
+		<p class="block-callout">Your digital footprint is the trail of data you leave online — and it's very hard to erase.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Personal Information</p>
+		<p class="block-text">
+			<em>Personally identifiable information</em> (PII) is anything that can identify you specifically: your full
+			name, address, date of birth, phone number, school, or ID numbers. On its own a single detail might seem
+			harmless. Combined, they can let a stranger find you, pretend to be you, or guess your passwords.
+		</p>
+	</section>
+
+	<DemoFrame label="Digital footprint activity" title="Spot the clues">
+		<div class="fp" data-fp>
+			<p class="fp-intro">Here are six posts from a made-up student, Sam. Tap each one: what does it give away?</p>
+			<p class="fp-count" data-fp-count aria-live="polite"></p>
+			<ul class="fp-posts">
+				{
+					POSTS.map((p, i) => (
+						<li>
+							<button type="button" class="fp-post" data-fp-post={i} aria-expanded="false">
+								<span class="fp-author">@sam_says</span>
+								<span class="fp-text">{p.text}</span>
+								<span class="fp-leak" data-fp-leak hidden>
+									<strong>Gives away:</strong> {p.leak}
+								</span>
+								<span class="fp-tap" aria-hidden="true">Tap to check</span>
+							</button>
+						</li>
+					))
+				}
+			</ul>
+			<p class="demo-status fp-summary" data-fp-summary aria-live="polite" hidden>
+				From six ordinary posts, a stranger now knows Sam's age and birthday, school, pet's name, daily routine, when
+				the house will be empty — and possibly where it is.
+			</p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Shrinking Your Footprint</p>
+		<ul class="block-list">
+			<li><em>Make accounts private</em>, and check who can see your posts.</li>
+			<li><em>Turn off location</em> for the camera and for apps that don't need it.</li>
+			<li><em>Share trips after you're home</em>, not while you're away.</li>
+			<li><em>Keep passwords unrelated</em> to anything you post — pets, birthdays, teams.</li>
+			<li><em>Think before you post:</em> would you be OK with a teacher, a future employer, or a stranger seeing it?</li>
+		</ul>
+		<p class="block-text">
+			Stolen or guessed details are also how many scams start — see <a href="/learn/phishing">Phishing Red Flags</a>.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Upside</p>
+		<p class="block-text">
+			A digital footprint isn't all bad. A portfolio of projects, helpful answers on a forum, or a club website you
+			built can all show what you're capable of. The goal isn't to vanish — it's to choose what you leave behind.
+		</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-fp]")!;
+	const posts = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-fp-post]"));
+	const count = root.querySelector<HTMLElement>("[data-fp-count]")!;
+	const summary = root.querySelector<HTMLElement>("[data-fp-summary]")!;
+
+	function update() {
+		const found = posts.filter((p) => p.getAttribute("aria-expanded") === "true").length;
+		count.textContent = `Clues found: ${found} of ${posts.length}`;
+		summary.hidden = found < posts.length;
+	}
+
+	posts.forEach((p) =>
+		p.addEventListener("click", () => {
+			p.setAttribute("aria-expanded", "true");
+			p.classList.add("is-open");
+			p.querySelector<HTMLElement>("[data-fp-leak]")!.hidden = false;
+			update();
+		}),
+	);
+	update();
+</script>
+
+<style is:global>
+	.fp {
+		text-align: center;
+	}
+
+	.fp-intro {
+		margin: 0;
+		color: var(--color-text-muted);
+	}
+
+	.fp-count {
+		margin: 0.5em 0 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+	}
+
+	.fp-posts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16em), 1fr));
+		gap: 0.6em;
+		margin: 0.75em 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.fp-post {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35em;
+		width: 100%;
+		height: 100%;
+		padding: 0.75em 0.9em;
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font: inherit;
+		font-size: 0.95em;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.fp-post:hover,
+	.fp-post:focus-visible {
+		border-color: var(--color-accent);
+	}
+
+	.fp-post.is-open {
+		border-color: color-mix(in srgb, var(--color-danger) 60%, var(--color-border));
+		cursor: default;
+	}
+
+	.fp-author {
+		font-family: var(--font-mono);
+		font-size: 0.8em;
+		color: var(--color-text-muted);
+	}
+
+	.fp-text {
+		line-height: 1.45;
+	}
+
+	.fp-leak {
+		padding-top: 0.35em;
+		border-top: 1px dashed var(--color-border);
+		font-size: 0.9em;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.fp-leak strong {
+		color: var(--color-danger);
+	}
+
+	.fp-tap {
+		font-size: 0.8em;
+		font-weight: 700;
+		color: var(--color-accent);
+	}
+
+	.fp-post.is-open .fp-tap {
+		display: none;
+	}
+
+	.fp-summary {
+		font-weight: 700;
+	}
+</style>

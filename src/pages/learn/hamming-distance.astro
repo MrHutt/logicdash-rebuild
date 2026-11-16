@@ -1,11 +1,7 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
 import { SEGMENT_POINTS, SEGMENTS_BY_DIGIT } from "../../lib/hammingGame";
-import { LEARN_TOPICS, getAdjacentLearnTopics } from "../../lib/learnTopics";
-
-const CURRENT_HREF = "/learn/hamming-distance";
-const currentTopic = LEARN_TOPICS.find((topic) => topic.href === CURRENT_HREF)!;
-const { prev, next } = getAdjacentLearnTopics(CURRENT_HREF);
 
 const patternA = "10110";
 const patternB = "10011";
@@ -19,206 +15,131 @@ const comparisons = patternA.split("").map((bit, i) => ({
 	b: patternB[i],
 	same: bit === patternB[i],
 }));
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "What is the Hamming distance between 1010 and 1000?",
+		options: ["1", "2", "3", "0"],
+		explain: "Only the third position differs (1 vs 0), so the distance is 1.",
+	},
+	{
+		q: "What is the Hamming distance between 11001 and 10011?",
+		options: ["2", "3", "1", "0"],
+		explain: "Compare position by position: the 2nd and 4th differ. Two differences → a distance of 2.",
+	},
+	{
+		q: "What is the Hamming distance between a pattern and an exact copy of itself?",
+		options: ["0", "1", "It depends on the pattern", "The number of 1s in it"],
+		explain: "Nothing differs, so the distance is 0.",
+	},
+	{
+		q: "What is the largest possible Hamming distance between two 5-bit patterns?",
+		options: ["5", "32", "10", "1"],
+		explain: "At most, every one of the 5 positions is different.",
+	},
+	{
+		q: "Outside of puzzles, Hamming distance is used to…",
+		options: ["spot when data has been corrupted", "encrypt passwords", "make photos smaller", "speed up downloads"],
+		explain: "Richard Hamming invented it to help computers notice — and fix — bits that got flipped by mistake.",
+	},
+];
 ---
 
-<Layout
-	title="Hamming Distance, Explained"
+<LearnArticle
+	href="/learn/hamming-distance"
 	description="What Hamming distance is and how it powers every guess in LogicDash — the real computer-science concept behind the game's scoring."
-	ogType="article"
 >
-	<p class="breadcrumb"><a href="/learn">Learn</a> / {currentTopic.title}</p>
+	<Fragment slot="lead">You've been calculating this every time you play LogicDash. Here's what it actually is.</Fragment>
 
-	<section class="hero">
-		<h1>Hamming Distance, Explained</h1>
-		<p class="hero-lead">
-			You've been calculating this every time you play LogicDash. Here's what it actually is.
+	<section class="block block--example">
+		<p class="block-title">The Basic Idea</p>
+		<p class="block-text">
+			Hamming distance is just a fancy name for a simple question: how many positions are
+			different between two binary patterns?
+		</p>
+		<p class="block-text">Take two 5-bit patterns:</p>
+
+		<div class="compare-stack">
+			{
+				[patternA, patternB].map((pattern) => (
+					<div class="compare-row">
+						{pattern.split("").map((bit, i) => (
+							<span
+								class={`compare-tile ${bit === "1" ? "compare-tile--on" : ""} ${diffPositions.has(i) ? "compare-tile--diff" : ""}`}
+							>
+								<svg class="compare-digit" viewBox="0 0 60 100" aria-hidden="true">
+									{Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
+										<polygon
+											class={`compare-segment ${SEGMENTS_BY_DIGIT[bit]?.includes(seg) ? "is-on" : ""}`}
+											points={points}
+										/>
+									))}
+								</svg>
+							</span>
+						))}
+					</div>
+				))
+			}
+		</div>
+		<p class="compare-caption">Highlighted tiles mark the positions that differ.</p>
+
+		<ul class="compare-list">
+			{
+				comparisons.map((row) => (
+					<li>
+						Position {row.position}: <span class="mono-highlight">{row.a}</span> vs{" "}
+						<span class="mono-highlight">{row.b}</span> → {row.same ? "same" : "different"}
+					</li>
+				))
+			}
+		</ul>
+
+		<p class="block-text">
+			Two positions are different. So the Hamming distance is <span class="mono-highlight">2</span>.
 		</p>
 	</section>
 
-	<div class="blocks">
-		<section class="block block--example">
-			<p class="block-title">The Basic Idea</p>
-			<p class="block-text">
-				Hamming distance is just a fancy name for a simple question: how many positions are
-				different between two binary patterns?
-			</p>
-			<p class="block-text">Take two 5-bit patterns:</p>
+	<section class="block">
+		<p class="block-title">That's the Whole Game</p>
+		<p class="block-text">
+			When LogicDash tells you "2 bits off," it's telling you the Hamming distance between your
+			guess and the secret. It never tells you which positions are wrong — just how many. Figuring
+			out which ones takes logic, not luck.
+		</p>
+	</section>
 
-			<div class="compare-stack">
-				{
-					[patternA, patternB].map((pattern) => (
-						<div class="compare-row">
-							{pattern.split("").map((bit, i) => (
-								<span
-									class={`compare-tile ${bit === "1" ? "compare-tile--on" : ""} ${diffPositions.has(i) ? "compare-tile--diff" : ""}`}
-								>
-									<svg class="compare-digit" viewBox="0 0 60 100" aria-hidden="true">
-										{Object.entries(SEGMENT_POINTS).map(([seg, points]) => (
-											<polygon
-												class={`compare-segment ${SEGMENTS_BY_DIGIT[bit]?.includes(seg) ? "is-on" : ""}`}
-												points={points}
-											/>
-										))}
-									</svg>
-								</span>
-							))}
-						</div>
-					))
-				}
-			</div>
-			<p class="compare-caption">Highlighted tiles mark the positions that differ.</p>
+	<section class="block">
+		<p class="block-title">Where This Idea Comes From</p>
+		<p class="block-text">
+			Hamming distance isn't just a puzzle mechanic — it's a real concept from computer science,
+			named after Richard Hamming, who worked on it in the 1940s while trying to solve a very
+			practical problem: how can a computer tell when data has been corrupted, and fix it
+			automatically?
+		</p>
+		<p class="block-text">
+			That idea is still everywhere today — it's part of how your phone's memory checks for
+			errors, how satellites send data across huge distances without it arriving garbled, and how
+			barcodes and QR codes stay readable even when partly damaged.
+		</p>
+	</section>
 
-			<ul class="compare-list">
-				{
-					comparisons.map((row) => (
-						<li>
-							Position {row.position}: <span class="mono-highlight">{row.a}</span> vs{" "}
-							<span class="mono-highlight">{row.b}</span> → {row.same ? "same" : "different"}
-						</li>
-					))
-				}
-			</ul>
 
-			<p class="block-text">
-				Two positions are different. So the Hamming distance is <span class="mono-highlight">2</span>.
-			</p>
-		</section>
-
-		<section class="block">
-			<p class="block-title">That's the Whole Game</p>
-			<p class="block-text">
-				When LogicDash tells you "2 bits off," it's telling you the Hamming distance between your
-				guess and the secret. It never tells you which positions are wrong — just how many. Figuring
-				out which ones takes logic, not luck.
-			</p>
-		</section>
-
-		<section class="block">
-			<p class="block-title">Where This Idea Comes From</p>
-			<p class="block-text">
-				Hamming distance isn't just a puzzle mechanic — it's a real concept from computer science,
-				named after Richard Hamming, who worked on it in the 1940s while trying to solve a very
-				practical problem: how can a computer tell when data has been corrupted, and fix it
-				automatically?
-			</p>
-			<p class="block-text">
-				That idea is still everywhere today — it's part of how your phone's memory checks for
-				errors, how satellites send data across huge distances without it arriving garbled, and how
-				barcodes and QR codes stay readable even when partly damaged.
-			</p>
-		</section>
-
-		<section class="block">
-			<div class="learn-pagination">
-				{
-					prev && (
-						<a class="learn-pagination-link learn-pagination-prev" href={prev.href}>
-							← {prev.title}
-						</a>
-					)
-				}
-				{
-					next &&
-						(next.live ? (
-							<a class="learn-pagination-link learn-pagination-next" href={next.href}>
-								{next.title} →
-							</a>
-						) : (
-							<span class="learn-pagination-link learn-pagination-next learn-pagination-soon">
-								{next.title} (coming soon)
-							</span>
-						))
-				}
-			</div>
-		</section>
-	</div>
-</Layout>
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
 
 <style>
-	.breadcrumb {
-		margin: 0 0 0.75rem;
-		text-align: center;
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
-	}
-
-	.breadcrumb a {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.breadcrumb a:hover {
-		text-decoration: underline;
-	}
-
-	.hero {
-		text-align: center;
-		margin-bottom: 1rem;
-	}
-
-	.hero h1 {
-		margin: 0 0 0.5rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
-	}
-
-	.hero-lead {
-		margin: 0 auto;
-		max-width: 34rem;
-		font-size: 1rem;
-	}
-
-	.blocks {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.block {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 14px;
-		padding: 1rem 1.15rem;
-	}
-
-	.block-title {
-		margin: 0 0 0.4rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: #ffae2e;
-	}
-
-	.block-text {
-		margin: 0 0 0.6rem;
-		font-size: 1rem;
-	}
-
-	.block-text:last-child {
-		margin-bottom: 0;
-	}
-
-	.mono-highlight {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		color: var(--color-text);
-	}
-
-	.block--example {
-		text-align: center;
-	}
 
 	.compare-stack {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.35rem;
-		margin: 0.9rem 0 0.5rem;
+		gap: 0.25rem;
+		margin: 1rem 0 0.5rem;
 	}
 
 	.compare-row {
 		display: flex;
-		gap: 0.3rem;
+		gap: 0.25rem;
 	}
 
 	.compare-tile {
@@ -267,7 +188,7 @@ const comparisons = patternA.split("").map((bit, i) => ({
 	}
 
 	.compare-caption {
-		margin: 0 0 0.9rem;
+		margin: 0 0 1rem;
 		font-size: 0.75rem;
 		color: var(--color-danger);
 	}
@@ -275,8 +196,8 @@ const comparisons = patternA.split("").map((bit, i) => ({
 	.compare-list {
 		display: inline-block;
 		text-align: left;
-		margin: 0 0 0.9rem;
-		padding: 0.8rem 1rem 0.8rem 1.6rem;
+		margin: 0 0 1rem;
+		padding: 0.75rem 1rem 0.75rem 1.5rem;
 		border-radius: 12px;
 		background: var(--color-bg);
 		border: 1px solid var(--color-border);
@@ -285,33 +206,7 @@ const comparisons = patternA.split("").map((bit, i) => ({
 	}
 
 	.compare-list li {
-		margin: 0.15rem 0;
+		margin: 0.25rem 0;
 	}
 
-	.learn-pagination {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.75rem;
-		font-size: 0.85rem;
-	}
-
-	.learn-pagination-link {
-		color: #ffae2e;
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.learn-pagination-link:hover {
-		text-decoration: underline;
-	}
-
-	.learn-pagination-next {
-		margin-left: auto;
-	}
-
-	.learn-pagination-soon {
-		color: var(--color-text-muted);
-		font-weight: 600;
-		font-style: italic;
-	}
 </style>

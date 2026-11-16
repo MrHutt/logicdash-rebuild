@@ -1,0 +1,606 @@
+---
+// Published classroom tool — linked from the /tools hub page (src/pages/
+// tools/index.astro), not directly from Header.astro/Footer.astro (the Tools
+// nav link points at the hub, same as its siblings). Indexable: included in
+// the sitemap (see astro.config.mjs) and allowed in robots.txt.
+import Layout from "../../layouts/Layout.astro";
+import SegmentDigit from "../../components/SegmentDigit.astro";
+---
+
+<Layout
+	title="Binary Clock"
+	description="An ambient binary counter for the classroom — counts up or down on its own, one tick a second, and projects fullscreen."
+>
+	<div class="binclock-tool" data-binclock-root>
+		<div class="binclock-header">
+			<h1 class="binclock-title">Binary Clock</h1>
+			<p class="binclock-subtitle">
+				An ambient binary counter that ticks up or down on its own, one bit-pattern a second. Leave it
+				running in the background while students work, or pause it mid-count and put a student on the spot
+				to convert whatever's on screen.
+			</p>
+		</div>
+
+		<div class="display-shell">
+			<div class="display-stage">
+				<div class="segment-display" data-segment-display>
+					<div class="segment-row" data-segment-row>
+						<SegmentDigit value="0" />
+						<SegmentDigit value="0" />
+						<SegmentDigit value="0" />
+						<SegmentDigit value="0" />
+						<span class="nibble-gap" aria-hidden="true" />
+						<SegmentDigit value="0" />
+						<SegmentDigit value="0" />
+						<SegmentDigit value="0" />
+						<SegmentDigit value="0" />
+					</div>
+				</div>
+			</div>
+
+			<p class="value-readout" data-value-readout>= 0</p>
+
+			<div class="tool-bar">
+				<button type="button" class="icon-btn fullscreen-btn" data-fullscreen-btn aria-label="Enter fullscreen">
+					⛶
+				</button>
+			</div>
+
+			<div class="fullscreen-controls">
+				<button type="button" class="fullscreen-pause-btn" data-fullscreen-pause aria-label="Resume">▶</button>
+				<button type="button" class="exit-fullscreen-btn" data-exit-fullscreen aria-label="Exit fullscreen" hidden>
+					×
+				</button>
+			</div>
+		</div>
+
+		<div class="setup-controls" data-setup-controls>
+			<div class="mode-toggle" data-direction-toggle>
+				<button type="button" class="mode-btn" data-direction-btn="up" aria-selected="true">Count Up</button>
+				<button type="button" class="mode-btn" data-direction-btn="down" aria-selected="false">Count Down</button>
+			</div>
+		</div>
+
+		<div class="control-row" data-control-row>
+			<button type="button" class="btn" data-start-btn>Start</button>
+			<button type="button" class="btn btn--ghost" data-pause-btn disabled>Pause</button>
+			<button type="button" class="btn btn--ghost btn--muted" data-reset-btn>Reset</button>
+		</div>
+	</div>
+</Layout>
+
+<script>
+	import { applySegmentDigit } from "../../lib/segmentDigits";
+
+	const root = document.querySelector<HTMLElement>("[data-binclock-root]")!;
+	const segmentCells = Array.from(root.querySelectorAll<HTMLElement>("[data-segment-digit]"));
+	const segmentDisplayEl = root.querySelector<HTMLElement>("[data-segment-display]")!;
+	const segmentRowEl = root.querySelector<HTMLElement>("[data-segment-row]")!;
+	const valueReadoutEl = root.querySelector<HTMLElement>("[data-value-readout]")!;
+	const directionButtons = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-direction-btn]"));
+	const startBtn = root.querySelector<HTMLButtonElement>("[data-start-btn]")!;
+	const pauseBtn = root.querySelector<HTMLButtonElement>("[data-pause-btn]")!;
+	const resetBtn = root.querySelector<HTMLButtonElement>("[data-reset-btn]")!;
+	const fullscreenBtn = root.querySelector<HTMLButtonElement>("[data-fullscreen-btn]")!;
+	const fullscreenPauseBtn = root.querySelector<HTMLButtonElement>("[data-fullscreen-pause]")!;
+	const exitFullscreenBtn = root.querySelector<HTMLButtonElement>("[data-exit-fullscreen]")!;
+
+	const BIT_WIDTH = 8;
+	const MAX_VALUE = 2 ** BIT_WIDTH - 1;
+
+	type Direction = "up" | "down";
+	let direction: Direction = "up";
+	let value = 0;
+	let running = false;
+	let intervalId: number | null = null;
+
+	// One tick a second — read as a clock's second hand, not a fast-spinning
+	// counter, per the "more chill, like a clock" brief.
+	const TICK_MS = 1000;
+
+	function startValue(): number {
+		return direction === "up" ? 0 : MAX_VALUE;
+	}
+
+	function renderBits() {
+		const bits = value.toString(2).padStart(BIT_WIDTH, "0");
+		bits.split("").forEach((bit, i) => applySegmentDigit(segmentCells[i], bit));
+		valueReadoutEl.textContent = `= ${value}`;
+	}
+
+	/** One ambient step — wraps at either end rather than stopping, since
+	 *  this is a looping background animation, not a one-shot count with a
+	 *  fixed target. */
+	function tick() {
+		value = direction === "up" ? (value >= MAX_VALUE ? 0 : value + 1) : value <= 0 ? MAX_VALUE : value - 1;
+		renderBits();
+	}
+
+	function updateButtons() {
+		startBtn.disabled = running;
+		pauseBtn.disabled = !running;
+	}
+
+	function updateFullscreenPauseButton() {
+		fullscreenPauseBtn.textContent = running ? "⏸" : "▶";
+		fullscreenPauseBtn.setAttribute("aria-label", running ? "Pause" : "Resume");
+	}
+
+	function play() {
+		if (running) return;
+		running = true;
+		updateButtons();
+		updateFullscreenPauseButton();
+		intervalId = window.setInterval(tick, TICK_MS);
+	}
+
+	function pause() {
+		if (!running) return;
+		running = false;
+		updateButtons();
+		updateFullscreenPauseButton();
+		if (intervalId !== null) {
+			window.clearInterval(intervalId);
+			intervalId = null;
+		}
+	}
+
+	function resetCount() {
+		pause();
+		value = startValue();
+		renderBits();
+	}
+
+	function setDirection(next: Direction) {
+		direction = next;
+		directionButtons.forEach((btn) => {
+			btn.setAttribute("aria-selected", btn.dataset.directionBtn === next ? "true" : "false");
+		});
+		// Jumping direction mid-count would otherwise land on an arbitrary
+		// value that doesn't read as "the start of a down-count" (or
+		// up-count) — restart from that direction's natural zero/max.
+		value = startValue();
+		renderBits();
+	}
+
+	startBtn.addEventListener("click", play);
+	pauseBtn.addEventListener("click", pause);
+	resetBtn.addEventListener("click", resetCount);
+	directionButtons.forEach((btn) => {
+		btn.addEventListener("click", () => setDirection(btn.dataset.directionBtn as Direction));
+	});
+
+	// --- Fullscreen ------------------------------------------------------
+	// Same hybrid Fullscreen-API + CSS-class approach as /tools/countdown-clock,
+	// including its fullscreen Pause/Resume toggle pattern — this is now an
+	// ambient auto-counting display like the clock, not a manually-stepped
+	// counter, so "operating it live" means pausing/resuming, not pressing
+	// +1/-1.
+
+	function enterFullscreen() {
+		document.body.classList.add("binclock-fullscreen");
+		exitFullscreenBtn.hidden = false;
+		updateFullscreenPauseButton();
+		document.documentElement.requestFullscreen?.().catch(() => {
+			// Native fullscreen denied/unsupported (sandboxed context, no user
+			// gesture chain, etc.) — the CSS "fullscreen look" still applies,
+			// so the tool remains usable for projecting either way.
+		});
+	}
+
+	function exitFullscreen() {
+		document.body.classList.remove("binclock-fullscreen");
+		exitFullscreenBtn.hidden = true;
+		if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+	}
+
+	fullscreenBtn.addEventListener("click", enterFullscreen);
+	exitFullscreenBtn.addEventListener("click", exitFullscreen);
+	fullscreenPauseBtn.addEventListener("click", () => (running ? pause() : play()));
+
+	document.addEventListener("fullscreenchange", () => {
+		if (!document.fullscreenElement) {
+			document.body.classList.remove("binclock-fullscreen");
+			exitFullscreenBtn.hidden = true;
+		}
+	});
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && document.body.classList.contains("binclock-fullscreen")) exitFullscreen();
+	});
+
+	// --- Fit-to-width -----------------------------------------------------
+	// The 8 digits' own natural size (SegmentDigit's clamp(2.2rem, 8vw,
+	// 3.6rem), shared with /tools/countdown-clock) is tuned against the
+	// VIEWPORT, not this specific container — so at some container widths
+	// (this page's own max-width cap, fullscreen's different one, a narrow
+	// phone) 8 of them plus gaps can be wider than the space actually
+	// available. Rather than trying to out-guess every container width
+	// with more clamp() tuning (fragile, and still broke at some widths),
+	// .segment-row is measured at its natural size and scaled down with a
+	// transform — never up — to whatever actually fits, with the outer
+	// .segment-display clipping (not scrolling) any residual sub-pixel
+	// overflow. transform doesn't affect the layout size scrollWidth/
+	// clientWidth report, so this reads its own true natural width even
+	// after being scaled.
+	function fitDisplay() {
+		segmentRowEl.style.transform = "scale(1)";
+		const available = segmentDisplayEl.clientWidth;
+		const natural = segmentRowEl.scrollWidth;
+		const scale = natural > available ? available / natural : 1;
+		segmentRowEl.style.transform = `scale(${scale})`;
+	}
+
+	// Also fires on every subsequent size change — window resizes,
+	// orientation changes, and this page's own fullscreen enter/exit, which
+	// resizes .segment-display via the body.binclock-fullscreen CSS below
+	// without firing a `resize` event on its own. ResizeObserver is
+	// specced to fire once immediately on observe() too, but that first
+	// callback isn't guaranteed to land before first paint in every
+	// browser/timing scenario — fitDisplay() is called explicitly below as
+	// well so the initial fit never depends on that race.
+	new ResizeObserver(fitDisplay).observe(segmentDisplayEl);
+
+	// --- Init ------------------------------------------------------------
+
+	value = startValue();
+	renderBits();
+	updateButtons();
+	fitDisplay();
+</script>
+
+<style>
+	.binclock-tool {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.25rem;
+		padding: 1rem 0 2rem;
+	}
+
+	.binclock-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		max-width: 34rem;
+		text-align: center;
+	}
+
+	.binclock-title {
+		margin: 0;
+		font-size: 1.4rem;
+	}
+
+	.binclock-subtitle {
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+	}
+
+	.display-shell {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		width: 100%;
+	}
+
+	.display-stage {
+		position: relative;
+		width: 100%;
+		max-width: 42rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* Deliberately left unthemed — SegmentDigit's own default styling (an
+	   amber-glowing lit segment, see SegmentDigit.astro) already matches the
+	   site's amber-only accent color, so there's no re-theme CSS to write
+	   here, unlike /tools/countdown-clock's VFD/LED/LCD variants (cyan/red/
+	   grey — all wrong for this design system anyway). */
+	.segment-display {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		/* Never a scrollbar and never wrapped to a second line — .segment-row
+		   is scaled down (via fitDisplay() in the script) to whatever width
+		   is actually available, and overflow: hidden clips rather than
+		   scrolls the rare sub-pixel residual. */
+		overflow: hidden;
+		width: 100%;
+		padding: clamp(1.25rem, 5vw, 2.25rem) clamp(1rem, 4vw, 2rem);
+		border-radius: 22px;
+		box-sizing: border-box;
+		background:
+			radial-gradient(ellipse at center, rgba(255, 174, 46, 0.08) 0%, transparent 60%),
+			radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%),
+			#0a0705;
+		box-shadow:
+			inset 0 0 50px rgba(0, 0, 0, 0.65),
+			0 10px 30px -10px rgba(0, 0, 0, 0.6);
+	}
+
+	/* Always its own natural (unwrapped) width — width: max-content is what
+	   lets fitDisplay() read a true, un-clamped scrollWidth to scale
+	   against, regardless of the transform: scale() applied to this same
+	   element. */
+	.segment-row {
+		display: flex;
+		align-items: center;
+		flex-wrap: nowrap;
+		flex-shrink: 0;
+		gap: 0.5rem;
+		width: max-content;
+	}
+
+	.nibble-gap {
+		display: inline-block;
+		width: 0.5rem;
+	}
+
+	.value-readout {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 1rem;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Tool bar / icon buttons (same treatment as /tools/countdown-clock) */
+
+	.tool-bar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		width: 100%;
+		max-width: 42rem;
+	}
+
+	.icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		padding: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.icon-btn:hover {
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	/*
+	 * Fullscreen-only controls live in normal flow directly under the
+	 * clock, same reasoning as /tools/countdown-clock: on a large
+	 * wall-mounted display or projector, controls fixed to a screen edge
+	 * can be an awkward reach, while controls right under the thing you're
+	 * already looking at are easy to find.
+	 */
+	.fullscreen-controls {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+	}
+
+	.fullscreen-pause-btn,
+	.exit-fullscreen-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 3rem;
+		height: 3rem;
+		flex-shrink: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+		color: var(--color-text-muted);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		opacity: 0.55;
+		transition:
+			opacity 0.15s ease,
+			border-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	/* An unconditional `display: flex` above would otherwise beat the
+	   browser's default `[hidden] { display: none }` rule — same gotcha
+	   called out repeatedly on /tools/countdown-clock. */
+	.exit-fullscreen-btn[hidden] {
+		display: none;
+	}
+
+	.fullscreen-pause-btn:hover,
+	.exit-fullscreen-btn:hover {
+		opacity: 1;
+		border-color: var(--color-accent);
+		color: var(--color-text);
+	}
+
+	/* --- Setup toggle (direction) ------------------------------------------ */
+
+	.setup-controls {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.6rem;
+	}
+
+	.mode-toggle {
+		display: inline-flex;
+		gap: 0.2rem;
+		padding: 0.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-surface);
+	}
+
+	.mode-btn {
+		padding: 0.45rem 1.2rem;
+		border: none;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.mode-btn[aria-selected="true"] {
+		background: color-mix(in srgb, var(--color-accent) 24%, var(--color-bg));
+		color: #fff3d6;
+		text-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 40%, transparent);
+	}
+
+	.mode-btn:not([aria-selected="true"]):hover {
+		color: var(--color-text);
+	}
+
+	/* --- Start / Pause / Reset ---------------------------------------------- */
+
+	.control-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.6rem;
+	}
+
+	.btn {
+		padding: 0.5rem 1.4rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		color: #fff3d6;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		text-shadow: 0 0 6px var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.15s ease,
+			background 0.15s ease,
+			opacity 0.15s ease;
+	}
+
+	.btn:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 30%, var(--color-bg));
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 70%, transparent);
+	}
+
+	.btn:active:not(:disabled) {
+		transform: scale(0.95);
+	}
+
+	.btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost {
+		background: transparent;
+		color: var(--color-accent);
+		text-shadow: none;
+		box-shadow: none;
+	}
+
+	.btn--ghost:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.btn--muted {
+		border-color: var(--color-border);
+		color: var(--color-text-muted);
+	}
+
+	.btn--muted:hover:not(:disabled) {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+		background: transparent;
+		box-shadow: none;
+	}
+</style>
+
+<style is:global>
+	/*
+	 * Fullscreen mode hides the site chrome and lets the display fill the
+	 * viewport — Header.astro/Footer.astro render outside this page's own
+	 * DOM subtree (Layout.astro places them as siblings), so they can only
+	 * be reached with a global, body-scoped rule like this. Same approach
+	 * as /tools/countdown-clock's body.clock-fullscreen block.
+	 */
+	body.binclock-fullscreen {
+		background: radial-gradient(ellipse at center, rgba(255, 174, 46, 0.1) 0%, transparent 60%), #000;
+	}
+
+	body.binclock-fullscreen .site-header,
+	body.binclock-fullscreen .site-footer {
+		display: none;
+	}
+
+	body.binclock-fullscreen main {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		max-width: none;
+		min-height: 100vh;
+		padding: 2rem 1rem;
+	}
+
+	body.binclock-fullscreen .binclock-tool {
+		width: 100%;
+	}
+
+	body.binclock-fullscreen .display-stage {
+		max-width: 64rem;
+	}
+
+	/* Fullscreen shows only the display and the small Pause/Resume + exit
+	   row underneath it — no title, no decimal readout, no setup toggles,
+	   no Start/Pause/Reset row. This is meant to be paused mid-class and
+	   read cold (e.g. "convert this for me"), so nothing on screen should
+	   give the decimal value away or otherwise clutter the display. */
+	body.binclock-fullscreen .binclock-header,
+	body.binclock-fullscreen .value-readout,
+	body.binclock-fullscreen .tool-bar,
+	body.binclock-fullscreen [data-setup-controls],
+	body.binclock-fullscreen [data-control-row] {
+		display: none;
+	}
+
+	body.binclock-fullscreen .fullscreen-controls {
+		display: flex;
+	}
+</style>

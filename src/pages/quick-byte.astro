@@ -22,8 +22,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<p class="quick-byte-results-label">Today's result</p>
 		<p class="quick-byte-sequence"></p>
 		<p class="quick-byte-total"></p>
+		<p class="quick-byte-special" hidden></p>
+		<p class="quick-byte-streak" hidden></p>
 		<button type="button" class="quick-byte-share">Share Result</button>
-		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte.</p>
+		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte — next challenge in <span class="quick-byte-countdown"></span>.</p>
 	</div>
 
 	<img
@@ -43,6 +45,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 				<p class="share-preview-date"></p>
 				<p class="share-preview-sequence"></p>
 				<p class="share-preview-site">logicdash.io</p>
+				<p class="share-preview-easter"></p>
 			</div>
 			<div class="share-actions">
 				<button type="button" class="share-copy-btn">Copy</button>
@@ -183,6 +186,34 @@ import HammingBoard from "../components/HammingBoard.astro";
 		color: var(--color-text);
 	}
 
+	.quick-byte-special {
+		margin: 0.35rem 0 0;
+		font-size: 0.9rem;
+		font-style: italic;
+		color: var(--color-text);
+	}
+
+	.quick-byte-special[hidden] {
+		display: none;
+	}
+
+	.quick-byte-streak {
+		margin: 0.35rem 0 0;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.quick-byte-streak[hidden] {
+		display: none;
+	}
+
+	.quick-byte-countdown {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: #ffae2e;
+	}
+
 	.quick-byte-return-note {
 		margin: 0.5rem 0 0;
 		font-size: 0.8rem;
@@ -289,6 +320,11 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.share-preview p {
 		margin: 0;
 		color: var(--color-text);
+	}
+
+	.share-preview-easter {
+		color: #ffae2e;
+		font-weight: 700;
 	}
 
 	.share-actions {
@@ -402,6 +438,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	// player's local calendar day. Cross-device sync will come later once accounts exist.
 	const STORAGE_PREFIX = "logicdash:quickbyte:";
 	const PROGRESS_PREFIX = "logicdash:quickbyte:progress:";
+	const STREAK_KEY = "logicdash:quickbyte:streak";
 
 	const BIT_LENGTH = 5;
 	const MAX_ATTEMPTS = 6;
@@ -420,6 +457,12 @@ import HammingBoard from "../components/HammingBoard.astro";
 		roundIndex: number;
 		completedRounds: RoundResult[];
 		guessesThisRound: string[];
+	}
+
+	interface StreakRecord {
+		last: string;
+		count: number;
+		longest: number;
 	}
 
 	const dateString = getLocalDateString();
@@ -447,21 +490,38 @@ import HammingBoard from "../components/HammingBoard.astro";
 	// day), so the share button always has the right scores regardless of which path ran.
 	let resultScores: RoundResult[] = [];
 
+	// --- Easter eggs for special score sequences (666, 111, …) ---
+	function getSequenceEasterEgg(sequenceText: string): string {
+		const TEST_MODE = false; // flip to true to see the egg on ANY score (for testing)
+		if (TEST_MODE) return "🧪 Test egg — wiring works!";
+		const seq = sequenceText.replace(/[^0-9X]/g, "").toUpperCase();
+		if (seq === "666") return "😈 The Devil's Run!";
+		if (seq === "111") return "😇 Flawless!";
+		if (seq === "123") return "📈 The Escalator!";
+		if (seq === "321") return "🚀 Countdown!";
+		if (seq === "XXX") return "💀 Strikeout!";
+		return "";
+	}
+
+	function shareTextWithEgg(): string {
+		const egg = getSequenceEasterEgg(formatResultSequence(resultScores));
+		const base = buildShareText(dateString, resultScores);
+		return egg ? `${base}\n${egg}` : base;
+	}
+
 	function renderSharePreview(scores: RoundResult[]) {
 		sharePreviewDate.textContent = `Quick Byte — ${dateString.replaceAll("-", ".")}`;
 		sharePreviewSequence.textContent = `${formatResultSequence(scores)}   ${formatTotalLine(scores)}`;
+		const eggEl = document.querySelector<HTMLElement>(".share-preview-easter")!;
+		eggEl.textContent = getSequenceEasterEgg(formatResultSequence(scores));
 	}
 
 	function openShareModal() {
 		renderSharePreview(resultScores);
-		const shareText = buildShareText(dateString, resultScores);
+		const shareText = shareTextWithEgg();
 		const encoded = encodeURIComponent(shareText);
 		shareTwitterLink.href = `https://twitter.com/intent/tweet?text=${encoded}`;
 		shareWhatsappLink.href = `https://wa.me/?text=${encoded}`;
-		// navigator.share's presence isn't a reliable "this is a phone" signal — some desktop
-		// browsers (e.g. Windows Edge/Chrome) support it too. So the modal is always the
-		// primary path; this button is just an optional extra, offered only when supported,
-		// and only triggered by an explicit tap — never automatically.
 		shareNativeBtn.hidden = !navigator.share;
 		shareOverlay.hidden = false;
 	}
@@ -475,7 +535,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	});
 
 	shareNativeBtn.addEventListener("click", () => {
-		const shareText = buildShareText(dateString, resultScores);
+		const shareText = shareTextWithEgg();
 		navigator.share({ text: shareText }).catch(() => {});
 	});
 
@@ -493,15 +553,14 @@ import HammingBoard from "../components/HammingBoard.astro";
 
 	shareCopyBtn.addEventListener("click", async () => {
 		try {
-			await navigator.clipboard.writeText(buildShareText(dateString, resultScores));
+			await navigator.clipboard.writeText(shareTextWithEgg());
 			shareCopiedNote.hidden = false;
 			clearTimeout(copiedNoteTimeout);
 			copiedNoteTimeout = setTimeout(() => {
 				shareCopiedNote.hidden = true;
 			}, 1500);
 		} catch {
-			// Clipboard access denied or unavailable — the preview text is still visible
-			// and selectable by hand.
+			// Clipboard access denied or unavailable
 		}
 	});
 
@@ -519,10 +578,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		try {
 			localStorage.setItem(storageKey, JSON.stringify(result));
 			localStorage.removeItem(progressKey);
-		} catch {
-			// localStorage unavailable (private browsing, quota, etc.) — the result just
-			// won't persist across reloads; gameplay itself is unaffected.
-		}
+		} catch {}
 	}
 
 	function readProgress(): QuickByteProgress | null {
@@ -538,9 +594,38 @@ import HammingBoard from "../components/HammingBoard.astro";
 	function storeProgress(progress: QuickByteProgress) {
 		try {
 			localStorage.setItem(progressKey, JSON.stringify(progress));
-		} catch {
-			// Same as storeResult — persistence is best-effort, not required for gameplay.
+		} catch {}
+	}
+
+	// --- Streak logic ---
+	function readStreak(): StreakRecord {
+		try {
+			const raw = localStorage.getItem(STREAK_KEY);
+			if (raw) return JSON.parse(raw) as StreakRecord;
+		} catch {}
+		return { last: "", count: 0, longest: 0 };
+	}
+
+	function dayDiff(from: string, to: string): number {
+		const a = new Date(`${from}T00:00:00`).getTime();
+		const b = new Date(`${to}T00:00:00`).getTime();
+		return Math.round((b - a) / 86400000);
+	}
+
+	function recordStreak(perRound: RoundResult[]): number {
+		const streak = readStreak();
+		if (streak.longest === undefined) streak.longest = streak.count || 0;
+		const perfect = perRound.every((r) => r !== null);
+
+		if (!perfect) return streak.count; // Streak breaks on a failed day
+
+		if (streak.last !== dateString) {
+			streak.count = streak.last && dayDiff(streak.last, dateString) === 1 ? streak.count + 1 : 1;
+			streak.last = dateString;
+			if (streak.count > streak.longest) streak.longest = streak.count;
+			try { localStorage.setItem(STREAK_KEY, JSON.stringify(streak)); } catch {}
 		}
+		return streak.count;
 	}
 
 	function showResults(perRound: RoundResult[]) {
@@ -549,7 +634,48 @@ import HammingBoard from "../components/HammingBoard.astro";
 		resultsSection.hidden = false;
 		sequenceEl.textContent = formatResultSequence(perRound);
 		totalEl.textContent = formatTotalLine(perRound);
+
+		const specialEl = document.querySelector<HTMLElement>(".quick-byte-special")!;
+		const specialMsg = getSequenceEasterEgg(formatResultSequence(perRound));
+		specialEl.textContent = specialMsg;
+		specialEl.hidden = !specialMsg;
+
+		const perfect = perRound.every((r) => r !== null);
+		const streakCount = recordStreak(perRound);
+		const streakData = readStreak();
+		const longest = streakData.longest || 0;
+		const streakEl = document.querySelector<HTMLElement>(".quick-byte-streak")!;
+		
+		let streakText = "";
+		if (streakCount > 0) {
+			streakText = perfect ? `🔥 ${streakCount}-day streak` : `🔥 ${streakCount}-day streak ended today`;
+			if (longest > streakCount) {
+				streakText += ` · Longest: ${longest}`;
+			} else if (longest === streakCount && streakCount > 1) {
+				streakText += ` · New best!`;
+			}
+		} else if (longest > 0) {
+			streakText = `Longest streak: ${longest}`;
+		}
+		
+		streakEl.textContent = streakText;
+		streakEl.hidden = !streakText;
 	}
+
+	// --- Countdown to the next daily puzzle (local midnight) ---
+	const countdownEl = document.querySelector<HTMLElement>(".quick-byte-countdown");
+	function tickCountdown() {
+		if (!countdownEl) return;
+		const now = new Date();
+		const midnight = new Date(now);
+		midnight.setHours(24, 0, 0, 0);
+		const ms = midnight.getTime() - now.getTime();
+		const h = Math.floor(ms / 3600000);
+		const m = Math.floor((ms % 3600000) / 60000);
+		countdownEl.textContent = `${h}h ${m}m`;
+	}
+	tickCountdown();
+	setInterval(tickCountdown, 30000);
 
 	const alreadyPlayed = readStoredResult();
 
@@ -582,9 +708,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 				persistProgress();
 			},
 			onRoundEnd: ({ won, attempts }) => {
-				// Guard against double-counting: replaying a round that had already ended
-				// before the player navigated away re-fires this same callback. Only record
-				// a score the first time this round finishes (i.e. no score for it yet).
 				if (perRound.length === roundIndex) {
 					perRound.push(roundScore(won, attempts));
 				}
@@ -596,10 +719,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 		updateRoundLabel();
 
 		if (guessesThisRound.length > 0) {
-			// Fast-forward the fresh board to exactly where the player left off. This
-			// replays through the same guess logic used for real play, so it naturally
-			// re-triggers onRoundEnd (and shows Next/See Results) if that round had
-			// already been finished when the player navigated away.
 			const toReplay = guessesThisRound;
 			guessesThisRound = [];
 			controller.restore(toReplay);

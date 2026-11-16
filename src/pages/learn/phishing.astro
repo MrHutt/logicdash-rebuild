@@ -1,0 +1,567 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+
+// Every clickable part of the mock email. `flag: true` parts are red flags;
+// the rest are ordinary parts of any email, there so that clicking
+// everything isn't a winning strategy.
+const parts = {
+	sender: {
+		flag: true,
+		title: "Look-alike sender address",
+		explain: "The name says Northfield Bank, but the address is “northfie1d” — with the number 1 instead of the letter l — at a domain the bank doesn't own.",
+	},
+	subject: {
+		flag: true,
+		title: "Panic in the subject line",
+		explain: "“URGENT” and a 24-hour deadline are there to rush you, so you act before you think. Real banks rarely threaten you like this.",
+	},
+	greeting: {
+		flag: true,
+		title: "No name, just “Valued Customer”",
+		explain: "Your bank knows your name. A generic greeting often means the same email went to thousands of people.",
+	},
+	spelling: {
+		flag: true,
+		title: "Spelling and grammar mistakes",
+		explain: "“We has noticed unusual activty” — big companies check their emails carefully. Sloppy writing is a warning sign.",
+	},
+	request: {
+		flag: true,
+		title: "Asking for your PIN",
+		explain: "No real bank will ever ask for your full card number or PIN by email. Anyone who asks is trying to steal it.",
+	},
+	link: {
+		flag: true,
+		title: "The button goes somewhere else",
+		explain: "Hover over (or long-press) the button: it really leads to “northfield-bank.verify-login.ru” — not the bank's website at all.",
+	},
+	attachment: {
+		flag: true,
+		title: "A program pretending to be a document",
+		explain: "“Statement.pdf.exe” ends in .exe — it's a program, not a PDF. Opening it could install harmful software (malware).",
+	},
+	date: { flag: false, title: "The date", explain: "Just the date the email was sent. Nothing suspicious here." },
+	to: { flag: false, title: "Who it was sent to", explain: "Your own address — perfectly normal." },
+	footer: { flag: false, title: "The footer", explain: "Most company emails end with a footer like this. On its own it proves nothing either way." },
+};
+const totalFlags = Object.values(parts).filter((p) => p.flag).length;
+const FAKE_URL = "http://northfield-bank.verify-login.ru/secure";
+---
+
+<LearnArticle
+	href="/learn/phishing"
+	description="Learn to spot phishing: click the red flags in a fake email — look-alike senders, urgent threats, disguised links and attachments — and get a score."
+	lead="Some emails are bait. Here's how to spot the hook before you bite."
+>
+	<section class="block">
+		<p class="block-title">What Is Phishing?</p>
+		<p class="block-text">
+			<em>Phishing</em> (said "fishing") is when someone sends a fake message pretending to be a company
+			or person you trust — your bank, a delivery service, your school — to trick you into handing over a
+			password, money, or personal details.
+		</p>
+		<p class="block-text">
+			Like fishing, it's about bait. The attacker sends out thousands of messages and waits for someone
+			to bite. They don't need to break any encryption or hack any computer — they just need one person
+			to click.
+		</p>
+		<p class="block-callout">
+			Phishing attacks people, not computers. That's why learning the warning signs is one of the best
+			protections there is.
+		</p>
+	</section>
+
+	<DemoFrame label="Phishing email demo" title="Spot the red flags">
+		<div class="ph-demo" data-ph-demo data-total={totalFlags}>
+			<p class="ph-instructions">
+				This email is fake. Click or tap every part you think is suspicious. There are {totalFlags} red
+				flags — and some parts that are perfectly normal.
+			</p>
+
+			<div class="ph-layout">
+			<article class="ph-email" aria-label="Mock email">
+				<header class="ph-email-head">
+					<p class="ph-email-row">
+						<span class="ph-email-key">From</span>
+						<span role="button" tabindex="0" class="ph-part" data-ph-part="sender">
+							Northfield Bank Security &lt;security@northfie1d-bank-alerts.com&gt;
+						</span>
+					</p>
+					<p class="ph-email-row">
+						<span class="ph-email-key">To</span>
+						<span role="button" tabindex="0" class="ph-part" data-ph-part="to">you@example.com</span>
+					</p>
+					<p class="ph-email-row">
+						<span class="ph-email-key">Date</span>
+						<span role="button" tabindex="0" class="ph-part" data-ph-part="date">Tuesday, 9:14 AM</span>
+					</p>
+					<p class="ph-email-row ph-email-row--subject">
+						<span class="ph-email-key">Subject</span>
+						<span role="button" tabindex="0" class="ph-part" data-ph-part="subject">
+							URGENT: Your account will be suspended in 24 hours
+						</span>
+					</p>
+				</header>
+
+				<div class="ph-email-body">
+					<p><span role="button" tabindex="0" class="ph-part" data-ph-part="greeting">Dear Valued Customer,</span></p>
+					<p>
+						<span role="button" tabindex="0" class="ph-part" data-ph-part="spelling">
+							We has noticed unusual activty on your account.
+						</span>{" "}
+						For your protection, your account will be suspended unless you verify your details today.
+					</p>
+					<p>
+						<span role="button" tabindex="0" class="ph-part" data-ph-part="request">
+							To confirm your identity, reply with your full card number and PIN.
+						</span>
+					</p>
+					<p class="ph-cta-wrap">
+						<button type="button" class="ph-part ph-cta" data-ph-part="link" data-ph-link aria-describedby="ph-statusbar">
+							Verify My Account
+						</button>
+					</p>
+					<p class="ph-attachment-row">
+						<button type="button" class="ph-part ph-attachment" data-ph-part="attachment">
+							<span aria-hidden="true">📎</span> Statement.pdf.exe
+						</button>
+					</p>
+					<p>Thank you,<br />Northfield Bank Security Team</p>
+				</div>
+
+				<footer class="ph-email-foot">
+					<span role="button" tabindex="0" class="ph-part" data-ph-part="footer">
+						© Northfield Bank · Privacy · Unsubscribe
+					</span>
+				</footer>
+
+				<p class="ph-statusbar" id="ph-statusbar" data-ph-statusbar>
+					<span class="ph-statusbar-label">Link goes to:</span>
+					<span class="ph-statusbar-url">{FAKE_URL}</span>
+				</p>
+			</article>
+
+			<div class="ph-side">
+			<div class="demo-stats">
+				<div class="demo-stat">
+					<span class="demo-stat-value"><span data-ph-found>0</span> / {totalFlags}</span>
+					<span class="demo-stat-label">Red flags found</span>
+				</div>
+				<div class="demo-stat">
+					<span class="demo-stat-value" data-ph-false>0</span>
+					<span class="demo-stat-label">False alarms</span>
+				</div>
+			</div>
+			<p class="demo-status" data-ph-status aria-live="polite">Start by reading the whole email carefully.</p>
+
+			<ol class="ph-findings" data-ph-findings></ol>
+
+			<div class="demo-controls">
+				<button type="button" class="demo-btn" data-ph-reveal>Show me the rest</button>
+				<button type="button" class="demo-btn" data-ph-reset>Start over</button>
+			</div>
+			</div>
+			</div>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">The Red Flags, in Short</p>
+		<ul class="block-list">
+			<li><em>Pressure and panic</em> — deadlines, threats, "act now."</li>
+			<li><em>A sender that's almost right</em> — one letter off, or an odd domain after the @.</li>
+			<li><em>A generic greeting</em> — "Dear Customer" instead of your name.</li>
+			<li><em>Links that don't go where they say</em> — hover or long-press to check first.</li>
+			<li><em>Requests for passwords, PINs, or codes</em> — real companies never ask for these.</li>
+			<li><em>Unexpected attachments</em> — especially ones ending in .exe, .zip, or with two endings.</li>
+			<li><em>Sloppy spelling and grammar.</em> (Though careful attackers can write perfectly, so don't rely on this one alone.)</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<p class="block-title">If You're Not Sure</p>
+		<ul class="block-list">
+			<li>
+				<em>Don't click, don't reply.</em> Instead, go to the company's website or app yourself, by typing
+				the address or using an app you already have.
+			</li>
+			<li><em>Phone them</em> using the number on the back of your card or on their real website — not one from the message.</li>
+			<li><em>Ask someone.</em> A friend, family member, teacher, or IT helpdesk. Attackers count on you acting alone and in a hurry.</li>
+			<li><em>Report it</em> using your email's "Report phishing" or "Report spam" option, then delete it.</li>
+		</ul>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Other Tricks to Know</p>
+		<ul class="block-list">
+			<li>
+				<em>Malware</em> — harmful software, often hidden in an attachment or a download, that can damage
+				a device or spy on it.
+			</li>
+			<li>
+				<em>Keyloggers</em> — a kind of malware that secretly records every key you press, including
+				passwords.
+			</li>
+			<li>
+				<em>Fake Wi-Fi hotspots</em> — a network set up with an official-sounding name ("Airport_Free_WiFi")
+				so the attacker can watch the traffic of anyone who joins.
+			</li>
+		</ul>
+		<p class="block-text">
+			The best defenses are the same habits: think before you click, keep your devices updated, and turn
+			on <em>multi-factor authentication</em> — needing something you know (a password) plus something
+			you have (like your phone) to sign in.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Not Just Email</p>
+		<p class="block-text">
+			The same tricks turn up in text messages ("Your package couldn't be delivered — pay a small fee
+			here"), social media messages, and phone calls. The details change, but the red flags don't:
+			pressure, something that's almost right, and a request for something you shouldn't hand over.
+		</p>
+		<p class="block-text">
+			Even the strongest <a href="/learn/password-strength">password</a> can't protect you if you type it
+			into a fake website — which is exactly why two-step verification is worth turning on.
+		</p>
+	</section>
+</LearnArticle>
+
+<script define:vars={{ parts, totalFlags }}>
+	const root = document.querySelector("[data-ph-demo]");
+	const foundEl = root.querySelector("[data-ph-found]");
+	const falseEl = root.querySelector("[data-ph-false]");
+	const statusEl = root.querySelector("[data-ph-status]");
+	const findingsEl = root.querySelector("[data-ph-findings]");
+	const statusbar = root.querySelector("[data-ph-statusbar]");
+	const linkBtn = root.querySelector("[data-ph-link]");
+	const revealBtn = root.querySelector("[data-ph-reveal]");
+	const resetBtn = root.querySelector("[data-ph-reset]");
+	const partButtons = root.querySelectorAll("[data-ph-part]");
+
+	let found = new Set();
+	let falseAlarms = new Set();
+
+	function addFinding(key, revealed) {
+		const part = parts[key];
+		const li = document.createElement("li");
+		li.className = part.flag ? "ph-finding ph-finding--flag" : "ph-finding ph-finding--ok";
+		const title = document.createElement("strong");
+		title.textContent = part.flag
+			? `${revealed ? "Missed" : "⚑ Red flag"}: ${part.title}`
+			: `✓ Looks normal: ${part.title}`;
+		const text = document.createElement("span");
+		text.textContent = ` — ${part.explain}`;
+		li.append(title, text);
+		findingsEl.append(li);
+	}
+
+	function updateScore() {
+		foundEl.textContent = String(found.size);
+		falseEl.textContent = String(falseAlarms.size);
+	}
+
+	partButtons.forEach((btn) => {
+		// The inline parts are <span role="button"> (a real <button> can't wrap
+		// mid-sentence), so give them the keyboard behavior a button has.
+		if (btn.tagName === "SPAN") {
+			btn.addEventListener("keydown", (event) => {
+				if (event.key === "Enter" || event.key === " ") {
+					event.preventDefault();
+					btn.click();
+				}
+			});
+		}
+		btn.addEventListener("click", () => {
+			const key = btn.dataset.phPart;
+			const part = parts[key];
+			if (found.has(key) || falseAlarms.has(key) || btn.classList.contains("is-revealed")) return;
+
+			if (part.flag) {
+				found.add(key);
+				btn.classList.add("is-flagged");
+				btn.setAttribute("aria-label", `${btn.textContent.trim()} — red flag found`);
+				statusEl.textContent =
+					found.size === totalFlags
+						? `You found all ${totalFlags} red flags${falseAlarms.size ? ` (with ${falseAlarms.size} false alarm${falseAlarms.size === 1 ? "" : "s"})` : ""}. Nicely done!`
+						: `Red flag! ${part.title}. ${totalFlags - found.size} to go.`;
+			} else {
+				falseAlarms.add(key);
+				btn.classList.add("is-ok");
+				statusEl.textContent = `That part looks normal: ${part.explain}`;
+			}
+			if (key === "link") statusbar.classList.add("is-visible");
+			addFinding(key, false);
+			updateScore();
+		});
+	});
+
+	// The "hover to check the link" habit: show the real destination like a
+	// browser's status bar would, on hover or keyboard focus.
+	const showBar = () => statusbar.classList.add("is-visible");
+	const hideBar = () => {
+		if (!found.has("link") && !linkBtn.classList.contains("is-revealed")) statusbar.classList.remove("is-visible");
+	};
+	linkBtn.addEventListener("mouseenter", showBar);
+	linkBtn.addEventListener("focus", showBar);
+	linkBtn.addEventListener("mouseleave", hideBar);
+	linkBtn.addEventListener("blur", hideBar);
+
+	revealBtn.addEventListener("click", () => {
+		partButtons.forEach((btn) => {
+			const key = btn.dataset.phPart;
+			if (parts[key].flag && !found.has(key) && !btn.classList.contains("is-revealed")) {
+				btn.classList.add("is-revealed");
+				addFinding(key, true);
+			}
+		});
+		statusbar.classList.add("is-visible");
+		statusEl.textContent = `You spotted ${found.size} of ${totalFlags}. The ones you missed are now outlined and listed below.`;
+	});
+
+	resetBtn.addEventListener("click", () => {
+		found = new Set();
+		falseAlarms = new Set();
+		partButtons.forEach((btn) => {
+			btn.classList.remove("is-flagged", "is-ok", "is-revealed");
+			btn.removeAttribute("aria-label");
+		});
+		statusbar.classList.remove("is-visible");
+		findingsEl.innerHTML = "";
+		updateScore();
+		statusEl.textContent = "Start by reading the whole email carefully.";
+	});
+</script>
+
+<style is:global>
+	.ph-demo .ph-instructions {
+		margin: 0 auto 1em;
+		max-width: 38em;
+		text-align: center;
+		font-size: 0.95em;
+		color: var(--color-text);
+	}
+
+	/* The mock email deliberately looks like a light-themed mail client, so
+	   it reads as "an email" at a glance rather than part of the site. */
+	.ph-demo .ph-email {
+		position: relative;
+		margin: 0 auto;
+		max-width: 40em;
+		border-radius: 10px;
+		overflow: hidden;
+		background: #f7f7f9;
+		color: #1d1f27;
+		text-align: left;
+		box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.7);
+	}
+
+	.ph-demo .ph-email-head {
+		padding: 0.75em 1em;
+		border-bottom: 1px solid #d9dbe3;
+		background: #eceef3;
+	}
+
+	.ph-demo .ph-email-row {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5em;
+		margin: 0 0 0.25em;
+		font-size: 0.9em;
+		line-height: 1.4;
+		color: #1d1f27;
+	}
+
+	.ph-demo .ph-email-row--subject {
+		margin-top: 0.5em;
+		font-size: 1em;
+		font-weight: 700;
+	}
+
+	.ph-demo .ph-email-key {
+		flex-shrink: 0;
+		width: 4.2em;
+		color: #4a4f60;
+		font-weight: 600;
+	}
+
+	.ph-demo .ph-email-body {
+		padding: 1em;
+		font-size: 0.95em;
+		line-height: 1.55;
+	}
+
+	.ph-demo .ph-email-body p {
+		margin: 0 0 0.75em;
+		color: #1d1f27;
+	}
+
+	.ph-demo .ph-email-foot {
+		padding: 0.5em 1em 0.75em;
+		border-top: 1px solid #d9dbe3;
+		font-size: 0.8em;
+		color: #4a4f60;
+	}
+
+	/* Every clickable part looks like normal email text until clicked —
+	   otherwise the buttons would give the answers away. */
+	.ph-demo .ph-part {
+		display: inline;
+		padding: 0.25em 0.25em;
+		line-height: 1.6;
+		margin: 0 -0.25em;
+		border: 2px solid transparent;
+		border-radius: 5px;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		overflow-wrap: anywhere;
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
+	}
+
+	.ph-demo .ph-part:hover {
+		background: rgba(29, 31, 39, 0.07);
+	}
+
+	.ph-demo .ph-part:focus-visible {
+		outline: 3px solid #1d1f27;
+		outline-offset: 1px;
+	}
+
+	.ph-demo .ph-part.is-flagged {
+		border-color: #b45309;
+		background: #fff3d6;
+	}
+
+	.ph-demo .ph-part.is-flagged::before {
+		content: "⚑ ";
+		color: #92400e;
+	}
+
+	.ph-demo .ph-part.is-revealed {
+		border-color: #b45309;
+		border-style: dashed;
+	}
+
+	.ph-demo .ph-part.is-ok {
+		border-color: #9aa0b4;
+		border-style: dotted;
+	}
+
+	.ph-demo .ph-cta-wrap {
+		text-align: center;
+	}
+
+	.ph-demo .ph-cta {
+		display: inline-block;
+		margin: 0.25em 0;
+		padding: 0.5em 1.5em;
+		border-radius: 6px;
+		background: #2b2f3d;
+		color: #fff;
+		font-weight: 700;
+	}
+
+	.ph-demo .ph-cta:hover {
+		background: #3a3f52;
+	}
+
+	.ph-demo .ph-cta.is-flagged {
+		background: #fff3d6;
+		color: #1d1f27;
+	}
+
+	.ph-demo .ph-attachment {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25em;
+		padding: 0.25em 0.75em;
+		border: 1px solid #c7cad6;
+		background: #fff;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+	}
+
+	/* Mimics a browser's link-preview status bar in the bottom corner. */
+	.ph-demo .ph-statusbar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5em;
+		max-width: 100%;
+		margin: 0;
+		padding: 0.25em 0.75em;
+		background: #1d1f27;
+		color: #fff;
+		font-size: 0.8em;
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	.ph-demo .ph-statusbar.is-visible {
+		visibility: visible;
+	}
+
+	.ph-demo .ph-statusbar-label {
+		color: #c7cad6;
+	}
+
+	.ph-demo .ph-statusbar-url {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	.ph-demo .ph-findings {
+		margin: 1em auto 0;
+		max-width: 40em;
+		padding-left: 1.5em;
+		font-size: 0.92em;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+	}
+
+	.ph-demo .ph-findings:empty {
+		display: none;
+	}
+
+	.ph-demo .ph-finding + .ph-finding {
+		margin-top: 0.5em;
+	}
+
+	.ph-demo .ph-finding strong {
+		color: var(--color-text);
+	}
+
+	.ph-demo .ph-finding--flag strong {
+		color: var(--color-accent);
+	}
+
+	/* Projector layout: email on the left, score and findings beside it, so
+	   the whole exercise fits on one 16:9 screen. */
+	@media (min-aspect-ratio: 5/4) {
+		.demo-frame.is-fullscreen .ph-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+			align-items: start;
+			gap: 1.25em;
+		}
+
+		.demo-frame.is-fullscreen .ph-email {
+			margin: 0;
+			font-size: 0.9em;
+		}
+
+		.demo-frame.is-fullscreen .ph-side .demo-stats {
+			margin-top: 0;
+		}
+
+		.demo-frame.is-fullscreen .ph-findings {
+			font-size: 0.8em;
+		}
+	}
+</style>

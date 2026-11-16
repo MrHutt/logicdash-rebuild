@@ -9,7 +9,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test:pseudo": "esbuild tests/pseudo.test.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/pseudo.test.mjs --log-level=error && node node_modules/.cache/pseudo.test.mjs && esbuild tests/progress.test.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/progress.test.mjs --log-level=error && node node_modules/.cache/progress.test.mjs",
+    "test:ui": "node tests/ui.test.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

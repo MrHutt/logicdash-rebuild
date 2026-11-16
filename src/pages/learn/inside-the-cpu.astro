@@ -1,0 +1,347 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "What are the three steps the CPU repeats for every instruction?",
+		options: ["Fetch, decode, execute", "Save, load, delete", "Input, sort, print", "Copy, paste, undo"],
+		explain: "It fetches the next instruction from memory, decodes what it means, and executes it — then starts again.",
+	},
+	{
+		q: "What does the program counter hold?",
+		options: ["The memory address of the next instruction", "How many programs are open", "The answer to the last sum", "The computer's clock speed"],
+		explain: "The program counter points at where the next instruction is. It moves on by one after each fetch.",
+	},
+	{
+		q: "A CPU is described as 3 GHz. Roughly what does that mean?",
+		options: ["About 3 billion clock ticks every second", "It has 3 GB of memory", "It can run 3 programs", "It uses 3 watts of power"],
+		explain: "Giga means billion and hertz means \"per second\". Each tick lets the CPU move its work forward a step.",
+	},
+	{
+		q: "Why does a computer need RAM as well as storage like an SSD?",
+		options: ["RAM is much faster for the CPU to read while a program runs", "RAM keeps files after power is off", "Storage can't hold programs", "RAM is only for games"],
+		explain: "Programs and data are copied into fast RAM while in use. Storage is slower but keeps everything when the power is off.",
+	},
+	{
+		q: "In the demo, what does STORE 7 do?",
+		options: ["Copies the accumulator's value into memory address 7", "Adds 7 to the accumulator", "Jumps to instruction 7", "Deletes address 7"],
+		explain: "STORE writes the result from the accumulator back into memory, so it isn't lost when the next calculation starts.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/inside-the-cpu"
+	description="Inside the CPU: the fetch-decode-execute cycle, registers, memory and clock speed — with a tiny computer you can step through."
+	lead="The processor in your phone only knows how to do very simple things. It just does them billions of times a second."
+>
+	<section class="block">
+		<p class="block-title">The Brain That Follows a List</p>
+		<p class="block-text">
+			The <em>CPU</em> (central processing unit) is the part of a computer that runs programs. It doesn't
+			understand apps or games. It understands tiny instructions like "load this number", "add these two" and
+			"save the result". A program is a long list of them, stored in <em>memory</em>.
+		</p>
+		<p class="block-text">The CPU works through the list with the same three steps, over and over:</p>
+		<ol class="block-list">
+			<li><em>Fetch</em> — get the next instruction from memory.</li>
+			<li><em>Decode</em> — work out what the instruction means.</li>
+			<li><em>Execute</em> — do it.</li>
+		</ol>
+		<p class="block-callout">The fetch–decode–execute cycle: the loop every program runs on, billions of times a second.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The CPU's Notepad</p>
+		<p class="block-text">
+			Inside the CPU are a few very fast storage spots called <em>registers</em>. The demo uses three:
+		</p>
+		<ul class="block-list">
+			<li><em>Program counter</em> — the address of the next instruction to fetch.</li>
+			<li><em>Instruction register</em> — the instruction being worked on right now.</li>
+			<li><em>Accumulator</em> — where the result of a calculation is kept.</li>
+		</ul>
+	</section>
+
+	<DemoFrame label="CPU demo">
+		<div class="cpu" data-cpu>
+			<p class="cpu-label">Memory</p>
+			<div class="cpu-memory" data-cpu-memory></div>
+
+			<div class="cpu-regs">
+				<div class="demo-stat"><span class="demo-stat-value" data-cpu-pc>0</span><span class="demo-stat-label">Program counter</span></div>
+				<div class="demo-stat"><span class="demo-stat-value" data-cpu-ir>—</span><span class="demo-stat-label">Instruction</span></div>
+				<div class="demo-stat"><span class="demo-stat-value" data-cpu-acc>0</span><span class="demo-stat-label">Accumulator</span></div>
+			</div>
+
+			<p class="cpu-phase" data-cpu-phase aria-hidden="true"></p>
+			<p class="demo-status" data-cpu-status aria-live="polite"></p>
+
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-cpu-step>Next step →</button>
+				<button type="button" class="demo-btn" data-cpu-run>Run to the end</button>
+				<button type="button" class="demo-btn" data-cpu-reset>Reset</button>
+			</div>
+			<div class="demo-field">
+				<label for="cpu-a">Number at 5</label>
+				<input id="cpu-a" class="demo-input cpu-num" type="number" min="0" max="99" value="12" data-cpu-a />
+				<label for="cpu-b">Number at 6</label>
+				<input id="cpu-b" class="demo-input cpu-num" type="number" min="0" max="99" value="30" data-cpu-b />
+			</div>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Faster and Faster</p>
+		<p class="block-text">
+			A CPU's <em>clock</em> ticks billions of times a second — a 3 GHz processor ticks about three billion times.
+			Each tick moves the work forward. Modern CPUs also have several <em>cores</em>, which are like several CPUs in
+			one chip, each running its own fetch–decode–execute loop at the same time. That's the same idea as{" "}
+			<a href="/learn/speedup">running tasks in parallel</a>.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Memory vs Storage</p>
+		<div class="compare-grid">
+			<div class="compare-card compare-card--accent">
+				<p class="compare-card-title">RAM (memory)</p>
+				<p>Very fast. Holds the programs and data in use right now.</p>
+				<p>Forgets everything when the power goes off.</p>
+			</div>
+			<div class="compare-card">
+				<p class="compare-card-title">Storage (SSD or hard drive)</p>
+				<p>Slower, but much bigger and cheaper.</p>
+				<p>Keeps your files and apps when the power is off.</p>
+			</div>
+		</div>
+		<p class="block-text">
+			When you open an app, it's copied from storage into RAM so the CPU can fetch its instructions quickly.
+		</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-cpu]")!;
+	const memEl = root.querySelector<HTMLElement>("[data-cpu-memory]")!;
+	const pcEl = root.querySelector<HTMLElement>("[data-cpu-pc]")!;
+	const irEl = root.querySelector<HTMLElement>("[data-cpu-ir]")!;
+	const accEl = root.querySelector<HTMLElement>("[data-cpu-acc]")!;
+	const phaseEl = root.querySelector<HTMLElement>("[data-cpu-phase]")!;
+	const status = root.querySelector<HTMLElement>("[data-cpu-status]")!;
+	const stepBtn = root.querySelector<HTMLButtonElement>("[data-cpu-step]")!;
+	const runBtn = root.querySelector<HTMLButtonElement>("[data-cpu-run]")!;
+	const aInput = root.querySelector<HTMLInputElement>("[data-cpu-a]")!;
+	const bInput = root.querySelector<HTMLInputElement>("[data-cpu-b]")!;
+
+	type Cell = string | number;
+	let mem: Cell[] = [];
+	let pc = 0;
+	let ir = "";
+	let acc = 0;
+	let phase: "fetch" | "decode" | "execute" | "halted" = "fetch";
+	let highlight = -1;
+	let changed = -1;
+
+	const clampNum = (v: string) => Math.max(0, Math.min(99, Math.round(Number(v) || 0)));
+
+	function reset() {
+		mem = ["LOAD 5", "ADD 6", "STORE 7", "HALT", 0, clampNum(aInput.value), clampNum(bInput.value), 0];
+		pc = 0;
+		ir = "";
+		acc = 0;
+		phase = "fetch";
+		highlight = -1;
+		changed = -1;
+		status.textContent = "The program is in memory at addresses 0–3, and its numbers are at 5 and 6. Press Next step.";
+		render();
+	}
+
+	function decodeText(instr: string) {
+		const [op, arg] = instr.split(" ");
+		if (op === "LOAD") return `LOAD ${arg} means: copy the number at address ${arg} into the accumulator.`;
+		if (op === "ADD") return `ADD ${arg} means: add the number at address ${arg} to the accumulator.`;
+		if (op === "STORE") return `STORE ${arg} means: copy the accumulator into address ${arg}.`;
+		return "HALT means: stop — the program is finished.";
+	}
+
+	function step() {
+		changed = -1;
+		if (phase === "fetch") {
+			highlight = pc;
+			ir = String(mem[pc]);
+			status.textContent = `Fetch: get the instruction at address ${pc} ("${ir}"), then move the program counter on to ${pc + 1}.`;
+			pc += 1;
+			phase = "decode";
+		} else if (phase === "decode") {
+			status.textContent = `Decode: ${decodeText(ir)}`;
+			phase = "execute";
+		} else if (phase === "execute") {
+			const [op, arg] = ir.split(" ");
+			const addr = Number(arg);
+			if (op === "LOAD") {
+				acc = Number(mem[addr]);
+				highlight = addr;
+				status.textContent = `Execute: the accumulator is now ${acc}.`;
+			} else if (op === "ADD") {
+				const before = acc;
+				acc += Number(mem[addr]);
+				highlight = addr;
+				status.textContent = `Execute: ${before} + ${mem[addr]} = ${acc}. The accumulator is now ${acc}.`;
+			} else if (op === "STORE") {
+				mem[addr] = acc;
+				changed = addr;
+				highlight = addr;
+				status.textContent = `Execute: ${acc} is saved at address ${addr}.`;
+			} else {
+				phase = "halted";
+				status.textContent = `Execute: HALT. Done! The answer ${mem[7]} is stored at address 7. Change the numbers and press Reset to run it again.`;
+				render();
+				return;
+			}
+			phase = "fetch";
+		}
+		render();
+	}
+
+	function render() {
+		memEl.innerHTML = mem
+			.map((v, i) => {
+				const cls = ["cpu-cell", i < 4 ? "is-code" : "is-data", i === highlight ? "is-active" : "", i === changed ? "is-changed" : "", phase !== "halted" && i === pc && phase === "fetch" ? "is-next" : ""].join(" ");
+				return `<div class="${cls}"><span class="cpu-addr">${i}</span><span class="cpu-val">${v}</span></div>`;
+			})
+			.join("");
+		pcEl.textContent = String(pc);
+		irEl.textContent = ir || "—";
+		accEl.textContent = String(acc);
+		const labels = { fetch: "Next: FETCH", decode: "Next: DECODE", execute: "Next: EXECUTE", halted: "Stopped" };
+		phaseEl.innerHTML = ["fetch", "decode", "execute"]
+			.map((p) => `<span class="${p === phase ? "is-current" : ""}">${p.toUpperCase()}</span>`)
+			.join('<span class="cpu-arrow">→</span>');
+		phaseEl.setAttribute("title", labels[phase]);
+		stepBtn.disabled = runBtn.disabled = phase === "halted";
+	}
+
+	stepBtn.addEventListener("click", step);
+	runBtn.addEventListener("click", () => {
+		let guard = 0;
+		while (phase !== "halted" && guard++ < 40) step();
+	});
+	root.querySelector("[data-cpu-reset]")!.addEventListener("click", reset);
+	[aInput, bInput].forEach((inp) => inp.addEventListener("change", reset));
+	reset();
+</script>
+
+<style is:global>
+	.cpu {
+		text-align: center;
+	}
+
+	.cpu-label {
+		margin: 0 0 0.4em;
+		font-size: 0.8em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.cpu-memory {
+		display: grid;
+		grid-template-columns: repeat(8, minmax(0, 1fr));
+		gap: 0.35em;
+		max-width: 40em;
+		margin: 0 auto;
+	}
+
+	@media (max-width: 560px) {
+		.demo-frame:not(.is-fullscreen) .cpu-memory {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	.cpu-cell {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15em;
+		padding: 0.4em 0.2em;
+		border-radius: 8px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		transition:
+			border-color 0.2s ease,
+			background 0.2s ease;
+	}
+
+	.cpu-cell.is-code {
+		background: color-mix(in srgb, var(--group-color, #a78bfa) 8%, var(--color-bg));
+	}
+
+	.cpu-addr {
+		font-size: 0.7em;
+		color: var(--color-text-muted);
+	}
+
+	.cpu-val {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85em;
+		color: var(--color-text);
+		white-space: nowrap;
+	}
+
+	.cpu-cell.is-next {
+		border-style: dashed;
+		border-color: var(--color-text-muted);
+	}
+
+	.cpu-cell.is-active {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+	}
+
+	.cpu-cell.is-changed {
+		border-color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 18%, var(--color-bg));
+	}
+
+	.cpu-regs {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5em;
+		margin-top: 1em;
+	}
+
+	.cpu-regs .demo-stat {
+		min-width: 9em;
+	}
+
+	.cpu-phase {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 0.5em;
+		margin: 1em 0 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.9em;
+		color: var(--color-text-muted);
+	}
+
+	.cpu-phase .is-current {
+		padding: 0.15em 0.5em;
+		border-radius: 6px;
+		background: var(--color-accent);
+		color: var(--color-accent-contrast);
+	}
+
+	.cpu-num {
+		width: 4.5em;
+		text-align: center;
+	}
+</style>

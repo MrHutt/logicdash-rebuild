@@ -50,7 +50,7 @@ const blinkDelay = (Math.random() * -1.2).toFixed(2);
 		   the edge of the original ~58px-wide tile) — see that comment for
 		   the full derivation. Height simply follows from the unchanged
 		   3:5 aspect-ratio. */
-		width: clamp(2.57rem, 9.33vw, 4.2rem);
+		width: calc(var(--clock-tile-height) * 0.7);
 		aspect-ratio: 3 / 5;
 		flex-shrink: 0;
 		overflow: visible;
@@ -58,7 +58,7 @@ const blinkDelay = (Math.random() * -1.2).toFixed(2);
 		/* Flat solid color block — no gradient — deliberately clashing
 		   against the text color set below. */
 		background: var(--chaos-bg, #1a1330);
-		border-width: 5px;
+		border-width: calc(var(--u, 1px) * 5);
 		border-style: solid;
 		/* Hard-cut (steps(1), not eased) color changes — a genuine blink
 		   through the whole palette, not a subtle dashed outline. */
@@ -106,9 +106,14 @@ const blinkDelay = (Math.random() * -1.2).toFixed(2);
 		   sticker effect, on purpose, and also what keeps the digit
 		   legible sitting on top of an equally-loud solid background. */
 		text-shadow:
-			0 0 8px var(--chaos-color, #ff2fd4),
-			2px 2px 0 #000,
-			-1px -1px 0 rgba(255, 255, 255, 0.6);
+			0 0 calc(var(--u, 1px) * 8) var(--chaos-color, #ff2fd4),
+			calc(var(--u, 1px) * 2) calc(var(--u, 1px) * 2) 0 #000,
+			calc(var(--u, 1px) * -1) calc(var(--u, 1px) * -1) 0 rgba(255, 255, 255, 0.6);
+		/* Neon-on-neon is only ~1.7-2:1, so a solid black outline is what
+		   actually carries legibility — the digit's edge is black against a
+		   bright tile, which reads from the back of the room. */
+		-webkit-text-stroke: calc(var(--u, 1px) * 5) #000;
+		paint-order: stroke fill;
 		animation: chaos-wobble 2.1s steps(8, end) infinite;
 		animation-delay: var(--wobble-delay, 0s);
 	}

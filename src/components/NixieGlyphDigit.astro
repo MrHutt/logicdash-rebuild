@@ -58,7 +58,7 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		   full derivation. Height still simply follows from the 1:2
 		   aspect-ratio, so this tube ends up both wider AND taller than a
 		   flat segment tile, not just taller. */
-		width: clamp(2.7rem, 9.8vw, 4.4rem);
+		width: calc(var(--clock-tile-height) * 0.7333);
 		aspect-ratio: 1 / 2;
 		flex-shrink: 0;
 		overflow: hidden;
@@ -103,7 +103,7 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		width: 13%;
 		border-radius: 50%;
 		background: linear-gradient(to bottom, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04) 55%, transparent 85%);
-		filter: blur(1.5px);
+		filter: blur(calc(var(--u, 1px) * 1.5));
 		pointer-events: none;
 		z-index: 5;
 	}
@@ -178,9 +178,9 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		   to bleed past the stroke into the surrounding cell. Keeping every
 		   layer tight makes the glow hug the numeral's contours instead. */
 		filter:
-			drop-shadow(0 0 1px #ffb27a)
-			drop-shadow(0 0 3px #ff8a3d)
-			drop-shadow(0 0 6px rgba(255, 90, 0, 0.7));
+			drop-shadow(0 0 calc(var(--u, 1px) * 1) #ffb27a)
+			drop-shadow(0 0 calc(var(--u, 1px) * 3) #ff8a3d)
+			drop-shadow(0 0 calc(var(--u, 1px) * 6) rgba(255, 90, 0, 0.7));
 	}
 
 	/* The outgoing digit, held for one frame at the moment of a change and
@@ -206,7 +206,7 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		color: #ff5000;
 		opacity: 0;
 		pointer-events: none;
-		filter: drop-shadow(0 0 3px rgba(255, 90, 0, 0.6));
+		filter: drop-shadow(0 0 calc(var(--u, 1px) * 3) rgba(255, 90, 0, 0.6));
 	}
 
 	.nixie-glyph-transition-ghost.is-fading {

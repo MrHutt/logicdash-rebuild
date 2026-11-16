@@ -1,0 +1,345 @@
+---
+// A short "check your understanding" quiz for concept pages. All questions
+// are visible at once (like a worksheet); each gets one try, with instant
+// feedback and an explanation, and a score appears once all are answered.
+// "Try again" clears everything and shuffles the answer order. Sits inside
+// DemoFrame, so a teacher can project it fullscreen and run it as a class.
+import DemoFrame from "./DemoFrame.astro";
+
+export interface QuizQuestion {
+	q: string;
+	/** Correct answer first — the order is shuffled in the browser. */
+	options: string[];
+	explain: string;
+}
+
+interface Props {
+	questions: QuizQuestion[];
+}
+
+const { questions } = Astro.props;
+---
+
+<DemoFrame label="Quiz" title="Check your understanding">
+	<div class="cq" data-cq data-total={questions.length}>
+		<p class="cq-intro">{questions.length} quick questions. Pick one answer for each — you'll see why straight away.</p>
+		<ol class="cq-list">
+			{
+				questions.map((item, qi) => (
+					<li class="cq-item" data-cq-item>
+						<p class="cq-question" id={`cq-q-${qi}`}>
+							{item.q}
+						</p>
+						<div class="cq-options" role="group" aria-labelledby={`cq-q-${qi}`} data-cq-options>
+							{item.options.map((opt, oi) => (
+								<button type="button" class="cq-option" data-cq-option data-correct={oi === 0 ? "true" : "false"}>
+									<span class="cq-mark" aria-hidden="true" />
+									<span class="cq-option-text">{opt}</span>
+								</button>
+							))}
+						</div>
+						<p class="cq-feedback" data-cq-feedback aria-live="polite" hidden>
+							<strong class="cq-verdict" data-cq-verdict />
+							<span>{item.explain}</span>
+						</p>
+					</li>
+				))
+			}
+		</ol>
+		<div class="cq-stepper" data-cq-stepper>
+			<button type="button" class="demo-btn" data-cq-prev>← Previous</button>
+			<span class="cq-step-count" data-cq-count aria-live="polite"></span>
+			<button type="button" class="demo-btn demo-btn--primary" data-cq-next>Next →</button>
+		</div>
+		<div class="cq-result" data-cq-result hidden>
+			<p class="cq-score" data-cq-score aria-live="polite"></p>
+			<div class="demo-controls">
+				<button type="button" class="demo-btn demo-btn--primary" data-cq-retry>Try again</button>
+			</div>
+		</div>
+	</div>
+</DemoFrame>
+
+<script>
+	document.querySelectorAll<HTMLElement>("[data-cq]").forEach((quiz) => {
+		const total = Number(quiz.dataset.total);
+		const items = Array.from(quiz.querySelectorAll<HTMLElement>("[data-cq-item]"));
+		const result = quiz.querySelector<HTMLElement>("[data-cq-result]")!;
+		const scoreEl = quiz.querySelector<HTMLElement>("[data-cq-score]")!;
+		const retryBtn = quiz.querySelector<HTMLButtonElement>("[data-cq-retry]")!;
+		const frame = quiz.closest<HTMLElement>("[data-demo-frame]");
+		const prevBtn = quiz.querySelector<HTMLButtonElement>("[data-cq-prev]")!;
+		const nextBtn = quiz.querySelector<HTMLButtonElement>("[data-cq-next]")!;
+		const countEl = quiz.querySelector<HTMLElement>("[data-cq-count]")!;
+		let answered = 0;
+		let correct = 0;
+		let current = 0;
+
+		// Fullscreen = "class mode": one big question at a time with
+		// Previous/Next, so the whole thing fits on a projector without
+		// scrolling. On the page itself, all questions show at once.
+		function showStep() {
+			const classMode = !!frame?.classList.contains("is-fullscreen");
+			quiz.classList.toggle("cq--class", classMode);
+			items.forEach((item, i) => item.classList.toggle("is-current", i === current));
+			prevBtn.disabled = current === 0;
+			nextBtn.disabled = current === total - 1;
+			countEl.textContent = `Question ${current + 1} of ${total}`;
+		}
+
+		prevBtn.addEventListener("click", () => {
+			current = Math.max(0, current - 1);
+			showStep();
+		});
+		nextBtn.addEventListener("click", () => {
+			current = Math.min(total - 1, current + 1);
+			showStep();
+		});
+		frame?.addEventListener("demo-fullscreen-change", showStep);
+
+		function shuffleOptions() {
+			items.forEach((item) => {
+				const group = item.querySelector<HTMLElement>("[data-cq-options]")!;
+				const buttons = Array.from(group.children);
+				for (let i = buttons.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[buttons[i], buttons[j]] = [buttons[j], buttons[i]];
+				}
+				buttons.forEach((b) => group.append(b));
+			});
+		}
+
+		function reset() {
+			answered = 0;
+			correct = 0;
+			items.forEach((item) => {
+				item.querySelectorAll<HTMLButtonElement>("[data-cq-option]").forEach((btn) => {
+					btn.disabled = false;
+					btn.classList.remove("is-correct", "is-wrong");
+					btn.querySelector(".cq-mark")!.textContent = "";
+				});
+				item.querySelector<HTMLElement>("[data-cq-feedback]")!.hidden = true;
+			});
+			result.hidden = true;
+			current = 0;
+			shuffleOptions();
+			showStep();
+		}
+
+		items.forEach((item) => {
+			const buttons = item.querySelectorAll<HTMLButtonElement>("[data-cq-option]");
+			const feedback = item.querySelector<HTMLElement>("[data-cq-feedback]")!;
+			const verdict = item.querySelector<HTMLElement>("[data-cq-verdict]")!;
+			buttons.forEach((btn) => {
+				btn.addEventListener("click", () => {
+					const right = btn.dataset.correct === "true";
+					buttons.forEach((b) => {
+						b.disabled = true;
+						if (b.dataset.correct === "true") {
+							b.classList.add("is-correct");
+							b.querySelector(".cq-mark")!.textContent = "✓";
+						}
+					});
+					if (!right) {
+						btn.classList.add("is-wrong");
+						btn.querySelector(".cq-mark")!.textContent = "✗";
+					}
+					verdict.textContent = right ? "✓ Correct. " : "✗ Not quite. ";
+					verdict.className = `cq-verdict ${right ? "demo-verdict--good" : "demo-verdict--bad"}`;
+					feedback.hidden = false;
+					answered += 1;
+					if (right) correct += 1;
+					if (answered === total) {
+						const message =
+							correct === total
+								? "Perfect — you've got this."
+								: correct >= total - 1
+									? "Nearly all of them. Read the explanation for the one you missed."
+									: "Worth another read of the page, then try again.";
+						scoreEl.textContent = `You got ${correct} out of ${total}. ${message}`;
+						result.hidden = false;
+					}
+				});
+			});
+		});
+
+		retryBtn.addEventListener("click", () => {
+			reset();
+			items[0]?.querySelector<HTMLButtonElement>("[data-cq-option]")?.focus();
+		});
+
+		shuffleOptions();
+		showStep();
+	});
+</script>
+
+<style is:global>
+	.cq .cq-intro {
+		margin: 0 0 0.75em;
+		text-align: center;
+		font-size: 0.95em;
+		color: var(--color-text-muted);
+	}
+
+	.cq .cq-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1em;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: cq;
+	}
+
+	.cq .cq-item {
+		counter-increment: cq;
+		padding: 0.75em 1em;
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.cq .cq-question {
+		margin: 0 0 0.5em;
+		font-weight: 700;
+		font-size: 1.02em;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.cq .cq-question::before {
+		content: counter(cq) ". ";
+		color: var(--color-accent);
+	}
+
+	/* Four answers: an even 2 × 2 grid, or one column on phones. */
+	.cq .cq-options {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0.5em;
+	}
+
+	@media (min-width: 560px) {
+		.cq .cq-options {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	.cq .cq-option {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		min-height: 2.9em;
+		padding: 0.5em 0.75em;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font-family: var(--font-sans);
+		font-size: 0.95em;
+		line-height: 1.35;
+		text-align: left;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.cq .cq-option:hover:not(:disabled),
+	.cq .cq-option:focus-visible {
+		border-color: var(--color-accent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 30%, transparent);
+	}
+
+	.cq .cq-option:disabled {
+		cursor: default;
+	}
+
+	.cq .cq-option:disabled:not(.is-correct):not(.is-wrong) {
+		opacity: 0.55;
+	}
+
+	.cq .cq-mark {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 1.5em;
+		height: 1.5em;
+		border-radius: 50%;
+		border: 1px solid var(--color-border);
+		font-weight: 700;
+		font-size: 0.85em;
+	}
+
+	.cq .cq-option.is-correct {
+		border-color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
+	}
+
+	.cq .cq-option.is-correct .cq-mark {
+		border-color: var(--color-success);
+		color: var(--color-success);
+	}
+
+	.cq .cq-option.is-wrong {
+		border-color: var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface));
+	}
+
+	.cq .cq-option.is-wrong .cq-mark {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+	}
+
+	.cq .cq-feedback {
+		margin: 0.5em 0 0;
+		font-size: 0.95em;
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	/* Previous/Next only exists in class mode (fullscreen). */
+	.cq .cq-stepper {
+		display: none;
+	}
+
+	.cq.cq--class .cq-stepper {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75em;
+		margin-top: 1em;
+	}
+
+	.cq.cq--class .cq-item:not(.is-current) {
+		display: none;
+	}
+
+	.cq.cq--class .cq-intro {
+		display: none;
+	}
+
+	.cq.cq--class .cq-question {
+		font-size: 1.25em;
+	}
+
+	.cq .cq-step-count {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.9em;
+		color: var(--color-text-muted);
+	}
+
+	.cq .cq-result {
+		margin-top: 1em;
+		text-align: center;
+	}
+
+	.cq .cq-score {
+		margin: 0;
+		font-weight: 700;
+		font-size: 1.1em;
+		color: #fff3d6;
+	}
+</style>

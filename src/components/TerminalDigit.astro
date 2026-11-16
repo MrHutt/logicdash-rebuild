@@ -33,7 +33,7 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: clamp(2.2rem, 8vw, 3.6rem);
+		width: calc(var(--clock-tile-height) * 0.6);
 		aspect-ratio: 3 / 5;
 		flex-shrink: 0;
 		overflow: hidden;
@@ -78,9 +78,9 @@ const flickerDelay = (Math.random() * -6).toFixed(2);
 		/* Same three-stacked-shadow technique as the site's other glowing
 		   styles — a tight bright core out to a wider soft phosphor bloom. */
 		filter:
-			drop-shadow(0 0 1.5px #c8ffc8)
-			drop-shadow(0 0 4px #33ff33)
-			drop-shadow(0 0 11px rgba(51, 255, 51, 0.65));
+			drop-shadow(0 0 calc(var(--u, 1px) * 1.5) #c8ffc8)
+			drop-shadow(0 0 calc(var(--u, 1px) * 4) #33ff33)
+			drop-shadow(0 0 calc(var(--u, 1px) * 11) rgba(51, 255, 51, 0.65));
 	}
 
 	@keyframes term-flicker {

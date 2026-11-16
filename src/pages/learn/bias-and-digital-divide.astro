@@ -1,0 +1,126 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import ScenarioSort, { type Scenario } from "../../components/ScenarioSort.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const CHOICES = ["Digital divide", "Computing bias"];
+const SCENARIOS: Scenario[] = [
+	{
+		text: "A school sets homework that can only be done online, but some students have no internet at home.",
+		answer: 0,
+		explain: "The problem is unequal access to the internet, not a flaw in the software itself.",
+	},
+	{
+		text: "A face-unlock feature works well for some skin tones and badly for others, because most of the faces it learned from were lighter-skinned.",
+		answer: 1,
+		explain: "The training data was one-sided, so the program works unfairly for some groups.",
+	},
+	{
+		text: "A town moves a service people depend on to a smartphone app only — no phone line, no office.",
+		answer: 0,
+		explain: "People without a smartphone, or who aren't confident using apps, are shut out.",
+	},
+	{
+		text: "A job-application screener learned from ten years of past hires — mostly men — and now ranks women's applications lower.",
+		answer: 1,
+		explain: "It copied an unfair pattern from its data. Biased data in, biased decisions out.",
+	},
+	{
+		text: "Video lessons keep freezing for students in a rural area, where internet speeds are much slower than in the city.",
+		answer: 0,
+		explain: "Where you live decides the quality of access you get — a classic digital divide.",
+	},
+	{
+		text: "A voice assistant understands some accents far better than others.",
+		answer: 1,
+		explain: "It was built and tested mostly with certain voices, so it treats other users unfairly.",
+	},
+];
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "What is the digital divide?",
+		options: ["The gap between people who have access to computers and the internet and people who don't", "The line between two computer screens", "A type of network cable", "The difference between RAM and storage"],
+		explain: "The divide can be about devices, internet speed, cost, or the skills to use them — between countries, regions, incomes and ages.",
+	},
+	{
+		q: "Where does computing bias usually come from?",
+		options: ["People's choices and the data a program is built or trained on", "Computers having opinions", "Slow internet", "Using too much electricity"],
+		explain: "Computers follow their instructions and learn from data. If either reflects unfair human patterns, the results can be unfair too.",
+	},
+	{
+		q: "Which step would most help reduce bias in a face-recognition program?",
+		options: ["Train and test it on faces from a wide range of people", "Make it run faster", "Use a bigger screen", "Test it only on its programmers"],
+		explain: "Data and testing that include many kinds of people make it much more likely to work fairly for everyone.",
+	},
+	{
+		q: "A library starts lending laptops and Wi-Fi hotspots. Which problem does that help with?",
+		options: ["The digital divide", "Computing bias", "The halting problem", "Data compression"],
+		explain: "It gives people access to devices and the internet they wouldn't otherwise have.",
+	},
+	{
+		q: "Can a program be biased even if nobody meant it to be?",
+		options: ["Yes — bias can come from the data or from things nobody thought to test", "No — bias always needs someone to plan it", "Only if it's an old program", "Only games can be biased"],
+		explain: "Most computing bias is accidental, which is exactly why it's important to look for it on purpose.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/bias-and-digital-divide"
+	description="The digital divide and computing bias explained: who gets left out by technology, how bias gets into programs, and what can be done — with a sorting activity."
+	lead="Technology can make life easier — but not for everyone equally. Some people can't get access, and some programs don't treat everyone fairly."
+>
+	<section class="block">
+		<p class="block-title">The Digital Divide</p>
+		<p class="block-text">
+			The <em>digital divide</em> is the gap between people who have good access to computers and the internet and
+			people who don't. It can depend on:
+		</p>
+		<ul class="block-list">
+			<li><em>Money</em> — devices and internet plans cost a lot.</li>
+			<li><em>Where you live</em> — rural areas and some countries have slow or no internet.</li>
+			<li><em>Skills and confidence</em> — not everyone has been taught how to use technology.</li>
+			<li><em>Disability</em> — websites and apps that aren't accessible shut people out.</li>
+		</ul>
+		<p class="block-text">
+			As more of school, work, banking and healthcare moves online, being on the wrong side of the divide means
+			missing out on more and more.
+		</p>
+		<p class="block-callout">The digital divide is unequal access to computing — devices, internet, and the skills to use them.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Computing Bias</p>
+		<p class="block-text">
+			<em>Computing bias</em> is when a program treats some people unfairly. Computers don't have opinions — but
+			they're built by people and often learn from data, and both can carry unfair patterns:
+		</p>
+		<ul class="block-list">
+			<li>A program that learns from <a href="/learn/data-and-bias">one-sided data</a> repeats that one-sidedness.</li>
+			<li>Designers may test only with people like themselves, and miss problems for everyone else.</li>
+			<li>Choices about what to measure can favor some groups without anyone meaning to.</li>
+		</ul>
+	</section>
+
+	<ScenarioSort
+		label="Digital divide or computing bias activity"
+		prompt="Is this mainly about access (digital divide) or unfair treatment by a program (computing bias)?"
+		choices={CHOICES}
+		scenarios={SCENARIOS}
+	/>
+
+	<section class="block">
+		<p class="block-title">What Helps</p>
+		<ul class="block-list">
+			<li>Low-cost devices, public Wi-Fi, and libraries that lend laptops and hotspots.</li>
+			<li>Teaching digital skills to everyone, of every age.</li>
+			<li>Designing for accessibility from the start — captions, screen readers, large text.</li>
+			<li>Training programs on data from many kinds of people, and testing with them too.</li>
+			<li>Diverse teams, who are more likely to notice who's being left out.</li>
+		</ul>
+		<p class="block-callout">Fair technology doesn't happen by accident — someone has to check for it.</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>

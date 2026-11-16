@@ -1,0 +1,149 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import ScenarioSort, { type Scenario } from "../../components/ScenarioSort.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+const CHOICES = ["Yes, freely", "Yes, with credit", "No — ask first"];
+const SCENARIOS: Scenario[] = [
+	{
+		text: "A photo marked CC0 (public domain), on a poster for your class.",
+		answer: 0,
+		explain: "CC0 means the creator gave up their rights. Anyone can use it for anything — though crediting them is still kind.",
+	},
+	{
+		text: "A diagram marked CC BY, in your school presentation.",
+		answer: 1,
+		explain: "BY means you can use it, as long as you credit the creator.",
+	},
+	{
+		text: "A hit song from the radio, as the soundtrack to a video you post publicly.",
+		answer: 2,
+		explain: "Music is copyrighted by default. Posting it publicly generally needs permission or a license.",
+	},
+	{
+		text: "A drawing marked CC BY-NC, printed on t-shirts you plan to sell.",
+		answer: 2,
+		explain: "NC means non-commercial. Selling t-shirts is commercial, so you'd need the creator's permission.",
+	},
+	{
+		text: "Open-source code under the MIT license, inside an app you're building.",
+		answer: 1,
+		explain: "The MIT license lets you use, change and even sell it — as long as you keep its copyright and license notice.",
+	},
+	{
+		text: "An image you found in a web search with no license information, on a website you publish.",
+		answer: 2,
+		explain: "Being easy to find online doesn't make something free to use. With no license, assume it's copyrighted.",
+	},
+	{
+		text: "A photo marked CC BY-ND, which you crop and add text to for a meme.",
+		answer: 2,
+		explain: "ND means no derivatives: you can share it as it is, but not change it.",
+	},
+];
+
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "When does a student's original drawing become protected by copyright?",
+		options: ["Automatically, as soon as it's created", "Only after it's registered", "Only if it's sold", "Never — students can't own copyright"],
+		explain: "Copyright applies automatically to original work the moment it's made — no form needed.",
+	},
+	{
+		q: "What does the \"BY\" in a Creative Commons license require?",
+		options: ["Giving credit to the creator", "Paying the creator", "Not changing the work", "Only using it in schools"],
+		explain: "BY stands for attribution: say who made it.",
+	},
+	{
+		q: "What makes software \"open source\"?",
+		options: ["Its source code is published so anyone can read, use and improve it", "It's always free of bugs", "It's made by one company", "It can't be used in apps"],
+		explain: "Open-source code can be studied, changed and shared under its license. Many big projects are built by volunteers around the world.",
+	},
+	{
+		q: "You credit an article, but copy whole paragraphs into your essay as if you wrote them. What's wrong?",
+		options: ["It's still plagiarism — copied words need quotation marks and a citation", "Nothing — you gave credit", "It's only wrong if you're paid", "Copyright doesn't apply to essays"],
+		explain: "Plagiarism is passing off someone else's work as your own. Quote and cite exactly what you borrow.",
+	},
+	{
+		q: "Why do some creators choose Creative Commons licenses?",
+		options: ["To let others share and build on their work, on clear terms", "To stop anyone from seeing it", "Because copyright doesn't apply to them", "To make their files smaller"],
+		explain: "A CC license tells everyone up front what they're allowed to do — so good work can spread without people having to ask each time.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/copyright-and-open-source"
+	description="Copyright, Creative Commons and open source explained: who owns creative work, what CC licenses allow, and how to reuse things fairly."
+	lead="It's easy to copy a photo, a song or some code. Whether you're allowed to is a different question."
+>
+	<section class="block">
+		<p class="block-title">Copyright: Automatic Ownership</p>
+		<p class="block-text">
+			When someone creates something original — a photo, song, story, drawing, video or program — they automatically
+			own the <em>copyright</em>. That gives them the right to decide who can copy, share, change or sell it.
+		</p>
+		<p class="block-text">
+			Finding something online doesn't make it free to use. Unless the creator says otherwise, assume it's
+			copyrighted.
+		</p>
+		<p class="block-callout">Copyright protects creators' work by default — even work you can find with one search.</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Creative Commons: Sharing on Purpose</p>
+		<p class="block-text">
+			Many creators <em>want</em> their work to be shared. <em>Creative Commons</em> (CC) licenses let them say,
+			clearly and up front, what others may do:
+		</p>
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead><tr><th>Label</th><th>Means</th></tr></thead>
+				<tbody>
+					<tr><td class="num">BY</td><td>Credit the creator.</td></tr>
+					<tr><td class="num">SA</td><td>Share alike: if you change it, share yours under the same license.</td></tr>
+					<tr><td class="num">NC</td><td>Non-commercial: you can't use it to make money.</td></tr>
+					<tr><td class="num">ND</td><td>No derivatives: share it as it is — don't change it.</td></tr>
+					<tr><td class="num">CC0</td><td>Public domain: no rights reserved. Use it for anything.</td></tr>
+				</tbody>
+			</table>
+		</div>
+		<p class="block-text">
+			Labels combine. <span class="mono-highlight">CC BY-NC</span> means "credit me, and don't make money from it".
+		</p>
+	</section>
+
+	<ScenarioSort
+		label="Can I use it activity"
+		title="Can I use it?"
+		prompt="Can you use it this way?"
+		choices={CHOICES}
+		scenarios={SCENARIOS}
+	/>
+
+	<section class="block">
+		<p class="block-title">Open-Source Software</p>
+		<p class="block-text">
+			<em>Open-source</em> software publishes its source code so anyone can read it, use it, fix it and improve it,
+			under the terms of its license. Much of the internet runs on open-source code, often built by volunteers around
+			the world — a kind of <a href="/learn/distributed-computing">crowdsourcing</a>.
+		</p>
+		<p class="block-text">
+			Open source still has rules. Most licenses ask you to keep the original copyright notice, and some ask you to
+			share your changes too.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Credit, Plagiarism, and Fair Use</p>
+		<ul class="block-list">
+			<li><em>Always credit</em> what you use: who made it, where it's from, and its license.</li>
+			<li><em>Plagiarism</em> is passing off someone else's work as yours — it's wrong even when copying is allowed.</li>
+			<li>
+				Some limited uses — like short quotes for a review or a class project — may count as <em>fair use</em>, but it
+				depends on the situation. When in doubt, ask permission or find openly licensed work.
+			</li>
+		</ul>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>

@@ -1,189 +1,764 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import TopicIcon from "../../components/TopicIcon.astro";
-import { LEARN_TOPICS, GROUP_ORDER } from "../../lib/learnTopics";
+import LineIcon from "../../components/LineIcon.astro";
+import {
+	LEARN_TOPICS,
+	GROUP_ORDER,
+	GROUP_BLURBS,
+	GROUP_COLORS,
+	LEVEL_ORDER,
+	LEVEL_LABELS,
+	LEVEL_HINTS,
+	FOCUS_ORDER,
+	FOCUS_LABELS,
+	type LearnTopic,
+} from "../../lib/learnTopics";
 
 // GROUP_ORDER is shared with learnTopics.ts's HUB_ORDERED_TOPICS, which
 // drives every article's prev/next — so this grid and that pagination always
 // agree on what "next" means.
+const slug = (name: string) =>
+	name
+		.toLowerCase()
+		.replace(/&/g, "and")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-|-$/g, "");
+
 const groups = GROUP_ORDER.map((name) => ({
 	name,
+	id: slug(name),
+	blurb: GROUP_BLURBS[name],
+	color: GROUP_COLORS[name],
 	topics: LEARN_TOPICS.filter((topic) => topic.group === name),
 })).filter((group) => group.topics.length > 0);
+const liveCount = LEARN_TOPICS.filter((topic) => topic.live).length;
+const codeMap = Object.fromEntries(LEARN_TOPICS.filter((topic) => topic.live).map((topic) => [topic.code, topic.href]));
+
+/** "Beginner", "Beginner – Intermediate", "Beginner – Advanced"… */
+const levelText = (topic: LearnTopic) => {
+	const ordered = LEVEL_ORDER.filter((l) => topic.levels.includes(l));
+	return ordered.length === 1 ? LEVEL_LABELS[ordered[0]] : `${LEVEL_LABELS[ordered[0]]} – ${LEVEL_LABELS[ordered.at(-1)!]}`;
+};
 ---
 
 <Layout
-	title="Bit by Bit"
-	description="Bit by Bit: free lessons on binary, bytes, hexadecimal, and error correction — the ideas behind LogicDash's puzzle, explained simply."
+	title="Byte Lab"
+	wide
+	description="Byte Lab: free, plain-English computer science lessons on binary, networks, cybersecurity, and programming, with hands-on demos and quick quizzes."
 >
 	<section class="hero">
-		<h1>Bit by Bit</h1>
-		<p class="hero-lead">The ideas behind the puzzle, explained simply.</p>
+		<span class="hero-bits" aria-hidden="true">
+			{groups.map((group) => <span style={`--c: ${group.color}`} />)}
+		</span>
+		<h1>Byte Lab</h1>
+		<p class="hero-lead">Short, hands-on computer science lessons. Read a little, try a demo, check yourself with a quiz.</p>
+		<p class="hero-count">{liveCount} lessons · free · no sign-up</p>
+		<form class="code-go" data-code-form data-codes={JSON.stringify(codeMap)} hidden>
+			<label for="lesson-code">Got a lesson code?</label>
+			<input
+				id="lesson-code"
+				name="code"
+				maxlength="40"
+				placeholder="5A2"
+				autocomplete="off"
+				autocapitalize="characters"
+				spellcheck="false"
+				aria-describedby="lesson-code-msg"
+			/>
+			<button type="submit">Go</button>
+			<p class="code-go-msg" id="lesson-code-msg" aria-live="polite" data-code-msg></p>
+		</form>
 	</section>
+
+	<section class="how-to" aria-labelledby="how-to-title">
+		<h2 class="sr-only" id="how-to-title">How to use Byte Lab</h2>
+		<div class="how-card">
+			<h3>For students</h3>
+			<ol>
+				<li>Got a code from your teacher? Type it in the box above. Otherwise pick a lesson — try <strong>Beginner</strong> if the topic is new to you.</li>
+				<li>Read each section, then do the <strong>Try it yourself</strong> activity.</li>
+				<li>Finish with the quiz or practice. Wrong answers explain why, so read them.</li>
+			</ol>
+		</div>
+		<div class="how-card">
+			<h3>For teachers</h3>
+			<ol>
+				<li>Filter by <strong>level</strong> and <strong>topic</strong> to find lessons for your class.</li>
+				<li>Share a lesson with its short link, like <strong>logicdash.io/5A2</strong> — it's under every lesson's title.</li>
+				<li>Press <strong>Fullscreen</strong> on any demo or quiz to project it. It fits the whole screen and shows the short link for students' own devices.</li>
+			</ol>
+		</div>
+	</section>
+
+	<div class="filters" data-filters hidden>
+		<div class="filter-row" role="group" aria-labelledby="filter-level-label">
+			<span class="filter-label" id="filter-level-label">Level</span>
+			<button type="button" class="chip" data-level="all" aria-pressed="true">All</button>
+			{
+				LEVEL_ORDER.map((level) => (
+					<button type="button" class="chip" data-level={level} aria-pressed="false" title={LEVEL_HINTS[level]}>
+						{LEVEL_LABELS[level]}
+					</button>
+				))
+			}
+		</div>
+		<div class="filter-row" role="group" aria-labelledby="filter-focus-label">
+			<span class="filter-label" id="filter-focus-label">Topic</span>
+			<button type="button" class="chip" data-focus="all" aria-pressed="true">All</button>
+			{
+				FOCUS_ORDER.map((focus) => (
+					<button type="button" class="chip" data-focus={focus} aria-pressed="false">
+						{FOCUS_LABELS[focus]}
+					</button>
+				))
+			}
+		</div>
+		<p class="filter-status" aria-live="polite" data-filter-status></p>
+	</div>
+
+	<nav class="group-jump" aria-label="Jump to a section">
+		<ul>
+			{
+				groups.map((group) => (
+					<li data-jump={group.id}>
+						<a href={`#${group.id}`} style={`--c: ${group.color}`}>
+							{group.name}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
 
 	{
 		groups.map((group) => (
-			<div class="topic-group">
-				<h2 class="topic-group-title">{group.name}</h2>
-				<div class="topic-cards">
-					{group.topics.map((topic) =>
-						topic.live ? (
-							<a class="topic-card" href={topic.href}>
-								<TopicIcon href={topic.href} />
-								<span class="topic-card-name">{topic.title}</span>
-								<span class="topic-card-blurb">{topic.blurb}</span>
-							</a>
-						) : (
-							<div class="topic-card topic-card--soon">
-								<TopicIcon href={topic.href} />
-								<span class="topic-card-name">{topic.title}</span>
-								<span class="topic-card-blurb">{topic.blurb}</span>
-								<span class="topic-card-badge">Coming soon</span>
-							</div>
-						),
-					)}
+			<section class="topic-group" id={group.id} aria-labelledby={`${group.id}-title`} data-group style={`--c: ${group.color}`}>
+				<div class="topic-group-head">
+					<h2 class="topic-group-title" id={`${group.id}-title`}>
+						{group.name}
+					</h2>
+					<p class="topic-group-blurb">{group.blurb}</p>
 				</div>
-			</div>
+				<div class="topic-cards">
+					{group.topics.map((topic) => {
+						const Tag = topic.live ? "a" : "div";
+						return (
+							<Tag
+								class:list={["topic-card", { "topic-card--soon": !topic.live }]}
+								href={topic.live ? topic.href : undefined}
+								data-card
+								data-levels={topic.levels.join(" ")}
+								data-focus={topic.focus.join(" ")}
+							>
+								<span class="topic-card-icon">
+									<LineIcon name={topic.href} size={30} />
+								</span>
+								<span class="topic-card-text">
+									<span class="topic-card-name">{topic.title}</span>
+									<span class="topic-card-blurb">{topic.blurb}</span>
+								</span>
+								<span class="topic-card-foot">
+									<span class="level-meter" aria-hidden="true">
+										{LEVEL_ORDER.map((l) => (
+											<span class:list={{ on: topic.levels.includes(l) }} />
+										))}
+									</span>
+									<span class="topic-card-level">{levelText(topic)}</span>
+									{topic.kind === "tool" && <span class="topic-card-kind">Practice</span>}
+									{!topic.live && <span class="topic-card-kind">Coming soon</span>}
+								</span>
+							</Tag>
+						);
+					})}
+				</div>
+			</section>
 		))
 	}
+
+	<div class="empty" data-empty hidden>
+		<p>No lessons match both filters yet.</p>
+		<button type="button" class="chip" data-reset>Show all lessons</button>
+	</div>
 </Layout>
 
+<script>
+	import { normalizeCode } from "../../lib/lessonCodes";
+	// "Got a lesson code?" — the same codes as the logicdash.io/5A2 short links.
+	const codeForm = document.querySelector<HTMLFormElement>("[data-code-form]");
+	if (codeForm) {
+		codeForm.hidden = false;
+		const codes = JSON.parse(codeForm.dataset.codes!) as Record<string, string>;
+		const input = codeForm.querySelector("input")!;
+		const msg = codeForm.querySelector<HTMLElement>("[data-code-msg]")!;
+		codeForm.addEventListener("submit", (event) => {
+			event.preventDefault();
+			const code = normalizeCode(input.value);
+			const href = codes[code];
+			if (href) location.href = href;
+			else msg.textContent = code ? `No lesson has the code ${code}. Check it and try again.` : "Type the 3-character code.";
+		});
+	}
+
+	// Filters are a progressive enhancement: without JavaScript every lesson
+	// shows. The current filter is kept in the address (?level=…&focus=…), so a
+	// teacher can share a link that opens on, say, every Beginner cybersecurity
+	// lesson.
+	const root = document.querySelector<HTMLElement>("[data-filters]");
+	if (root) {
+		root.hidden = false;
+		const cards = [...document.querySelectorAll<HTMLElement>("[data-card]")];
+		const groups = [...document.querySelectorAll<HTMLElement>("[data-group]")];
+		const status = root.querySelector<HTMLElement>("[data-filter-status]")!;
+		const empty = document.querySelector<HTMLElement>("[data-empty]")!;
+		const levelBtns = [...root.querySelectorAll<HTMLButtonElement>("[data-level]")];
+		const focusBtns = [...root.querySelectorAll<HTMLButtonElement>("[data-focus]")];
+
+		const params = new URLSearchParams(location.search);
+		let level = params.get("level") ?? "all";
+		let focus = params.get("focus") ?? "all";
+		if (!levelBtns.some((b) => b.dataset.level === level)) level = "all";
+		if (!focusBtns.some((b) => b.dataset.focus === focus)) focus = "all";
+
+		const apply = () => {
+			levelBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.level === level)));
+			focusBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.focus === focus)));
+			let shown = 0;
+			for (const card of cards) {
+				const ok =
+					(level === "all" || card.dataset.levels!.split(" ").includes(level)) &&
+					(focus === "all" || card.dataset.focus!.split(" ").includes(focus));
+				card.hidden = !ok;
+				if (ok) shown++;
+			}
+			for (const group of groups) {
+				const visible = group.querySelector("[data-card]:not([hidden])") !== null;
+				group.hidden = !visible;
+				const jump = document.querySelector<HTMLElement>(`[data-jump="${group.id}"]`);
+				if (jump) jump.hidden = !visible;
+			}
+			empty.hidden = shown > 0;
+			status.textContent =
+				level === "all" && focus === "all" ? `Showing all ${cards.length}` : `Showing ${shown} of ${cards.length}`;
+
+			const next = new URLSearchParams();
+			if (level !== "all") next.set("level", level);
+			if (focus !== "all") next.set("focus", focus);
+			const qs = next.toString();
+			history.replaceState(null, "", `${location.pathname}${qs ? `?${qs}` : ""}${location.hash}`);
+		};
+
+		levelBtns.forEach((b) =>
+			b.addEventListener("click", () => {
+				level = b.dataset.level!;
+				apply();
+			}),
+		);
+		focusBtns.forEach((b) =>
+			b.addEventListener("click", () => {
+				focus = b.dataset.focus!;
+				apply();
+			}),
+		);
+		document.querySelector("[data-reset]")?.addEventListener("click", () => {
+			level = "all";
+			focus = "all";
+			apply();
+		});
+		apply();
+	}
+</script>
+
 <style>
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+	}
+
+	[hidden] {
+		display: none !important;
+	}
+
+	/* --- Hero: a splash of the group colors ----------------------------- */
 	.hero {
+		position: relative;
 		text-align: center;
-		margin-bottom: 1.25rem;
+		margin: 0 auto var(--space-6);
+		padding: var(--space-4) 0 0;
 	}
 
 	.hero h1 {
-		margin: 0 0 0.4rem;
-		font-size: clamp(1.6rem, 5vw, 2.1rem);
+		margin: 0 0 var(--space-2);
+		font-size: clamp(2.25rem, 7vw, 3.5rem);
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		background: linear-gradient(90deg, #ffae2e, #f472b6 35%, #a78bfa 65%, #60a5fa);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	/* Five little "bits", one per group color, sitting above the title. */
+	.hero-bits {
+		display: flex;
+		justify-content: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.hero-bits span {
+		width: 14px;
+		height: 14px;
+		border-radius: 4px;
+		background: var(--c);
+		box-shadow: 0 0 14px color-mix(in srgb, var(--c) 55%, transparent);
+		animation: bit-bob 3.2s ease-in-out infinite;
+	}
+
+	.hero-bits span:nth-child(2) { animation-delay: 0.25s; }
+	.hero-bits span:nth-child(3) { animation-delay: 0.5s; }
+	.hero-bits span:nth-child(4) { animation-delay: 0.75s; }
+	.hero-bits span:nth-child(5) { animation-delay: 1s; }
+
+	@keyframes bit-bob {
+		50% {
+			transform: translateY(-4px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-bits span {
+			animation: none;
+		}
 	}
 
 	.hero-lead {
 		margin: 0 auto;
+		max-width: 38rem;
+		font-size: 1.125rem;
+		line-height: 1.6;
+	}
+
+	.hero-count {
+		margin: var(--space-2) 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+
+	.code-go {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-2);
+		margin: var(--space-4) 0 0;
+	}
+
+	.code-go label {
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	.code-go input {
+		width: 5.5rem;
+		min-height: 2.5rem;
+		padding: 0 var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		background: var(--color-surface);
+		color: var(--color-text);
+		font-family: var(--font-mono);
 		font-size: 1rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		text-align: center;
+		text-transform: uppercase;
 	}
 
+	.code-go input:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
+	}
+
+	.code-go button {
+		min-height: 2.5rem;
+		padding: 0 var(--space-4);
+		border: 1px solid var(--color-accent);
+		border-radius: 8px;
+		background: var(--color-accent);
+		color: var(--color-accent-contrast);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.code-go-msg {
+		flex-basis: 100%;
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
+	.code-go-msg:empty {
+		display: none;
+	}
+
+	/* --- How to use ------------------------------------------------------ */
+	.how-to {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+		gap: var(--space-4);
+		max-width: 60rem;
+		margin: 0 auto var(--space-6);
+	}
+
+	.how-card {
+		padding: var(--space-4) var(--space-5);
+		border-radius: 12px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.how-card h3 {
+		margin: 0 0 var(--space-2);
+		font-size: 1rem;
+		color: var(--color-text);
+	}
+
+	.how-card ol {
+		margin: 0;
+		padding-left: 1.25rem;
+		font-size: 0.9375rem;
+		line-height: 1.55;
+	}
+
+	.how-card li + li {
+		margin-top: var(--space-1);
+	}
+
+	.how-card strong {
+		color: var(--color-text);
+	}
+
+	/* --- Filters ----------------------------------------------------------- */
+	.filters {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0 0 var(--space-4);
+	}
+
+	.filter-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.filter-label {
+		min-width: 3.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+	}
+
+	.chip {
+		min-height: 2.5rem;
+		padding: var(--space-1) var(--space-4);
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font: inherit;
+		font-size: 0.875rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.chip:hover,
+	.chip:focus-visible {
+		border-color: var(--color-accent);
+	}
+
+	.chip[aria-pressed="true"] {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-accent-contrast);
+	}
+
+	.filter-status {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-text-muted);
+	}
+
+	/* --- Section shortcuts: a colored dot per group ------------------------ */
+	.group-jump {
+		margin: 0 0 var(--space-6);
+	}
+
+	.group-jump ul {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--space-2);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.group-jump a {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: 2.5rem;
+		padding: var(--space-1) var(--space-4);
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--c) 40%, var(--color-border));
+		background: color-mix(in srgb, var(--c) 8%, var(--color-surface));
+		color: var(--color-text);
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: border-color 0.15s ease;
+	}
+
+	.group-jump a::before {
+		content: "";
+		width: 10px;
+		height: 10px;
+		border-radius: 3px;
+		background: var(--c);
+	}
+
+	.group-jump a:hover,
+	.group-jump a:focus-visible {
+		border-color: var(--c);
+	}
+
+	/* --- Groups and cards -------------------------------------------------- */
 	.topic-group {
-		margin-bottom: 1.4rem;
+		scroll-margin-top: var(--space-4);
+		margin-bottom: var(--space-8);
 	}
 
-	.topic-group:last-child {
-		margin-bottom: 0;
+	.topic-group-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-4);
+		margin: 0 0 var(--space-4);
+		padding-bottom: var(--space-2);
+		border-bottom: 2px solid color-mix(in srgb, var(--c) 45%, transparent);
 	}
 
 	.topic-group-title {
-		margin: 0 0 0.6rem;
-		padding-bottom: 0.35rem;
-		border-bottom: 1px solid var(--color-border);
-		font-size: 0.72rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--color-accent);
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0;
+		font-size: 1.25rem;
+		color: var(--c);
 	}
 
+	.topic-group-title::before {
+		content: "";
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		background: var(--c);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--c) 60%, transparent);
+	}
+
+	.topic-group-blurb {
+		margin: 0;
+		font-size: 0.9375rem;
+	}
+
+	/* One consistent grid for every section (4 across on wide screens, then
+	   3, 2, 1). auto-fill — not auto-fit — keeps a short section's cards the
+	   same size as everyone else's. */
 	.topic-cards {
 		display: grid;
-		/* auto-fit (not auto-fill) collapses any unfilled tracks and hands
-		   their space to the real cards — every group here has just 2 or 3
-		   topics, so without this the row stays pinned to a narrow strip on
-		   the left with a lot of dead space to the right on wide screens. The
-		   minmax cap still keeps cards from ballooning past a sane size when
-		   a row genuinely has room to spare. */
-		grid-template-columns: repeat(auto-fit, minmax(11.5rem, 16rem));
-		gap: 0.6rem;
-	}
-
-	/* Below this width, auto-fit can only fit a single track — but that
-	   track is still capped at the minmax max (16rem), so CSS Grid's default
-	   justify-content: start left-anchors that one narrower card, leaving
-	   dead space beside it instead of using the full row. Forcing a single
-	   1fr column here makes that lone card stretch to the container's full
-	   width instead. */
-	@media (max-width: 460px) {
-		.topic-cards {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	/* At wide viewports, also widen the page itself (this page only — a
-	   card grid can use more width than the site's usual prose column
-	   without hurting readability) and let cards grow a bit further, so the
-	   grid actually fills more of the screen instead of just floating in a
-	   960px column with empty space beside it. */
-	@media (min-width: 1200px) {
-		:global(main) {
-			max-width: 1200px;
-		}
-
-		/* Uncapped (1fr) here on purpose — at this width there's enough
-		   screen real estate that letting a 2-card row actually stretch to
-		   fill it reads as "a wide gallery," not "a few oversized tiles." */
-		.topic-cards {
-			grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
-		}
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+		gap: var(--space-4);
 	}
 
 	.topic-card {
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 0.25rem;
-		padding: 0.75rem 0.7rem;
-		border-radius: 10px;
+		gap: var(--space-3);
+		padding: var(--space-5);
+		border-radius: 16px;
 		border: 1px solid var(--color-border);
-		background: var(--color-surface);
+		background:
+			radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--c) 10%, transparent), transparent 60%),
+			var(--color-surface);
 		text-decoration: none;
-		text-align: center;
 		transition:
 			border-color 0.15s ease,
 			box-shadow 0.15s ease,
 			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
-	a.topic-card:hover {
-		border-color: #ffae2e;
-		box-shadow: 0 0 14px color-mix(in srgb, #ffae2e 35%, transparent);
-		transform: translateY(-1px);
+	a.topic-card:hover,
+	a.topic-card:focus-visible {
+		border-color: var(--c);
+		box-shadow: 0 8px 28px -10px color-mix(in srgb, var(--c) 55%, transparent);
+		transform: translateY(-2px);
 	}
 
 	a.topic-card:active {
-		transform: scale(0.97);
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.1s ease-out;
+		transform: scale(0.98);
+	}
+
+	.topic-card-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 56px;
+		height: 56px;
+		border-radius: 14px;
+		background: color-mix(in srgb, var(--c) 16%, var(--color-bg));
+		border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+		color: var(--c);
+	}
+
+	.topic-card-text {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: var(--space-1);
 	}
 
 	.topic-card-name {
-		font-family: var(--font-mono);
+		font-family: var(--font-sans);
+		font-size: 1.0625rem;
 		font-weight: 700;
-		font-size: 0.8rem;
 		line-height: 1.25;
 		color: var(--color-text);
 	}
 
 	.topic-card-blurb {
-		font-size: 0.7rem;
-		line-height: 1.35;
+		font-size: 0.875rem;
+		line-height: 1.45;
 		color: var(--color-text-muted);
+	}
+
+	.topic-card-foot {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	/* Three little bars: which levels the lesson suits, readable at a glance. */
+	.level-meter {
+		display: inline-flex;
+		gap: 3px;
+	}
+
+	.level-meter span {
+		width: 14px;
+		height: 6px;
+		border-radius: 999px;
+		background: var(--color-border);
+	}
+
+	.level-meter span.on {
+		background: var(--c);
+	}
+
+	.topic-card-kind {
+		margin-left: auto;
+		padding: 2px var(--space-2);
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--c) 50%, transparent);
+		color: var(--color-text);
+		font-size: 0.75rem;
 	}
 
 	.topic-card--soon {
 		opacity: 0.6;
 	}
 
-	.topic-card-badge {
-		margin-top: 0.1rem;
-		padding: 0.15rem 0.55rem;
-		border-radius: 999px;
-		border: 1px solid var(--color-border);
-		font-size: 0.6rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-text-muted);
+	/* Phones: compact horizontal cards (icon beside the text), and the chip
+	   rows scroll sideways instead of stacking up — much less scrolling. */
+	@media (max-width: 600px) {
+		.topic-card {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			column-gap: var(--space-3);
+			row-gap: var(--space-2);
+			padding: var(--space-4);
+		}
+
+		.topic-card-icon {
+			grid-row: span 2;
+			width: 48px;
+			height: 48px;
+		}
+
+		.topic-card-foot {
+			grid-column: 2;
+		}
+
+		.topic-cards {
+			gap: var(--space-3);
+		}
+
+		.filters {
+			align-items: stretch;
+		}
+
+		.filter-row,
+		.group-jump ul {
+			flex-wrap: nowrap;
+			justify-content: flex-start;
+			overflow-x: auto;
+			scrollbar-width: none;
+			margin-inline: calc(-1 * var(--space-4));
+			padding-inline: var(--space-4);
+		}
+
+		.filter-row::-webkit-scrollbar,
+		.group-jump ul::-webkit-scrollbar {
+			display: none;
+		}
+
+		.chip,
+		.group-jump a {
+			flex-shrink: 0;
+		}
+
+		.filter-status {
+			text-align: center;
+		}
+	}
+
+	.empty {
+		text-align: center;
+		margin: var(--space-6) 0;
+	}
+
+	.empty p {
+		margin: 0 0 var(--space-3);
 	}
 </style>

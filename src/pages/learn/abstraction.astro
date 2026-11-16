@@ -1,0 +1,254 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import ConceptQuiz, { type QuizQuestion } from "../../components/ConceptQuiz.astro";
+
+// Top of the stack is what a person sees; each row below is the detail the
+// row above lets you ignore.
+const layers = [
+	{ name: "You", detail: "Tap “Send” on a message that says Hi" },
+	{ name: "The app", detail: "Turns your message into text characters" },
+	{ name: "Text encoding", detail: "H is 72, i is 105" },
+	{ name: "Binary", detail: "01001000 01101001" },
+	{ name: "Hardware", detail: "Tiny switches: on, off, off, on…" },
+];
+
+const drawSquareCode = `PROCEDURE drawSquare()
+{
+  REPEAT 4 TIMES
+  {
+    MOVE_FORWARD()
+    ROTATE_RIGHT()
+  }
+}
+
+drawSquare()
+drawSquare()`;
+const QUIZ: QuizQuestion[] = [
+	{
+		q: "A music app has a Play button. You press it without knowing how the song file is turned into sound. This is an example of…",
+		options: ["Abstraction", "Compression", "Redundancy", "Encryption"],
+		explain: "The button hides the complicated details and gives you one simple control — that's abstraction.",
+	},
+	{
+		q: "A programmer writes a procedure called drawStar() and uses it ten times in a program. What is the main benefit?",
+		options: ["The steps are written once, and the name hides the details, so the program is easier to read and change", "The program uses less electricity", "The ten stars are drawn at exactly the same time", "Nobody else can see the code inside the procedure"],
+		explain: "Naming a set of steps lets you use it again and again without repeating or re-reading the details. Fix it once, and every use gets the fix.",
+	},
+	{
+		q: "Instead of 30 separate variables for 30 test scores, a student keeps them in one list called scores. Why is this an abstraction?",
+		options: ["One name stands for many values, so the program can handle them together", "A list makes each score more accurate", "A list stores the numbers in hexadecimal", "A list keeps the scores secret"],
+		explain: "A list is data abstraction: the program works with \"scores\" as one thing instead of juggling 30 separate names.",
+	},
+	{
+		q: "The code inside a procedure called calculateTax(price) is rewritten to run faster. It still takes a price and returns the tax. What else in the program has to change?",
+		options: ["Nothing — the rest of the program only relies on what goes in and what comes out", "Every line that uses calculateTax", "The name of the procedure", "The whole program must be rewritten"],
+		explain: "That's the payoff of abstraction: as long as a procedure's inputs and results stay the same, the details inside can change freely.",
+	},
+	{
+		q: "A procedure drawSquare(size) takes a parameter. Why is that more useful than a procedure that always draws a square with sides of 10?",
+		options: ["One procedure can now draw squares of any size", "It draws squares faster", "It stops the square from being drawn twice", "Parameters make procedures run in parallel"],
+		explain: "A parameter makes a procedure general: the same steps work for many different values, so you don't need drawSmallSquare, drawBigSquare, and so on.",
+	},
+];
+---
+
+<LearnArticle
+	href="/learn/abstraction"
+	description="Abstraction explained simply: how hiding details lets people and programmers use complicated systems — from driving a car to writing code."
+	lead="You can drive a car without knowing how the engine works. That idea has a name — and computing is built on it."
+>
+	<section class="block">
+		<p class="block-title">The Steering Wheel</p>
+		<p class="block-text">
+			To drive a car, you need a steering wheel, two pedals, and a few buttons. You don't need to
+			know how fuel burns inside the engine, how the gears mesh, or how the brakes squeeze the
+			wheels. All of that is still happening — you just don't have to think about it.
+		</p>
+		<p class="block-text">
+			The car's designers <em>hid the details</em> behind a few simple controls. That's what{" "}
+			<em>abstraction</em> means: showing only what you need, and hiding the rest.
+		</p>
+		<p class="block-callout">
+			Abstraction = hiding the complicated details, so you can focus on what you're trying to do.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">You Already Use It Everywhere</p>
+		<ul class="block-list">
+			<li>A <em>TV remote</em> changes the channel without you knowing how the signal is sent.</li>
+			<li>A <em>light switch</em> turns on a lamp without you thinking about the wiring in the wall.</li>
+			<li>A <em>microwave</em> has a "Popcorn" button so you don't have to work out the timing yourself.</li>
+		</ul>
+		<p class="block-text">
+			Each of these gives you a simple control on top of something much more complicated. The
+			complicated part still matters — someone had to build it — but you get to use it without
+			carrying all of that around in your head.
+		</p>
+	</section>
+
+	<section class="block block--example">
+		<p class="block-title">Layers on Layers</p>
+		<p class="block-text">
+			Computers stack abstractions on top of each other. Here's what happens when you send a
+			two-letter message. Each layer only has to deal with the one just below it:
+		</p>
+
+		<ol class="layer-stack" aria-label="Layers of abstraction, from you down to the hardware">
+			{
+				layers.map((layer, i) => (
+					<li class="layer-row">
+						<span class="layer-name">
+							{layer.name}
+							<span class="sr-only">:</span>
+						</span>
+						<span class="layer-detail">{layer.detail}</span>
+						{i < layers.length - 1 && <span class="layer-arrow" aria-hidden="true">↓</span>}
+					</li>
+				))
+			}
+		</ol>
+
+		<p class="block-text">
+			You only ever see the top row. The app never thinks about switches. The hardware has no idea
+			what "Hi" means. Every layer can do its job without knowing the details of the others.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Binary Is Hidden Almost Everywhere</p>
+		<p class="block-text">
+			Every page on this site has been peeling back abstractions. Underneath it all, a computer
+			only has 0s and 1s — but almost nobody works with them directly:
+		</p>
+		<ul class="block-list">
+			<li>
+				Letters are stored as numbers, which are stored as binary — see{" "}
+				<a href="/learn/how-computers-store-text">How Computers Store Text</a>.
+			</li>
+			<li>
+				Hexadecimal is a shorter way to write long binary numbers — see{" "}
+				<a href="/learn/binary-hex-decimal/">Binary ↔ Hex ↔ Decimal</a>.
+			</li>
+			<li>
+				An address like <span class="mono-highlight">192.168.1.1</span> is really 32 bits in a
+				friendlier form — see <a href="/learn/ipv4-vs-ipv6">IPv4 vs IPv6</a>.
+			</li>
+		</ul>
+		<p class="block-text">
+			Each one is an abstraction: a simpler way to see the same binary underneath.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Abstraction in Code</p>
+		<p class="block-text">
+			Programmers use abstraction constantly. The two most common kinds are:
+		</p>
+		<ul class="block-list">
+			<li>
+				<em>Procedures</em> (also called functions): you give a set of steps a name, then use the
+				name instead of repeating the steps. Once <span class="mono-highlight">drawSquare()</span>{" "}
+				works, you can use it without re-reading how it draws each side. Give it a{" "}
+				<em>parameter</em> — <span class="mono-highlight">drawSquare(size)</span> — and the same steps can
+				draw a square of any size.
+			</li>
+			<li>
+				<em>Lists</em>: instead of making 30 separate variables for 30 test scores, you keep them all
+				in one list called <span class="mono-highlight">scores</span>. One name stands in for many
+				values.
+			</li>
+		</ul>
+		<pre class="code-block">{drawSquareCode}</pre>
+		<p class="block-text">
+			The last two lines say "draw a square" twice. Nobody reading them needs to think about the
+			four moves and four turns inside — the procedure's name tells you what it does.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">Why It Matters</p>
+		<p class="block-text">
+			Modern software is enormous — far too big for any one person to hold in their head. Abstraction
+			is how people build it anyway: each piece is made simple to use from the outside, so the next
+			person can build on it without understanding every detail inside.
+		</p>
+		<p class="block-text">
+			It also makes changes safer. If a car company improves its engine, you still drive with the
+			same steering wheel. If a programmer improves how a procedure works inside, every place that
+			uses it gets the improvement — without changing a single other line.
+		</p>
+	</section>
+
+	<ConceptQuiz questions={QUIZ} />
+</LearnArticle>
+
+<style>
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+	}
+
+	.layer-stack {
+		list-style: none;
+		margin: 1rem auto 0.75rem;
+		padding: 0;
+		max-width: 30rem;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.layer-row {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(6.5rem, auto) 1fr;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.5rem 0.75rem;
+		margin-bottom: 1.25rem;
+		border-radius: 10px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg);
+		text-align: left;
+	}
+
+	.layer-row:first-child {
+		border-color: var(--color-accent);
+	}
+
+	.layer-row:last-child {
+		margin-bottom: 0;
+	}
+
+	.layer-name {
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.layer-detail {
+		font-family: var(--font-mono);
+		font-size: 0.88rem;
+		color: var(--color-text-muted);
+	}
+
+	.layer-arrow {
+		position: absolute;
+		left: 50%;
+		bottom: -1.3rem;
+		transform: translateX(-50%);
+		color: var(--color-accent);
+		line-height: 1.3rem;
+	}
+
+	@media (max-width: 420px) {
+		.layer-row {
+			grid-template-columns: 1fr;
+			gap: 0.25rem;
+		}
+	}
+</style>

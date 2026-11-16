@@ -117,6 +117,26 @@ function skillBalancedShuffle(
 	return remainingSeats.map((seat) => nameForSeat.get(seat) ?? null);
 }
 
+/**
+ * Orders seats so that a greedy "no occupied neighbors" set comes first:
+ * walk the seats, taking any seat none of whose neighbors (including pinned
+ * seats) has been taken yet; then append everything else. For rows this is
+ * every other seat; for pods, one seat per pod first.
+ */
+export function spreadOutOrder(seats: number[], layout: SeatLayout, alreadyTaken: Set<number> = new Set()): number[] {
+	const taken = new Set(alreadyTaken);
+	const first: number[] = [];
+	const rest: number[] = [];
+	for (const seat of seats) {
+		if ((layout.adjacency[seat] ?? []).some((n) => taken.has(n))) rest.push(seat);
+		else {
+			first.push(seat);
+			taken.add(seat);
+		}
+	}
+	return [...first, ...rest];
+}
+
 export function generateSeatingChart(opts: GenerateOptions): GenerateResult {
 	const { layout, students, mode, rules, avoidRepeatNeighbors, recentAdjacency } = opts;
 	const weights = modeWeights(mode);
@@ -144,9 +164,17 @@ export function generateSeatingChart(opts: GenerateOptions): GenerateResult {
 		pinnedNames.add(name);
 	}
 
-	const remainingSeats: number[] = [];
+	let remainingSeats: number[] = [];
 	for (let s = 0; s < layout.seatCount; s++) if (!pinnedSeats.has(s)) remainingSeats.push(s);
 	const remainingStudents = students.filter((name) => !pinnedNames.has(name));
+
+	// Exam mode with spare seats: fill a "no two neighbors" pattern first,
+	// so students sit with empty seats between them wherever the room
+	// allows. Seats are filled in this order (see the assignment loop
+	// below), so the spread-out seats get students before any others.
+	if (mode === "exam" && remainingStudents.length < remainingSeats.length) {
+		remainingSeats = spreadOutOrder(remainingSeats, layout, pinnedSeats);
+	}
 
 	const skillTierOf = new Map<string, 1 | 2 | 3>();
 	for (const rule of skillBalanceRules) {

@@ -3,9 +3,10 @@ const navLinks = [
 	{ href: "/", label: "Home" },
 	{ href: "/5-bit", label: "Classic" },
 	{ href: "/overclocked", label: "OverClocked" },
-	{ href: "/quick-byte", label: "Today's Quick Byte" },
+	{ href: "/quick-byte", label: "Quick Byte" },
 	{ href: "/how-to-play", label: "How to Play" },
-	{ href: "/learn", label: "Learn" },
+	{ href: "/learn", label: "Byte Lab" },
+	{ href: "/tools", label: "Tools" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -32,7 +33,9 @@ const currentPath = Astro.url.pathname;
 			{
 				navLinks.map((link) => {
 					const isActive =
-						link.href === "/learn" ? currentPath.startsWith("/learn") : currentPath === link.href;
+						link.href === "/learn" || link.href === "/tools"
+							? currentPath.startsWith(link.href)
+							: currentPath === link.href;
 					return (
 						<li>
 							<a href={link.href} aria-current={isActive ? "page" : undefined}>
@@ -131,6 +134,8 @@ const currentPath = Astro.url.pathname;
 
 	nav ul {
 		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 		gap: 1.25rem;
 		list-style: none;
 		margin: 0;
@@ -164,12 +169,21 @@ const currentPath = Astro.url.pathname;
 	}
 
 	/*
-	 * Below this width the full nav's six links start to crowd/wrap
+	 * Below this width the full nav's seven links start to crowd/wrap
 	 * awkwardly (the horizontal list this used to fall back to), so it's
 	 * replaced with a hamburger that opens a slide-down panel instead —
-	 * above it, the nav bar stays exactly as it's always been.
+	 * above it, the nav bar stays exactly as it's always been. Raised from
+	 * 820px to 960px (matching the site's own `main { max-width: 960px }`)
+	 * once "Tools" became a 7th item — above the old 820px cutoff there
+	 * wasn't quite enough room for all seven, so individual link text
+	 * (e.g. "Quick Byte") started wrapping mid-word instead of the layout
+	 * falling back to the hamburger. flex-wrap + justify-content: center
+	 * above are a safety net for the row itself, not a substitute for this
+	 * breakpoint — they only help once wrapping happens at the group
+	 * (link) level rather than mid-word within one, e.g. if an eighth item
+	 * is added later and this breakpoint isn't revisited to match.
 	 */
-	@media (max-width: 820px) {
+	@media (max-width: 960px) {
 		.nav-toggle {
 			display: flex;
 		}

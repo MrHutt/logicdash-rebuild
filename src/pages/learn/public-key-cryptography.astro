@@ -1,0 +1,452 @@
+---
+import LearnArticle from "../../components/LearnArticle.astro";
+import DemoFrame from "../../components/DemoFrame.astro";
+import RelatedLink from "../../components/RelatedLink.astro";
+---
+
+<LearnArticle
+	href="/learn/public-key-cryptography"
+	description="Public-key cryptography explained with open padlocks: a public key locks, only the private key unlocks — with a step-by-step animation."
+	lead="How can two strangers on opposite sides of the world share a secret — when everything they send could be seen by anyone?"
+>
+	<section class="block">
+		<p class="block-title">The Key-Sharing Problem</p>
+		<p class="block-text">
+			On the <a href="/learn/encryption-basics">Encryption Basics</a> page, the same key locked and
+			unlocked the message. That works — but first you have to get the key to the other person. If you
+			send it over the internet, anyone watching could copy it, and then read everything you send
+			afterwards.
+		</p>
+		<p class="block-text">
+			You can't meet in person with every website you use. So how does your browser set up a secret with
+			a website it has never talked to before?
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">The Open Padlock Trick</p>
+		<p class="block-text">
+			Imagine Sam buys a box of padlocks that all open with one key. Sam keeps the key safe at home, and
+			hands out <em>open</em> padlocks to anyone who asks — friends, strangers, it doesn't matter.
+		</p>
+		<p class="block-text">
+			Anyone can snap one of Sam's padlocks shut on a box. But once it's closed, only Sam's key can open
+			it. Not even the person who locked it can get back in.
+		</p>
+		<div class="compare-grid">
+			<div class="compare-card">
+				<p class="compare-card-title">Public key = the open padlock</p>
+				<p>Shared with everyone. Anyone can use it to <em>lock</em> a message for Sam.</p>
+			</div>
+			<div class="compare-card compare-card--accent">
+				<p class="compare-card-title">Private key = the only key</p>
+				<p>Never shared. It's the only thing that can <em>unlock</em> those messages.</p>
+			</div>
+		</div>
+		<p class="block-callout">
+			Two different keys: one for locking that everyone can have, one for unlocking that only the owner
+			has. That's why it's also called <em>asymmetric</em> encryption.
+		</p>
+	</section>
+
+	<DemoFrame label="Public-key cryptography animation" title="Watch a message travel">
+		<div class="pk-demo" data-pk-demo>
+			<div class="demo-field">
+				<label for="pk-message">Alex's message</label>
+				<input id="pk-message" class="demo-input pk-message" type="text" maxlength="32" value="Meet at the library at 4" autocomplete="off" data-pk-message />
+			</div>
+
+			<div class="pk-stage" data-pk-stage data-step="0" aria-hidden="true">
+				<div class="pk-person pk-person--alex">
+					<span class="pk-avatar">A</span>
+					<span class="pk-name">Alex</span>
+					<span class="pk-slot pk-alex-lock">
+						<svg viewBox="0 0 32 40" class="pk-icon pk-icon--lock-open"><path d="M9 18V11a7 7 0 0 1 14 0" /><rect x="5" y="18" width="22" height="18" rx="3" /></svg>
+					</span>
+				</div>
+				<div class="pk-person pk-person--eve">
+					<span class="pk-avatar">E</span>
+					<span class="pk-name">Eve, listening in</span>
+					<span class="pk-slot pk-eve-lock">
+						<svg viewBox="0 0 32 40" class="pk-icon pk-icon--lock-open"><path d="M9 18V11a7 7 0 0 1 14 0" /><rect x="5" y="18" width="22" height="18" rx="3" /></svg>
+					</span>
+					<span class="pk-eve-fail">✕ Can't open it</span>
+				</div>
+				<div class="pk-person pk-person--sam">
+					<span class="pk-avatar">S</span>
+					<span class="pk-name">Sam</span>
+					<span class="pk-slot pk-sam-keys">
+						<svg viewBox="0 0 40 24" class="pk-icon pk-icon--key"><circle cx="9" cy="12" r="6" /><path d="M15 12h21M30 12v6M35 12v5" /></svg>
+						<svg viewBox="0 0 32 40" class="pk-icon pk-icon--lock-open"><path d="M9 18V11a7 7 0 0 1 14 0" /><rect x="5" y="18" width="22" height="18" rx="3" /></svg>
+					</span>
+				</div>
+
+				<div class="pk-wire"></div>
+
+				<div class="pk-box" data-pk-box>
+					<svg viewBox="0 0 32 40" class="pk-icon pk-box-lock pk-box-lock--closed"><path d="M9 18V11a7 7 0 0 1 14 0v7" /><rect x="5" y="18" width="22" height="18" rx="3" /></svg>
+					<span class="pk-box-content" data-pk-box-content></span>
+				</div>
+			</div>
+
+			<p class="pk-step-count" data-pk-count>Step 1 of 6</p>
+			<p class="demo-status pk-caption" data-pk-caption aria-live="polite"></p>
+
+			<div class="demo-controls">
+				<button type="button" class="demo-btn" data-pk-back>← Back</button>
+				<button type="button" class="demo-btn demo-btn--primary" data-pk-next>Next →</button>
+				<button type="button" class="demo-btn" data-pk-restart>Start over</button>
+			</div>
+			<p class="demo-note">The scrambled text is an illustration — real encrypted data is just as unreadable, but made with far more complex math.</p>
+		</div>
+	</DemoFrame>
+
+	<section class="block">
+		<p class="block-title">Why Can't Eve Just Work Out the Key?</p>
+		<p class="block-text">
+			The public and private keys are linked by math that is easy to do in one direction and practically
+			impossible to undo. Here's a small taste:
+		</p>
+		<ul class="block-list">
+			<li>Multiplying is easy: <span class="mono-highlight">61 × 53 = 3,233</span>.</li>
+			<li>
+				Going backwards is much harder: "which two numbers multiply to make 3,233?" means trying lots of
+				possibilities.
+			</li>
+		</ul>
+		<p class="block-text">
+			Real keys use numbers hundreds of digits long. Multiplying them takes a computer a split second.
+			Splitting the answer back into the original numbers would take every computer on Earth longer
+			than a human lifetime — many lifetimes. That one-way difficulty is what keeps the private key safe
+			even though the public key is out in the open.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">You Use This Every Day</p>
+		<p class="block-text">
+			When you see the padlock next to a website's address, public-key encryption has just been used.
+			Your browser used the website's public key to safely agree on a brand-new shared secret key. From
+			then on, both sides switch to ordinary, faster same-key encryption using that secret. The public-key
+			step solved the "how do we share a key?" problem; the same-key step does the heavy lifting.
+		</p>
+	</section>
+
+	<section class="block">
+		<p class="block-title">But Is It Really Sam's Padlock?</p>
+		<p class="block-text">
+			There's one more trick an attacker could try: handing out their <em>own</em> padlocks while
+			pretending to be Sam. To stop this, websites get their public keys vouched for by a trusted
+			organization called a <em>certificate authority</em> — a bit like an official ID card that says
+			"this padlock really does belong to this bank." Your browser checks that ID automatically every
+			time.
+		</p>
+		<p class="block-text">
+			The same pair of keys can also work the other way round. If Sam locks something with the{" "}
+			<em>private</em> key, anyone can open it with the public key — which proves it could only have come
+			from Sam. That's called a <em>digital signature</em>.
+		</p>
+		<RelatedLink href="/learn/encryption-basics" label="Back to basics" />
+	</section>
+</LearnArticle>
+
+<script>
+	const root = document.querySelector<HTMLElement>("[data-pk-demo]")!;
+	const stage = root.querySelector<HTMLElement>("[data-pk-stage]")!;
+	const input = root.querySelector<HTMLInputElement>("[data-pk-message]")!;
+	const boxContent = root.querySelector<HTMLElement>("[data-pk-box-content]")!;
+	const caption = root.querySelector<HTMLElement>("[data-pk-caption]")!;
+	const countEl = root.querySelector<HTMLElement>("[data-pk-count]")!;
+	const backBtn = root.querySelector<HTMLButtonElement>("[data-pk-back]")!;
+	const nextBtn = root.querySelector<HTMLButtonElement>("[data-pk-next]")!;
+	const restartBtn = root.querySelector<HTMLButtonElement>("[data-pk-restart]")!;
+
+	const STEPS = [
+		"Sam makes a matching pair: open padlocks (the public key) and the only key that opens them (the private key). The key never leaves Sam.",
+		"Sam hands out open padlocks to anyone — including Alex, and Eve, who is secretly watching. That's fine: a padlock can only lock things.",
+		"Alex writes a message and puts it in a box.",
+		"Alex snaps Sam's padlock shut. The message is now scrambled — and even Alex can't open the box again.",
+		"The box travels across the internet. Eve grabs a copy, but Eve only has a padlock, not the key. All Eve sees is nonsense.",
+		"The box reaches Sam. Sam's private key opens the padlock, and the message is readable again.",
+	];
+	let step = 0;
+
+	// A stable, random-looking scramble of the message, shown as hex bytes.
+	// Purely illustrative — see the note under the demo.
+	function scramble(text: string): string {
+		let seed = 0x9e3779b9;
+		const bytes = Array.from(new TextEncoder().encode(text)).map((b) => {
+			seed ^= seed << 13;
+			seed ^= seed >>> 17;
+			seed ^= seed << 5;
+			return (b ^ seed) & 0xff;
+		});
+		return bytes
+			.slice(0, 12)
+			.map((b) => b.toString(16).toUpperCase().padStart(2, "0"))
+			.join(" ");
+	}
+
+	function render() {
+		stage.dataset.step = String(step);
+		const message = input.value.trim() || "(empty message)";
+		if (step < 2) boxContent.textContent = "";
+		else if (step === 2 || step === 5) boxContent.textContent = message;
+		else boxContent.textContent = scramble(message);
+		boxContent.classList.toggle("is-scrambled", step === 3 || step === 4);
+		caption.textContent = STEPS[step];
+		countEl.textContent = `Step ${step + 1} of ${STEPS.length}`;
+		backBtn.disabled = step === 0;
+		nextBtn.disabled = step === STEPS.length - 1;
+	}
+
+	backBtn.addEventListener("click", () => {
+		step = Math.max(0, step - 1);
+		render();
+	});
+	nextBtn.addEventListener("click", () => {
+		step = Math.min(STEPS.length - 1, step + 1);
+		render();
+	});
+	restartBtn.addEventListener("click", () => {
+		step = 0;
+		render();
+	});
+	input.addEventListener("input", render);
+
+	render();
+</script>
+
+<style is:global>
+	.pk-demo .pk-message {
+		width: min(100%, 20em);
+	}
+
+	/* Three people across a "wire"; the box and padlock copies appear and
+	   move between them according to data-step (0–5). Positions are in %
+	   of the stage so the scene scales with the frame. */
+	.pk-demo .pk-stage {
+		position: relative;
+		height: 17em;
+		margin: 1em auto 0;
+		max-width: 46em;
+	}
+
+	.pk-demo .pk-person {
+		position: absolute;
+		top: 0;
+		width: 30%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25em;
+		text-align: center;
+	}
+
+	.pk-demo .pk-person--alex {
+		left: 0;
+	}
+
+	.pk-demo .pk-person--eve {
+		left: 35%;
+	}
+
+	.pk-demo .pk-person--sam {
+		right: 0;
+	}
+
+	.pk-demo .pk-avatar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.4em;
+		height: 2.4em;
+		border-radius: 50%;
+		border: 2px solid var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.pk-demo .pk-person--sam .pk-avatar {
+		border-color: var(--color-accent);
+	}
+
+	.pk-demo .pk-person--eve .pk-avatar {
+		border-style: dashed;
+	}
+
+	.pk-demo .pk-name {
+		font-size: 0.85em;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.pk-demo .pk-slot {
+		display: flex;
+		align-items: center;
+		gap: 0.25em;
+		min-height: 2em;
+		transition: opacity 0.4s ease;
+	}
+
+	.pk-demo .pk-icon {
+		fill: none;
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.pk-demo .pk-icon--lock-open {
+		width: 1.4em;
+		height: 1.75em;
+		stroke: #fff3d6;
+	}
+
+	.pk-demo .pk-icon--key {
+		width: 2.2em;
+		height: 1.3em;
+		stroke: var(--color-accent);
+	}
+
+	/* Padlock copies only exist once Sam has handed them out (step 1+). */
+	.pk-demo .pk-alex-lock,
+	.pk-demo .pk-eve-lock {
+		opacity: 0;
+	}
+
+	.pk-demo .pk-stage:not([data-step="0"]) .pk-alex-lock,
+	.pk-demo .pk-stage:not([data-step="0"]) .pk-eve-lock {
+		opacity: 1;
+	}
+
+	/* Alex's padlock is used up once it's snapped onto the box. */
+	.pk-demo .pk-stage[data-step="3"] .pk-alex-lock,
+	.pk-demo .pk-stage[data-step="4"] .pk-alex-lock,
+	.pk-demo .pk-stage[data-step="5"] .pk-alex-lock {
+		opacity: 0;
+	}
+
+	.pk-demo .pk-eve-fail {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.85em;
+		white-space: nowrap;
+		color: var(--color-text);
+		opacity: 0;
+		transition: opacity 0.3s ease 0.5s;
+	}
+
+	.pk-demo .pk-stage[data-step="4"] .pk-eve-fail {
+		opacity: 1;
+	}
+
+	.pk-demo .pk-wire {
+		position: absolute;
+		left: 12%;
+		right: 12%;
+		top: 12.8em;
+		height: 0;
+		border-top: 2px dashed var(--color-border);
+	}
+
+	.pk-demo .pk-box {
+		position: absolute;
+		top: 10.5em;
+		left: 15%;
+		width: 9.5em;
+		min-height: 4.6em;
+		margin-left: -4.75em;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.25em;
+		padding: 0.5em;
+		border-radius: 8px;
+		border: 2px solid var(--color-text-muted);
+		background: var(--color-surface-alt);
+		opacity: 0;
+		transition:
+			left 0.9s ease,
+			opacity 0.4s ease,
+			border-color 0.3s ease;
+	}
+
+	.pk-demo .pk-stage:is([data-step="2"], [data-step="3"], [data-step="4"], [data-step="5"]) .pk-box {
+		opacity: 1;
+	}
+
+	.pk-demo .pk-stage[data-step="4"] .pk-box {
+		left: 50%;
+	}
+
+	.pk-demo .pk-stage[data-step="5"] .pk-box {
+		left: 85%;
+	}
+
+	.pk-demo .pk-stage:is([data-step="3"], [data-step="4"]) .pk-box {
+		border-color: var(--color-accent);
+	}
+
+	.pk-demo .pk-box-lock {
+		width: 1.3em;
+		height: 1.6em;
+		stroke: var(--color-accent);
+		display: none;
+	}
+
+	.pk-demo .pk-stage:is([data-step="3"], [data-step="4"]) .pk-box-lock {
+		display: block;
+	}
+
+	.pk-demo .pk-box-content {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.78em;
+		line-height: 1.3;
+		text-align: center;
+		color: var(--color-text);
+		overflow-wrap: anywhere;
+	}
+
+	.pk-demo .pk-box-content.is-scrambled {
+		color: var(--color-text-muted);
+		letter-spacing: 0.04em;
+	}
+
+	.pk-demo .pk-step-count {
+		margin: 0.75em 0 0;
+		text-align: center;
+		font-size: 0.78em;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+	}
+
+	.pk-demo .pk-caption {
+		margin-top: 0.25em;
+		min-height: 3em;
+	}
+
+	@media (max-width: 480px) {
+		.pk-demo .pk-name {
+			font-size: 0.75em;
+		}
+
+		.pk-demo .pk-box {
+			width: 7.5em;
+			margin-left: -3.75em;
+		}
+
+		.pk-demo .pk-stage[data-step="2"] .pk-box,
+		.pk-demo .pk-stage[data-step="3"] .pk-box {
+			left: 20%;
+		}
+
+		.pk-demo .pk-stage[data-step="5"] .pk-box {
+			left: 80%;
+		}
+	}
+</style>
