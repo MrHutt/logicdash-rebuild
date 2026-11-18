@@ -18,25 +18,37 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<button type="button" class="quick-byte-next" hidden>Next Round</button>
 	</div>
 
-	<!-- Results render top-to-bottom so players never have to leave the page to see
-	     their stats: header → per-round scores → total → avg comparison → streak →
-	     mini punchcard → share buttons → countdown. -->
+	<!-- Today's result first; sharing is deliberately above optional detailed statistics. -->
 	<div class="quick-byte-results" hidden>
 		<p class="quick-byte-results-label">Today's result</p>
 		<p class="quick-byte-sequence"></p>
 		<p class="quick-byte-total"></p>
 		<p class="quick-byte-special" hidden></p>
+
+		<div class="quick-byte-averages">
+			<div class="quick-byte-average-card"><span>TODAY'S AVERAGE</span><strong data-today-average>—</strong><small>guesses / round</small></div>
+			<div class="quick-byte-average-card"><span>OVERALL AVERAGE</span><strong data-overall-average>—</strong><small>guesses / round, before today</small></div>
+		</div>
 		<p class="quick-byte-avg-feedback" hidden></p>
 		<p class="quick-byte-streak" hidden></p>
-		<div class="quick-byte-mini-punch" aria-hidden="true">
-			<span class="quick-byte-mini-punch-label">Last 7 days</span>
-			<span class="mini-punch-cells"></span>
-			<a class="quick-byte-view-stats" href="/stats/">View full stats →</a>
-		</div>
 		<div class="quick-byte-share-row">
 			<button type="button" class="quick-byte-share quick-byte-share--result">Share Result</button>
 			<button type="button" class="quick-byte-share quick-byte-share--stats">Share Stats</button>
 		</div>
+
+		<details class="quick-byte-details">
+			<summary>Your 32-day statistics <span class="stats-chevron" aria-hidden="true">⌄</span></summary>
+			<div class="quick-byte-details-content">
+				<div class="quick-byte-punchcard">
+					<div class="quick-byte-punchcard-top"><span>LOGICDASH SYSTEMS / ACTIVITY RECORD</span><span>32 DAYS</span></div>
+					<p>DO NOT FOLD, SPINDLE OR MUTILATE</p>
+					<div class="quick-byte-punch-scroll"><div class="quick-byte-punch-rows" role="group" aria-label="Successes over the past 32 days"></div></div>
+					<small>01 = today · 32 = 31 days ago · Filled slots = three successful rounds</small>
+				</div>
+				<p class="quick-byte-history-summary"></p>
+				<p class="quick-byte-local-note">Statistics are saved in this browser only.</p>
+			</div>
+		</details>
 		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte — next challenge in <span class="quick-byte-countdown"></span>.</p>
 	</div>
 
@@ -346,6 +358,32 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.share-toast[hidden] {
 		display: none;
 	}
+	/* Compact comparison and authentic numbered activity card, below primary sharing. */
+	.quick-byte-averages { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.6rem; margin:.8rem auto 0; max-width:34rem; text-align:center; }
+	.quick-byte-average-card { display:flex; flex-direction:column; align-items:center; gap:.2rem; padding:.8rem .4rem; background:var(--color-surface); border:1px solid var(--color-border); border-radius:12px; }
+	.quick-byte-average-card span { font-size:.68rem; font-weight:700; letter-spacing:.05em; color:var(--color-text-muted); }
+	.quick-byte-average-card strong { font-size:clamp(1.5rem,5vw,2rem); font-family:var(--font-mono); }
+	.quick-byte-average-card small { font-size:.69rem; color:var(--color-text-muted); }
+	.quick-byte-details { max-width:40rem; margin:1rem auto 0; border:1px solid var(--color-border); border-radius:12px; background:var(--color-surface); text-align:left; }
+	.quick-byte-details summary { cursor:pointer; padding:.9rem 1rem; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+	.quick-byte-details summary::-webkit-details-marker { display:none; }
+	.quick-byte-details[open] .stats-chevron { transform:rotate(180deg); }
+	.quick-byte-details-content { padding:0 .8rem 1rem; }
+	.quick-byte-punchcard { background:#e8ddc4; color:#403a2c; border-radius:8px; padding:1rem .7rem; font-family:var(--font-mono); }
+	.quick-byte-punchcard-top { display:flex; justify-content:space-between; gap:.5rem; font-size:.58rem; font-weight:700; }
+	.quick-byte-punchcard p { text-align:center; margin:.65rem 0; font-size:.61rem; font-weight:700; letter-spacing:.04em; }
+	.quick-byte-punchcard small { display:block; margin-top:.6rem; font-size:.59rem; }
+	.quick-byte-punch-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+	.quick-byte-punch-rows { min-width:355px; display:grid; gap:.55rem; }
+	.quick-byte-punch-row { display:grid; grid-template-columns:20px repeat(16,minmax(14px,1fr)); gap:3px; align-items:end; }
+	.quick-byte-punch-row-label { font-weight:700; font-size:.65rem; align-self:center; }
+	.quick-byte-punch-position { display:flex; flex-direction:column; align-items:center; gap:3px; }
+	.quick-byte-punch-number { font-size:.52rem; }
+	.quick-byte-punch-hole { width:72%; height:21px; background:#c7bda6; border-radius:2px; }
+	.quick-byte-punch-hole.is-punched { background:#966020; box-shadow:inset 0 1px 3px #493016; }
+	.quick-byte-history-summary,.quick-byte-local-note { text-align:center; font-size:.78rem; color:var(--color-text-muted); margin:.8rem 0 .1rem; }
+	@media (max-width:390px) { .quick-byte-average-card span { font-size:.6rem; } }
+
 </style>
 
 <script>
@@ -410,8 +448,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
 	const shareResultBtn = document.querySelector<HTMLButtonElement>(".quick-byte-share--result")!;
 	const shareStatsBtn = document.querySelector<HTMLButtonElement>(".quick-byte-share--stats")!;
-	const miniPunchWrap = document.querySelector<HTMLElement>(".quick-byte-mini-punch")!;
-	const miniPunchCells = document.querySelector<HTMLElement>(".mini-punch-cells")!;
+	const todayAvgEl = document.querySelector<HTMLElement>("[data-today-average]")!;
+	const overallAvgEl = document.querySelector<HTMLElement>("[data-overall-average]")!;
 
 	// Set whenever results are shown (either just now, or on revisiting an already-completed
 	// day), so the share buttons always have the right scores regardless of which path ran.
@@ -421,6 +459,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 	let currentGameTotal: number | null = null;
 
 	// --- Easter eggs for special score sequences (666, 111, …) ---
+	function isPowerOfTwo(n: number): boolean { return n >= 2 && Number.isInteger(Math.log2(n)); }
+
 	function getSequenceEasterEgg(sequenceText: string): string {
 		const TEST_MODE = false; // flip to true to see the egg on ANY score (for testing)
 		if (TEST_MODE) return "🧪 Test egg — wiring works!";
@@ -448,8 +488,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 		const lines = [`LogicDash Quick Byte – ${humanDate(dateString)}`, `${sequence} (${currentGameTotal ?? "Incomplete"} guesses)`];
 		const extras: string[] = [];
 		if (currentGameTotal !== null) extras.push(`Avg: ${(currentGameTotal / ROUND_COUNT).toFixed(1)}/round`);
-		if (streakCount > 0) extras.push(`Streak: ${getBinaryStreak(streakCount)} 🔥`);
+		if (streakCount > 0) extras.push(`Streak: ${getBinaryStreak(streakCount)} (${streakCount} days) 🔥${isPowerOfTwo(streakCount) ? " ✦ Power of 2!" : ""}`);
 		if (extras.length > 0) lines.push(extras.join(" · "));
+		const egg = getSequenceEasterEgg(sequence);
+		if (egg) lines.push(egg);
 		lines.push("", "logicdash.io");
 		return lines.join("\n");
 	}
@@ -603,10 +645,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 		}
 		const currentAvg = total / ROUND_COUNT;
 		if (currentAvg < historicalAvg) {
-			feedbackEl.textContent = "⬇️ Better than your average!";
+			feedbackEl.textContent = `↓ ${(historicalAvg - currentAvg).toFixed(1)} fewer guesses per round today!`;
 			feedbackEl.classList.add("is-better");
 		} else if (currentAvg > historicalAvg) {
-			feedbackEl.textContent = "⬆️ More guesses than usual.";
+			feedbackEl.textContent = `↑ ${(currentAvg - historicalAvg).toFixed(1)} more guesses per round today.`;
 			feedbackEl.classList.add("is-worse");
 		} else {
 			feedbackEl.textContent = "➖ Exactly your usual average.";
@@ -625,18 +667,27 @@ import HammingBoard from "../components/HammingBoard.astro";
 		addGameStats(total);
 	}
 
-	// Compact 7-square preview of the last 7 days (today first), mirroring the big
-	// punchcard on /stats: amber punch = solved day, blank beige = missed/future.
-	function renderMiniPunchcard() {
-		miniPunchCells.textContent = "";
-		for (let offset = 0; offset < 7; offset++) {
-			const date = new Date();
-			date.setDate(date.getDate() - offset);
-			const cell = document.createElement("span");
-			cell.className = hasPlayedOn(getLocalDateString(date)) ? "mini-punch-cell is-punched" : "mini-punch-cell";
-			miniPunchCells.appendChild(cell);
+	// Numbered 32-position punchcard; today is slot 01 and yesterday is 02.
+	function renderPunchcard() {
+		const rows = document.querySelector<HTMLElement>(".quick-byte-punch-rows")!;
+		rows.replaceChildren();
+		for (let r = 0; r < 2; r++) {
+			const row = document.createElement("div"); row.className = "quick-byte-punch-row";
+			const label = document.createElement("span"); label.className = "quick-byte-punch-row-label"; label.textContent = r === 0 ? "A" : "B"; row.append(label);
+			for (let c = 0; c < 16; c++) {
+				const offset = r * 16 + c;
+				const d = new Date(); d.setDate(d.getDate() - offset);
+				const date = getLocalDateString(d), success = hasPlayedOn(date);
+				const slot = document.createElement("span"); slot.className = "quick-byte-punch-position";
+				const number = document.createElement("span"); number.className = "quick-byte-punch-number"; number.textContent = String(offset + 1).padStart(2,"0");
+				const hole = document.createElement("span"); hole.className = "quick-byte-punch-hole" + (success ? " is-punched" : "");
+				slot.title = `${date}: ${success ? "Solved" : "Not solved"}`;
+				slot.setAttribute("aria-label", slot.title); slot.append(number,hole); row.append(slot);
+			}
+			rows.append(row);
 		}
-		miniPunchWrap.hidden = false;
+		const summary = document.querySelector<HTMLElement>(".quick-byte-history-summary")!;
+		summary.textContent = `Games completed: ${getGamesCompleted()} · Longest streak: ${getLongestStreak()} days`;
 	}
 
 	function showResults(perRound: RoundResult[], isNewlyCompleted = false) {
@@ -652,7 +703,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 		specialEl.textContent = specialMsg;
 		specialEl.hidden = !specialMsg;
 
-		// Compare against history first, THEN persist this game into it.
+		// Compare against history before saving the new result; both averages are per round.
+		const historicalAvg = getAvgGuessesPerRound();
+		todayAvgEl.textContent = currentGameTotal === null ? "—" : (currentGameTotal / ROUND_COUNT).toFixed(1);
+		overallAvgEl.textContent = historicalAvg === null ? "—" : historicalAvg.toFixed(1);
 		renderAvgFeedback(perRound);
 		if (isNewlyCompleted) saveNewGameStats(perRound);
 
@@ -667,6 +721,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 			streakText = perfect ? `🔥 ${streakCount}-day streak` : `🔥 ${streakCount}-day streak ended today`;
 			// Neon binary flourish on the live-streak line, e.g. "· 111₂".
 			if (perfect) streakText += ` · ${getBinaryStreak(streakCount)}`;
+			if (perfect && isPowerOfTwo(streakCount)) streakText += " ✦ Power of 2!";
 			if (longest > streakCount) {
 				streakText += ` · Longest: ${longest}`;
 			} else if (longest === streakCount && streakCount > 1) {
@@ -679,7 +734,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		streakEl.textContent = streakText;
 		streakEl.hidden = !streakText;
 
-		renderMiniPunchcard();
+		renderPunchcard();
 	}
 
 	// --- Countdown to the next daily puzzle (local midnight) ---
