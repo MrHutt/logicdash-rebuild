@@ -1,0 +1,374 @@
+---
+// QuickByte-only stats page. Everything here reads the browser-local storage managed
+// by src/lib/stats.ts — no server, no accounts, nothing leaves this device.
+import Layout from "../layouts/Layout.astro";
+import { getLocalDateString } from "../lib/dailySeed";
+---
+
+<Layout
+	title="Quick Byte Stats"
+	description="Your LogicDash Quick Byte streak, average guesses, and a 32-day punchcard heatmap. All stats stay on your device — nothing is sent to a server."
+>
+	<div class="page-intro">
+		<h1>Quick Byte Stats</h1>
+		<p>Your daily-byte history, computed entirely on this device.</p>
+	</div>
+
+	<div class="stats-grid">
+		<section class="stats-card stats-streak" aria-label="Current streak">
+			<p class="stats-label">Current Streak</p>
+			<p class="stats-binary" data-stats-current-binary></p>
+			<p class="stats-decimal-muted" data-stats-current-decimal>0 days</p>
+		</section>
+
+		<section class="stats-card stats-avg" aria-label="Average guesses">
+			<p class="stats-label">Efficiency</p>
+			<p class="stats-avg-value" data-stats-avg>Your Avg. Guesses: –</p>
+			<p class="stats-decimal-muted" data-stats-games>0 games completed</p>
+		</section>
+	</div>
+
+	<section class="punchcard-scroll-wrap" aria-label="32-day activity punchcard">
+		<div class="punchcard" role="img" aria-label="IBM-style punchcard heatmap of your last 32 Quick Byte days">
+			<p class="punchcard-header">DO NOT FOLD, SPINDLE, OR MUTILATE &mdash; LOGICDASH SYSTEMS</p>
+			<div class="punchcard-rows" data-punchcard-rows><!-- rows built client-side --></div>
+			<p class="punchcard-tooltip" data-punchcard-tooltip hidden></p>
+		</div>
+		<p class="punchcard-scroll-hint" aria-hidden="true">← swipe to see all 32 days →</p>
+	</section>
+
+	<!-- 32-day easter egg: CRT alert, revealed client-side only when streak === 32 -->
+	<section class="crt-alert" data-crt-alert hidden>
+		<p>&gt;&gt;&gt; SYSTEM ALERT: 32-DAY STREAK DETECTED.</p>
+		<p>&gt;&gt;&gt; FULL DECK PROCESSED. NO ERRORS.</p>
+		<p>&gt;&gt;&gt; STATUS: CERTIFIED LOGICDASH OPERATOR.</p>
+	</section>
+
+	<p class="stats-privacy-note">
+		PRIVACY NOTE: All LogicDash stats live only in your browser's localStorage. Nothing is sent to a
+		server, tracked, or shared. It exists on this device only.
+	</p>
+</Layout>
+
+<style>
+	.page-intro {
+		margin-bottom: 1rem;
+	}
+
+	.page-intro h1 {
+		margin: 0 0 0.15rem;
+		font-size: clamp(1.25rem, 3vw, 1.6rem);
+	}
+
+	.page-intro p {
+		margin: 0;
+		font-size: 0.85rem;
+	}
+
+	.stats-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+		gap: 1rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.stats-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 16px;
+		padding: 1.25rem 1rem;
+		text-align: center;
+	}
+
+	.stats-label {
+		margin: 0 0 0.5rem;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	/* The headline number: current streak rendered as big neon binary, e.g. 101₂. */
+	.stats-binary {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(2.5rem, 9vw, 3.75rem);
+		line-height: 1.1;
+		color: #fff3d6;
+		text-shadow:
+			0 0 6px var(--color-accent),
+			0 0 18px var(--color-accent),
+			0 0 36px color-mix(in srgb, var(--color-accent) 55%, transparent);
+	}
+
+	.stats-decimal-muted {
+		margin: 0.35rem 0 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	.stats-avg-value {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: clamp(1.1rem, 4vw, 1.5rem);
+		color: var(--color-text);
+	}
+
+	/* --- IBM punchcard heatmap (last 32 days) --- */
+	.punchcard-scroll-wrap {
+		position: relative;
+		margin-bottom: 1.5rem;
+	}
+
+	.punchcard {
+		position: relative;
+		box-sizing: border-box;
+		width: max-content;
+		min-width: 100%;
+		background: #f4f1ea;
+		color: #1a1c23;
+		border-radius: 10px;
+		padding: 0.85rem 1.1rem 1.1rem;
+		box-shadow:
+			0 10px 24px -8px rgba(0, 0, 0, 0.55),
+			inset 0 0 0 1px rgba(26, 28, 35, 0.12);
+	}
+
+	.punchcard-header {
+		margin: 0 0 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.55rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: #1a1c23;
+	}
+
+	.punchcard-rows {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.punchcard-row {
+		display: flex;
+		gap: 6px;
+	}
+
+	/* A small extra gap after every 8th column, i.e. every 4 bytes / one half-row. */
+	.punchcard-cell:nth-child(8n) {
+		margin-right: 14px;
+	}
+
+	.punchcard-cell {
+		width: 16px;
+		height: 26px;
+		border-radius: 2px / 4px;
+		background: transparent; /* missed/failed day = blank beige */
+		cursor: default;
+	}
+
+	/* Played day = glowing amber rectangular punch: inset shadow + outer glow. */
+	.punchcard-cell.is-punched {
+		background: #ffae2e;
+		box-shadow:
+			inset 0 2px 4px rgba(26, 28, 35, 0.45),
+			inset 0 -1px 2px rgba(26, 28, 35, 0.3),
+			0 0 8px rgba(255, 174, 46, 0.85),
+			0 0 16px rgba(255, 174, 46, 0.4);
+	}
+
+	.punchcard-tooltip {
+		position: absolute;
+		left: 1.1rem;
+		bottom: 0.35rem;
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #1a1c23;
+		background: rgba(255, 174, 46, 0.35);
+		border-radius: 6px;
+		padding: 0.15rem 0.5rem;
+		pointer-events: none;
+	}
+
+	.punchcard-tooltip[hidden] {
+		display: none;
+	}
+
+	.punchcard-scroll-hint {
+		display: none;
+		margin: 0.5rem 0 0;
+		text-align: center;
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+	}
+
+	/* --- 32-day easter egg: CRT alert box below the card --- */
+	.crt-alert {
+		margin: 0 auto 1.5rem;
+		max-width: 34rem;
+		background: var(--color-surface-alt);
+		border: 1px solid var(--color-accent);
+		border-radius: 10px;
+		padding: 1rem 1.25rem;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		line-height: 1.7;
+		color: var(--color-success);
+		box-shadow:
+			0 0 18px color-mix(in srgb, var(--color-accent) 30%, transparent),
+			inset 0 0 24px rgba(0, 0, 0, 0.6);
+		animation: crt-flicker 2.4s infinite;
+	}
+
+	.crt-alert p {
+		margin: 0;
+	}
+
+	.crt-alert p:first-child {
+		color: var(--color-accent);
+	}
+
+	.crt-alert[hidden] {
+		display: none;
+	}
+
+	@keyframes crt-flicker {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		92% {
+			opacity: 1;
+		}
+		93% {
+			opacity: 0.72;
+		}
+		94% {
+			opacity: 1;
+		}
+		97% {
+			opacity: 0.85;
+		}
+		98% {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.crt-alert {
+			animation: none;
+		}
+	}
+
+	.stats-privacy-note {
+		margin: 2rem 0 0;
+		text-align: center;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	/* Mobile (Task 4): let the card scroll horizontally instead of shrinking the tiny
+	   numbers out of legibility. Inertial scrolling, and a faint hint under the card. */
+	@media (max-width: 640px) {
+		.punchcard-scroll-wrap {
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.punchcard {
+			min-width: max-content;
+		}
+
+		.punchcard-scroll-hint {
+			display: block;
+		}
+	}
+</style>
+
+<script>
+	import { getLocalDateString } from "../lib/dailySeed";
+	import {
+		getBinaryStreak,
+		getCurrentStreak,
+		getGamesCompleted,
+		getTotalGuesses,
+		hasPlayedOn,
+	} from "../lib/stats";
+
+	const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+	function shortDate(dateString: string): string {
+		// "2026-11-15" -> "Nov 15" (parsed as local, never UTC-shifted).
+		const [year, month, day] = dateString.split("-").map(Number);
+		return `${MONTH_ABBR[month - 1]} ${day}`;
+	}
+
+	const currentStreak = getCurrentStreak();
+	const gamesCompleted = getGamesCompleted();
+	const totalGuesses = getTotalGuesses();
+
+	// (1) Current streak in large neon binary with the decimal muted underneath.
+	const binaryEl = document.querySelector<HTMLElement>("[data-stats-current-binary]")!;
+	const decimalEl = document.querySelector<HTMLElement>("[data-stats-current-decimal]")!;
+	binaryEl.textContent = getBinaryStreak(currentStreak);
+	decimalEl.textContent = `${currentStreak} day${currentStreak === 1 ? "" : "s"}`;
+
+	// (2) Average guesses per completed game, one decimal place.
+	const avgEl = document.querySelector<HTMLElement>("[data-stats-avg]")!;
+	const gamesEl = document.querySelector<HTMLElement>("[data-stats-games]")!;
+	if (gamesCompleted > 0) {
+		avgEl.textContent = `Your Avg. Guesses: ${(totalGuesses / gamesCompleted).toFixed(1)}`;
+	} else {
+		avgEl.textContent = "Your Avg. Guesses: –";
+	}
+	gamesEl.textContent = `${gamesCompleted} game${gamesCompleted === 1 ? "" : "s"} completed`;
+
+	// (3) Punchcard heatmap: last 32 local days. Day 1 = today, top-left; two stacked
+	// rows of 16 columns (cols 1–16 then 17–32), extra gap after every 8th column.
+	const rowsContainer = document.querySelector<HTMLElement>("[data-punchcard-rows]")!;
+	const tooltipEl = document.querySelector<HTMLElement>("[data-punchcard-tooltip]")!;
+
+	for (let offset = 0; offset < 32; offset++) {
+		const date = new Date();
+		date.setDate(date.getDate() - offset); // Day 1 = today, counting back in local days.
+		const dateString = getLocalDateString(date);
+		const played = hasPlayedOn(dateString);
+
+		const cell = document.createElement("span");
+		cell.className = played ? "punchcard-cell is-punched" : "punchcard-cell";
+		const label = played ? `${shortDate(dateString)}: Solved` : `${shortDate(dateString)}: Missed`;
+		cell.setAttribute("aria-label", label);
+
+		const showTip = () => {
+			tooltipEl.textContent = label;
+			tooltipEl.hidden = false;
+		};
+		cell.addEventListener("mouseenter", showTip);
+		cell.addEventListener("focus", showTip);
+		cell.addEventListener("mouseleave", () => {
+			tooltipEl.hidden = true;
+		});
+
+		// Rows are created up front so each cell lands in its own row (offsets 0–15 on
+		// top, 16–31 below) rather than depending on lazy child-index bookkeeping.
+		while (rowsContainer.children.length < 2) {
+			const row = document.createElement("div");
+			row.className = "punchcard-row";
+			rowsContainer.appendChild(row);
+		}
+		const rowIndex = offset < 16 ? 0 : 1;
+		rowsContainer.children[rowIndex].appendChild(cell);
+	}
+
+	// Task 5 — 32-day easter egg: CRT alert appears only at a 32-day streak.
+	if (currentStreak === 32) {
+		const crt = document.querySelector<HTMLElement>("[data-crt-alert]");
+		if (crt) crt.hidden = false;
+	}
+</script>

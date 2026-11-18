@@ -23,6 +23,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<p class="quick-byte-sequence"></p>
 		<p class="quick-byte-total"></p>
 		<p class="quick-byte-special" hidden></p>
+		<p class="quick-byte-avg-feedback" hidden></p>
 		<p class="quick-byte-streak" hidden></p>
 		<button type="button" class="quick-byte-share">Share Result</button>
 		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte — next challenge in <span class="quick-byte-countdown"></span>.</p>
@@ -44,6 +45,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 			<div class="share-preview">
 				<p class="share-preview-date"></p>
 				<p class="share-preview-sequence"></p>
+				<p class="share-preview-streak"></p>
 				<p class="share-preview-site">logicdash.io</p>
 				<p class="share-preview-easter"></p>
 			</div>
@@ -197,6 +199,29 @@ import HammingBoard from "../components/HammingBoard.astro";
 		display: none;
 	}
 
+	/* Post-game comparison against the player's historical average guess count. */
+	.quick-byte-avg-feedback {
+		margin: 0.35rem 0 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.quick-byte-avg-feedback[hidden] {
+		display: none;
+	}
+
+	.quick-byte-avg-feedback.is-better {
+		color: var(--color-success);
+	}
+
+	.quick-byte-avg-feedback.is-worse {
+		color: var(--color-danger);
+	}
+
+	.quick-byte-avg-feedback.is-same {
+		color: var(--color-text-muted);
+	}
+
 	.quick-byte-streak {
 		margin: 0.35rem 0 0;
 		font-size: 0.85rem;
@@ -322,6 +347,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 		color: var(--color-text);
 	}
 
+	.share-preview-streak {
+		color: #ffae2e;
+	}
+
 	.share-preview-easter {
 		color: #ffae2e;
 		font-weight: 700;
@@ -433,6 +462,15 @@ import HammingBoard from "../components/HammingBoard.astro";
 		buildShareText,
 		type RoundResult,
 	} from "../lib/quickByteScoring";
+	import {
+		getBinaryStreak,
+		getCurrentStreak,
+		getGamesCompleted,
+		getTotalGuesses,
+		addGameStats,
+		recordPlayDate,
+		hasPlayedOn,
+	} from "../lib/stats";
 
 	// Result storage is browser-local only for now (no accounts yet), keyed by the
 	// player's local calendar day. Cross-device sync will come later once accounts exist.
@@ -464,6 +502,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 		count: number;
 		longest: number;
 	}
+
+	// Set whenever results are shown (either just now or on revisiting a completed day),
+	// so the average-vs-history feedback can compare today's total without re-deriving it.
+	let currentGameTotal: number | null = null;
 
 	const dateString = getLocalDateString();
 	const storageKey = STORAGE_PREFIX + dateString;
@@ -503,15 +545,27 @@ import HammingBoard from "../components/HammingBoard.astro";
 		return "";
 	}
 
+	// Share line in the task's format, e.g. "LogicDash Daily Byte 4-2-5 | Streak: 111₂ 🔥".
+	// The binary streak is only appended when there's a live streak to show.
+	function buildDailyByteLine(scores: RoundResult[]): string {
+		const sequence = formatResultSequence(scores);
+		const streakCount = getCurrentStreak();
+		return streakCount > 0
+			? `LogicDash Daily Byte ${sequence} | Streak: ${getBinaryStreak(streakCount)} 🔥`
+			: `LogicDash Daily Byte ${sequence}`;
+	}
+
 	function shareTextWithEgg(): string {
 		const egg = getSequenceEasterEgg(formatResultSequence(resultScores));
-		const base = buildShareText(dateString, resultScores);
+		const base = `${buildShareText(dateString, resultScores)}\n${buildDailyByteLine(resultScores)}`;
 		return egg ? `${base}\n${egg}` : base;
 	}
 
 	function renderSharePreview(scores: RoundResult[]) {
 		sharePreviewDate.textContent = `Quick Byte — ${dateString.replaceAll("-", ".")}`;
 		sharePreviewSequence.textContent = `${formatResultSequence(scores)}   ${formatTotalLine(scores)}`;
+		const streakPreviewEl = document.querySelector<HTMLElement>(".share-preview-streak");
+		if (streakPreviewEl) streakPreviewEl.textContent = buildDailyByteLine(scores);
 		const eggEl = document.querySelector<HTMLElement>(".share-preview-easter")!;
 		eggEl.textContent = getSequenceEasterEgg(formatResultSequence(scores));
 	}
@@ -628,8 +682,50 @@ import HammingBoard from "../components/HammingBoard.astro";
 		return streak.count;
 	}
 
-	function showResults(perRound: RoundResult[]) {
+	// --- Post-game feedback vs. the player's historical average (QuickByte-only) ---
+	// History is read BEFORE today's game is folded into it, so "your average" means
+	// "your usual", not "your usual including this run".
+	function renderAvgFeedback(perRound: RoundResult[]) {
+		const feedbackEl = document.querySelector<HTMLElement>(".quick-byte-avg-feedback")!;
+		feedbackEl.className = "quick-byte-avg-feedback";
+		const total = totalScore(perRound);
+		if (total === null) {
+			// Incomplete day — no fair comparison to make; skip the arrow entirely.
+			feedbackEl.hidden = true;
+			return;
+		}
+		const gamesCompleted = getGamesCompleted();
+		if (gamesCompleted === 0) {
+			feedbackEl.hidden = true; // No history yet — nothing to compare against.
+			return;
+		}
+		const average = getTotalGuesses() / gamesCompleted;
+		if (total < average) {
+			feedbackEl.textContent = "⬇️ Better than your average!";
+			feedbackEl.classList.add("is-better");
+		} else if (total > average) {
+			feedbackEl.textContent = "⬆️ More guesses than usual.";
+			feedbackEl.classList.add("is-worse");
+		} else {
+			feedbackEl.textContent = "➖ Exactly your usual average.";
+			feedbackEl.classList.add("is-same");
+		}
+		feedbackEl.hidden = false;
+	}
+
+	// Fold today's finished game into the lifetime aggregates exactly once per day,
+	// guarded by the play-dates array so revisits never double-count. Failures never
+	// reach this: only a clean sweep of all 3 rounds records a play date.
+	function saveNewGameStats(perRound: RoundResult[]) {
+		const total = totalScore(perRound);
+		if (total === null || hasPlayedOn(dateString)) return;
+		recordPlayDate();
+		addGameStats(total);
+	}
+
+	function showResults(perRound: RoundResult[], isNewlyCompleted = false) {
 		resultScores = perRound;
+		currentGameTotal = totalScore(perRound);
 		playSection.hidden = true;
 		resultsSection.hidden = false;
 		sequenceEl.textContent = formatResultSequence(perRound);
@@ -640,6 +736,10 @@ import HammingBoard from "../components/HammingBoard.astro";
 		specialEl.textContent = specialMsg;
 		specialEl.hidden = !specialMsg;
 
+		// Compare against history first, THEN persist this game into it.
+		renderAvgFeedback(perRound);
+		if (isNewlyCompleted) saveNewGameStats(perRound);
+
 		const perfect = perRound.every((r) => r !== null);
 		const streakCount = recordStreak(perRound);
 		const streakData = readStreak();
@@ -649,6 +749,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 		let streakText = "";
 		if (streakCount > 0) {
 			streakText = perfect ? `🔥 ${streakCount}-day streak` : `🔥 ${streakCount}-day streak ended today`;
+			// Neon binary flourish on the live-streak line, e.g. "· Streak: 111₂".
+			if (perfect) streakText += ` · Streak: ${getBinaryStreak(streakCount)}`;
 			if (longest > streakCount) {
 				streakText += ` · Longest: ${longest}`;
 			} else if (longest === streakCount && streakCount > 1) {
@@ -734,7 +836,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 				controller.reset(secrets[roundIndex]);
 			} else {
 				storeResult({ perRound, total: totalScore(perRound), completedAt: new Date().toISOString() });
-				showResults(perRound);
+				showResults(perRound, true);
 			}
 		});
 	}
