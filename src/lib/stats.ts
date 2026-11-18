@@ -63,7 +63,14 @@ export function writeStreak(streak: StreakRecord) {
 
 /** Current consecutive-day streak (days). */
 export function getCurrentStreak(): number {
-	return readStreak().count;
+	const streak = readStreak();
+	if (!streak.last || !streak.count) return 0;
+	const today = getLocalDateString();
+	const [y, m, d] = streak.last.split("-").map(Number);
+	const [ty, tm, td] = today.split("-").map(Number);
+	if (![y, m, d, ty, tm, td].every(Number.isFinite)) return 0;
+	const days = Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(y, m - 1, d)) / 86400000);
+	return days >= 0 && days <= 1 ? streak.count : 0;
 }
 
 /** Best-ever streak (days). Falls back to `count` for pre-`longest` saves. */
