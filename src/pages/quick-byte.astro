@@ -33,7 +33,9 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<p class="quick-byte-streak" hidden></p>
 		<div class="quick-byte-share-row">
 			<button type="button" class="quick-byte-share quick-byte-share--result">Share Result</button>
-			<button type="button" class="quick-byte-share quick-byte-share--stats">Share Stats</button>
+			<button type="button" class="quick-byte-share quick-byte-share--copy">Copy</button>
+			<a class="quick-byte-share quick-byte-share--x" href="#" target="_blank" rel="noopener noreferrer">X</a>
+			<a class="quick-byte-share quick-byte-share--whatsapp" href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
 		</div>
 
 		<details class="quick-byte-details">
@@ -308,6 +310,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	}
 
 	.quick-byte-share {
+		display:inline-flex; align-items:center; justify-content:center; text-decoration:none;
 		padding: 0.5rem 1.5rem;
 		border: 1px solid #ffae2e;
 		border-radius: 999px;
@@ -401,6 +404,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		getCurrentStreak,
 		getLongestStreak,
 		getGamesCompleted,
+		getTotalGuesses,
 		getAvgGuessesPerRound,
 		addGameStats,
 		recordPlayDate,
@@ -449,7 +453,9 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const sequenceEl = document.querySelector<HTMLElement>(".quick-byte-sequence")!;
 	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
 	const shareResultBtn = document.querySelector<HTMLButtonElement>(".quick-byte-share--result")!;
-	const shareStatsBtn = document.querySelector<HTMLButtonElement>(".quick-byte-share--stats")!;
+	const shareCopyBtn = document.querySelector<HTMLButtonElement>(".quick-byte-share--copy")!;
+	const shareXLink = document.querySelector<HTMLAnchorElement>(".quick-byte-share--x")!;
+	const shareWhatsAppLink = document.querySelector<HTMLAnchorElement>(".quick-byte-share--whatsapp")!;
 	const todayAvgEl = document.querySelector<HTMLElement>("[data-today-average]")!;
 	const overallAvgEl = document.querySelector<HTMLElement>("[data-overall-average]")!;
 
@@ -498,16 +504,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 		return lines.join("\n");
 	}
 
-	function buildStatsShareText(): string {
-		const streakCount = getCurrentStreak();
-		const avgPerRound = getAvgGuessesPerRound();
-		const lines = ["LogicDash Stats", `🔥 ${streakCount}-day streak · ${getBinaryStreak(streakCount)}`];
-		if (avgPerRound !== null) lines.push(`Avg: ${avgPerRound.toFixed(1)} guesses/round`);
-		lines.push("", "logicdash.io/stats");
-		return lines.join("\n");
-	}
-
-	// --- Native share with clipboard fallback (replaces the old copy-box modal) ---
 	const shareRow = document.querySelector<HTMLElement>(".quick-byte-share-row")!;
 	const shareToast = document.createElement("span");
 	shareToast.className = "share-toast";
@@ -558,9 +554,12 @@ import HammingBoard from "../components/HammingBoard.astro";
 		shareText(shareResultBtn, buildResultShareText(), "https://logicdash.io/");
 	});
 
-	shareStatsBtn.addEventListener("click", () => {
-		shareText(shareStatsBtn, buildStatsShareText(), "https://logicdash.io/stats/");
-	});
+	shareCopyBtn.addEventListener("click", () => copyFallback(buildResultShareText(), shareCopyBtn));
+	function updateShareLinks() {
+		const message = encodeURIComponent(buildResultShareText());
+		shareXLink.href = `https://twitter.com/intent/tweet?text=${message}`;
+		shareWhatsAppLink.href = `https://wa.me/?text=${message}`;
+	}
 
 	function readStoredResult(): QuickByteResult | null {
 		try {
@@ -637,6 +636,14 @@ import HammingBoard from "../components/HammingBoard.astro";
 	// "your usual", not "your usual including this run". QuickByte days are 3 rounds, so
 	// both sides of the comparison are per-round numbers: today's total / 3 vs. the stored
 	// total_guesses / (games_completed * 3). No history yet → skip the arrow entirely.
+	function getHistoricalAverage(perRound: RoundResult[]): number | null {
+		// Revisited results should compare against the same pre-today baseline.
+		const total = totalScore(perRound);
+		if (!hasPlayedOn(dateString) || total === null) return getAvgGuessesPerRound();
+		const previousGames = getGamesCompleted() - 1;
+		return previousGames > 0 ? (getTotalGuesses() - total) / (previousGames * ROUND_COUNT) : null;
+	}
+
 	function renderAvgFeedback(perRound: RoundResult[]) {
 		const feedbackEl = document.querySelector<HTMLElement>(".quick-byte-avg-feedback")!;
 		feedbackEl.className = "quick-byte-avg-feedback";
@@ -646,7 +653,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 			feedbackEl.hidden = true;
 			return;
 		}
-		const historicalAvg = getAvgGuessesPerRound();
+		const historicalAvg = getHistoricalAverage(perRound);
 		if (historicalAvg === null) {
 			feedbackEl.hidden = true; // No history yet — nothing to compare against.
 			return;
@@ -700,6 +707,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 
 	function showResults(perRound: RoundResult[], isNewlyCompleted = false) {
 		resultScores = perRound;
+		updateShareLinks();
 		currentGameTotal = totalScore(perRound);
 		playSection.hidden = true;
 		resultsSection.hidden = false;
@@ -712,7 +720,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		specialEl.hidden = !specialMsg;
 
 		// Compare against history before saving the new result; both averages are per round.
-		const historicalAvg = getAvgGuessesPerRound();
+		const historicalAvg = getHistoricalAverage(perRound);
 		todayAvgEl.textContent = currentGameTotal === null ? "—" : (currentGameTotal / ROUND_COUNT).toFixed(1);
 		overallAvgEl.textContent = historicalAvg === null ? "—" : historicalAvg.toFixed(1);
 		renderAvgFeedback(perRound);
