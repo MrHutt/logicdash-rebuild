@@ -122,6 +122,14 @@ export function hasPlayedOn(dateString: string): boolean {
 	return getPlayDates().includes(dateString);
 }
 
+/** Average guesses per ROUND across all completed games. QuickByte days are 3 rounds,
+ *  so the denominator is games_completed * 3 — never games_completed alone. Returns
+ *  null when there is no history yet (callers should hide/skip any comparison then). */
+export function getAvgGuessesPerRound(): number | null {
+	const games = getGamesCompleted();
+	if (games <= 0) return null;
+	return getTotalGuesses() / (games * 3);
+}
 /**
  * Render a non-negative integer n in binary with the subscript-2 notation, e.g.
  * getBinaryStreak(5) === "101₂".

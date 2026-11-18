@@ -23,7 +23,7 @@ import { getLocalDateString } from "../lib/dailySeed";
 
 		<section class="stats-card stats-avg" aria-label="Average guesses">
 			<p class="stats-label">Efficiency</p>
-			<p class="stats-avg-value" data-stats-avg>Your Avg. Guesses: –</p>
+			<p class="stats-avg-value" data-stats-avg>Your Avg. Guesses: – /round</p>
 			<p class="stats-decimal-muted" data-stats-games>0 games completed</p>
 		</section>
 	</div>
@@ -121,6 +121,16 @@ import { getLocalDateString } from "../lib/dailySeed";
 	.punchcard-scroll-wrap {
 		position: relative;
 		margin-bottom: 1.5rem;
+		/* Explicit non-zero sizing so the card never collapses to an empty strip. */
+		min-height: 8rem;
+		/* Scrollable at every width (not just <640px) — without this, the wide card
+		   would simply be clipped and the punches invisible on smaller desktops. */
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.punchcard-rows {
+		min-width: 47rem; /* forces a real width for the two 16-column rows */
 	}
 
 	.punchcard {
@@ -297,7 +307,7 @@ import { getLocalDateString } from "../lib/dailySeed";
 		getBinaryStreak,
 		getCurrentStreak,
 		getGamesCompleted,
-		getTotalGuesses,
+		getAvgGuessesPerRound,
 		hasPlayedOn,
 	} from "../lib/stats";
 
@@ -311,7 +321,6 @@ import { getLocalDateString } from "../lib/dailySeed";
 
 	const currentStreak = getCurrentStreak();
 	const gamesCompleted = getGamesCompleted();
-	const totalGuesses = getTotalGuesses();
 
 	// (1) Current streak in large neon binary with the decimal muted underneath.
 	const binaryEl = document.querySelector<HTMLElement>("[data-stats-current-binary]")!;
@@ -319,20 +328,32 @@ import { getLocalDateString } from "../lib/dailySeed";
 	binaryEl.textContent = getBinaryStreak(currentStreak);
 	decimalEl.textContent = `${currentStreak} day${currentStreak === 1 ? "" : "s"}`;
 
-	// (2) Average guesses per completed game, one decimal place.
+	// (2) Average guesses per ROUND (QuickByte days are 3 rounds), one decimal place.
 	const avgEl = document.querySelector<HTMLElement>("[data-stats-avg]")!;
 	const gamesEl = document.querySelector<HTMLElement>("[data-stats-games]")!;
-	if (gamesCompleted > 0) {
-		avgEl.textContent = `Your Avg. Guesses: ${(totalGuesses / gamesCompleted).toFixed(1)}`;
+	const avgPerRound = getAvgGuessesPerRound();
+	if (avgPerRound !== null) {
+		avgEl.textContent = `Your Avg. Guesses: ${avgPerRound.toFixed(1)} /round`;
 	} else {
-		avgEl.textContent = "Your Avg. Guesses: –";
+		avgEl.textContent = "Your Avg. Guesses: – /round";
 	}
 	gamesEl.textContent = `${gamesCompleted} game${gamesCompleted === 1 ? "" : "s"} completed`;
 
 	// (3) Punchcard heatmap: last 32 local days. Day 1 = today, top-left; two stacked
 	// rows of 16 columns (cols 1–16 then 17–32), extra gap after every 8th column.
+	// Each row is created up front and cells are appended to the right row immediately,
+	// so the grid always renders (no lazy child-index bookkeeping that can silently
+	// leave a row empty). The wrapper + rows have explicit sizing so nothing collapses.
 	const rowsContainer = document.querySelector<HTMLElement>("[data-punchcard-rows]")!;
 	const tooltipEl = document.querySelector<HTMLElement>("[data-punchcard-tooltip]")!;
+
+	const punchRows: HTMLElement[] = [];
+	for (let r = 0; r < 2; r++) {
+		const row = document.createElement("div");
+		row.className = "punchcard-row";
+		rowsContainer.appendChild(row);
+		punchRows.push(row);
+	}
 
 	for (let offset = 0; offset < 32; offset++) {
 		const date = new Date();
@@ -355,15 +376,8 @@ import { getLocalDateString } from "../lib/dailySeed";
 			tooltipEl.hidden = true;
 		});
 
-		// Rows are created up front so each cell lands in its own row (offsets 0–15 on
-		// top, 16–31 below) rather than depending on lazy child-index bookkeeping.
-		while (rowsContainer.children.length < 2) {
-			const row = document.createElement("div");
-			row.className = "punchcard-row";
-			rowsContainer.appendChild(row);
-		}
-		const rowIndex = offset < 16 ? 0 : 1;
-		rowsContainer.children[rowIndex].appendChild(cell);
+		// Cells land in their row immediately: offsets 0–15 on the top row, 16–31 below.
+		punchRows[offset < 16 ? 0 : 1].appendChild(cell);
 	}
 
 	// Task 5 — 32-day easter egg: CRT alert appears only at a 32-day streak.
