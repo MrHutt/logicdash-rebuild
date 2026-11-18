@@ -605,9 +605,9 @@ import HammingBoard from "../components/HammingBoard.astro";
 	}
 
 	function dayDiff(from: string, to: string): number {
-		const a = new Date(`${from}T00:00:00`).getTime();
-		const b = new Date(`${to}T00:00:00`).getTime();
-		return Math.round((b - a) / 86400000);
+		const [ay, am, ad] = from.split("-").map(Number);
+		const [by, bm, bd] = to.split("-").map(Number);
+		return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000);
 	}
 
 	function recordStreak(perRound: RoundResult[]): number {
@@ -615,7 +615,13 @@ import HammingBoard from "../components/HammingBoard.astro";
 		if (streak.longest === undefined) streak.longest = streak.count || 0;
 		const perfect = perRound.every((r) => r !== null);
 
-		if (!perfect) return streak.count; // Streak breaks on a failed day
+		if (!perfect) {
+			// An unsuccessful completed day breaks the run but never erases the personal best.
+			streak.count = 0;
+			streak.last = "";
+			try { localStorage.setItem(STREAK_KEY, JSON.stringify(streak)); } catch {}
+			return 0;
+		}
 
 		if (streak.last !== dateString) {
 			streak.count = streak.last && dayDiff(streak.last, dateString) === 1 ? streak.count + 1 : 1;
