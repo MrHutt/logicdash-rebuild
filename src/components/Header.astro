@@ -4,6 +4,7 @@ const navLinks = [
 	{ href: "/5-bit", label: "Classic" },
 	{ href: "/overclocked", label: "OverClocked" },
 	{ href: "/quick-byte", label: "Quick Byte" },
+	{ href: "/stats", label: "Stats" },
 	{ href: "/how-to-play", label: "How to Play" },
 	{ href: "/learn", label: "Byte Lab" },
 	{ href: "/tools", label: "Tools" },
@@ -169,7 +170,7 @@ const currentPath = Astro.url.pathname;
 	}
 
 	/*
-	 * Below this width the full nav's seven links start to crowd/wrap
+	 * Below this width the full nav's links start to crowd/wrap
 	 * awkwardly (the horizontal list this used to fall back to), so it's
 	 * replaced with a hamburger that opens a slide-down panel instead —
 	 * above it, the nav bar stays exactly as it's always been. Raised from
@@ -180,10 +181,12 @@ const currentPath = Astro.url.pathname;
 	 * falling back to the hamburger. flex-wrap + justify-content: center
 	 * above are a safety net for the row itself, not a substitute for this
 	 * breakpoint — they only help once wrapping happens at the group
-	 * (link) level rather than mid-word within one, e.g. if an eighth item
-	 * is added later and this breakpoint isn't revisited to match.
+	 * (link) level rather than mid-word within one. Now raised again from
+	 * 960px to 1080px because "Stats" became an 8th item; the previous
+	 * comment's warning about adding an eighth link without revisiting
+	 * this breakpoint is exactly what this bump addresses.
 	 */
-	@media (max-width: 960px) {
+	@media (max-width: 1080px) {
 		.nav-toggle {
 			display: flex;
 		}
