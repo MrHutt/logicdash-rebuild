@@ -495,6 +495,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		}
 	}
 
+	// Native share first; clipboard + "Copied!" toast fallback if unsupported or it fails.
 	async function shareText(button: HTMLButtonElement, text: string, url: string) {
 		if (typeof navigator.share === "function") {
 			try {
