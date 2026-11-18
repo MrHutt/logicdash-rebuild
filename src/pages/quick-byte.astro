@@ -707,8 +707,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 
 	function showResults(perRound: RoundResult[], isNewlyCompleted = false) {
 		resultScores = perRound;
-		updateShareLinks();
 		currentGameTotal = totalScore(perRound);
+		updateShareLinks();
 		playSection.hidden = true;
 		resultsSection.hidden = false;
 		sequenceEl.textContent = formatResultSequence(perRound);
