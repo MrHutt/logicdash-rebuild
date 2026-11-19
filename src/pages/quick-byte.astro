@@ -387,15 +387,17 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.quick-byte-punchcard p { text-align:center; margin:.65rem 0; font-size:.61rem; font-weight:700; letter-spacing:.04em; color:#53472f; }
 	.quick-byte-punchcard small { display:block; margin-top:.6rem; font-size:.59rem; }
 	.quick-byte-punch-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-	.quick-byte-punch-rows { min-width:425px; display:grid; gap:.7rem; }
-	:global(.quick-byte-punch-row) { display:grid; grid-template-columns:20px repeat(16,minmax(19px,1fr)); gap:4px; align-items:end; }
+	.quick-byte-punch-rows { display:grid; gap:.7rem; width:100%; }
+	:global(.quick-byte-punch-cells) { display:grid; grid-template-columns:repeat(16,minmax(0,1fr)); gap:4px; }
+	:global(.quick-byte-punch-row) { display:grid; grid-template-columns:20px minmax(0,1fr); gap:4px; align-items:center; }
 	:global(.quick-byte-punch-row-label) { font-weight:700; font-size:.65rem; align-self:center; }
 	:global(.quick-byte-punch-position) { display:flex; flex-direction:column; align-items:center; gap:4px; }
 	:global(.quick-byte-punch-number) { font-size:.54rem; color:#423927; line-height:1.3; }
 	:global(.quick-byte-punch-hole) { display:block; width:12px; height:22px; background:#c7bda6; border-radius:2px; box-shadow:inset 0 1px 2px #a89a7d; }
 	:global(.quick-byte-punch-hole.is-punched) { background:#966020; box-shadow:inset 0 1px 3px #493016; }
 	.quick-byte-history-summary,.quick-byte-local-note { text-align:center; font-size:.78rem; color:var(--color-text-muted); margin:.8rem 0 .1rem; }
-	@media (max-width:390px) { .quick-byte-average-card span { font-size:.6rem; } }
+	@media (max-width:600px) { :global(.quick-byte-punch-cells) { grid-template-columns:repeat(8,minmax(0,1fr)); row-gap:.6rem; } }
+	@media (max-width:390px) { .quick-byte-average-card span { font-size:.6rem; } .quick-byte-punchcard { padding:.7rem .4rem; } :global(.quick-byte-punch-hole) { width:10px; height:19px; } }
 
 	/* 32-day surprise: intentionally hidden for all other players. */
 	.quick-byte-operator-mark { width:fit-content; margin:.4rem auto; padding:.35rem .65rem; border:1px solid var(--color-accent); border-radius:5px; color:var(--color-accent); font-family:var(--font-mono); font-size:.7rem; font-weight:700; letter-spacing:.04em; }
@@ -746,7 +748,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	// reach this: only a clean sweep of all 3 rounds records a play date.
 	function saveNewGameStats(perRound: RoundResult[]) {
 		const total = totalScore(perRound);
-		if (total === null || hasPlayedOn(dateString)) return;
+		if (perRound.length !== ROUND_COUNT || total === null || hasPlayedOn(dateString)) return;
 		recordPlayDate();
 		addGameStats(total);
 	}
@@ -770,6 +772,9 @@ import HammingBoard from "../components/HammingBoard.astro";
 		for (let r = 0; r < 2; r++) {
 			const row = document.createElement("div"); row.className = "quick-byte-punch-row";
 			const label = document.createElement("span"); label.className = "quick-byte-punch-row-label"; label.textContent = r === 0 ? "A" : "B"; row.append(label);
+			// One 16-position row on desktop; the cells wrap to two neat rows of
+			// eight on mobile without cutting off or horizontally scrolling the card.
+			const cells = document.createElement("div"); cells.className = "quick-byte-punch-cells";
 			for (let c = 0; c < 16; c++) {
 				const offset = r * 16 + c;
 				const d = new Date(); d.setDate(d.getDate() - offset);
@@ -778,9 +783,9 @@ import HammingBoard from "../components/HammingBoard.astro";
 				const number = document.createElement("span"); number.className = "quick-byte-punch-number"; number.textContent = String(offset + 1).padStart(2,"0");
 				const hole = document.createElement("span"); hole.className = "quick-byte-punch-hole" + (success ? " is-punched" : "");
 				slot.title = `${date}: ${success ? "Solved" : "Not solved"}`;
-				slot.setAttribute("aria-label", slot.title); slot.append(number,hole); row.append(slot);
+				slot.setAttribute("aria-label", slot.title); slot.append(number,hole); cells.append(slot);
 			}
-			rows.append(row);
+			row.append(cells); rows.append(row);
 		}
 		const summary = document.querySelector<HTMLElement>(".quick-byte-history-summary")!;
 		summary.textContent = `Games completed: ${getGamesCompleted()} · Longest streak: ${getLongestStreak()} ${getLongestStreak() === 1 ? "day" : "days"}`;
@@ -804,7 +809,13 @@ import HammingBoard from "../components/HammingBoard.astro";
 		todayAvgEl.textContent = currentGameTotal === null ? "—" : (currentGameTotal / ROUND_COUNT).toFixed(1);
 		overallAvgEl.textContent = historicalAvg === null ? "—" : historicalAvg.toFixed(1);
 		renderAvgFeedback(perRound);
-		if (isNewlyCompleted) saveNewGameStats(perRound);
+		// A completed result may predate this release's separate activity counters.
+		// Import a clean sweep once on revisit so existing mobile/browser players
+		// receive their deserved punch without replaying or losing their result.
+		// The play-date guard prevents double-counting on future page loads.
+		if (isNewlyCompleted || (perRound.length === ROUND_COUNT && currentGameTotal !== null && !hasPlayedOn(dateString))) {
+			saveNewGameStats(perRound);
+		}
 
 		const perfect = perRound.every((r) => r !== null);
 		const streakCount = recordStreak(perRound);
