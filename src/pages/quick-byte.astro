@@ -363,26 +363,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 			transform 0.1s ease-out;
 	}
 
-	/* Brief "Copied!" toast shown when native share is unavailable or was dismissed. */
-	.share-toast {
-		position: absolute;
-		top: -2rem;
-		left: 50%;
-		transform: translateX(-50%);
-		background: var(--color-surface-alt);
-		border: 1px solid var(--color-success);
-		color: var(--color-success);
-		font-size: 0.75rem;
-		font-weight: 700;
-		padding: 0.2rem 0.7rem;
-		border-radius: 999px;
-		pointer-events: none;
-		white-space: nowrap;
-	}
+	.quick-byte-share--copy { min-width: 7.5rem; }
 
-	.share-toast[hidden] {
-		display: none;
-	}
 	/* Compact comparison and authentic numbered activity card, below primary sharing. */
 	.quick-byte-averages { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.6rem; margin:.8rem auto 0; max-width:34rem; text-align:center; }
 	.quick-byte-average-card { display:flex; flex-direction:column; align-items:center; gap:.2rem; padding:.8rem .4rem; background:var(--color-surface); border:1px solid var(--color-border); border-radius:12px; }
@@ -560,34 +542,28 @@ import HammingBoard from "../components/HammingBoard.astro";
 		return lines.join("\n");
 	}
 
-	const shareRow = document.querySelector<HTMLElement>(".quick-byte-share-row")!;
-	const shareToast = document.createElement("span");
-	shareToast.className = "share-toast";
-	shareToast.hidden = true;
-	shareRow.appendChild(shareToast);
-
-	let toastTimeout: ReturnType<typeof setTimeout> | undefined;
-
-	function showToast(message: string) {
-		shareToast.textContent = message;
-		shareToast.hidden = false;
-		clearTimeout(toastTimeout);
-		toastTimeout = setTimeout(() => {
-			shareToast.hidden = true;
-		}, 2000);
+	// Report copy status in the button only. Keep its width fixed to prevent
+	// the other share buttons from shifting when the label temporarily changes.
+	const copyLabelTimers = new WeakMap<HTMLButtonElement, ReturnType<typeof setTimeout>>();
+	function showCopyStatus(button: HTMLButtonElement, message: string) {
+		const original = button.dataset.originalLabel ?? button.textContent ?? "Copy";
+		button.dataset.originalLabel = original;
+		button.style.minWidth = `${Math.max(button.getBoundingClientRect().width, 120)}px`;
+		const existing = copyLabelTimers.get(button);
+		if (existing) clearTimeout(existing);
+		button.textContent = message;
+		copyLabelTimers.set(button, setTimeout(() => {
+			button.textContent = original;
+			copyLabelTimers.delete(button);
+		}, 2000));
 	}
 
 	async function copyFallback(text: string, button: HTMLButtonElement) {
 		try {
 			await navigator.clipboard.writeText(text);
-			showToast("Copied!");
-			const original = button.textContent ?? "";
-			button.textContent = "Copied!";
-			setTimeout(() => {
-				button.textContent = original;
-			}, 2000);
+			showCopyStatus(button, "Copied!");
 		} catch {
-			showToast("Couldn't copy — try again.");
+			showCopyStatus(button, "Copy failed");
 		}
 	}
 
