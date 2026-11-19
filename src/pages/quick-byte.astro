@@ -39,7 +39,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		</div>
 
 		<details class="quick-byte-details">
-			<summary>Your 32-day statistics <span class="stats-chevron" aria-hidden="true">⌄</span></summary>
+			<summary><span class="stats-toggle-text"><span class="stats-toggle-open">View</span><span class="stats-toggle-close">Hide</span> 32-day activity &amp; stats</span><span class="stats-chevron" aria-hidden="true">⌄</span></summary>
 			<div class="quick-byte-details-content">
 				<div class="quick-byte-punchcard">
 					<div class="quick-byte-punchcard-top"><span>LOGICDASH SYSTEMS / ACTIVITY RECORD</span><span>32 DAYS</span></div>
@@ -367,23 +367,29 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.quick-byte-average-card span { font-size:.68rem; font-weight:700; letter-spacing:.05em; color:var(--color-text-muted); }
 	.quick-byte-average-card strong { font-size:clamp(1.5rem,5vw,2rem); font-family:var(--font-mono); }
 	.quick-byte-average-card small { font-size:.69rem; color:var(--color-text-muted); }
-	.quick-byte-details { max-width:40rem; margin:1rem auto 0; border:1px solid var(--color-border); border-radius:12px; background:var(--color-surface); text-align:left; }
-	.quick-byte-details summary { cursor:pointer; padding:.9rem 1rem; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+	.quick-byte-details { max-width:40rem; margin:1rem auto 0; text-align:left; }
+	.quick-byte-details summary { cursor:pointer; width:fit-content; margin:0 auto; padding:.35rem .5rem; font-size:.82rem; font-weight:600; color:var(--color-text-muted); list-style:none; display:flex; gap:.45rem; align-items:center; border-radius:5px; text-decoration:underline; text-decoration-color:var(--color-border); text-underline-offset:4px; }
+	.quick-byte-details summary:hover,.quick-byte-details summary:focus-visible { color:var(--color-accent); }
+	.quick-byte-details summary:focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
 	.quick-byte-details summary::-webkit-details-marker { display:none; }
+	.stats-toggle-close { display:none; }
+	.quick-byte-details[open] .stats-toggle-open { display:none; }
+	.quick-byte-details[open] .stats-toggle-close { display:inline; }
+	.stats-chevron { display:inline-block; transition:transform .15s ease; text-decoration:none; }
 	.quick-byte-details[open] .stats-chevron { transform:rotate(180deg); }
-	.quick-byte-details-content { padding:0 .8rem 1rem; }
+	.quick-byte-details-content { margin-top:.7rem; padding:.8rem; border:1px solid var(--color-border); border-radius:12px; background:var(--color-surface); }
 	.quick-byte-punchcard { background:#e8ddc4; color:#403a2c; border-radius:8px; padding:1rem .7rem; font-family:var(--font-mono); }
 	.quick-byte-punchcard-top { display:flex; justify-content:space-between; gap:.5rem; font-size:.58rem; font-weight:700; }
-	.quick-byte-punchcard p { text-align:center; margin:.65rem 0; font-size:.61rem; font-weight:700; letter-spacing:.04em; }
+	.quick-byte-punchcard p { text-align:center; margin:.65rem 0; font-size:.61rem; font-weight:700; letter-spacing:.04em; color:#53472f; }
 	.quick-byte-punchcard small { display:block; margin-top:.6rem; font-size:.59rem; }
 	.quick-byte-punch-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-	.quick-byte-punch-rows { min-width:355px; display:grid; gap:.55rem; }
-	.quick-byte-punch-row { display:grid; grid-template-columns:20px repeat(16,minmax(14px,1fr)); gap:3px; align-items:end; }
-	.quick-byte-punch-row-label { font-weight:700; font-size:.65rem; align-self:center; }
-	.quick-byte-punch-position { display:flex; flex-direction:column; align-items:center; gap:3px; }
-	.quick-byte-punch-number { font-size:.52rem; }
-	.quick-byte-punch-hole { width:72%; height:21px; background:#c7bda6; border-radius:2px; }
-	.quick-byte-punch-hole.is-punched { background:#966020; box-shadow:inset 0 1px 3px #493016; }
+	.quick-byte-punch-rows { min-width:425px; display:grid; gap:.7rem; }
+	:global(.quick-byte-punch-row) { display:grid; grid-template-columns:20px repeat(16,minmax(19px,1fr)); gap:4px; align-items:end; }
+	:global(.quick-byte-punch-row-label) { font-weight:700; font-size:.65rem; align-self:center; }
+	:global(.quick-byte-punch-position) { display:flex; flex-direction:column; align-items:center; gap:4px; }
+	:global(.quick-byte-punch-number) { font-size:.54rem; color:#423927; line-height:1.3; }
+	:global(.quick-byte-punch-hole) { display:block; width:12px; height:22px; background:#c7bda6; border-radius:2px; box-shadow:inset 0 1px 2px #a89a7d; }
+	:global(.quick-byte-punch-hole.is-punched) { background:#966020; box-shadow:inset 0 1px 3px #493016; }
 	.quick-byte-history-summary,.quick-byte-local-note { text-align:center; font-size:.78rem; color:var(--color-text-muted); margin:.8rem 0 .1rem; }
 	@media (max-width:390px) { .quick-byte-average-card span { font-size:.6rem; } }
 
