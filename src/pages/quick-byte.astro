@@ -31,6 +31,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		</div>
 		<p class="quick-byte-avg-feedback" hidden></p>
 		<p class="quick-byte-streak" hidden></p>
+		<p class="quick-byte-operator-mark" hidden>✦ CERTIFIED BYTE OPERATOR · FULL DECK [32]</p>
 		<div class="quick-byte-share-row">
 			<button type="button" class="quick-byte-share quick-byte-share--result">Share Result</button>
 			<button type="button" class="quick-byte-share quick-byte-share--copy">Copy</button>
@@ -52,6 +53,27 @@ import HammingBoard from "../components/HammingBoard.astro";
 			</div>
 		</details>
 		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte — next challenge in <span class="quick-byte-countdown"></span>.</p>
+	</div>
+
+	<!-- Hidden until a player reaches 32 consecutive fully solved days. -->
+	<div class="full-deck-overlay" hidden>
+		<section class="full-deck-dialog" role="dialog" aria-modal="true" aria-labelledby="full-deck-title" aria-describedby="full-deck-description" tabindex="-1">
+			<button type="button" class="full-deck-close" aria-label="Close Full Deck certificate">×</button>
+			<div class="full-deck-certificate">
+				<div class="full-deck-meta"><span>LOGICDASH SYSTEMS</span><span>FORM 032</span></div>
+				<p class="full-deck-stamp">✦ 32 / 32 ✦</p>
+				<h2 id="full-deck-title">FULL DECK!</h2>
+				<p class="full-deck-subtitle">CERTIFIED BYTE OPERATOR</p>
+				<div class="full-deck-holes" aria-hidden="true"></div>
+				<p class="full-deck-warning">DO NOT FOLD, SPINDLE OR MUTILATE</p>
+			</div>
+			<p id="full-deck-description" class="full-deck-message">32 days. 32 successful Quick Bytes. Somewhere, an IBM mainframe is quietly applauding.</p>
+			<div class="full-deck-actions">
+				<button type="button" class="full-deck-share">Share Achievement</button>
+				<button type="button" class="full-deck-done">Back to results</button>
+			</div>
+			<p class="full-deck-private">Your achievement is stored in this browser only.</p>
+		</section>
 	</div>
 
 	<img
@@ -393,6 +415,26 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.quick-byte-history-summary,.quick-byte-local-note { text-align:center; font-size:.78rem; color:var(--color-text-muted); margin:.8rem 0 .1rem; }
 	@media (max-width:390px) { .quick-byte-average-card span { font-size:.6rem; } }
 
+	/* 32-day surprise: intentionally hidden for all other players. */
+	.quick-byte-operator-mark { width:fit-content; margin:.4rem auto; padding:.35rem .65rem; border:1px solid var(--color-accent); border-radius:5px; color:var(--color-accent); font-family:var(--font-mono); font-size:.7rem; font-weight:700; letter-spacing:.04em; }
+	.quick-byte-operator-mark[hidden],.full-deck-overlay[hidden] { display:none; }
+	.full-deck-overlay { position:fixed; inset:0; z-index:1100; background:rgba(5,7,12,.86); display:flex; align-items:center; justify-content:center; padding:1rem; overflow-y:auto; }
+	.full-deck-dialog { position:relative; width:min(100%,31rem); max-height:calc(100vh - 2rem); overflow-y:auto; border:1px solid var(--color-accent); border-radius:12px; background:var(--color-surface); box-shadow:0 20px 70px rgba(0,0,0,.5); padding:1.2rem; text-align:center; }
+	.full-deck-close { position:absolute; z-index:1; top:.25rem; right:.45rem; background:transparent; border:0; color:var(--color-text); font-size:1.7rem; cursor:pointer; }
+	.full-deck-certificate { background:#e8ddc4; color:#302b20; border-radius:6px; padding:1.4rem .85rem 1rem; font-family:var(--font-mono); }
+	.full-deck-meta { display:flex; justify-content:space-between; gap:.5rem; font-size:.56rem; font-weight:700; letter-spacing:.06em; }
+	.full-deck-stamp { color:#966020; font-size:1.2rem; margin:.8rem 0 .1rem; font-weight:700; }
+	.full-deck-certificate h2 { margin:.25rem 0; font-size:clamp(1.7rem,6vw,2.7rem); line-height:1.1; letter-spacing:.04em; color:#302b20; }
+	.full-deck-subtitle { font-weight:700; font-size:clamp(.75rem,3vw,1rem); letter-spacing:.08em; margin:.4rem 0 .8rem; }
+	.full-deck-holes { display:grid; grid-template-columns:repeat(16,minmax(0,1fr)); gap:4px; }
+	.full-deck-hole { display:block; height:22px; border-radius:2px; background:#966020; box-shadow:inset 0 2px 3px #503415; }
+	.full-deck-warning { font-size:.6rem; font-weight:700; letter-spacing:.08em; margin:.9rem 0 0; }
+	.full-deck-message { max-width:26rem; margin:1rem auto; font-size:.91rem; line-height:1.6; }
+	.full-deck-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:.5rem; }
+	.full-deck-actions button { cursor:pointer; border:1px solid var(--color-accent); border-radius:999px; padding:.65rem 1rem; background:transparent; color:var(--color-accent); font-family:var(--font-mono); font-size:.74rem; font-weight:700; }
+	.full-deck-actions .full-deck-share { background:var(--color-accent); color:#241202; }
+	.full-deck-private { font-size:.68rem; color:var(--color-text-muted); margin:.9rem 0 0; }
+
 </style>
 
 <script>
@@ -422,6 +464,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const STORAGE_PREFIX = "logicdash:quickbyte:";
 	const PROGRESS_PREFIX = "logicdash:quickbyte:progress:";
 	const STREAK_KEY = "logicdash:quickbyte:streak";
+	const FULL_DECK_KEY = "logicdash:quickbyte:full-deck";
 
 	const BIT_LENGTH = 5;
 	const MAX_ATTEMPTS = 6;
@@ -464,6 +507,12 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const shareWhatsAppLink = document.querySelector<HTMLAnchorElement>(".quick-byte-share--whatsapp")!;
 	const todayAvgEl = document.querySelector<HTMLElement>("[data-today-average]")!;
 	const overallAvgEl = document.querySelector<HTMLElement>("[data-overall-average]")!;
+	const fullDeckOverlay = document.querySelector<HTMLElement>(".full-deck-overlay")!;
+	const fullDeckDialog = document.querySelector<HTMLElement>(".full-deck-dialog")!;
+	const fullDeckMark = document.querySelector<HTMLElement>(".quick-byte-operator-mark")!;
+	const fullDeckClose = document.querySelector<HTMLButtonElement>(".full-deck-close")!;
+	const fullDeckDone = document.querySelector<HTMLButtonElement>(".full-deck-done")!;
+	const fullDeckShare = document.querySelector<HTMLButtonElement>(".full-deck-share")!;
 
 	// Set whenever results are shown (either just now, or on revisiting an already-completed
 	// day), so the share buttons always have the right scores regardless of which path ran.
@@ -506,6 +555,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		if (extras.length > 0) lines.push(extras.join(" · "));
 		const egg = getSequenceEasterEgg(sequence);
 		if (egg) lines.push(egg);
+		if (hasFullDeck()) lines.push("✦ FULL DECK — Certified Byte Operator [32]");
 		lines.push("", "logicdash.io");
 		return lines.join("\n");
 	}
@@ -565,6 +615,30 @@ import HammingBoard from "../components/HammingBoard.astro";
 		const message = encodeURIComponent(buildResultShareText());
 		shareXLink.href = `https://twitter.com/intent/tweet?text=${message}`;
 		shareWhatsAppLink.href = `https://wa.me/?text=${message}`;
+	}
+
+
+	// Full Deck is awarded once, on the first successful completion of day 32.
+	// A permanent local marker remains visible, even after a streak ends.
+	function hasFullDeck(): boolean {
+		try { return localStorage.getItem(FULL_DECK_KEY) === "earned"; } catch { return false; }
+	}
+	function showFullDeck() {
+		fullDeckOverlay.hidden = false;
+		fullDeckDialog.focus();
+	}
+	function closeFullDeck() { fullDeckOverlay.hidden = true; }
+	function buildFullDeckShareText() {
+		return "✦ FULL DECK! ✦\\nCertified Byte Operator\\n32 consecutive Quick Byte days — 32/32\\nDO NOT FOLD, SPINDLE OR MUTILATE\\nlogicdash.io/quick-byte/";
+	}
+	fullDeckClose.addEventListener("click", closeFullDeck);
+	fullDeckDone.addEventListener("click", closeFullDeck);
+	fullDeckOverlay.addEventListener("click", (event) => { if (event.target === fullDeckOverlay) closeFullDeck(); });
+	document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !fullDeckOverlay.hidden) closeFullDeck(); });
+	fullDeckShare.addEventListener("click", () => shareText(fullDeckShare, buildFullDeckShareText(), "https://logicdash.io/quick-byte/"));
+	const holeContainer = document.querySelector<HTMLElement>(".full-deck-holes")!;
+	for (let i = 0; i < 32; i++) {
+		const hole = document.createElement("span"); hole.className = "full-deck-hole"; holeContainer.append(hole);
 	}
 
 	function readStoredResult(): QuickByteResult | null {
@@ -736,6 +810,11 @@ import HammingBoard from "../components/HammingBoard.astro";
 		const streakCount = recordStreak(perRound);
 		const streakData = readStreak();
 		const longest = streakData.longest || 0;
+		if (isNewlyCompleted && perfect && streakCount === 32 && !hasFullDeck()) {
+			try { localStorage.setItem(FULL_DECK_KEY, "earned"); } catch {}
+			showFullDeck();
+		}
+		fullDeckMark.hidden = !hasFullDeck();
 		const streakEl = document.querySelector<HTMLElement>(".quick-byte-streak")!;
 
 		let streakText = "";
