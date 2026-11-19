@@ -4,63 +4,70 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout
 	title="About"
-	description="Meet the computer science teacher behind LogicDash and the idea behind turning binary logic puzzles into something fun to practice."
+	description="Meet the computer science teacher behind LogicDash: daily binary puzzles, approachable computer science lessons and free classroom tools."
 >
 	<section class="hero">
 		<h1>About</h1>
-		<p class="hero-lead">Where logic meets a little bit of fun.</p>
+		<p class="hero-lead">A little logic, a lot of curiosity.</p>
 	</section>
 
 	<div class="blocks">
 		<section class="block">
-			<p class="block-title">Our Story</p>
+			<p class="block-title">The Story</p>
 			<p class="block-text">
-				I'm a computer science teacher, and LogicDash grew out of something I noticed in the
-				classroom: logic is at the heart of programming, math, and problem-solving in general — but a
-				lot of people find logic exercises dry, or even intimidating. LogicDash is my attempt to fix
-				that: turn logic practice into something people actually want to come back to.
+				I'm a computer science teacher, and LogicDash started with a simple observation: logic
+				is at the heart of programming, maths and problem-solving, but practising it can feel
+				a bit dry. I wanted to make something people would genuinely enjoy coming back to.
 			</p>
 			<p class="block-text">
-				Website building is something I've enjoyed for a long time — I've run{" "}
-				<a href="https://funkyenglish.com/" target="_blank" rel="noopener noreferrer">FunkyEnglish.com</a>,
-				a site for English language learners, for over 10 years. LogicDash is where that same instinct
-				meets my day job.
+				The first idea was a binary guessing game. You don't get told which digits are wrong,
+				only how many. It looks simple, but working out the best next guess takes real thought.
+				That small puzzle has gradually grown into something broader.
 			</p>
 		</section>
 
 		<section class="block">
-			<p class="block-title">How It Works</p>
+			<p class="block-title">Puzzle / Learn / Tools</p>
 			<p class="block-text">
-				The idea is simple: guess a secret binary number within a set number of tries, using
-				feedback to narrow it down. That's it. But figuring out the right strategy — the actual
-				algorithm for solving it efficiently — takes real thought. It's not as easy as it looks.
+				<strong>Puzzles:</strong> <a href="/quick-byte/">Quick Byte</a>{" "}is the main event:
+				three five-bit puzzles each day, with the same challenge for everyone.
+				For unlimited practice there's <a href="/5-bit/">Classic</a>, or{" "}
+				<a href="/overclocked/">OverClocked</a>{" "}for a tougher six-bit challenge.
 			</p>
 			<p class="block-text">
-				There's <a href="/5-bit/">Classic</a> (the original 5-bit puzzle),{" "}
-				<a href="/overclocked/">OverClocked</a> (a tougher 6-bit version), and{" "}
-				<a href="/quick-byte/">Today's Quick Byte</a> — a daily three-round challenge, the same for
-				everyone, each day.
+				<strong>Learn:</strong> <a href="/learn/">Byte Lab</a>{" "}has short, approachable
+				computer science lessons and hands-on practice, from binary and algorithms to
+				networks and security.
 			</p>
-		</section>
-
-		<section class="block">
-			<p class="block-title">Built for Learning</p>
 			<p class="block-text">
-				I believe learning should be fun, not a chore. Every round of LogicDash exercises pattern
-				recognition, critical thinking, and a bit of stubborn perseverance — the same traits that
-				matter in computer science, and honestly, in most of life. If you want to go deeper into the
-				ideas behind the game, the <a href="/learn/">Learn section</a> covers everything from binary
-				basics to real-world error correction.
+				<strong>Tools:</strong> <a href="/tools/">The Tool Hut</a>{" "}holds practical,
+				free-to-use classroom helpers — a countdown clock, seating charts,
+				a student picker and a binary clock.
 			</p>
 		</section>
 
 		<section class="block">
-			<p class="block-title">What's Next</p>
+			<p class="block-title">Built for Curious Minds</p>
 			<p class="block-text">
-				LogicDash is a work in progress, built and maintained by one person (me), in the time I can
-				find outside the classroom. I'm continuing to add new content, features, and challenges — the
-				goal is for LogicDash to be a genuinely good home for puzzle lovers and learners alike. If
-				you've got ideas, I'd like to hear them.
+				You don't need to be a programmer to enjoy LogicDash. Some visitors come for a quick
+				brain workout; others are learning their first binary number, studying computing or
+				looking for something useful in the classroom. I want the site to work for all of them.
+			</p>
+			<p class="block-text">
+				I've also run <a href="https://funkyenglish.com/" target="_blank" rel="noopener noreferrer">FunkyEnglish</a>,{" "}
+				a website for English language learners, for many years. If you're studying computing
+				in English, its <a href="https://funkyenglish.com/computer-science-vocabulary-part-1/" target="_blank" rel="noopener noreferrer">Computer Science Vocabulary</a>{" "}
+				lesson may be useful alongside Byte Lab.
+			</p>
+		</section>
+
+		<section class="block">
+			<p class="block-title">Still a Work in Progress</p>
+			<p class="block-text">
+				LogicDash is an independent project, built and maintained by one person in the time
+				I can find outside teaching. I'm continuing to refine the puzzles, expand the lessons
+				and improve the tools. If you've spotted something that could be better — or have a
+				good idea — <a href="/contact/">I'd like to hear it.</a>
 			</p>
 		</section>
 	</div>
@@ -112,6 +119,8 @@ import Layout from "../layouts/Layout.astro";
 	.block-text:last-child {
 		margin-bottom: 0;
 	}
+
+	.block-text strong { color: var(--color-text); }
 
 	.block-text a {
 		color: #ffae2e;

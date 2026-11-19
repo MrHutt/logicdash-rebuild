@@ -1,0 +1,14 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout title="Quick Byte Statistics" description="Your Quick Byte results and personal statistics are now together on the daily game page.">
+  <main class="stats-moved">
+    <h1>Quick Byte statistics have moved</h1>
+    <p>Your daily result, streak, averages and 32-day punchcard now appear together after you finish Quick Byte.</p>
+    <a href="/quick-byte/">Go to Quick Byte →</a>
+  </main>
+</Layout>
+<style>
+  .stats-moved { max-width:36rem; margin:3rem auto; text-align:center; padding:1rem; }
+  .stats-moved a { display:inline-block; margin-top:.8rem; padding:.75rem 1.2rem; border:1px solid var(--color-accent); border-radius:999px; color:var(--color-accent); font-weight:700; }
+</style>

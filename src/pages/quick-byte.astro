@@ -18,14 +18,62 @@ import HammingBoard from "../components/HammingBoard.astro";
 		<button type="button" class="quick-byte-next" hidden>Next Round</button>
 	</div>
 
+	<!-- Today's result first; sharing is deliberately above optional detailed statistics. -->
 	<div class="quick-byte-results" hidden>
 		<p class="quick-byte-results-label">Today's result</p>
 		<p class="quick-byte-sequence"></p>
 		<p class="quick-byte-total"></p>
 		<p class="quick-byte-special" hidden></p>
+
+		<div class="quick-byte-averages">
+			<div class="quick-byte-average-card"><span>TODAY'S AVERAGE</span><strong data-today-average>—</strong><small>guesses / round</small></div>
+			<div class="quick-byte-average-card"><span>OVERALL AVERAGE</span><strong data-overall-average>—</strong><small>guesses / round, before today</small></div>
+		</div>
+		<p class="quick-byte-avg-feedback" hidden></p>
 		<p class="quick-byte-streak" hidden></p>
-		<button type="button" class="quick-byte-share">Share Result</button>
+		<p class="quick-byte-operator-mark" hidden>✦ CERTIFIED BYTE OPERATOR · FULL DECK [32]</p>
+		<div class="quick-byte-share-row">
+			<button type="button" class="quick-byte-share quick-byte-share--result">Share Result</button>
+			<button type="button" class="quick-byte-share quick-byte-share--copy">Copy</button>
+			<a class="quick-byte-share quick-byte-share--x" href="#" target="_blank" rel="noopener noreferrer">X</a>
+			<a class="quick-byte-share quick-byte-share--whatsapp" href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+		</div>
+
+		<details class="quick-byte-details">
+			<summary><span class="stats-toggle-icon" aria-hidden="true"><span class="stats-toggle-open">+</span><span class="stats-toggle-close">−</span></span><span class="stats-toggle-text"><span class="stats-toggle-open">OPEN</span><span class="stats-toggle-close">CLOSE</span> ACTIVITY LOG</span><span class="stats-toggle-count" aria-hidden="true">[32]</span></summary>
+			<div class="quick-byte-details-content">
+				<div class="quick-byte-punchcard">
+					<div class="quick-byte-punchcard-top"><span>LOGICDASH SYSTEMS / ACTIVITY RECORD</span><span>32 DAYS</span></div>
+					<p>DO NOT FOLD, SPINDLE OR MUTILATE</p>
+					<div class="quick-byte-punch-scroll"><div class="quick-byte-punch-rows" role="group" aria-label="Successes over the past 32 days"></div></div>
+					<small>01 = today · 32 = 31 days ago · Filled slots = three successful rounds</small>
+				</div>
+				<p class="quick-byte-history-summary"></p>
+				<p class="quick-byte-local-note">Activity tracking began with this update. Earlier games aren’t included. Statistics are saved in this browser only.</p>
+			</div>
+		</details>
 		<p class="quick-byte-return-note">Come back tomorrow for a new Quick Byte — next challenge in <span class="quick-byte-countdown"></span>.</p>
+	</div>
+
+	<!-- Hidden until a player reaches 32 consecutive fully solved days. -->
+	<div class="full-deck-overlay" hidden>
+		<section class="full-deck-dialog" role="dialog" aria-modal="true" aria-labelledby="full-deck-title" aria-describedby="full-deck-description" tabindex="-1">
+			<button type="button" class="full-deck-close" aria-label="Close Full Deck certificate">×</button>
+			<div class="full-deck-certificate">
+				<div class="full-deck-meta"><span>LOGICDASH SYSTEMS</span><span>FORM 032</span></div>
+				<p class="full-deck-stamp">✦ 32 / 32 ✦</p>
+				<h2 id="full-deck-title">FULL DECK!</h2>
+				<p class="full-deck-subtitle">CERTIFIED BYTE OPERATOR</p>
+				<div class="full-deck-holes" aria-hidden="true"></div>
+				<p class="full-deck-warning">DO NOT FOLD, SPINDLE OR MUTILATE</p>
+			</div>
+			<p id="full-deck-description" class="full-deck-message">32 days. 32 successful Quick Bytes. Somewhere, an IBM mainframe is quietly applauding.</p>
+			<div class="full-deck-actions">
+				<button type="button" class="full-deck-share">Share Achievement</button>
+				<button type="button" class="full-deck-done">Back to results</button>
+			</div>
+			<p class="full-deck-private">Your achievement is stored in this browser only.</p>
+		</section>
 	</div>
 
 	<img
@@ -36,28 +84,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 		height="319"
 		loading="lazy"
 	/>
-
-	<div class="share-modal-overlay" hidden>
-		<div class="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
-			<button type="button" class="share-modal-close" aria-label="Close">×</button>
-			<p id="share-modal-title" class="share-modal-title">Share Your Result</p>
-			<div class="share-preview">
-				<p class="share-preview-date"></p>
-				<p class="share-preview-sequence"></p>
-				<p class="share-preview-site">logicdash.io</p>
-				<p class="share-preview-easter"></p>
-			</div>
-			<div class="share-actions">
-				<button type="button" class="share-copy-btn">Copy</button>
-				<span class="share-copied-note" hidden>Copied!</span>
-			</div>
-			<div class="share-links">
-				<a class="share-link share-link--twitter" target="_blank" rel="noopener noreferrer">Share on X</a>
-				<a class="share-link share-link--whatsapp" target="_blank" rel="noopener noreferrer">Share on WhatsApp</a>
-			</div>
-			<button type="button" class="share-native-btn" hidden>Share via Device</button>
-		</div>
-	</div>
 </Layout>
 
 <style>
@@ -197,6 +223,29 @@ import HammingBoard from "../components/HammingBoard.astro";
 		display: none;
 	}
 
+	/* Post-game comparison against the player's historical PER-ROUND average. */
+	.quick-byte-avg-feedback {
+		margin: 0.35rem 0 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.quick-byte-avg-feedback[hidden] {
+		display: none;
+	}
+
+	.quick-byte-avg-feedback.is-better {
+		color: var(--color-success);
+	}
+
+	.quick-byte-avg-feedback.is-worse {
+		color: var(--color-danger);
+	}
+
+	.quick-byte-avg-feedback.is-same {
+		color: var(--color-text-muted);
+	}
+
 	.quick-byte-streak {
 		margin: 0.35rem 0 0;
 		font-size: 0.85rem;
@@ -206,6 +255,60 @@ import HammingBoard from "../components/HammingBoard.astro";
 
 	.quick-byte-streak[hidden] {
 		display: none;
+	}
+
+	/* --- Mini punchcard preview: last 7 days as one compact flex row of squares --- */
+	.quick-byte-mini-punch {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0.6rem 0 0;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.quick-byte-mini-punch[hidden] {
+		display: none;
+	}
+
+	.quick-byte-mini-punch-label {
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-weight: 700;
+	}
+
+	.mini-punch-cells {
+		display: flex;
+		gap: 4px;
+	}
+
+	.mini-punch-cell {
+		width: 12px;
+		height: 12px;
+		border-radius: 2px;
+		background: #f4f1ea; /* missed / future day = blank beige */
+		opacity: 0.35;
+	}
+
+	.mini-punch-cell.is-punched {
+		background: #ffae2e;
+		opacity: 1;
+		box-shadow:
+			inset 0 1px 2px rgba(26, 28, 35, 0.45),
+			0 0 6px rgba(255, 174, 46, 0.7);
+	}
+
+	.quick-byte-view-stats {
+		color: var(--color-accent);
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.quick-byte-view-stats:hover {
+		color: #fff3d6;
 	}
 
 	.quick-byte-countdown {
@@ -219,8 +322,17 @@ import HammingBoard from "../components/HammingBoard.astro";
 		font-size: 0.8rem;
 	}
 
-	.quick-byte-share {
+	.quick-byte-share-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.6rem;
 		margin-top: 0.6rem;
+		position: relative;
+	}
+
+	.quick-byte-share {
+		display:inline-flex; align-items:center; justify-content:center; text-decoration:none;
 		padding: 0.5rem 1.5rem;
 		border: 1px solid #ffae2e;
 		border-radius: 999px;
@@ -251,175 +363,60 @@ import HammingBoard from "../components/HammingBoard.astro";
 			transform 0.1s ease-out;
 	}
 
-	.share-modal-overlay {
-		position: fixed;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 1rem;
-		background: rgba(6, 4, 2, 0.72);
-		z-index: 100;
-	}
+	.quick-byte-share--copy { min-width: 7.5rem; }
 
-	.share-modal-overlay[hidden] {
-		display: none;
-	}
+	/* Compact comparison and authentic numbered activity card, below primary sharing. */
+	.quick-byte-averages { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.6rem; margin:.8rem auto 0; max-width:34rem; text-align:center; }
+	.quick-byte-average-card { display:flex; flex-direction:column; align-items:center; gap:.2rem; padding:.8rem .4rem; background:var(--color-surface); border:1px solid var(--color-border); border-radius:12px; }
+	.quick-byte-average-card span { font-size:.68rem; font-weight:700; letter-spacing:.05em; color:var(--color-text-muted); }
+	.quick-byte-average-card strong { font-size:clamp(1.5rem,5vw,2rem); font-family:var(--font-mono); }
+	.quick-byte-average-card small { font-size:.69rem; color:var(--color-text-muted); }
+	.quick-byte-details { max-width:40rem; margin:1rem auto 0; text-align:left; }
+	.quick-byte-details summary { cursor:pointer; width:fit-content; margin:0 auto; padding:.48rem .75rem; font-family:var(--font-mono); font-size:.75rem; font-weight:700; letter-spacing:.055em; color:var(--color-accent); list-style:none; display:flex; gap:.55rem; align-items:center; border:1px dashed color-mix(in srgb, var(--color-accent) 55%, transparent); border-radius:6px; background:color-mix(in srgb, var(--color-accent) 6%, transparent); transition:background .15s ease,border-color .15s ease; }
+	.quick-byte-details summary:hover { background:color-mix(in srgb, var(--color-accent) 13%, transparent); border-color:var(--color-accent); }
+	.quick-byte-details summary:focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
+	.quick-byte-details summary::-webkit-details-marker { display:none; }
+	.stats-toggle-icon { display:grid; place-items:center; width:1.3rem; height:1.3rem; border:1px solid currentColor; border-radius:3px; font-size:1rem; line-height:1; }
+	.stats-toggle-count { font-size:.65rem; opacity:.7; }
+	.stats-toggle-close { display:none; }
+	.quick-byte-details[open] .stats-toggle-open { display:none; }
+	.quick-byte-details[open] .stats-toggle-close { display:inline; }
+	.quick-byte-details-content { margin-top:.7rem; padding:.8rem; border:1px solid var(--color-border); border-radius:12px; background:var(--color-surface); }
+	.quick-byte-punchcard { background:#e8ddc4; color:#403a2c; border-radius:8px; padding:1rem .7rem; font-family:var(--font-mono); }
+	.quick-byte-punchcard-top { display:flex; justify-content:space-between; gap:.5rem; font-size:.58rem; font-weight:700; }
+	.quick-byte-punchcard p { text-align:center; margin:.65rem 0; font-size:.61rem; font-weight:700; letter-spacing:.04em; color:#53472f; }
+	.quick-byte-punchcard small { display:block; margin-top:.6rem; font-size:.59rem; }
+	.quick-byte-punch-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+	.quick-byte-punch-rows { min-width:425px; display:grid; gap:.7rem; }
+	:global(.quick-byte-punch-row) { display:grid; grid-template-columns:20px repeat(16,minmax(19px,1fr)); gap:4px; align-items:end; }
+	:global(.quick-byte-punch-row-label) { font-weight:700; font-size:.65rem; align-self:center; }
+	:global(.quick-byte-punch-position) { display:flex; flex-direction:column; align-items:center; gap:4px; }
+	:global(.quick-byte-punch-number) { font-size:.54rem; color:#423927; line-height:1.3; }
+	:global(.quick-byte-punch-hole) { display:block; width:12px; height:22px; background:#c7bda6; border-radius:2px; box-shadow:inset 0 1px 2px #a89a7d; }
+	:global(.quick-byte-punch-hole.is-punched) { background:#966020; box-shadow:inset 0 1px 3px #493016; }
+	.quick-byte-history-summary,.quick-byte-local-note { text-align:center; font-size:.78rem; color:var(--color-text-muted); margin:.8rem 0 .1rem; }
+	@media (max-width:390px) { .quick-byte-average-card span { font-size:.6rem; } }
 
-	.share-modal {
-		position: relative;
-		width: 100%;
-		max-width: 24rem;
-		background: var(--color-surface);
-		border: 1px solid #ffae2e;
-		border-radius: 16px;
-		padding: 1.25rem;
-		box-shadow: 0 0 24px color-mix(in srgb, #ffae2e 30%, transparent);
-		text-align: center;
-	}
+	/* 32-day surprise: intentionally hidden for all other players. */
+	.quick-byte-operator-mark { width:fit-content; margin:.4rem auto; padding:.35rem .65rem; border:1px solid var(--color-accent); border-radius:5px; color:var(--color-accent); font-family:var(--font-mono); font-size:.7rem; font-weight:700; letter-spacing:.04em; }
+	.quick-byte-operator-mark[hidden],.full-deck-overlay[hidden] { display:none; }
+	.full-deck-overlay { position:fixed; inset:0; z-index:1100; background:rgba(5,7,12,.86); display:flex; align-items:center; justify-content:center; padding:1rem; overflow-y:auto; }
+	.full-deck-dialog { position:relative; width:min(100%,31rem); max-height:calc(100vh - 2rem); overflow-y:auto; border:1px solid var(--color-accent); border-radius:12px; background:var(--color-surface); box-shadow:0 20px 70px rgba(0,0,0,.5); padding:1.2rem; text-align:center; }
+	.full-deck-close { position:absolute; z-index:1; top:.25rem; right:.45rem; background:transparent; border:0; color:var(--color-text); font-size:1.7rem; cursor:pointer; }
+	.full-deck-certificate { background:#e8ddc4; color:#302b20; border-radius:6px; padding:1.4rem .85rem 1rem; font-family:var(--font-mono); }
+	.full-deck-meta { display:flex; justify-content:space-between; gap:.5rem; font-size:.56rem; font-weight:700; letter-spacing:.06em; }
+	.full-deck-stamp { color:#966020; font-size:1.2rem; margin:.8rem 0 .1rem; font-weight:700; }
+	.full-deck-certificate h2 { margin:.25rem 0; font-size:clamp(1.7rem,6vw,2.7rem); line-height:1.1; letter-spacing:.04em; color:#302b20; }
+	.full-deck-subtitle { font-weight:700; font-size:clamp(.75rem,3vw,1rem); letter-spacing:.08em; margin:.4rem 0 .8rem; }
+	.full-deck-holes { display:grid; grid-template-columns:repeat(16,minmax(0,1fr)); gap:4px; }
+	:global(.full-deck-hole) { display:block; height:22px; border-radius:2px; background:#966020; box-shadow:inset 0 2px 3px #503415; }
+	.full-deck-warning { font-size:.6rem; font-weight:700; letter-spacing:.08em; margin:.9rem 0 0; }
+	.full-deck-message { max-width:26rem; margin:1rem auto; font-size:.91rem; line-height:1.6; }
+	.full-deck-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:.5rem; }
+	.full-deck-actions button { cursor:pointer; border:1px solid var(--color-accent); border-radius:999px; padding:.65rem 1rem; background:transparent; color:var(--color-accent); font-family:var(--font-mono); font-size:.74rem; font-weight:700; }
+	.full-deck-actions .full-deck-share { background:var(--color-accent); color:#241202; }
+	.full-deck-private { font-size:.68rem; color:var(--color-text-muted); margin:.9rem 0 0; }
 
-	.share-modal-close {
-		position: absolute;
-		top: 0.5rem;
-		right: 0.75rem;
-		border: none;
-		background: none;
-		color: var(--color-text-muted);
-		font-size: 1.4rem;
-		line-height: 1;
-		cursor: pointer;
-		padding: 0.25rem;
-	}
-
-	.share-modal-close:hover {
-		color: var(--color-text);
-	}
-
-	.share-modal-title {
-		margin: 0 0 0.75rem;
-		font-size: 0.85rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: #ffae2e;
-	}
-
-	.share-preview {
-		margin: 0 0 0.85rem;
-		padding: 0.75rem 0.85rem;
-		border-radius: 10px;
-		border: 1px solid var(--color-border);
-		background: var(--color-bg);
-		color: var(--color-text);
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
-		line-height: 1.5;
-		text-align: left;
-	}
-
-	.share-preview p {
-		margin: 0;
-		color: var(--color-text);
-	}
-
-	.share-preview-easter {
-		color: #ffae2e;
-		font-weight: 700;
-	}
-
-	.share-actions {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.6rem;
-		margin-bottom: 0.85rem;
-	}
-
-	.share-copy-btn {
-		padding: 0.45rem 1.4rem;
-		border: 1px solid #ffae2e;
-		border-radius: 8px;
-		background: #ffae2e;
-		color: #241202;
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		cursor: pointer;
-		box-shadow: 0 0 10px color-mix(in srgb, #ffae2e 45%, transparent);
-		transition:
-			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-			box-shadow 0.15s ease;
-	}
-
-	.share-copy-btn:hover {
-		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 65%, transparent);
-	}
-
-	.share-copy-btn:active {
-		transform: scale(0.95);
-		transition:
-			transform 0.1s ease-out,
-			box-shadow 0.15s ease;
-	}
-
-	.share-copied-note {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--color-success);
-	}
-
-	.share-copied-note[hidden] {
-		display: none;
-	}
-
-	.share-links {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.6rem;
-	}
-
-	.share-link {
-		padding: 0.4rem 1rem;
-		border: 1px solid #ffae2e;
-		border-radius: 999px;
-		color: #ffae2e;
-		font-size: 0.8rem;
-		font-weight: 600;
-		text-decoration: none;
-		transition:
-			background 0.15s ease,
-			color 0.15s ease;
-	}
-
-	.share-link:hover {
-		background: #ffae2e;
-		color: #241202;
-	}
-
-	.share-native-btn {
-		display: block;
-		margin: 0.85rem auto 0;
-		padding: 0.35rem 0.9rem;
-		border: none;
-		background: none;
-		color: var(--color-text-muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-		text-decoration: underline;
-		text-underline-offset: 2px;
-		cursor: pointer;
-	}
-
-	.share-native-btn:hover {
-		color: var(--color-text);
-	}
-
-	.share-native-btn[hidden] {
-		display: none;
-	}
 </style>
 
 <script>
@@ -430,15 +427,26 @@ import HammingBoard from "../components/HammingBoard.astro";
 		formatResultSequence,
 		formatTotalLine,
 		totalScore,
-		buildShareText,
 		type RoundResult,
 	} from "../lib/quickByteScoring";
+	import {
+		getBinaryStreak,
+		getCurrentStreak,
+		getLongestStreak,
+		getGamesCompleted,
+		getTotalGuesses,
+		getAvgGuessesPerRound,
+		addGameStats,
+		recordPlayDate,
+		hasPlayedOn,
+	} from "../lib/stats";
 
 	// Result storage is browser-local only for now (no accounts yet), keyed by the
 	// player's local calendar day. Cross-device sync will come later once accounts exist.
 	const STORAGE_PREFIX = "logicdash:quickbyte:";
 	const PROGRESS_PREFIX = "logicdash:quickbyte:progress:";
 	const STREAK_KEY = "logicdash:quickbyte:streak";
+	const FULL_DECK_KEY = "logicdash:quickbyte:full-deck";
 
 	const BIT_LENGTH = 5;
 	const MAX_ATTEMPTS = 6;
@@ -475,22 +483,29 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const resultsSection = document.querySelector<HTMLElement>(".quick-byte-results")!;
 	const sequenceEl = document.querySelector<HTMLElement>(".quick-byte-sequence")!;
 	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
-	const shareButton = document.querySelector<HTMLButtonElement>(".quick-byte-share")!;
-	const shareOverlay = document.querySelector<HTMLElement>(".share-modal-overlay")!;
-	const shareModalCloseBtn = document.querySelector<HTMLButtonElement>(".share-modal-close")!;
-	const sharePreviewDate = document.querySelector<HTMLElement>(".share-preview-date")!;
-	const sharePreviewSequence = document.querySelector<HTMLElement>(".share-preview-sequence")!;
-	const shareCopyBtn = document.querySelector<HTMLButtonElement>(".share-copy-btn")!;
-	const shareCopiedNote = document.querySelector<HTMLElement>(".share-copied-note")!;
-	const shareTwitterLink = document.querySelector<HTMLAnchorElement>(".share-link--twitter")!;
-	const shareWhatsappLink = document.querySelector<HTMLAnchorElement>(".share-link--whatsapp")!;
-	const shareNativeBtn = document.querySelector<HTMLButtonElement>(".share-native-btn")!;
+	const shareResultBtn = document.querySelector<HTMLButtonElement>(".quick-byte-share--result")!;
+	const shareCopyBtn = document.querySelector<HTMLButtonElement>(".quick-byte-share--copy")!;
+	const shareXLink = document.querySelector<HTMLAnchorElement>(".quick-byte-share--x")!;
+	const shareWhatsAppLink = document.querySelector<HTMLAnchorElement>(".quick-byte-share--whatsapp")!;
+	const todayAvgEl = document.querySelector<HTMLElement>("[data-today-average]")!;
+	const overallAvgEl = document.querySelector<HTMLElement>("[data-overall-average]")!;
+	const fullDeckOverlay = document.querySelector<HTMLElement>(".full-deck-overlay")!;
+	const fullDeckDialog = document.querySelector<HTMLElement>(".full-deck-dialog")!;
+	const fullDeckMark = document.querySelector<HTMLElement>(".quick-byte-operator-mark")!;
+	const fullDeckClose = document.querySelector<HTMLButtonElement>(".full-deck-close")!;
+	const fullDeckDone = document.querySelector<HTMLButtonElement>(".full-deck-done")!;
+	const fullDeckShare = document.querySelector<HTMLButtonElement>(".full-deck-share")!;
 
 	// Set whenever results are shown (either just now, or on revisiting an already-completed
-	// day), so the share button always has the right scores regardless of which path ran.
+	// day), so the share buttons always have the right scores regardless of which path ran.
 	let resultScores: RoundResult[] = [];
 
+	// Today's clean-sweep total (null on an incomplete day) — used by the share text.
+	let currentGameTotal: number | null = null;
+
 	// --- Easter eggs for special score sequences (666, 111, …) ---
+	function isPowerOfTwo(n: number): boolean { return n >= 2 && Number.isInteger(Math.log2(n)); }
+
 	function getSequenceEasterEgg(sequenceText: string): string {
 		const TEST_MODE = false; // flip to true to see the egg on ANY score (for testing)
 		if (TEST_MODE) return "🧪 Test egg — wiring works!";
@@ -503,66 +518,117 @@ import HammingBoard from "../components/HammingBoard.astro";
 		return "";
 	}
 
-	function shareTextWithEgg(): string {
-		const egg = getSequenceEasterEgg(formatResultSequence(resultScores));
-		const base = buildShareText(dateString, resultScores);
-		return egg ? `${base}\n${egg}` : base;
+	// --- Human-readable dates ("18 Nov 2026"), parsed LOCAL from YYYY-MM-DD ---
+	const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+	function humanDate(dateString: string): string {
+		const [year, month, day] = dateString.split("-").map(Number);
+		return `${String(day).padStart(2, "0")} ${MONTH_ABBR[month - 1]} ${year}`;
 	}
 
-	function renderSharePreview(scores: RoundResult[]) {
-		sharePreviewDate.textContent = `Quick Byte — ${dateString.replaceAll("-", ".")}`;
-		sharePreviewSequence.textContent = `${formatResultSequence(scores)}   ${formatTotalLine(scores)}`;
-		const eggEl = document.querySelector<HTMLElement>(".share-preview-easter")!;
-		eggEl.textContent = getSequenceEasterEgg(formatResultSequence(scores));
+	// --- Clean share texts (single source — no duplicated lines) ---
+	function buildResultShareText(): string {
+		const sequence = formatResultSequence(resultScores);
+		const streakCount = getCurrentStreak();
+		const lines = [`LogicDash Quick Byte – ${humanDate(dateString)}`, `${sequence} (${currentGameTotal ?? "Incomplete"} guesses)`];
+		const extras: string[] = [];
+		if (currentGameTotal !== null) extras.push(`Avg: ${(currentGameTotal / ROUND_COUNT).toFixed(1)}/round`);
+		if (streakCount > 0) extras.push(`Streak: ${getBinaryStreak(streakCount)} (${streakCount} days) 🔥${isPowerOfTwo(streakCount) ? " ✦ Power of 2!" : ""}`);
+		if (extras.length > 0) lines.push(extras.join(" · "));
+		const egg = getSequenceEasterEgg(sequence);
+		if (egg) lines.push(egg);
+		if (hasFullDeck()) lines.push("✦ FULL DECK — Certified Byte Operator [32]");
+		lines.push("", "logicdash.io");
+		return lines.join("\n");
 	}
 
-	function openShareModal() {
-		renderSharePreview(resultScores);
-		const shareText = shareTextWithEgg();
-		const encoded = encodeURIComponent(shareText);
-		shareTwitterLink.href = `https://twitter.com/intent/tweet?text=${encoded}`;
-		shareWhatsappLink.href = `https://wa.me/?text=${encoded}`;
-		shareNativeBtn.hidden = !navigator.share;
-		shareOverlay.hidden = false;
+	// Report copy status in the button only. Keep its width fixed to prevent
+	// the other share buttons from shifting when the label temporarily changes.
+	const copyLabelTimers = new WeakMap<HTMLButtonElement, ReturnType<typeof setTimeout>>();
+	function showCopyStatus(button: HTMLButtonElement, message: string) {
+		const original = button.dataset.originalLabel ?? button.textContent ?? "Copy";
+		button.dataset.originalLabel = original;
+		button.style.minWidth = `${Math.max(button.getBoundingClientRect().width, 120)}px`;
+		const existing = copyLabelTimers.get(button);
+		if (existing) clearTimeout(existing);
+		button.textContent = message;
+		copyLabelTimers.set(button, setTimeout(() => {
+			button.textContent = original;
+			copyLabelTimers.delete(button);
+		}, 2000));
 	}
 
-	function closeShareModal() {
-		shareOverlay.hidden = true;
-	}
-
-	shareButton.addEventListener("click", () => {
-		openShareModal();
-	});
-
-	shareNativeBtn.addEventListener("click", () => {
-		const shareText = shareTextWithEgg();
-		navigator.share({ text: shareText }).catch(() => {});
-	});
-
-	shareModalCloseBtn.addEventListener("click", closeShareModal);
-
-	shareOverlay.addEventListener("click", (event) => {
-		if (event.target === shareOverlay) closeShareModal();
-	});
-
-	document.addEventListener("keydown", (event) => {
-		if (event.key === "Escape" && !shareOverlay.hidden) closeShareModal();
-	});
-
-	let copiedNoteTimeout: ReturnType<typeof setTimeout> | undefined;
-
-	shareCopyBtn.addEventListener("click", async () => {
+	async function copyFallback(text: string, button: HTMLButtonElement) {
 		try {
-			await navigator.clipboard.writeText(shareTextWithEgg());
-			shareCopiedNote.hidden = false;
-			clearTimeout(copiedNoteTimeout);
-			copiedNoteTimeout = setTimeout(() => {
-				shareCopiedNote.hidden = true;
-			}, 1500);
+			await navigator.clipboard.writeText(text);
+			showCopyStatus(button, "Copied!");
 		} catch {
-			// Clipboard access denied or unavailable
+			showCopyStatus(button, "Copy failed");
 		}
+	}
+
+	// Native share first; clipboard + "Copied!" toast fallback if unsupported or it fails.
+	async function shareText(button: HTMLButtonElement, text: string, url: string) {
+		if (typeof navigator.share === "function") {
+			try {
+				await navigator.share({ title: "LogicDash", text, url });
+				return;
+			} catch (err) {
+				// User dismissed the share sheet — nothing further to do.
+				if (err instanceof DOMException && err.name === "AbortError") return;
+				// Any other failure falls through to the clipboard.
+			}
+		}
+		await copyFallback(text, button);
+	}
+
+	shareResultBtn.addEventListener("click", () => {
+		shareText(shareResultBtn, buildResultShareText(), "https://logicdash.io/");
 	});
+
+	shareCopyBtn.addEventListener("click", () => copyFallback(buildResultShareText(), shareCopyBtn));
+	function updateShareLinks() {
+		const message = encodeURIComponent(buildResultShareText());
+		shareXLink.href = `https://twitter.com/intent/tweet?text=${message}`;
+		shareWhatsAppLink.href = `https://wa.me/?text=${message}`;
+	}
+
+
+	// Full Deck is awarded once, on the first successful completion of day 32.
+	// A permanent local marker remains visible, even after a streak ends.
+	function hasFullDeck(): boolean {
+		try { return localStorage.getItem(FULL_DECK_KEY) === "earned"; } catch { return false; }
+	}
+	function showFullDeck() {
+		fullDeckOverlay.hidden = false;
+		fullDeckDialog.focus();
+	}
+	function closeFullDeck() { fullDeckOverlay.hidden = true; }
+	function buildFullDeckShareText() {
+		return [
+			"✦ FULL DECK! ✦",
+			"CERTIFIED BYTE OPERATOR",
+			"32 days · 100000₂ · 32/32",
+			"A [●●●●●●●●●●●●●●●●]",
+			"B [●●●●●●●●●●●●●●●●]",
+			"DO NOT FOLD, SPINDLE OR MUTILATE",
+			"logicdash.io/quick-byte/"
+		].join("\n");
+	}
+	fullDeckClose.addEventListener("click", closeFullDeck);
+	fullDeckDone.addEventListener("click", closeFullDeck);
+	fullDeckOverlay.addEventListener("click", (event) => { if (event.target === fullDeckOverlay) closeFullDeck(); });
+	document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !fullDeckOverlay.hidden) closeFullDeck(); });
+	fullDeckShare.addEventListener("click", () => shareText(fullDeckShare, buildFullDeckShareText(), "https://logicdash.io/quick-byte/"));
+	// A development-only certificate preview. Never records or modifies browser progress.
+	// Astro compiles this conditional to false for production builds.
+	if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("previewFullDeck") === "1") {
+		showFullDeck();
+	}
+	const holeContainer = document.querySelector<HTMLElement>(".full-deck-holes")!;
+	for (let i = 0; i < 32; i++) {
+		const hole = document.createElement("span"); hole.className = "full-deck-hole"; holeContainer.append(hole);
+	}
 
 	function readStoredResult(): QuickByteResult | null {
 		try {
@@ -607,9 +673,9 @@ import HammingBoard from "../components/HammingBoard.astro";
 	}
 
 	function dayDiff(from: string, to: string): number {
-		const a = new Date(`${from}T00:00:00`).getTime();
-		const b = new Date(`${to}T00:00:00`).getTime();
-		return Math.round((b - a) / 86400000);
+		const [ay, am, ad] = from.split("-").map(Number);
+		const [by, bm, bd] = to.split("-").map(Number);
+		return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000);
 	}
 
 	function recordStreak(perRound: RoundResult[]): number {
@@ -617,7 +683,13 @@ import HammingBoard from "../components/HammingBoard.astro";
 		if (streak.longest === undefined) streak.longest = streak.count || 0;
 		const perfect = perRound.every((r) => r !== null);
 
-		if (!perfect) return streak.count; // Streak breaks on a failed day
+		if (!perfect) {
+			// An unsuccessful completed day breaks the run but never erases the personal best.
+			streak.count = 0;
+			streak.last = "";
+			try { localStorage.setItem(STREAK_KEY, JSON.stringify(streak)); } catch {}
+			return 0;
+		}
 
 		if (streak.last !== dateString) {
 			streak.count = streak.last && dayDiff(streak.last, dateString) === 1 ? streak.count + 1 : 1;
@@ -628,8 +700,95 @@ import HammingBoard from "../components/HammingBoard.astro";
 		return streak.count;
 	}
 
-	function showResults(perRound: RoundResult[]) {
+	// --- Post-game feedback vs. the player's historical PER-ROUND average (QuickByte-only) ---
+	// History is read BEFORE today's game is folded into it, so "your average" means
+	// "your usual", not "your usual including this run". QuickByte days are 3 rounds, so
+	// both sides of the comparison are per-round numbers: today's total / 3 vs. the stored
+	// total_guesses / (games_completed * 3). No history yet → skip the arrow entirely.
+	function getHistoricalAverage(perRound: RoundResult[]): number | null {
+		// Revisited results should compare against the same pre-today baseline.
+		const total = totalScore(perRound);
+		if (!hasPlayedOn(dateString) || total === null) return getAvgGuessesPerRound();
+		const previousGames = getGamesCompleted() - 1;
+		return previousGames > 0 ? (getTotalGuesses() - total) / (previousGames * ROUND_COUNT) : null;
+	}
+
+	function renderAvgFeedback(perRound: RoundResult[]) {
+		const feedbackEl = document.querySelector<HTMLElement>(".quick-byte-avg-feedback")!;
+		feedbackEl.className = "quick-byte-avg-feedback";
+		const total = totalScore(perRound);
+		if (total === null) {
+			// Incomplete day — no fair comparison to make; skip the arrow entirely.
+			feedbackEl.hidden = true;
+			return;
+		}
+		const historicalAvg = getHistoricalAverage(perRound);
+		if (historicalAvg === null) {
+			feedbackEl.hidden = true; // No history yet — nothing to compare against.
+			return;
+		}
+		const currentAvg = total / ROUND_COUNT;
+		if (currentAvg < historicalAvg) {
+			feedbackEl.textContent = `↓ ${(historicalAvg - currentAvg).toFixed(1)} fewer guesses per round today!`;
+			feedbackEl.classList.add("is-better");
+		} else if (currentAvg > historicalAvg) {
+			feedbackEl.textContent = `↑ ${(currentAvg - historicalAvg).toFixed(1)} more guesses per round today.`;
+			feedbackEl.classList.add("is-worse");
+		} else {
+			feedbackEl.textContent = "➖ Exactly your usual average.";
+			feedbackEl.classList.add("is-same");
+		}
+		feedbackEl.hidden = false;
+	}
+
+	// Fold today's finished game into the lifetime aggregates exactly once per day,
+	// guarded by the play-dates array so revisits never double-count. Failures never
+	// reach this: only a clean sweep of all 3 rounds records a play date.
+	function saveNewGameStats(perRound: RoundResult[]) {
+		const total = totalScore(perRound);
+		if (total === null || hasPlayedOn(dateString)) return;
+		recordPlayDate();
+		addGameStats(total);
+	}
+
+	// Require a full 32 calendar days in the NEW activity records. Preserved
+	// pre-update streaks must not unlock a certificate on their own.
+	function hasFullPunchcard(): boolean {
+		for (let offset = 0; offset < 32; offset++) {
+			const d = new Date();
+			d.setHours(12, 0, 0, 0);
+			d.setDate(d.getDate() - offset);
+			if (!hasPlayedOn(getLocalDateString(d))) return false;
+		}
+		return true;
+	}
+
+	// Numbered 32-position punchcard; today is slot 01 and yesterday is 02.
+	function renderPunchcard() {
+		const rows = document.querySelector<HTMLElement>(".quick-byte-punch-rows")!;
+		rows.replaceChildren();
+		for (let r = 0; r < 2; r++) {
+			const row = document.createElement("div"); row.className = "quick-byte-punch-row";
+			const label = document.createElement("span"); label.className = "quick-byte-punch-row-label"; label.textContent = r === 0 ? "A" : "B"; row.append(label);
+			for (let c = 0; c < 16; c++) {
+				const offset = r * 16 + c;
+				const d = new Date(); d.setDate(d.getDate() - offset);
+				const date = getLocalDateString(d), success = hasPlayedOn(date);
+				const slot = document.createElement("span"); slot.className = "quick-byte-punch-position";
+				const number = document.createElement("span"); number.className = "quick-byte-punch-number"; number.textContent = String(offset + 1).padStart(2,"0");
+				const hole = document.createElement("span"); hole.className = "quick-byte-punch-hole" + (success ? " is-punched" : "");
+				slot.title = `${date}: ${success ? "Solved" : "Not solved"}`;
+				slot.setAttribute("aria-label", slot.title); slot.append(number,hole); row.append(slot);
+			}
+			rows.append(row);
+		}
+		const summary = document.querySelector<HTMLElement>(".quick-byte-history-summary")!;
+		summary.textContent = `Games completed: ${getGamesCompleted()} · Longest streak: ${getLongestStreak()} ${getLongestStreak() === 1 ? "day" : "days"}`;
+	}
+
+	function showResults(perRound: RoundResult[], isNewlyCompleted = false) {
 		resultScores = perRound;
+		currentGameTotal = totalScore(perRound);
 		playSection.hidden = true;
 		resultsSection.hidden = false;
 		sequenceEl.textContent = formatResultSequence(perRound);
@@ -640,15 +799,30 @@ import HammingBoard from "../components/HammingBoard.astro";
 		specialEl.textContent = specialMsg;
 		specialEl.hidden = !specialMsg;
 
+		// Compare against history before saving the new result; both averages are per round.
+		const historicalAvg = getHistoricalAverage(perRound);
+		todayAvgEl.textContent = currentGameTotal === null ? "—" : (currentGameTotal / ROUND_COUNT).toFixed(1);
+		overallAvgEl.textContent = historicalAvg === null ? "—" : historicalAvg.toFixed(1);
+		renderAvgFeedback(perRound);
+		if (isNewlyCompleted) saveNewGameStats(perRound);
+
 		const perfect = perRound.every((r) => r !== null);
 		const streakCount = recordStreak(perRound);
 		const streakData = readStreak();
 		const longest = streakData.longest || 0;
+		if (isNewlyCompleted && perfect && streakCount >= 32 && hasFullPunchcard() && !hasFullDeck()) {
+			try { localStorage.setItem(FULL_DECK_KEY, "earned"); } catch {}
+			showFullDeck();
+		}
+		fullDeckMark.hidden = !hasFullDeck();
 		const streakEl = document.querySelector<HTMLElement>(".quick-byte-streak")!;
-		
+
 		let streakText = "";
 		if (streakCount > 0) {
 			streakText = perfect ? `🔥 ${streakCount}-day streak` : `🔥 ${streakCount}-day streak ended today`;
+			// Neon binary flourish on the live-streak line, e.g. "· 111₂".
+			if (perfect) streakText += ` · ${getBinaryStreak(streakCount)}`;
+			if (perfect && isPowerOfTwo(streakCount)) streakText += " ✦ Power of 2!";
 			if (longest > streakCount) {
 				streakText += ` · Longest: ${longest}`;
 			} else if (longest === streakCount && streakCount > 1) {
@@ -657,9 +831,13 @@ import HammingBoard from "../components/HammingBoard.astro";
 		} else if (longest > 0) {
 			streakText = `Longest streak: ${longest}`;
 		}
-		
+
 		streakEl.textContent = streakText;
 		streakEl.hidden = !streakText;
+
+		// Generate X and WhatsApp text only after today's streak and awards are saved.
+		updateShareLinks();
+		renderPunchcard();
 	}
 
 	// --- Countdown to the next daily puzzle (local midnight) ---
@@ -734,7 +912,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 				controller.reset(secrets[roundIndex]);
 			} else {
 				storeResult({ perRound, total: totalScore(perRound), completedAt: new Date().toISOString() });
-				showResults(perRound);
+				showResults(perRound, true);
 			}
 		});
 	}
