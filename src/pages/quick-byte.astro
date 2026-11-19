@@ -636,6 +636,11 @@ import HammingBoard from "../components/HammingBoard.astro";
 	fullDeckOverlay.addEventListener("click", (event) => { if (event.target === fullDeckOverlay) closeFullDeck(); });
 	document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !fullDeckOverlay.hidden) closeFullDeck(); });
 	fullDeckShare.addEventListener("click", () => shareText(fullDeckShare, buildFullDeckShareText(), "https://logicdash.io/quick-byte/"));
+	// A development-only certificate preview. Never records or modifies browser progress.
+	// Astro compiles this conditional to false for production builds.
+	if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("previewFullDeck") === "1") {
+		showFullDeck();
+	}
 	const holeContainer = document.querySelector<HTMLElement>(".full-deck-holes")!;
 	for (let i = 0; i < 32; i++) {
 		const hole = document.createElement("span"); hole.className = "full-deck-hole"; holeContainer.append(hole);
