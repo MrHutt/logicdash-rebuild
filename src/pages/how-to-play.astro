@@ -15,13 +15,13 @@ const steps = [
 const games = [
 	{ href: "/5-bit", name: "Classic" },
 	{ href: "/overclocked", name: "OverClocked" },
-	{ href: "/quick-byte", name: "Today's Quick Byte" },
+	{ href: "/quick-byte", name: "Play Quick Byte" },
 ];
 ---
 
 <Layout
 	title="How to Play"
-	description="Learn how to play LogicDash: how Hamming distance scoring works, how many tries you get, and what Today's Quick Byte challenge is."
+	description="Learn LogicDash rules, Hamming distance clues, Quick Byte daily scoring, streaks and the 32-day activity punchcard."
 >
 	<section class="hero">
 		<h1>Bits, Explained.</h1>
@@ -71,8 +71,23 @@ const games = [
 		</section>
 
 		<section class="block">
+			<p class="block-title">Streaks &amp; Your Activity Card</p>
+			<p class="block-text">
+				Finish all three Quick Byte rounds successfully on consecutive days to build your streak.
+				Your results include a 32-day activity punchcard: each filled slot represents a day when
+				you solved all three rounds. A missed day or an incomplete result breaks your current
+				streak, but your longest streak is kept.
+			</p>
+			<p class="block-text">
+				You'll see your <em>average guesses per round today</em> compared with your previous
+				successful games. Lower is better. Statistics are saved in this browser,
+				so they won't automatically follow you to another device.
+			</p>
+		</section>
+
+		<section class="block">
 			<p class="block-title">Tries &amp; Games</p>
-			<p class="block-text">You get 6 tries per game. Ready? Pick one:</p>
+			<p class="block-text">Each round allows up to 6 guesses. Start with today's challenge, or practise whenever you like:</p>
 			<div class="ready-links">
 				{
 					games.map((game) => (
@@ -86,8 +101,8 @@ const games = [
 	</div>
 
 	<p class="closing-note">
-		So how do you solve it in as few guesses as possible? There are strategies and algorithms you
-		can use — but that part's for you to figure out.
+		Want to understand the maths behind the puzzle? <a href="/learn/hamming-distance/">Explore Hamming distance</a>
+		in Byte Lab — or <a href="/quick-byte/">take on today's Quick Byte</a>.
 	</p>
 </Layout>
 
@@ -191,6 +206,8 @@ const games = [
 			color 0.15s ease,
 			transform 0.1s ease-out;
 	}
+
+	.closing-note a { color: var(--color-accent); font-weight: 600; }
 
 	.closing-note {
 		margin: 1.25rem 0 0;
