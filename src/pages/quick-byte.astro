@@ -427,7 +427,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.full-deck-certificate h2 { margin:.25rem 0; font-size:clamp(1.7rem,6vw,2.7rem); line-height:1.1; letter-spacing:.04em; color:#302b20; }
 	.full-deck-subtitle { font-weight:700; font-size:clamp(.75rem,3vw,1rem); letter-spacing:.08em; margin:.4rem 0 .8rem; }
 	.full-deck-holes { display:grid; grid-template-columns:repeat(16,minmax(0,1fr)); gap:4px; }
-	.full-deck-hole { display:block; height:22px; border-radius:2px; background:#966020; box-shadow:inset 0 2px 3px #503415; }
+	:global(.full-deck-hole) { display:block; height:22px; border-radius:2px; background:#966020; box-shadow:inset 0 2px 3px #503415; }
 	.full-deck-warning { font-size:.6rem; font-weight:700; letter-spacing:.08em; margin:.9rem 0 0; }
 	.full-deck-message { max-width:26rem; margin:1rem auto; font-size:.91rem; line-height:1.6; }
 	.full-deck-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:.5rem; }
@@ -629,7 +629,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	}
 	function closeFullDeck() { fullDeckOverlay.hidden = true; }
 	function buildFullDeckShareText() {
-		return "✦ FULL DECK! ✦\\nCertified Byte Operator\\n32 consecutive Quick Byte days — 32/32\\nDO NOT FOLD, SPINDLE OR MUTILATE\\nlogicdash.io/quick-byte/";
+		return ["✦ FULL DECK! ✦", "Certified Byte Operator", "32 consecutive Quick Byte days — 32/32", "DO NOT FOLD, SPINDLE OR MUTILATE", "logicdash.io/quick-byte/"].join("\n");
 	}
 	fullDeckClose.addEventListener("click", closeFullDeck);
 	fullDeckDone.addEventListener("click", closeFullDeck);
