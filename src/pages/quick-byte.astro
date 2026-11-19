@@ -795,7 +795,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 			rows.append(row);
 		}
 		const summary = document.querySelector<HTMLElement>(".quick-byte-history-summary")!;
-		summary.textContent = `Games completed: ${getGamesCompleted()} · Longest streak: ${getLongestStreak()} days`;
+		summary.textContent = `Games completed: ${getGamesCompleted()} · Longest streak: ${getLongestStreak()} ${getLongestStreak() === 1 ? "day" : "days"}`;
 	}
 
 	function showResults(perRound: RoundResult[], isNewlyCompleted = false) {
