@@ -629,7 +629,15 @@ import HammingBoard from "../components/HammingBoard.astro";
 	}
 	function closeFullDeck() { fullDeckOverlay.hidden = true; }
 	function buildFullDeckShareText() {
-		return ["✦ FULL DECK! ✦", "Certified Byte Operator", "32 consecutive Quick Byte days — 32/32", "DO NOT FOLD, SPINDLE OR MUTILATE", "logicdash.io/quick-byte/"].join("\n");
+		return [
+			"✦ FULL DECK! ✦",
+			"CERTIFIED BYTE OPERATOR",
+			"32 days · 100000₂ · 32/32",
+			"A [●●●●●●●●●●●●●●●●]",
+			"B [●●●●●●●●●●●●●●●●]",
+			"DO NOT FOLD, SPINDLE OR MUTILATE",
+			"logicdash.io/quick-byte/"
+		].join("\n");
 	}
 	fullDeckClose.addEventListener("click", closeFullDeck);
 	fullDeckDone.addEventListener("click", closeFullDeck);
