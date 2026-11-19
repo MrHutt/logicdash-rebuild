@@ -39,7 +39,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 		</div>
 
 		<details class="quick-byte-details">
-			<summary><span class="stats-toggle-text"><span class="stats-toggle-open">View</span><span class="stats-toggle-close">Hide</span> 32-day activity &amp; stats</span><span class="stats-chevron" aria-hidden="true">⌄</span></summary>
+			<summary><span class="stats-toggle-icon" aria-hidden="true"><span class="stats-toggle-open">+</span><span class="stats-toggle-close">−</span></span><span class="stats-toggle-text"><span class="stats-toggle-open">OPEN</span><span class="stats-toggle-close">CLOSE</span> ACTIVITY LOG</span><span class="stats-toggle-count" aria-hidden="true">[32]</span></summary>
 			<div class="quick-byte-details-content">
 				<div class="quick-byte-punchcard">
 					<div class="quick-byte-punchcard-top"><span>LOGICDASH SYSTEMS / ACTIVITY RECORD</span><span>32 DAYS</span></div>
@@ -368,15 +368,15 @@ import HammingBoard from "../components/HammingBoard.astro";
 	.quick-byte-average-card strong { font-size:clamp(1.5rem,5vw,2rem); font-family:var(--font-mono); }
 	.quick-byte-average-card small { font-size:.69rem; color:var(--color-text-muted); }
 	.quick-byte-details { max-width:40rem; margin:1rem auto 0; text-align:left; }
-	.quick-byte-details summary { cursor:pointer; width:fit-content; margin:0 auto; padding:.35rem .5rem; font-size:.82rem; font-weight:600; color:var(--color-text-muted); list-style:none; display:flex; gap:.45rem; align-items:center; border-radius:5px; text-decoration:underline; text-decoration-color:var(--color-border); text-underline-offset:4px; }
-	.quick-byte-details summary:hover,.quick-byte-details summary:focus-visible { color:var(--color-accent); }
+	.quick-byte-details summary { cursor:pointer; width:fit-content; margin:0 auto; padding:.48rem .75rem; font-family:var(--font-mono); font-size:.75rem; font-weight:700; letter-spacing:.055em; color:var(--color-accent); list-style:none; display:flex; gap:.55rem; align-items:center; border:1px dashed color-mix(in srgb, var(--color-accent) 55%, transparent); border-radius:6px; background:color-mix(in srgb, var(--color-accent) 6%, transparent); transition:background .15s ease,border-color .15s ease; }
+	.quick-byte-details summary:hover { background:color-mix(in srgb, var(--color-accent) 13%, transparent); border-color:var(--color-accent); }
 	.quick-byte-details summary:focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
 	.quick-byte-details summary::-webkit-details-marker { display:none; }
+	.stats-toggle-icon { display:grid; place-items:center; width:1.3rem; height:1.3rem; border:1px solid currentColor; border-radius:3px; font-size:1rem; line-height:1; }
+	.stats-toggle-count { font-size:.65rem; opacity:.7; }
 	.stats-toggle-close { display:none; }
 	.quick-byte-details[open] .stats-toggle-open { display:none; }
 	.quick-byte-details[open] .stats-toggle-close { display:inline; }
-	.stats-chevron { display:inline-block; transition:transform .15s ease; text-decoration:none; }
-	.quick-byte-details[open] .stats-chevron { transform:rotate(180deg); }
 	.quick-byte-details-content { margin-top:.7rem; padding:.8rem; border:1px solid var(--color-border); border-radius:12px; background:var(--color-surface); }
 	.quick-byte-punchcard { background:#e8ddc4; color:#403a2c; border-radius:8px; padding:1rem .7rem; font-family:var(--font-mono); }
 	.quick-byte-punchcard-top { display:flex; justify-content:space-between; gap:.5rem; font-size:.58rem; font-weight:700; }
