@@ -30,12 +30,12 @@ const currentPath = Astro.url.pathname;
 		<ul>
 			{
 				navLinks.map((link) => {
-					const activeBase = link.href.split("#")[0].replace(/\\/$/, "") || "/";
+					const activeBase = link.href.split("#")[0].replace(/\/$/, "") || "/";
 					const isActive = link.href.includes("#")
 						? false
 						: activeBase === "/learn" || activeBase === "/tools"
 							? currentPath.startsWith(activeBase)
-							: currentPath.replace(/\\/$/, "") === activeBase;
+							: currentPath.replace(/\/$/, "") === activeBase;
 					return (
 						<li>
 							<a href={link.href} aria-current={isActive ? "page" : undefined}>
