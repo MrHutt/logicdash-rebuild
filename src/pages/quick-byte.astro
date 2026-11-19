@@ -801,7 +801,6 @@ import HammingBoard from "../components/HammingBoard.astro";
 	function showResults(perRound: RoundResult[], isNewlyCompleted = false) {
 		resultScores = perRound;
 		currentGameTotal = totalScore(perRound);
-		updateShareLinks();
 		playSection.hidden = true;
 		resultsSection.hidden = false;
 		sequenceEl.textContent = formatResultSequence(perRound);
@@ -848,6 +847,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 		streakEl.textContent = streakText;
 		streakEl.hidden = !streakText;
 
+		// Generate X and WhatsApp text only after today's streak and awards are saved.
+		updateShareLinks();
 		renderPunchcard();
 	}
 
