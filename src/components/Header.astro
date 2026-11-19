@@ -1,12 +1,10 @@
 ---
 const navLinks = [
 	{ href: "/", label: "Home" },
-	{ href: "/5-bit", label: "Classic" },
-	{ href: "/overclocked", label: "OverClocked" },
-	{ href: "/quick-byte", label: "Quick Byte" },
-	{ href: "/how-to-play", label: "How to Play" },
-	{ href: "/learn", label: "Byte Lab" },
-	{ href: "/tools", label: "Tools" },
+	{ href: "/quick-byte/", label: "Quick Byte" },
+	{ href: "/#puzzles", label: "Puzzles" },
+	{ href: "/learn/", label: "Learn" },
+	{ href: "/tools/", label: "Tools" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -32,10 +30,12 @@ const currentPath = Astro.url.pathname;
 		<ul>
 			{
 				navLinks.map((link) => {
-					const isActive =
-						link.href === "/learn" || link.href === "/tools"
-							? currentPath.startsWith(link.href)
-							: currentPath === link.href;
+					const activeBase = link.href.split("#")[0].replace(/\\/$/, "") || "/";
+					const isActive = link.href.includes("#")
+						? false
+						: activeBase === "/learn" || activeBase === "/tools"
+							? currentPath.startsWith(activeBase)
+							: currentPath.replace(/\\/$/, "") === activeBase;
 					return (
 						<li>
 							<a href={link.href} aria-current={isActive ? "page" : undefined}>
@@ -185,7 +185,7 @@ const currentPath = Astro.url.pathname;
 	 * comment's warning about adding an eighth link without revisiting
 	 * this breakpoint is exactly what this bump addresses.
 	 */
-	@media (max-width: 1080px) {
+	@media (max-width: 840px) {
 		.nav-toggle {
 			display: flex;
 		}
