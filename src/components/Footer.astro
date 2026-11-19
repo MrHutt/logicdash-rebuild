@@ -8,10 +8,9 @@ const playLinks = [
 ];
 
 const siteLinks = [
-	{ href: "/learn", label: "Byte Lab" },
-	{ href: "/tools", label: "Tools" },
+	{ href: "/learn", label: "Learn / Byte Lab" },
+	{ href: "/tools", label: "The Tool Hut" },
 	{ href: "/how-to-play", label: "How to Play" },
-	{ href: "/stats", label: "Stats" },
 	{ href: "/about", label: "About" },
 	{ href: "/privacy", label: "Privacy" },
 	{ href: "/contact", label: "Contact" },
@@ -24,12 +23,12 @@ const siteLinks = [
 			<a class="footer-logo" href="/">
 				Logic<span class="brand-accent">Dash</span>
 			</a>
-			<p class="footer-tagline">A bit of a puzzle.</p>
+			<p class="footer-tagline">Puzzles. Learning. Useful tools.</p>
 		</div>
 
 		<div class="footer-columns">
 			<div class="footer-column">
-				<p class="footer-column-title">Play</p>
+				<p class="footer-column-title">Puzzles</p>
 				<ul>
 					{
 						playLinks.map((link) => (
@@ -42,7 +41,7 @@ const siteLinks = [
 			</div>
 
 			<div class="footer-column">
-				<p class="footer-column-title">Site</p>
+				<p class="footer-column-title">Learn &amp; More</p>
 				<ul>
 					{
 						siteLinks.map((link) => (
