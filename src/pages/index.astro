@@ -1,263 +1,182 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
-const games = [
-	{
-		href: "/5-bit",
-		name: "Classic",
-		blurb: "The original 5-bit puzzle. Six guesses.",
-	},
-	{
-		href: "/overclocked",
-		name: "OverClocked",
-		blurb: "Same rules, 6 bits. Tighter odds, sharper focus.",
-	},
+const destinations = [
+  { href: "/5-bit/", eyebrow: "UNLIMITED PUZZLE", title: "Classic", description: "Five bits, six guesses. The original LogicDash challenge.", icon: "01010" },
+  { href: "/overclocked/", eyebrow: "LEVEL UP", title: "OverClocked", description: "Six bits. More combinations. A little more brainwork.", icon: "101101" },
+];
+
+const explore = [
+  { href: "/learn/", label: "02 / LEARN", title: "Byte Lab", description: "Understand the ideas behind computing, from binary and Hamming distance to networks and cybersecurity.", action: "Explore lessons", color: "#A78BFA", symbol: "01" },
+  { href: "/tools/", label: "03 / TOOLS", title: "Useful little tools", description: "Classroom-ready timers, random student selection, seating charts and a binary clock.", action: "Explore tools", color: "#60A5FA", symbol: "⌘" },
 ];
 ---
 
 <Layout
-	title="LogicDash"
-	description="Guess the secret binary pattern in 6 tries using only Hamming distance clues. Play Classic, OverClocked, or today's daily Quick Byte puzzle."
+  title="LogicDash"
+  description="Play LogicDash's daily Quick Byte binary challenge, explore logic puzzles, learn computer science in Byte Lab, and use free classroom tools."
 >
-	<section class="hero">
-		<h1>A bit of a puzzle.</h1>
-		<p class="hero-subline">Guess the secret pattern of 1s and 0s in 6 tries.</p>
-		<p class="hero-mechanic">
-			Each guess tells you <em>how many</em> digits are wrong, never <em>which</em> ones.
-		</p>
-		<p class="hero-flavor">Warning: known to blow a few mental fuses.</p>
-	</section>
+  <section class="welcome" aria-labelledby="welcome-title">
+    <div class="welcome-copy">
+      <p class="eyebrow">PUZZLE / LEARN / TOOLS</p>
+      <h1 id="welcome-title">A bit of a <span>challenge.</span></h1>
+      <p class="welcome-lead">A daily brain workout, a little computer science, and some genuinely useful tools. All in one place.</p>
+      <p class="welcome-tagline">Solve it. Bit by bit.</p>
+    </div>
+    <img
+      class="hero-art"
+      src="/logicdash-runners.png"
+      alt="LogicDash's original running 0 and 1 characters"
+      width="904"
+      height="319"
+      loading="eager"
+    />
+  </section>
 
-	<img
-		class="hero-art"
-		src="/logicdash-runners.png"
-		alt="Two cartoon figures shaped like a running &quot;0&quot; and &quot;1&quot;, sprinting side by side"
-		width="904"
-		height="319"
-		loading="eager"
-	/>
+  <section class="daily-feature" aria-labelledby="daily-title">
+    <div class="daily-main">
+      <p class="daily-kicker"><span class="live-dot" aria-hidden="true"></span> 01 / TODAY'S MAIN EVENT</p>
+      <h2 id="daily-title">Quick <span>Byte.</span></h2>
+      <p class="daily-lead">Three rounds. Five bits. One daily challenge.</p>
+      <p class="daily-explain">Guess the hidden binary pattern using only the number of digits you've got wrong. Same puzzles for everyone each day.</p>
+      <a href="/quick-byte/" class="daily-cta">Play today's Quick Byte <span aria-hidden="true">↗</span></a>
+      <a href="/how-to-play/" class="daily-help">New here? See how to play →</a>
+    </div>
+    <div class="daily-art" aria-hidden="true">
+      <p class="board-label"><span>DAILY / 5-BIT</span><span>ROUND 01—03</span></p>
+      <div class="demo-bits">
+        <span>1</span><span>0</span><span>1</span><span>1</span><span>0</span>
+      </div>
+      <div class="demo-trace"><span>10110</span><span class="trace-status">2 WRONG</span></div>
+      <div class="demo-trace"><span>00111</span><span class="trace-status">1 WRONG</span></div>
+      <div class="demo-trace"><span>00110</span><span class="trace-status trace-win">✓ SOLVED</span></div>
+      <p class="board-foot">THINK IN BITS. NOT IN GUESSES.</p>
+    </div>
+  </section>
 
-	<p class="hero-slogan">Solve it. Bit by bit.</p>
+  <section class="site-explore" aria-label="Explore LogicDash">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">MORE TO EXPLORE</p>
+        <h2>Play. Learn. Make things easier.</h2>
+      </div>
+      <p>Quick Byte is just the beginning.</p>
+    </div>
+    <div class="explore-grid">
+      <a href="/5-bit/" class="pillar pillar--puzzles">
+        <span class="pillar-top"><span>01 / PUZZLES</span><span class="pillar-symbol" aria-hidden="true">101</span></span>
+        <strong>Keep playing</strong>
+        <span class="pillar-description">Not ready to stop? Play Classic or turn up the difficulty with OverClocked. No daily limit.</span>
+        <span class="pillar-action">Explore puzzles <span aria-hidden="true">↗</span></span>
+      </a>
+      {explore.map((item) => (
+        <a href={item.href} class="pillar" style={`--pillar-color:${item.color}`}>
+          <span class="pillar-top"><span>{item.label}</span><span class="pillar-symbol" aria-hidden="true">{item.symbol}</span></span>
+          <strong>{item.title}</strong>
+          <span class="pillar-description">{item.description}</span>
+          <span class="pillar-action">{item.action} <span aria-hidden="true">↗</span></span>
+        </a>
+      ))}
+    </div>
+  </section>
 
-	<a class="quick-byte-feature" href="/quick-byte/">
-		<div class="quick-byte-feature-text">
-			<span class="quick-byte-feature-label">Daily challenge</span>
-			<span class="quick-byte-feature-name">Today's Quick Byte</span>
-			<span class="quick-byte-feature-blurb"
-				>Three rounds, once a day — same puzzle for everyone. This is the one to come back for.</span
-			>
-		</div>
-		<span class="quick-byte-feature-cta">Play Now →</span>
-	</a>
+  <section class="more-games" aria-labelledby="games-title">
+    <div class="section-heading section-heading--compact">
+      <div>
+        <p class="eyebrow">PLAY ANYTIME</p>
+        <h2 id="games-title">One more round?</h2>
+      </div>
+      <span>No streaks to worry about. Just puzzles.</span>
+    </div>
+    <div class="game-grid">
+      {destinations.map((game) => (
+        <a href={game.href} class="game-link">
+          <span class="game-mark" aria-hidden="true">{game.icon}</span>
+          <span class="game-info"><small>{game.eyebrow}</small><strong>{game.title}</strong><span>{game.description}</span></span>
+          <span class="game-arrow" aria-hidden="true">↗</span>
+        </a>
+      ))}
+    </div>
+  </section>
 
-	<section class="game-picker">
-		<h2>Or play anytime</h2>
-		<div class="game-cards">
-			{
-				games.map((game) => (
-					<a class="game-card" href={game.href}>
-						<span class="game-card-name">{game.name}</span>
-						<span class="game-card-blurb">{game.blurb}</span>
-					</a>
-				))
-			}
-		</div>
-	</section>
-
-	<p class="how-to-play-note">New here? <a href="/how-to-play/">Learn how to play</a> in under a minute.</p>
+  <section class="bottom-note">
+    <span class="terminal-prompt" aria-hidden="true">&gt;_</span>
+    <p>Curious about the science behind the puzzles? <a href="/learn/hamming-distance/">Discover Hamming distance</a> in Byte Lab.</p>
+  </section>
 </Layout>
 
 <style>
-	.hero {
-		text-align: center;
-		margin-bottom: 0.6rem;
-	}
-
-	.hero h1 {
-		margin: 0 0 0.4rem;
-		font-size: clamp(1.6rem, 5vw, 2.3rem);
-	}
-
-	.hero-subline {
-		margin: 0 auto;
-		max-width: 28rem;
-		font-size: 0.95rem;
-		font-weight: 600;
-		color: var(--color-text);
-	}
-
-	.hero-mechanic {
-		margin: 0.35rem auto 0;
-		max-width: 34rem;
-		font-size: 0.8rem;
-	}
-
-	.hero em {
-		color: var(--color-text);
-		font-style: normal;
-		font-weight: 700;
-	}
-
-	.hero-flavor {
-		margin: 0.4rem auto 0;
-		max-width: 40rem;
-		font-size: 0.68rem;
-		font-style: italic;
-		color: var(--color-text-muted);
-		opacity: 0.65;
-	}
-
-	.hero-art {
-		display: block;
-		width: 100%;
-		max-width: 8.5rem;
-		height: auto;
-		margin: 0 auto 0.6rem;
-	}
-
-	.hero-slogan {
-		text-align: center;
-		margin: 0 0 1.25rem;
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.85rem;
-		letter-spacing: 0.04em;
-		color: #ffae2e;
-	}
-
-	.quick-byte-feature {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		gap: 0.9rem;
-		margin-bottom: 1.5rem;
-		padding: 1.4rem;
-		border-radius: 14px;
-		border: 1px solid var(--color-accent);
-		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
-		text-decoration: none;
-		transition:
-			box-shadow 0.15s ease,
-			transform 0.1s ease;
-	}
-
-	.quick-byte-feature:hover {
-		box-shadow: 0 0 22px color-mix(in srgb, var(--color-accent) 45%, transparent);
-		transform: translateY(-1px);
-	}
-
-	.quick-byte-feature-text {
-		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-	}
-
-	.quick-byte-feature-label {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.7rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--color-accent);
-	}
-
-	.quick-byte-feature-name {
-		font-size: 1.2rem;
-		font-weight: 700;
-		color: var(--color-text);
-	}
-
-	.quick-byte-feature-blurb {
-		font-size: 0.8rem;
-		color: var(--color-text-muted);
-	}
-
-	.quick-byte-feature-cta {
-		flex-shrink: 0;
-		padding: 0.6rem 1.5rem;
-		border-radius: 999px;
-		background: var(--color-accent);
-		color: var(--color-accent-contrast);
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.85rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		white-space: nowrap;
-		box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 55%, transparent);
-		transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-
-	.quick-byte-feature:active .quick-byte-feature-cta {
-		transform: scale(0.95);
-		transition: transform 0.1s ease-out;
-	}
-
-	.game-picker h2 {
-		margin: 0 0 0.6rem;
-		text-align: center;
-		font-size: 0.85rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--color-text-muted);
-	}
-
-	.game-cards {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-		gap: 0.75rem;
-	}
-
-	.game-card {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		padding: 1rem 1.1rem;
-		border-radius: 12px;
-		border: 1px solid var(--color-border);
-		background: var(--color-surface);
-		text-decoration: none;
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-
-	.game-card:hover {
-		border-color: #ffae2e;
-		box-shadow: 0 0 16px color-mix(in srgb, #ffae2e 35%, transparent);
-		transform: translateY(-1px);
-	}
-
-	.game-card:active {
-		transform: scale(0.97);
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.1s ease-out;
-	}
-
-	.game-card-name {
-		font-family: var(--font-mono);
-		font-weight: 700;
-		font-size: 0.95rem;
-		color: var(--color-text);
-	}
-
-	.game-card-blurb {
-		font-size: 0.8rem;
-		color: var(--color-text-muted);
-	}
-
-	.how-to-play-note {
-		margin: 1.25rem 0 0;
-		text-align: center;
-		font-size: 0.85rem;
-	}
-
-	.how-to-play-note a {
-		color: #ffae2e;
-		font-weight: 600;
-	}
+  .eyebrow { margin:0 0 .65rem; font:700 .7rem/1.4 var(--font-mono); letter-spacing:.13em; color:var(--color-accent); }
+  .welcome { display:flex; align-items:center; justify-content:space-between; gap:1.4rem; padding:1rem 0 1.7rem; }
+  .welcome-copy { max-width:34rem; }
+  .welcome h1 { margin:0 0 .7rem; font-size:clamp(2rem,5.4vw,3.6rem); line-height:1.08; letter-spacing:-.035em; }
+  .welcome h1 span { color:var(--color-accent); }
+  .welcome-lead { font-size:clamp(.93rem,1.6vw,1.1rem); line-height:1.55; max-width:34rem; color:var(--color-text-muted); margin:0; }
+  .welcome-tagline { margin:.85rem 0 0; font:700 .85rem var(--font-mono); color:var(--color-text); }
+  .hero-art { width:clamp(105px,23%,190px); height:auto; object-fit:contain; flex:none; }
+  .daily-feature { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr); gap:1.5rem; padding:clamp(1.3rem,4vw,2.2rem); border:1px solid #A87322; border-radius:20px; background: radial-gradient(ellipse at 85% 0%,rgba(255,174,46,.11),transparent 55%),var(--color-surface); box-shadow:0 0 45px rgba(255,174,46,.06); }
+  .daily-kicker { font:700 .72rem var(--font-mono); letter-spacing:.08em; color:#FFD088; margin:0 0 1rem; display:flex; align-items:center; gap:.55rem; }
+  .live-dot { width:8px; height:8px; display:inline-block; border-radius:50%; background:#FFAE2E; box-shadow:0 0 11px rgba(255,174,46,.5); }
+  .daily-feature h2 { font-size:clamp(2.5rem,6vw,4.2rem); line-height:1; letter-spacing:-.04em; margin:0 0 1rem; color:var(--color-text); }
+  .daily-feature h2 span { color:var(--color-accent); }
+  .daily-lead { font-weight:700; font-size:clamp(1.03rem,2vw,1.25rem); margin:0 0 .55rem; color:var(--color-text); }
+  .daily-explain { color:var(--color-text-muted); max-width:29rem; line-height:1.55; font-size:.93rem; margin:0 0 1.25rem; }
+  .daily-cta { display:inline-flex; justify-content:center; align-items:center; gap:.8rem; border-radius:9px; padding:.83rem 1.15rem; background:var(--color-accent); color:var(--color-accent-contrast); font:700 .9rem var(--font-mono); text-decoration:none; transition:transform .15s,filter .15s; }
+  .daily-cta:hover { transform:translateY(-2px); filter:brightness(1.08); }
+  .daily-help { display:block; width:fit-content; margin-top:.9rem; color:var(--color-text-muted); font-size:.8rem; text-decoration:underline; text-underline-offset:3px; }
+  .daily-help:hover { color:var(--color-text); }
+  .daily-art { align-self:center; min-width:0; padding:1rem; background:#10131C; border:1px solid #394050; border-radius:12px; font-family:var(--font-mono); }
+  .board-label { display:flex; justify-content:space-between; gap:.5rem; color:#D5B57D; font-size:.59rem; letter-spacing:.07em; margin:0 0 1.1rem; }
+  .demo-bits { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; margin-bottom:1rem; }
+  .demo-bits span { display:grid; place-items:center; padding:.7rem 0; border:1px solid #72572B; border-radius:7px; background:#2B251B; color:#FFD285; font-weight:700; font-size:1.15rem; }
+  .demo-trace { display:flex; justify-content:space-between; gap:.6rem; margin-top:.5rem; padding:.55rem .65rem; border:1px solid #333A49; border-radius:5px; color:#D8DCE8; font-size:.78rem; }
+  .trace-status { color:#F7C16C; }
+  .trace-win { color:#9DE2B0; }
+  .board-foot { font-size:.59rem; text-align:center; color:#969EB0; letter-spacing:.045em; margin:1.2rem 0 0; }
+  .site-explore { margin:2.6rem 0 0; }
+  .section-heading { display:flex; justify-content:space-between; align-items:end; gap:1rem; margin-bottom:1rem; }
+  .section-heading h2 { margin:0; font-size:clamp(1.35rem,3vw,1.7rem); line-height:1.2; }
+  .section-heading .eyebrow { margin-bottom:.35rem; }
+  .section-heading > p,.section-heading > span { font-size:.8rem; color:var(--color-text-muted); margin:0 0 .15rem; }
+  .explore-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
+  .pillar { --pillar-color:#FFAE2E; display:flex; flex-direction:column; min-height:220px; gap:.8rem; padding:1.2rem; border:1px solid var(--color-border); border-radius:14px; background:radial-gradient(circle at 90% 0%,color-mix(in srgb,var(--pillar-color) 13%,transparent),transparent 55%),var(--color-surface); text-decoration:none; transition:border-color .15s,transform .15s; }
+  .pillar:hover { border-color:var(--pillar-color); transform:translateY(-2px); }
+  .pillar-top { display:flex; justify-content:space-between; gap:.4rem; align-items:start; font:700 .68rem var(--font-mono); letter-spacing:.07em; color:var(--pillar-color); }
+  .pillar-symbol { font-size:1.3rem; letter-spacing:-.12em; opacity:.8; }
+  .pillar strong { color:var(--color-text); font-size:1.3rem; line-height:1.2; }
+  .pillar-description { color:var(--color-text-muted); font-size:.84rem; line-height:1.52; flex:1; }
+  .pillar-action { color:var(--pillar-color); font:700 .78rem var(--font-mono); }
+  .more-games { margin:2.6rem 0 0; }
+  .section-heading--compact { margin-bottom:.85rem; }
+  .game-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; }
+  .game-link { display:flex; align-items:center; gap:.85rem; min-width:0; padding:1rem; border:1px solid var(--color-border); background:var(--color-surface); border-radius:12px; text-decoration:none; transition:border-color .15s; }
+  .game-link:hover { border-color:var(--color-accent); }
+  .game-mark { flex:none; padding:.7rem .5rem; min-width:5rem; text-align:center; background:#262318; border-radius:6px; color:#FBC66E; font:700 .81rem var(--font-mono); }
+  .game-info { min-width:0; display:flex; flex-direction:column; gap:.18rem; }
+  .game-info small { color:var(--color-accent); font:700 .63rem var(--font-mono); letter-spacing:.08em; }
+  .game-info strong { font-size:1rem; color:var(--color-text); }
+  .game-info > span { font-size:.77rem; color:var(--color-text-muted); line-height:1.4; }
+  .game-arrow { color:var(--color-accent); margin-left:auto; align-self:start; }
+  .bottom-note { margin:2rem 0 .3rem; display:flex; align-items:center; justify-content:center; gap:.65rem; font-size:.83rem; color:var(--color-text-muted); text-align:center; }
+  .terminal-prompt { color:#A3E635; font:700 1.2rem var(--font-mono); }
+  .bottom-note p { margin:0; }
+  .bottom-note a { color:var(--color-accent); font-weight:600; text-underline-offset:3px; }
+  @media(max-width:760px) {
+    .welcome { gap:.6rem; }
+    .hero-art { width:26%; }
+    .daily-feature { grid-template-columns:1fr; }
+    .daily-art { width:100%; max-width:24rem; justify-self:center; }
+    .explore-grid { grid-template-columns:1fr; }
+    .pillar { min-height:unset; gap:.6rem; }
+    .section-heading > p,.section-heading > span { display:none; }
+  }
+  @media(max-width:540px) {
+    .welcome { align-items:start; padding-top:.6rem; }
+    .welcome h1 { font-size:clamp(1.8rem,8vw,2.4rem); }
+    .hero-art { width:26%; min-width:80px; margin-top:.5rem; }
+    .daily-feature { padding:1.2rem; gap:1rem; }
+    .daily-feature h2 { font-size:3rem; }
+    .game-grid { grid-template-columns:1fr; }
+  }
+  @media(prefers-reduced-motion:reduce) { .daily-cta,.pillar,.game-link { transition:none; } }
 </style>
