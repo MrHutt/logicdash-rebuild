@@ -14,6 +14,14 @@ import HammingBoard from "../components/HammingBoard.astro";
 
 	<div class="quick-byte-play">
 		<p class="quick-byte-round-label"></p>
+		<div class="quick-byte-guide" hidden aria-label="First-time playing guide">
+			<div class="quick-byte-guide-copy">
+				<strong class="quick-byte-guide-title">FIRST BYTE · HOW TO PLAY</strong>
+				<p class="quick-byte-guide-text" role="status">Tap any digit to switch between 0 and 1. Press Guess to test your five-bit pattern. You have six attempts per round.</p>
+			</div>
+			<button type="button" class="quick-byte-guide-skip" aria-label="Dismiss first-time guide">Got it ✕</button>
+		</div>
+		<p class="quick-byte-round-feedback" role="status" hidden></p>
 		<HammingBoard bitLength={5} maxAttempts={6} />
 		<button type="button" class="quick-byte-next" hidden>Next Round</button>
 	</div>
@@ -115,6 +123,14 @@ import HammingBoard from "../components/HammingBoard.astro";
 		flex-direction: column;
 		gap: 0.6rem;
 	}
+
+	.quick-byte-guide { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; padding:.7rem .85rem; border:1px solid color-mix(in srgb, var(--color-accent) 45%, var(--color-border)); background:var(--color-surface); border-radius:12px; }
+	.quick-byte-guide[hidden], .quick-byte-round-feedback[hidden] { display:none; }
+	.quick-byte-guide-title { display:block; font-family:var(--font-mono); color:var(--color-accent); font-size:.67rem; letter-spacing:.08em; }
+	.quick-byte-guide-text { margin:.3rem 0 0; font-size:.82rem; line-height:1.5; }
+	.quick-byte-guide-skip { flex-shrink:0; min-height:44px; padding:.4rem .6rem; border:1px solid var(--color-border); border-radius:8px; background:transparent; color:var(--color-text); font-size:.78rem; cursor:pointer; }
+	.quick-byte-round-feedback { margin:0; text-align:center; font-size:.78rem; color:var(--color-text-muted); line-height:1.5; }
+	@media(max-width:360px) { .quick-byte-guide { flex-direction:column; } .quick-byte-guide-skip { align-self:flex-end; } }
 
 	.quick-byte-play[hidden] {
 		display: none;
@@ -482,6 +498,11 @@ import HammingBoard from "../components/HammingBoard.astro";
 	const playSection = document.querySelector<HTMLElement>(".quick-byte-play")!;
 	const roundLabel = document.querySelector<HTMLElement>(".quick-byte-round-label")!;
 	const nextButton = document.querySelector<HTMLButtonElement>(".quick-byte-next")!;
+	const firstByteGuide = document.querySelector<HTMLElement>(".quick-byte-guide")!;
+	const firstByteGuideText = document.querySelector<HTMLElement>(".quick-byte-guide-text")!;
+	const firstByteGuideSkip = document.querySelector<HTMLButtonElement>(".quick-byte-guide-skip")!;
+	const roundFeedback = document.querySelector<HTMLElement>(".quick-byte-round-feedback")!;
+	const GUIDE_SEEN_KEY = "logicdash:quickbyte:guide-seen";
 	const resultsSection = document.querySelector<HTMLElement>(".quick-byte-results")!;
 	const sequenceEl = document.querySelector<HTMLElement>(".quick-byte-sequence")!;
 	const totalEl = document.querySelector<HTMLElement>(".quick-byte-total")!;
@@ -878,6 +899,18 @@ import HammingBoard from "../components/HammingBoard.astro";
 		const perRound: RoundResult[] = savedProgress?.completedRounds ?? [];
 		let roundIndex = Math.min(Math.max(savedProgress?.roundIndex ?? 0, 0), ROUND_COUNT - 1);
 		let guessesThisRound: string[] = savedProgress ? [...savedProgress.guessesThisRound] : [];
+		// New players get an inline, skippable explanation; never interrupt saved games.
+		let guideActive = false;
+		try {
+			guideActive = !localStorage.getItem(GUIDE_SEEN_KEY) && !savedProgress && getGamesCompleted() === 0;
+		} catch { guideActive = !savedProgress && getGamesCompleted() === 0; }
+		firstByteGuide.hidden = !guideActive;
+		function dismissGuide() {
+			guideActive = false;
+			firstByteGuide.hidden = true;
+			try { localStorage.setItem(GUIDE_SEEN_KEY, "yes"); } catch {}
+		}
+		firstByteGuideSkip.addEventListener("click", dismissGuide);
 
 		function updateRoundLabel() {
 			roundLabel.textContent = `Round ${roundIndex + 1} of ${ROUND_COUNT}`;
@@ -896,12 +929,19 @@ import HammingBoard from "../components/HammingBoard.astro";
 			onGuess: ({ bits }) => {
 				guessesThisRound.push(bits);
 				persistProgress();
+				if (guideActive && guessesThisRound.length === 1) {
+					firstByteGuideText.textContent = "Read the WRONG count below your guess. It tells you how many bits differ from the secret pattern — not which positions are wrong. Use that clue to choose your next guess.";
+				}
 			},
 			onRoundEnd: ({ won, attempts }) => {
 				if (perRound.length === roundIndex) {
 					perRound.push(roundScore(won, attempts));
 				}
 				nextButton.textContent = roundIndex < ROUND_COUNT - 1 ? "Next Round" : "See Results";
+				roundFeedback.textContent = roundIndex < ROUND_COUNT - 1
+					? `Round ${roundIndex + 1} ${won ? "solved" : "finished"}. ${ROUND_COUNT - roundIndex - 1} more ${ROUND_COUNT - roundIndex - 1 === 1 ? "round" : "rounds"} to go.`
+					: "All three rounds complete. Your results are ready.";
+				roundFeedback.hidden = false;
 				nextButton.hidden = false;
 			},
 		});
@@ -917,6 +957,8 @@ import HammingBoard from "../components/HammingBoard.astro";
 		nextButton.addEventListener("click", () => {
 			nextButton.hidden = true;
 			if (roundIndex < ROUND_COUNT - 1) {
+				if (guideActive) dismissGuide();
+				roundFeedback.hidden = true;
 				roundIndex++;
 				guessesThisRound = [];
 				persistProgress();
