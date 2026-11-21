@@ -154,7 +154,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 
 			<p class="ampm-label" data-ampm hidden></p>
 
-			<div class="clock-progress countdown-only page-only" data-progress aria-hidden="true">
+			<div class="clock-progress countdown-only" data-progress role="progressbar" aria-label="Countdown time remaining" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
 				<span class="clock-progress-fill" data-progress-fill></span>
 			</div>
 			<p class="times-up" data-times-up role="status" aria-live="assertive" hidden>Time's up!</p>
@@ -402,6 +402,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 	const resetBtn = root.querySelector<HTMLButtonElement>("[data-reset]")!;
 	const addMinuteBtn = root.querySelector<HTMLButtonElement>("[data-add-minute]")!;
 	const progressFill = root.querySelector<HTMLElement>("[data-progress-fill]")!;
+	const progressBar = root.querySelector<HTMLElement>("[data-progress]")!;
 	const timesUpEl = root.querySelector<HTMLElement>("[data-times-up]")!;
 	const fullscreenBtn = root.querySelector<HTMLButtonElement>("[data-fullscreen-btn]")!;
 	const exitFullscreenBtn = root.querySelector<HTMLButtonElement>("[data-exit-fullscreen]")!;
@@ -825,7 +826,9 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		toggleBtn.disabled = !running && r <= 0;
 		document.body.classList.toggle("clock-running", running);
 		const fraction = progressTotal > 0 ? r / progressTotal : 0;
-		progressFill.style.transform = `scaleX(${Math.max(0, Math.min(1, fraction))})`;
+		const percentage = Math.max(0, Math.min(100, fraction * 100));
+		progressFill.style.width = `${percentage}%`;
+		progressBar.setAttribute("aria-valuenow", String(Math.round(percentage)));
 		presetButtons.forEach((btn) =>
 			btn.setAttribute("aria-pressed", String(!running && Number(btn.dataset.preset) === configuredSeconds && r === configuredSeconds)),
 		);
@@ -898,6 +901,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		clearFinished();
 		endTime = Date.now() + remainingSeconds * 1000;
 		running = true;
+		setDrawerOpen(false);
 		updateControls();
 		bumpIdle();
 	}
@@ -1756,6 +1760,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 
 	/* Frequently used exam durations stay on the page, sharing existing preset logic. */
 	.exam-presets { width:100%; padding:.6rem .4rem .25rem; margin:0 auto; }
+	body.clock-running .exam-presets { display:none !important; }
 	.exam-presets-label { display:flex; align-items:baseline; justify-content:center; gap:.6rem; flex-wrap:wrap; margin:0 0 .6rem; font:700 .72rem var(--font-mono); letter-spacing:.08em; color:var(--color-accent); text-align:center; }
 	.exam-presets-label span { font:400 .72rem sans-serif; letter-spacing:0; color:var(--color-text-muted); }
 	.exam-presets-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.4rem; max-width:58rem; margin-inline:auto; }
@@ -2518,11 +2523,16 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		overflow-x: clip;
 	}
 
+	/* Retro segmented loading bar — fixed-width blocks shrink as time elapses. */
 	.clock-progress {
 		width: min(100%, calc(var(--clock-tile-height) * 7));
-		height: max(8px, calc(var(--clock-tile-height) * 0.07));
-		border-radius: 999px;
-		background: #23263a;
+		height: clamp(14px, calc(var(--clock-tile-height) * .115), 22px);
+		padding: 3px;
+		box-sizing: border-box;
+		border: 1px solid #786044;
+		border-radius: 4px;
+		background: repeating-linear-gradient(90deg, #222534 0 12px, #161925 12px 15px);
+		box-shadow: inset 0 2px 5px rgba(0,0,0,.55), 0 0 0 1px rgba(255,174,46,.08);
 		overflow: hidden;
 	}
 
@@ -2530,11 +2540,19 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		display: block;
 		width: 100%;
 		height: 100%;
-		border-radius: inherit;
-		background: linear-gradient(90deg, #ffae2e, #ffd27a);
-		box-shadow: 0 0 12px rgba(255, 174, 46, 0.6);
-		transform-origin: left center;
-		transition: transform 0.25s linear;
+		border-radius: 1px;
+		background: repeating-linear-gradient(90deg, #ffae2e 0 11px, #d78c25 11px 12px, transparent 12px 15px);
+		box-shadow: 0 0 10px rgba(255,174,46,.35);
+		transition: width .25s linear;
+	}
+
+	body.clock-fullscreen .clock-progress {
+		width: min(84vw, calc(var(--clock-tile-height) * 7));
+		height: clamp(14px, 2.5vh, 22px);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.clock-progress-fill { transition: none; }
 	}
 
 	.times-up {
