@@ -68,6 +68,17 @@ body[data-night-mission] .practice-nav [aria-current="step"]{
 }
 body[data-night-mission] #objective{color:var(--mission-accent)}
 body[data-night-mission] .readout{border-color:var(--mission-border)}
+.trace-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:9px 0 12px}
+.trace-toolbar button{padding:7px 13px;min-height:44px;font-size:.88rem;font-weight:750}
+.trace-toolbar button[aria-pressed="true"]{background:#234a54;border-color:#80d9f2;color:#d3f8ff}
+.trace-description{font-size:.86rem;color:var(--muted);line-height:1.45;flex:1 1 185px}
+.board.trace-active .port,.board.trace-active .toggle,.board.trace-active .gate,.board.trace-active .lamp{transition:opacity .15s,border-color .15s}
+.board.trace-active .port.trace-muted,.board.trace-active .toggle.trace-muted,.board.trace-active .gate.trace-muted,.board.trace-active .lamp.trace-muted{opacity:.35}
+.board.trace-active .trace-focus{outline:2px solid #d4f4ff;outline-offset:2px}
+.trace-select{font:800 .85rem ui-monospace,monospace;min-height:44px;min-width:45px;padding:4px 6px;border-radius:7px;background:transparent;border:1px solid transparent;color:inherit}
+.board:not(.trace-active) .trace-select{cursor:default}
+.board.trace-active .trace-select{border-color:#657f96;cursor:pointer}
+.board.trace-active .trace-select:hover{border-color:#d4f4ff}
 .board-head,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px 14px}
 .board-head{justify-content:space-between;margin-bottom:11px}
 .board-head strong{font-size:1rem}
@@ -193,6 +204,10 @@ td button[aria-pressed=true]{border-color:var(--mint)}
   </section>
   <section class="panel" id="play" aria-labelledby="objective" hidden>
     <div class="board-head"><strong id="objective"></strong><span class="count" id="count"></span></div>
+    <div class="trace-toolbar" id="trace-toolbar" hidden>
+      <button type="button" id="trace-toggle" aria-pressed="false">Trace Mode: Off</button>
+      <span class="trace-description" id="trace-description" role="status">Highlight connected signals without changing any wires.</span>
+    </div>
     <div class="board" id="board">
       <svg class="wires" aria-hidden="true"></svg>
       <div class="column inputs" id="inputs"></div>
@@ -440,6 +455,7 @@ const powerProgressKey = 'logicdash-circuit-dash-power-failure';
 const get = id => document.getElementById(id);
 const board = get('board');
 let step, stage, wires, pattern, source, tested, passed, message, hintStep;
+let tracing = false, traceTarget = null;
 let unlocked = savedProgress();
 let nightUnlocked = savedNightProgress();
 let powerUnlocked = savedPowerProgress();
@@ -541,6 +557,8 @@ function begin(index) {
   passed = false;
   message = '';
   hintStep = 0;
+  tracing = false;
+  traceTarget = null;
   get('pointers').open = false;
 }
 function inputMask(id) {
@@ -609,6 +627,46 @@ function port(kind, id, value) {
     '><span class="dot" aria-hidden="true"></span><span class="port-role" aria-hidden="true">' +
     pinLabel + '</span></button>';
 }
+function tracedSockets() {
+  if (!tracing || !traceTarget) return null;
+  const paths = new Set();
+  const seenBackward = new Set(), seenForward = new Set();
+  function backward(id) {
+    if (seenBackward.has(id)) return;
+    seenBackward.add(id);
+    if (stage.gates.includes(id)) {
+      for (const socket of gateRules[id].pins) {
+        if (wires[socket]) { paths.add(socket); backward(wires[socket]); }
+      }
+    } else if (Object.hasOwn(stage.lamps,id) && wires[id]) {
+      paths.add(id);
+      backward(wires[id]);
+    }
+  }
+  function forward(id) {
+    if (seenForward.has(id)) return;
+    seenForward.add(id);
+    for (const [socket,jack] of Object.entries(wires)) {
+      if (jack !== id) continue;
+      paths.add(socket);
+      const gate = socket.slice(0,-1);
+      if (stage.gates.includes(gate)) forward(gate);
+    }
+  }
+  backward(traceTarget);
+  if (!Object.hasOwn(stage.lamps,traceTarget)) forward(traceTarget);
+  return paths;
+}
+function traceMessage(paths) {
+  if (!tracing) return 'Highlight connected signals without changing any wires.';
+  if (!traceTarget) return 'Tap a switch, gate name or lamp label to inspect its connected signal path.';
+  const values = valuesFor(pattern,wires);
+  const name = stage.inputs[traceTarget] ?? stage.lamps[traceTarget] ?? traceTarget.toUpperCase();
+  const value = values[traceTarget];
+  return 'Tracing ' + name + ': ' + (value === null ? 'no signal' : 'value ' + value) +
+    '. ' + paths.size + ' connected ' + (paths.size === 1 ? 'wire' : 'wires') +
+    ' highlighted. Dimmed wires are outside this path. Tap another component or turn Trace Mode off.';
+}
 function hintText() {
   if (!stage.hintRepair) return '';
   if (!hintStep) return 'Reveal hints only if you need them. Each step gives more help.';
@@ -662,6 +720,12 @@ function render() {
   }
   if (step === 0) return;
   const values = valuesFor(pattern,wires);
+  const tracePaths = tracedSockets();
+  get('trace-toolbar').hidden = !stage.repair;
+  get('trace-toggle').setAttribute('aria-pressed',String(tracing));
+  get('trace-toggle').textContent = tracing ? 'Trace Mode: On' : 'Trace Mode: Off';
+  get('trace-description').textContent = traceMessage(tracePaths ?? new Set());
+  board.classList.toggle('trace-active',tracing);
   board.classList.toggle('two-gates',stage.gates.length > 1);
   board.classList.toggle('three-gates',stage.gates.length > 2);
   get('objective').textContent = stage.objective;
@@ -670,16 +734,16 @@ function render() {
   get('next').textContent = 'Next level';
   get('next').hidden = !passed || step === lastPower || step === lastStep || step === lastChallenge;
   get('inputs').innerHTML = '<span class="label">Switches</span>' + Object.entries(stage.inputs).map(([id,name]) =>
-    '<div class="input"><button class="toggle" data-toggle="' + id + '" aria-pressed="' + Boolean(values[id]) + '">' +
+    '<div class="input"><button class="toggle' + (tracePaths && ![...tracePaths].some(socket => wires[socket] === id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-toggle="' + id + '" aria-pressed="' + Boolean(values[id]) + '">' +
     name + '<span>' + (values[id] ? 'ON' : 'OFF') + '</span></button>' + port('source',id,values[id]) + '</div>').join('');
   get('gates').innerHTML = (stage.gates.length ? '<span class="label">Gates</span>' : '') + stage.gates.map(id =>
     '<div class="gate" data-body="' + id + '"><div class="pins">' +
     gateRules[id].pins.map(pin => port('socket',pin,values[wires[pin]])).join('') + '</div><span title="' +
-    gateRules[id].rule + '">' + id.toUpperCase() + '</span>' +
+    gateRules[id].rule + '"><button type="button" class="trace-select' + (tracePaths && ![...tracePaths].some(socket => socket.startsWith(id) || wires[socket] === id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + id.toUpperCase() + ' gate">' + id.toUpperCase() + '</button></span>' +
     port('source',id,values[id]) + '</div>').join('');
   get('lamps').innerHTML = '<span class="label">Lamps</span>' + Object.entries(stage.lamps).map(([id,name]) =>
     '<div class="lamp' + (values[id] === 1 ? ' lit' : '') + '">' + port('socket',id,values[id]) +
-    '<span class="lamp-body"><span class="bulb" aria-hidden="true"></span>' + name + '<strong>' +
+    '<span class="lamp-body"><span class="bulb" aria-hidden="true"></span><button type="button" class="trace-select' + (tracePaths && !tracePaths.has(id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + name + ' lamp">' + name + '</button><strong>' +
     (values[id] == null ? 'NO SIGNAL' : values[id] ? 'ON' : 'OFF') + '</strong></span></div>').join('');
   get('count').textContent = stage.target ? movesUsed() + ' / ' + (stage.moves ?? 1) + ' ' + ((stage.moves ?? 1) === 1 ? 'move' : 'moves') : '';
   get('undo').hidden = !stage.target;
@@ -747,6 +811,7 @@ function draw() {
   const svg = board.querySelector('svg');
   const base = svg.getBoundingClientRect();
   const values = valuesFor(pattern,wires);
+  const tracePaths = tracedSockets();
   svg.replaceChildren();
   for (const [socket,jack] of Object.entries(wires)) {
     if (!jack) continue;
@@ -781,12 +846,14 @@ function draw() {
     }
     const moved = jack !== stage.wiring[socket];
     const line = wirePath(path,moved ? '#ffd080' : '#0c1624',moved ? 4.75 : 5.5);
-    const core = wirePath(path,values[jack] ? '#79efbc' : '#91a4ba',2.4);
+    const core = wirePath(path,values[jack] ? '#79efbc' : '#91a4ba',tracePaths?.has(socket) ? 4 : 2.4);
+    if (tracePaths && !tracePaths.has(socket)) { line.setAttribute('opacity','0.16'); core.setAttribute('opacity','0.16'); }
     if (values[jack] == null) core.setAttribute('stroke-dasharray','4 5');
     svg.append(line,core);
     if (values[jack] === 1) {
       const flow = wirePath(path,'#e0ffee',3);
       flow.setAttribute('class','wire-flow');
+      if (tracePaths && !tracePaths.has(socket)) flow.setAttribute('opacity','0.12');
       svg.append(flow);
     }
   }
@@ -877,7 +944,20 @@ function openLevel(index) {
 document.querySelector('main').addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button || button.disabled) return;
-  const {toggle,source:jack,socket,case:index,level} = button.dataset;
+  const {toggle,source:jack,socket,case:index,level,trace:traceId} = button.dataset;
+  if (button.id === 'trace-toggle') {
+    tracing = !tracing;
+    traceTarget = null;
+    source = null;
+    render();
+    return;
+  }
+  if (tracing && (traceId || toggle)) {
+    const id = traceId || toggle;
+    traceTarget = traceTarget === id ? null : id;
+    render();
+    return;
+  }
   if (toggle) {
     pattern ^= inputMask(toggle);
     if (stage.observe) {
