@@ -9,7 +9,37 @@
 :root{color-scheme:dark;--bg:#0b121d;--panel:#121d2c;--line:#394b60;--ink:#f1f6f9;--muted:#b5c3d2;--mint:#79efbc;--amber:#ffd080;--pink:#ffadb2}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+main{flex:1}
+.site-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:#121d2c;border-bottom:1px solid #394b60;position:relative;z-index:4}
+.site-header .site-logo{font-size:1.25rem;font-weight:700;text-decoration:none;color:#f1f6f9;letter-spacing:-.01em}
+.site-header .site-logo span,.site-footer .site-logo span{color:#ffae2e}
+.site-nav ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:20px;align-items:center}
+.site-nav a{color:#b5c3d2;font-size:.95rem;font-weight:600;text-decoration:none}
+.site-nav a:hover,.site-nav a:focus-visible{color:#f1f6f9}
+.site-nav a[aria-current="page"]{color:#ffae2e}
+.site-menu-toggle{display:none;justify-content:center;align-items:center;flex-direction:column;gap:4px;width:44px;height:44px;padding:0;border-color:#52667c;background:transparent}
+.site-menu-toggle span{display:block;width:18px;height:2px;border-radius:2px;background:#f1f6f9}
+.site-footer{background:#121d2c;border-top:1px solid #394b60;padding:16px 20px 12px;color:#b5c3d2}
+.site-footer-inner{max-width:960px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.site-footer .site-logo{font-weight:700;font-size:1.05rem;color:#f1f6f9;text-decoration:none}
+.site-footer p{font:.75rem ui-monospace,monospace;margin-top:4px;color:#b5c3d2}
+.site-footer-groups{display:flex;gap:36px;flex-wrap:wrap}
+.site-footer-groups strong{display:block;font:.7rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#ffae2e;margin-bottom:8px}
+.site-footer-groups ul{list-style:none;margin:0;padding:0}
+.site-footer-groups li+li{margin-top:5px}
+.site-footer-groups a{font-size:.85rem;font-weight:600;color:#b5c3d2;text-decoration:none}
+.site-footer-groups a:hover{color:#f1f6f9}
+.site-copyright{max-width:960px;margin:14px auto 0!important;text-align:center;border-top:1px solid #394b60;padding-top:9px}
+@media(max-width:960px){
+  .site-menu-toggle{display:flex}
+  .site-nav{display:none;position:absolute;top:100%;left:0;right:0;border-bottom:1px solid #394b60;background:#121d2c;padding:15px 20px;box-shadow:0 14px 20px #06101b88}
+  .site-nav.open{display:block}
+  .site-nav ul{display:grid;gap:3px}
+  .site-nav a{display:block;padding:10px 6px;min-height:44px}
+}
+@media(max-width:600px){.site-header{padding:7px 12px}.site-footer{padding:15px 12px}.site-footer-inner{gap:20px}.site-footer-groups{gap:24px}}
+
 main{width:100%;max-width:1280px;margin:auto;padding:clamp(13px,2.2vw,24px)}
 h1{font-size:clamp(1.85rem,7vw,3.35rem);letter-spacing:-.055em;line-height:1.08;margin:5px 0 12px}
 h2{margin:0 0 8px;font-size:1.2rem}
@@ -26,7 +56,7 @@ p{margin:0}
 .intro p,.intro dd{color:var(--muted)}
 .intro dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px;margin:16px 0}
 .intro dl div{border:1px solid var(--line);border-radius:9px;padding:10px 12px}
-:is(.night-opening,.power-opening){max-width:850px;margin-inline:auto;padding:clamp(18px,4vw,32px);border-color:#456f84;background:linear-gradient(155deg,#162d42,#121d2c 65%)}
+:is(.night-opening,.power-opening){width:100%;max-width:none;margin-inline:0;padding:clamp(18px,4vw,32px);border-color:#456f84;background:linear-gradient(155deg,#162d42,#121d2c 65%)}
 :is(.night-opening,.power-opening) .chapter-label{color:#80d9f2;font:800 .76rem ui-monospace,monospace;letter-spacing:.1em}
 :is(.night-opening,.power-opening) h2{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.16;margin:9px 0 15px}
 :is(.night-opening,.power-opening) p{color:#d4e1ed;max-width:67ch;line-height:1.65}
@@ -203,7 +233,7 @@ td button[aria-pressed=true]{border-color:var(--mint)}
 .power-opening .mission-lineup div{border-color:#478366;background:#142d26}
 .power-opening .mission-lineup small{color:#c0dccd}
 .power-opening .action-link{background:#95e3b4;color:#10251d}
-.campaign-complete{max-width:900px;margin-inline:auto;padding:clamp(22px,4vw,38px);border-color:#478366;background:linear-gradient(145deg,#183b32,#142635 68%,#13202f);text-align:center}
+.campaign-complete{width:100%;max-width:none;margin-inline:0;padding:clamp(22px,4vw,38px);border-color:#478366;background:linear-gradient(145deg,#183b32,#142635 68%,#13202f);text-align:center}
 .campaign-complete .complete-symbol{display:grid;place-items:center;margin:0 auto 14px;width:76px;height:76px;border:2px solid #95e3b4;border-radius:50%;background:#1b4638;color:#c8f9db;font-size:2.8rem;font-weight:800}
 .campaign-complete .chapter-label{color:#95e3b4;font:800 .78rem ui-monospace,monospace;letter-spacing:.12em}
 .campaign-complete h2{font-size:clamp(2rem,5vw,3rem);line-height:1.1;letter-spacing:-.04em;margin:10px 0 15px}
@@ -219,6 +249,19 @@ td button[aria-pressed=true]{border-color:var(--mint)}
 </style>
 </head>
 <body>
+<header class="site-header">
+  <a class="site-logo" href="/" aria-label="LogicDash home">Logic<span>Dash</span></a>
+  <button type="button" class="site-menu-toggle" id="site-menu-toggle" aria-label="Open menu" aria-controls="site-nav" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/quick-byte/">Quick Byte</a></li>
+      <li><a href="/#puzzles" aria-current="page">Puzzles</a></li>
+      <li><a href="/learn/">Learn</a></li>
+      <li><a href="/tools/">Tools</a></li>
+    </ul>
+  </nav>
+</header>
 <main>
   <header>
     <a class="practice-link" href="/" style="margin:0 0 12px">← LogicDash home</a>
@@ -354,6 +397,46 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     <details id="details" hidden><summary id="case-label">View test cases</summary><div id="cases"></div></details>
   </section>
 </main>
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div><a class="site-logo" href="/">Logic<span>Dash</span></a><p>Puzzles. Learning. Useful tools.</p></div>
+    <div class="site-footer-groups">
+      <div><strong>Puzzles</strong><ul><li><a href="/5-bit/">Classic</a></li><li><a href="/overclocked/">OverClocked</a></li><li><a href="/quick-byte/">Quick Byte</a></li><li><a href="/circuit-dash/">Circuit Dash</a></li><li><a href="/circuit-dash/#night-shift">Night Shift</a></li></ul></div>
+      <div><strong>Learn &amp; More</strong><ul><li><a href="/learn/">Learn / Byte Lab</a></li><li><a href="/tools/">The Tool Hut</a></li><li><a href="/how-to-play/">How to Play</a></li><li><a href="/about/">About</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/contact/">Contact</a></li></ul></div>
+    </div>
+  </div>
+  <p class="site-copyright">© <span id="copyright-year">2026</span> LogicDash. Built by a CS teacher who likes logic puzzles.</p>
+</footer>
+<script>
+const siteMenuToggle = document.getElementById('site-menu-toggle');
+const siteNav = document.getElementById('site-nav');
+siteMenuToggle.addEventListener('click',() => {
+  const opened = siteNav.classList.toggle('open');
+  siteMenuToggle.setAttribute('aria-expanded',String(opened));
+  siteMenuToggle.setAttribute('aria-label',opened ? 'Close menu' : 'Open menu');
+});
+siteNav.addEventListener('click',event => {
+  if (event.target.closest('a')) {
+    siteNav.classList.remove('open');
+    siteMenuToggle.setAttribute('aria-expanded','false');
+    siteMenuToggle.setAttribute('aria-label','Open menu');
+  }
+});
+document.addEventListener('keydown',event => {
+  if (event.key === 'Escape' && siteNav.classList.contains('open')) {
+    siteNav.classList.remove('open');
+    siteMenuToggle.setAttribute('aria-expanded','false');
+    siteMenuToggle.focus();
+  }
+});
+document.addEventListener('click',event => {
+  if (!siteNav.contains(event.target) && !siteMenuToggle.contains(event.target)) {
+    siteNav.classList.remove('open');
+    siteMenuToggle.setAttribute('aria-expanded','false');
+  }
+});
+document.getElementById('copyright-year').textContent = new Date().getFullYear();
+</script>
 <script>
 'use strict';
 
