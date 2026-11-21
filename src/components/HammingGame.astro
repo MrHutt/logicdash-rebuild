@@ -17,6 +17,11 @@ const { bitLength, maxAttempts = 6 } = Astro.props;
 	document.querySelectorAll<HTMLElement>(".hamming-game").forEach((root) => {
 		const bitLength = Number(root.dataset.bitLength);
 		const maxAttempts = Number(root.dataset.maxAttempts);
-		createHammingGame(root, { bitLength, maxAttempts });
+		createHammingGame(root, {
+			bitLength,
+			maxAttempts,
+			onGuess: (info) => root.dispatchEvent(new CustomEvent("logicdash:guess", { detail: info })),
+			onRoundEnd: (result) => root.dispatchEvent(new CustomEvent("logicdash:round-end", { detail: result })),
+		});
 	});
 </script>
