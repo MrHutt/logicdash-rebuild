@@ -756,7 +756,7 @@ const get = id => document.getElementById(id);
 const board = get('board');
 let step, stage, wires, pattern, source, tested, passed, message, hintStep;
 let tracing = false, traceTarget = null;
-let nightIntroOpen = false, powerIntroOpen = false, campaignCompleteOpen = false, nightCompleteOpen = false;
+let nightIntroOpen = false, powerIntroOpen = false, campaignCompleteOpen = false, nightCompleteOpen = false, apprenticeCompleteOpen = false, overviewOpen = false;
 let unlocked = savedProgress();
 let nightUnlocked = savedNightProgress();
 let powerUnlocked = savedPowerProgress();
@@ -823,68 +823,67 @@ function challengeHash(index) {
   const level = index - challengeStep + 1;
   return '#night-shift-' + level;
 }
+function completedCount() {
+  return unlocked + nightUnlocked + powerUnlocked;
+}
+function nextCampaignLevel() {
+  if (unlocked < stages.length) return unlocked;
+  if (nightUnlocked < nightShift.length) return challengeStep + nightUnlocked;
+  if (powerUnlocked < powerFailure.length) return powerStart + powerUnlocked;
+  return lastPower;
+}
+function levelCompleted(index) {
+  return index < challengeStep ? index < unlocked :
+    index < powerStart ? index - challengeStep < nightUnlocked :
+    index - powerStart < powerUnlocked;
+}
+function levelHash(index) {
+  return '#level-' + (index + 1);
+}
 function routeStep() {
   const hash = location.hash;
-  // Circuit Dash is a separate training entry, never an automatic Night Shift redirect.
-  if (!hash || hash === '#course' || hash === '#training') return Math.min(unlocked,lastStep);
-  if (hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length) return lastChallenge;
-  if (hash === '#mission-complete' && powerUnlocked === powerFailure.length &&
-      nightUnlocked === nightShift.length && unlocked === stages.length) return lastPower;
-  if (hash === '#power-failure' && powerUnlocked === powerFailure.length &&
-      nightUnlocked === nightShift.length && unlocked === stages.length) {
-    history.replaceState(null,'',location.pathname + location.search + '#mission-complete');
-    return lastPower;
-  }
-  if (hash === '#night-shift' && nightUnlocked === nightShift.length &&
-      unlocked === stages.length) {
-    const destination = powerUnlocked === powerFailure.length ? '#mission-complete' : '#night-shift-complete';
-    history.replaceState(null,'',location.pathname + location.search + destination);
-    return destination === '#mission-complete' ? lastPower : lastChallenge;
-  }
-  if (hash === '#power-failure-intro' && unlocked === stages.length &&
-      nightUnlocked === nightShift.length) return powerStart + Math.min(powerUnlocked,powerFailure.length-1);
-  if (hash === '#night-shift-intro' && unlocked === stages.length)
-    return challengeStep + Math.min(nightUnlocked,nightShift.length-1);
-  if (hash === '#power-failure') {
-    if (unlocked < stages.length || nightUnlocked < nightShift.length) {
-      get('locked-notice').textContent = 'Complete Night Shift to unlock Power Failure.';
-      get('locked-notice').hidden = false;
-      return unlocked < stages.length ? Math.min(unlocked,lastStep) : challengeStep + Math.min(nightUnlocked,nightShift.length-1);
-    }
-    return powerStart + Math.min(powerUnlocked,powerFailure.length-1);
-  }
-  if (hash === '#night-shift') {
-    if (unlocked >= stages.length) return challengeStep + Math.min(nightUnlocked,nightShift.length-1);
-    get('locked-notice').textContent = 'Complete Circuit Dash training to unlock the Night Shift assignment.';
+  const finishedTraining = unlocked >= stages.length;
+  const finishedNight = nightUnlocked >= nightShift.length;
+  const finishedAll = powerUnlocked >= powerFailure.length && finishedNight && finishedTraining;
+  const locked = message => {
+    get('locked-notice').textContent = message;
     get('locked-notice').hidden = false;
-    return Math.min(unlocked,lastStep);
+    return nextCampaignLevel();
+  };
+  get('locked-notice').hidden = true;
+  // Every URL names a single screen. Progress only decides whether it is unlocked.
+  if (!hash || hash === '#overview' || hash === '#course' || hash === '#training') return nextCampaignLevel();
+  if (hash === '#apprentice' || hash === '#apprentice-intro') return 0;
+  if (hash === '#apprentice-complete')
+    return finishedTraining ? lastStep : locked('Finish the apprentice shift to see your sign-off.');
+  if (hash === '#night-shift' || hash === '#night-shift-intro')
+    return finishedTraining ? challengeStep + Math.min(nightUnlocked,nightShift.length-1) :
+      locked('Complete Scenario A to unlock Night Shift.');
+  if (hash === '#night-shift-complete')
+    return finishedNight ? lastChallenge : locked('Complete Night Shift to unlock its ending.');
+  if (hash === '#power-failure' || hash === '#power-failure-intro')
+    return finishedNight ? powerStart + Math.min(powerUnlocked,powerFailure.length-1) :
+      locked('Complete Scenario B to unlock Power Failure.');
+  if (hash === '#mission-complete')
+    return finishedAll ? lastPower : locked('Complete all 16 levels to unlock the final report.');
+  const levelMatch = /^#level-(\\d{1,2})$/.exec(hash);
+  if (levelMatch) {
+    const index = Number(levelMatch[1]) - 1;
+    return canEnter(index) ? index : locked('Complete earlier levels to unlock this mission.');
   }
-  const requested = allStages.findIndex((_,index) => index >= challengeStep && challengeHash(index) === hash);
-  if (requested < challengeStep) return Math.min(unlocked,lastStep);
-  let available;
-  if (unlocked < stages.length) available = Math.min(unlocked,lastStep);
-  else if (requested >= powerStart) {
-    available = nightUnlocked < nightShift.length
-      ? challengeStep + Math.min(nightUnlocked,nightShift.length-1)
-      : powerStart + Math.min(requested-powerStart,powerUnlocked,powerFailure.length-1);
-  } else {
-    available = challengeStep + Math.min(requested-challengeStep,nightUnlocked,nightShift.length-1);
-  }
-  if (available !== requested) {
-    history.replaceState(null,'',location.pathname + location.search +
-      (available >= challengeStep ? challengeHash(available) : '#course'));
-    get('locked-notice').textContent = available < challengeStep
-      ? 'Finish Circuit Dash training to unlock Night Shift.'
-      : 'Finish the earlier repair missions to unlock this level.';
-    get('locked-notice').hidden = false;
-  }
-  return available;
+  // Legacy deep links are kept so existing shared links still work.
+  const legacy = allStages.findIndex((_,index) => index >= challengeStep && challengeHash(index) === hash);
+  if (legacy >= challengeStep) return canEnter(legacy) ? legacy : locked('Complete earlier levels to unlock this mission.');
+  return nextCampaignLevel();
 }
 function begin(index) {
-  nightIntroOpen = (location.hash === '#night-shift' || location.hash === '#night-shift-intro') && unlocked >= stages.length;
-  powerIntroOpen = (location.hash === '#power-failure' || location.hash === '#power-failure-intro') && unlocked >= stages.length && nightUnlocked === nightShift.length;
-  campaignCompleteOpen = location.hash === '#mission-complete' && powerUnlocked === powerFailure.length && nightUnlocked === nightShift.length && unlocked === stages.length;
-  nightCompleteOpen = location.hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length;
+  const hash = location.hash;
+  overviewOpen = !hash || hash === '#overview' || hash === '#course' || hash === '#training';
+  apprenticeCompleteOpen = hash === '#apprentice-complete' && unlocked === stages.length;
+  nightIntroOpen = (hash === '#night-shift' || hash === '#night-shift-intro') && unlocked >= stages.length;
+  powerIntroOpen = (hash === '#power-failure' || hash === '#power-failure-intro') && unlocked >= stages.length && nightUnlocked === nightShift.length;
+  campaignCompleteOpen = hash === '#mission-complete' && powerUnlocked === powerFailure.length && nightUnlocked === nightShift.length && unlocked === stages.length;
+  nightCompleteOpen = hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length;
   step = index;
   stage = allStages[step];
   const goal = get('goal');
@@ -1038,12 +1037,15 @@ function render() {
   const lastUnlocked = isPower ? powerUnlocked : isNight ? nightUnlocked : unlocked;
   const chapter = isPower ? 'POWER FAILURE' : isNight ? 'NIGHT SHIFT' : 'CIRCUIT DASH';
   const repairNumber = step - challengeStep + 1;
-  get('brand').textContent = isRepair
-    ? chapter + ' / REPAIR ' + repairNumber + ' OF ' + (nightShift.length + powerFailure.length)
-    : chapter + ' / LEVEL ' + (step+1) + ' OF ' + stages.length;
-  get('levels').setAttribute('aria-label', isRepair ? 'All repair missions, grouped by chapter' : 'Circuit Dash training levels');
-  get('levels').classList.toggle('campaign-nav',isRepair);
-  const showingIntro = nightIntroOpen || powerIntroOpen || campaignCompleteOpen || nightCompleteOpen;
+  get('brand').textContent = 'CIRCUIT DASH / ' +
+    (isPower ? 'SCENARIO C · POWER FAILURE' : isNight ? 'SCENARIO B · NIGHT SHIFT' : 'SCENARIO A · APPRENTICE SHIFT') +
+    ' / LEVEL ' + (step+1) + ' OF ' + allStages.length;
+  get('levels').setAttribute('aria-label', 'Circuit Dash campaign: all 16 levels');
+  get('levels').classList.add('campaign-nav');
+  const showingIntro = overviewOpen || apprenticeCompleteOpen || nightIntroOpen || powerIntroOpen || campaignCompleteOpen || nightCompleteOpen;
+  get('campaign-overview').hidden = !overviewOpen;
+  get('apprentice-complete').hidden = !apprenticeCompleteOpen;
+  get('overall-progress').textContent = completedCount() + ' / ' + allStages.length + ' completed';
   document.body.toggleAttribute('data-story-screen',showingIntro);
   get('brand').hidden = showingIntro;
   get('title').hidden = showingIntro;
@@ -1061,31 +1063,54 @@ function render() {
   get('story').hidden = showingIntro || !stage.story;
   get('intro').hidden = step !== 0 || showingIntro;
   get('play').hidden = step === 0 || showingIntro;
-  get('title').textContent = campaignCompleteOpen ? 'Mission Complete' : nightCompleteOpen ? 'Night Shift complete' : nightIntroOpen ? 'Night Shift' : powerIntroOpen ? 'Power Failure' : stage.title;
+  get('title').textContent = campaignCompleteOpen ? 'Mission Complete' : apprenticeCompleteOpen ? 'Apprentice Shift complete' : nightCompleteOpen ? 'Night Shift complete' : nightIntroOpen ? 'Night Shift' : powerIntroOpen ? 'Power Failure' : stage.title;
   get('finish').hidden = step !== lastStep || unlocked !== stages.length;
   get('night-finish').hidden = step !== lastChallenge || nightUnlocked !== nightShift.length;
   get('power-finish').hidden = step !== lastPower || powerUnlocked !== powerFailure.length;
-  get('levels').innerHTML = isRepair
-    ? [
-        {list:nightShift,offset:challengeStep,label:'Night Shift · 1–3',tone:'night',unlocked:nightUnlocked},
-        {list:powerFailure,offset:powerStart,label:'Power Failure · 4–6',tone:'power',unlocked:powerUnlocked}
-      ].map(group => '<div class="mission-group ' + group.tone + '">' +
-        '<div class="mission-group-title">' + group.label + '</div>' +
-        '<div class="mission-numbers">' + group.list.map((level,index) => {
-          const absolute = group.offset + index;
-          const number = absolute - challengeStep + 1;
-          const accessible = 'Repair ' + number + ' of ' + (nightShift.length + powerFailure.length) + ', ' + level.title;
-          return '<button type="button" data-level="' + absolute + '" aria-label="' + accessible + '"' +
-            (absolute === step ? ' aria-current="step"' : '') +
-            (index < group.unlocked ? ' class="done"' : '') +
-            (!canEnter(absolute) ? ' disabled' : '') + '>' +
-            (index < group.unlocked ? '<span aria-hidden="true">✓</span> ' : '') + number + '</button>';
-        }).join('') + '</div></div>').join('')
-    : stages.map((level,index) => '<button data-level="' + index + '" aria-label="Training level ' +
-      (index+1) + ', ' + level.title + '"' + (index === step ? ' aria-current="step"' : '') +
-      (index < unlocked ? ' class="done"' : '') +
-      (index > unlocked ? ' disabled' : '') + '>' +
-      (index < unlocked ? '<span aria-hidden="true">✓</span> ' : '') + (index+1) + '</button>').join('');
+  const groups = [
+    {label:'A · APPRENTICE SHIFT',tone:'apprentice',start:0,list:stages,href:'#apprentice'},
+    {label:'B · NIGHT SHIFT',tone:'night',start:challengeStep,list:nightShift,href:'#night-shift'},
+    {label:'C · POWER FAILURE',tone:'power',start:powerStart,list:powerFailure,href:'#power-failure'}
+  ];
+  const levelButton = (level,index) => {
+    const absolute = index;
+    const isDone = levelCompleted(absolute);
+    return '<button type="button" data-level="' + absolute +
+      '" aria-label="Level ' + (absolute+1) + ' of 16, ' + level.title +
+      (isDone ? ', completed' : canEnter(absolute) ? ', available' : ', locked') + '"' +
+      (absolute === step && !showingIntro ? ' aria-current="step"' : '') +
+      (isDone ? ' class="done"' : '') +
+      (!canEnter(absolute) ? ' disabled' : '') + '>' +
+      (isDone ? '<span aria-hidden="true">✓</span> ' : '') + (absolute+1) + '</button>';
+  };
+  get('levels').innerHTML = groups.map(group =>
+    '<div class="mission-group ' + group.tone + '"><div class="mission-group-title"><a href="' +
+    group.href + '">' + group.label + '</a></div><div class="mission-numbers">' +
+    group.list.map((level,index) => levelButton(level,group.start+index)).join('') +
+    '</div></div>').join('');
+  get('campaign-map').innerHTML = groups.map((group,i) => {
+    const accessible = i === 0 || (i === 1 ? unlocked === stages.length : nightUnlocked === nightShift.length);
+    const subtitle = ['Learn the logic, earn your first assignment','The overnight security call','A storm, a blackout, one final test'][i];
+    const summary = i === 0 ? unlocked : i === 1 ? nightUnlocked : powerUnlocked;
+    const name = ['Apprentice Shift','Night Shift','Power Failure'][i];
+    const count = group.list.length;
+    return '<section class="map-chapter ' + group.tone + '"><div class="chapter-name">SCENARIO ' +
+      ['A','B','C'][i] + ' · ' + summary + '/' + count + ' PASSED</div><h3>' + name +
+      '</h3><p class="chapter-summary">' + subtitle + '</p>' +
+      (accessible ? '<a class="chapter-link" href="' + group.href + '">Open scenario →</a>' :
+        '<span class="chapter-link" aria-label="Scenario locked">🔒 Locked</span>') +
+      '<div class="map-levels">' + group.list.map((level,index) => {
+        const absolute = group.start + index, done = levelCompleted(absolute);
+        return '<button type="button" data-level="' + absolute + '" class="' +
+          (done ? 'done' : absolute === nextCampaignLevel() ? 'next' : '') +
+          '" aria-label="Level ' + (absolute+1) + ': ' + level.title +
+          (done ? ', completed' : '') + '"' + (!canEnter(absolute) ? ' disabled' : '') +
+          '>' + (done ? '✓ ' : '') + (absolute+1) + '</button>';
+      }).join('') + '</div></section>';
+  }).join('');
+  const next = nextCampaignLevel();
+  get('campaign-continue').textContent = completedCount() === allStages.length ?
+    'View final system report' : 'Continue · Level ' + (next+1);
   if (stage.story) {
     get('story-tag').textContent = stage.briefing;
     get('story-lead').textContent = stage.story;
