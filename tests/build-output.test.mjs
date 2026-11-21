@@ -39,7 +39,7 @@ test("the homepage and all three game pages render identifiable content", async 
 
 test("Circuit Dash includes the tutorial progression and Night Shift repair challenge", async () => {
   const circuit = await text("circuit-dash/index.html");
-  for (const phrase of ["Follow the signal", "Wire a switch", "The AND gate", "The OR gate", "The XOR gate", "Fix a fault", "Night Shift"]) {
+  for (const phrase of ["Follow the signal", "Wire a switch", "The AND gate", "The OR gate", "The XOR gate", "Fix a fault", "Entry alarm", "Sensor check", "Backup relay", "Night Shift"]) {
     assert.ok(circuit.includes(phrase), `Missing circuit level: ${phrase}`);
   }
   assert.match(circuit, /testCases\(wires\)/, "Missing repair case checker");
