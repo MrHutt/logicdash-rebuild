@@ -43,15 +43,18 @@ const explore = [
       <a href="/quick-byte/" class="daily-cta">Play today's Quick Byte <span aria-hidden="true">↗</span></a>
       <a href="/how-to-play/" class="daily-help">New here? See how to play →</a>
     </div>
-    <div class="daily-art" aria-hidden="true">
-      <p class="board-label"><span>DAILY / 5-BIT</span><span>ROUND 01—03</span></p>
-      <div class="demo-bits">
-        <span>0</span><span>1</span><span>1</span><span>0</span><span>1</span>
+    <div class="daily-art" aria-label="Example Quick Byte game">
+      <p class="board-label"><span class="board-example-label">EXAMPLE GAME</span><span>DAILY / 5-BIT</span></p>
+      <div aria-hidden="true">
+        <div class="demo-bits">
+          <span>0</span><span>1</span><span>1</span><span>0</span><span>1</span>
+        </div>
+        <div class="demo-trace"><span>10100</span><span class="trace-status">3 WRONG</span></div>
+        <div class="demo-trace"><span>00111</span><span class="trace-status">2 WRONG</span></div>
+        <div class="demo-trace"><span>01101</span><span class="trace-status trace-win">✓ SOLVED</span></div>
+        <p class="board-foot">THINK IN BITS. NOT IN GUESSES.</p>
       </div>
-      <div class="demo-trace"><span>10100</span><span class="trace-status">3 WRONG</span></div>
-      <div class="demo-trace"><span>00111</span><span class="trace-status">2 WRONG</span></div>
-      <div class="demo-trace"><span>01101</span><span class="trace-status trace-win">✓ SOLVED</span></div>
-      <p class="board-foot">THINK IN BITS. NOT IN GUESSES.</p>
+      <a class="demo-play-link" href="/quick-byte/">Play Quick Byte <span aria-hidden="true">↗</span></a>
     </div>
   </section>
 
@@ -128,6 +131,10 @@ const explore = [
   .daily-help:hover { color:var(--color-text); }
   .daily-art { align-self:center; min-width:0; padding:.8rem; background:#10131C; border:1px solid #394050; border-radius:12px; font-family:var(--font-mono); }
   .board-label { display:flex; justify-content:space-between; gap:.5rem; color:#D5B57D; font-size:.59rem; letter-spacing:.07em; margin:0 0 .5rem; }
+  .board-example-label { font-weight:800; color:#10131C; background:#FFD285; border-radius:4px; padding:.22rem .4rem; letter-spacing:.09em; }
+  .demo-play-link { display:flex; align-items:center; justify-content:center; gap:.5rem; min-height:44px; margin-top:.7rem; padding:.4rem .6rem; border:1px solid #A87322; border-radius:8px; color:#FFD285; font-size:.79rem; font-weight:700; text-decoration:none; transition:background .15s; }
+  .demo-play-link:hover,.demo-play-link:focus-visible { background:#2B251B; }
+
   .demo-bits { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; margin-bottom:.6rem; }
   .demo-bits span { display:grid; place-items:center; padding:.45rem 0; border:1px solid #72572B; border-radius:7px; background:#2B251B; color:#FFD285; font-weight:700; font-size:1.15rem; }
   .demo-trace { display:flex; justify-content:space-between; gap:.6rem; margin-top:.35rem; padding:.35rem .65rem; border:1px solid #333A49; border-radius:5px; color:#D8DCE8; font-size:.78rem; }
