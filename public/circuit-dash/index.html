@@ -316,6 +316,29 @@ body[data-story-screen] main > .panel{margin-top:8px}
 .campaign-nav .mission-group-title a:hover{text-decoration:underline}
 @media(max-width:940px){.campaign-map{grid-template-columns:1fr}.campaign-nav{grid-template-columns:1fr}.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(10,minmax(0,1fr))}}
 @media(max-width:570px){.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(5,minmax(0,1fr))}.map-levels{grid-template-columns:repeat(5,minmax(0,1fr))}.campaign-map{gap:8px}.campaign-status{flex-wrap:wrap}}
+
+.compact-progress{margin:14px 0 5px}
+.compact-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px;font:750 .72rem ui-monospace,monospace;color:#b5c3d2}
+.compact-progress-head a{color:#80d9f2;text-decoration:none}
+.compact-progress-head a:hover{text-decoration:underline}
+.progress-track{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:4px}
+.progress-track button{min-width:0;min-height:32px;padding:5px 0 4px;border:1px solid #475c70;border-radius:5px;background:#172436;color:#a6b8c7;font:750 .72rem ui-monospace,monospace}
+.progress-track button:nth-child(-n+10){border-bottom:3px solid #887454}
+.progress-track button:nth-child(n+11):nth-child(-n+13){border-bottom:3px solid #456f84}
+.progress-track button:nth-child(n+14){border-bottom:3px solid #478366}
+.progress-track button.done{color:#b7f2d1;background:#21372e}
+.progress-track button[aria-current="step"]{background:#a5e5db;border-color:#c6fbeb;color:#102027;box-shadow:0 0 0 2px #c6fbeb66}
+.progress-track button:disabled{opacity:.38}
+.progress-track button:not(:disabled){cursor:pointer}
+.level-review{margin:12px 0 22px;border:1px solid #394b60;border-radius:10px;background:#121d2c;padding:2px 12px}
+.level-review summary{cursor:pointer;min-height:44px;padding:13px 2px;font:750 .88rem system-ui,sans-serif;color:#bce9f7}
+.level-review summary span{font-size:.75rem;color:#9baec1;font-weight:400;margin-left:8px}
+.level-review .practice-nav{margin:10px 0 12px}
+@media(max-width:620px){
+  .progress-track{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+  .progress-track button{min-height:32px}
+  .level-review summary span{display:block;margin-left:17px}
+}
 </style>
 </head>
 <body>
@@ -343,9 +366,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <p id="story-detail"></p>
     </section>
     <div class="campaign-status"><a href="#overview" class="campaign-back">⌂ Mission map</a><span id="overall-progress">0 / 16 completed</span></div>
-    <nav class="practice-nav" id="levels" aria-label="Circuit Dash: all 16 levels"></nav>
     <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Complete the 10-level beginner course to unlock the repair missions permanently. Progress is saved in this browser.</p>
-    <a class="practice-link" id="return" href="#overview" hidden>Return to mission map</a>
   </header>
   <section class="panel campaign-overview" id="campaign-overview" aria-labelledby="campaign-overview-title" hidden>
     <div class="chapter-label">CIRCUIT DASH / CAMPAIGN MAP</div>
@@ -461,6 +482,10 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <p>Use <strong>What’s happening now</strong> to see the values behind the lights. <strong>Check step</strong> tells you when you’re ready for the next level.</p>
     <div class="actions"><button class="primary" id="start">Pass induction · Level 2</button></div>
   </section>
+  <div class="compact-progress" id="compact-progress" hidden>
+    <div class="compact-progress-head"><span id="progress-current">LEVEL 1 / 16</span><a href="#overview">Mission map</a></div>
+    <div class="progress-track" id="progress-track" role="group" aria-label="Circuit Dash level progress"></div>
+  </div>
   <section class="panel" id="play" aria-labelledby="objective" hidden>
     <div class="board-head"><strong id="objective"></strong><span class="count" id="count"></span></div>
     <div class="trace-toolbar" id="trace-toolbar" hidden>
@@ -507,6 +532,10 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <details id="reference" hidden><summary>Gate rules and truth table</summary><div id="rules"></div></details>
     <details id="details" hidden><summary id="case-label">View test cases</summary><div id="cases"></div></details>
   </section>
+  <details class="level-review" id="level-review" hidden>
+    <summary>Review levels &amp; scenarios <span>Completed missions can be replayed</span></summary>
+    <nav class="practice-nav campaign-nav" id="levels" aria-label="Circuit Dash: all 16 levels"></nav>
+  </details>
 </main>
 <footer class="site-footer">
   <div class="site-footer-inner">
@@ -1051,7 +1080,17 @@ function render() {
   get('title').hidden = showingIntro;
   get('campaign-complete').hidden = !campaignCompleteOpen;
   get('night-complete').hidden = !nightCompleteOpen;
-  get('return').hidden = showingIntro;
+  get('compact-progress').hidden = showingIntro;
+  get('level-review').hidden = showingIntro;
+  get('progress-current').textContent = 'LEVEL ' + (step+1) + ' / 16 · ' + (isPower ? 'POWER FAILURE' : isNight ? 'NIGHT SHIFT' : 'APPRENTICE SHIFT');
+  get('progress-track').innerHTML = allStages.map((level,index) => {
+    const done = levelCompleted(index);
+    return '<button type="button" data-level="' + index + '" title="Level ' + (index+1) + ': ' + level.title +
+      (done ? ' — completed' : '') + '" aria-label="Level ' + (index+1) + ', ' + level.title +
+      (done ? ', complete' : canEnter(index) ? ', available' : ', locked') + '"' +
+      (index === step ? ' aria-current="step"' : '') + (done ? ' class="done"' : '') +
+      (!canEnter(index) ? ' disabled' : '') + '>' + (index+1) + '</button>';
+  }).join('');
   get('night-opening').hidden = !nightIntroOpen;
   get('power-opening').hidden = !powerIntroOpen;
   get('power-begin').textContent = powerUnlocked === 0 ? 'Start Power Failure' :
