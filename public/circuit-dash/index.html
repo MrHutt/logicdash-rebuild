@@ -330,14 +330,9 @@ body[data-story-screen] main > .panel{margin-top:8px}
 .progress-track button[aria-current="step"]{background:#a5e5db;border-color:#c6fbeb;color:#102027;box-shadow:0 0 0 2px #c6fbeb66}
 .progress-track button:disabled{opacity:.38}
 .progress-track button:not(:disabled){cursor:pointer}
-.level-review{margin:12px 0 22px;border:1px solid #394b60;border-radius:10px;background:#121d2c;padding:2px 12px}
-.level-review summary{cursor:pointer;min-height:44px;padding:13px 2px;font:750 .88rem system-ui,sans-serif;color:#bce9f7}
-.level-review summary span{font-size:.75rem;color:#9baec1;font-weight:400;margin-left:8px}
-.level-review .practice-nav{margin:10px 0 12px}
 @media(max-width:620px){
   .progress-track{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
   .progress-track button{min-height:32px}
-  .level-review summary span{display:block;margin-left:17px}
 }
 </style>
 </head>
@@ -532,10 +527,6 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <details id="reference" hidden><summary>Gate rules and truth table</summary><div id="rules"></div></details>
     <details id="details" hidden><summary id="case-label">View test cases</summary><div id="cases"></div></details>
   </section>
-  <details class="level-review" id="level-review" hidden>
-    <summary>Review levels &amp; scenarios <span>Completed missions can be replayed</span></summary>
-    <nav class="practice-nav campaign-nav" id="levels" aria-label="Circuit Dash: all 16 levels"></nav>
-  </details>
 </main>
 <footer class="site-footer">
   <div class="site-footer-inner">
@@ -1069,8 +1060,6 @@ function render() {
   get('brand').textContent = 'CIRCUIT DASH / ' +
     (isPower ? 'SCENARIO C · POWER FAILURE' : isNight ? 'SCENARIO B · NIGHT SHIFT' : 'SCENARIO A · APPRENTICE SHIFT') +
     ' / LEVEL ' + (step+1) + ' OF ' + allStages.length;
-  get('levels').setAttribute('aria-label', 'Circuit Dash campaign: all 16 levels');
-  get('levels').classList.add('campaign-nav');
   const showingIntro = overviewOpen || apprenticeCompleteOpen || nightIntroOpen || powerIntroOpen || campaignCompleteOpen || nightCompleteOpen;
   get('campaign-overview').hidden = !overviewOpen;
   get('apprentice-complete').hidden = !apprenticeCompleteOpen;
@@ -1081,7 +1070,6 @@ function render() {
   get('campaign-complete').hidden = !campaignCompleteOpen;
   get('night-complete').hidden = !nightCompleteOpen;
   get('compact-progress').hidden = showingIntro;
-  get('level-review').hidden = showingIntro;
   get('progress-current').textContent = 'LEVEL ' + (step+1) + ' / 16 · ' + (isPower ? 'POWER FAILURE' : isNight ? 'NIGHT SHIFT' : 'APPRENTICE SHIFT');
   get('progress-track').innerHTML = allStages.map((level,index) => {
     const done = levelCompleted(index);
@@ -1097,7 +1085,6 @@ function render() {
     powerUnlocked < powerFailure.length ? 'Continue · Repair ' + (powerUnlocked+4) : 'View mission completion';
   get('night-begin').textContent = nightUnlocked === 0 ? 'Start Night Shift' :
     nightUnlocked < nightShift.length ? 'Continue · Repair ' + (nightUnlocked+1) : 'View Night Shift ending';
-  get('levels').hidden = showingIntro;
   get('goal').hidden = showingIntro;
   get('story').hidden = showingIntro || !stage.story;
   get('intro').hidden = step !== 0 || showingIntro;
@@ -1111,22 +1098,6 @@ function render() {
     {label:'B · NIGHT SHIFT',tone:'night',start:challengeStep,list:nightShift,href:'#night-shift'},
     {label:'C · POWER FAILURE',tone:'power',start:powerStart,list:powerFailure,href:'#power-failure'}
   ];
-  const levelButton = (level,index) => {
-    const absolute = index;
-    const isDone = levelCompleted(absolute);
-    return '<button type="button" data-level="' + absolute +
-      '" aria-label="Level ' + (absolute+1) + ' of 16, ' + level.title +
-      (isDone ? ', completed' : canEnter(absolute) ? ', available' : ', locked') + '"' +
-      (absolute === step && !showingIntro ? ' aria-current="step"' : '') +
-      (isDone ? ' class="done"' : '') +
-      (!canEnter(absolute) ? ' disabled' : '') + '>' +
-      (isDone ? '<span aria-hidden="true">✓</span> ' : '') + (absolute+1) + '</button>';
-  };
-  get('levels').innerHTML = groups.map(group =>
-    '<div class="mission-group ' + group.tone + '"><div class="mission-group-title"><a href="' +
-    group.href + '">' + group.label + '</a></div><div class="mission-numbers">' +
-    group.list.map((level,index) => levelButton(level,group.start+index)).join('') +
-    '</div></div>').join('');
   get('campaign-map').innerHTML = groups.map((group,i) => {
     const accessible = i === 0 || (i === 1 ? unlocked === stages.length : nightUnlocked === nightShift.length);
     const subtitle = ['Learn the logic, earn your first assignment','The overnight security call','A storm, a blackout, one final test'][i];
