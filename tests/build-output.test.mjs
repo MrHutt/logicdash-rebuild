@@ -82,8 +82,8 @@ test("Circuit Dash repair navigation is continuous and grouped, and tracing has 
   for (const phrase of ["Night Shift · 1–3", "Power Failure · 4–6", "campaign-nav", "mission-numbers", "repairNumber"]) {
     assert.ok(circuit.includes(phrase), `Missing repair navigation: ${phrase}`);
   }
-  assert.match(circuit, /trace-description[^}]*height:4\\.35em/, "Desktop trace panel must reserve steady height");
-  assert.match(circuit, /trace-description\\{height:5\\.8em\\}/, "Mobile trace panel must reserve steady height");
+  assert.match(circuit, /trace-description[^}]*height:4\.35em/, "Desktop trace panel must reserve steady height");
+  assert.match(circuit, /trace-description\{height:5\.8em\}/, "Mobile trace panel must reserve steady height");
 });
 
 test("built CSS/JavaScript files are generated", async () => {
