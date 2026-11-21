@@ -30,6 +30,7 @@ p{margin:0}
 .intro .actions,.finish .actions{margin-top:14px}
 .finish{border:1px solid #477e6c;background:#132921;border-radius:8px;padding:12px;margin-top:12px}
 .practice-link{color:var(--mint);display:inline-block;margin-top:12px;text-underline-offset:3px}
+.locked-notice{margin:12px 0 0;padding:10px 12px;border:1px solid var(--amber);border-radius:9px;color:var(--amber);background:#2b241b;font-size:.9rem}
 .action-link{display:inline-flex;align-items:center;min-height:44px;border-radius:8px;padding:7px 14px;font-size:.91rem;font-weight:750;text-decoration:none}
 .board-head,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px 14px}
 .board-head{justify-content:space-between;margin-bottom:11px}
@@ -108,6 +109,7 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     <h1 id="title" tabindex="-1"></h1>
     <div class="goal" id="goal"></div>
     <nav class="practice-nav" id="levels" aria-label="Circuit Dash levels"></nav>
+    <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Finish the beginner course to unlock it permanently. Your progress is saved on this device.</p>
     <a class="practice-link" id="return" href="#course" hidden>Back to the beginner course</a>
   </header>
   <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
@@ -281,7 +283,14 @@ function completeLevel() {
   try { localStorage.setItem(progressKey, String(unlocked)); } catch {}
 }
 function routeStep() {
-  return location.hash === '#night-shift' ? challengeStep : Math.min(unlocked,lastStep);
+  if (location.hash === '#night-shift') {
+    // Direct links never bypass the tutorial sequence. Completing the last
+    // beginner level saves the permanent local unlock.
+    if (unlocked >= stages.length) return challengeStep;
+    history.replaceState(null, '', location.pathname + location.search + '#course');
+    get('locked-notice').hidden = false;
+  }
+  return Math.min(unlocked, lastStep);
 }
 function begin(index) {
   step = index;
@@ -543,6 +552,13 @@ function test() {
     stage.lamps[lamp] + ' should be ' + (expected[lamp] ? 'on' : 'off') + ' but ' + observed + '.';
 }
 function goToLevel(index) {
+  // Guard programmatic navigation as well as URL navigation.
+  if (index === challengeStep && unlocked < stages.length) {
+    get('locked-notice').hidden = false;
+    return;
+  }
+  if (index < 0 || index > challengeStep || (index < challengeStep && index > unlocked)) return;
+  if (index === challengeStep) get('locked-notice').hidden = true;
   begin(index);
   get('details').open = false;
   render();
@@ -562,6 +578,7 @@ document.querySelector('main').addEventListener('click', event => {
   } else if (index !== undefined) {
     pattern = Number(index);
   } else if (level !== undefined && Number(level) <= unlocked && Number(level) !== step) {
+    get('locked-notice').hidden = true;
     goToLevel(Number(level));
     return;
   } else if (button.id === 'start') {
@@ -572,6 +589,7 @@ document.querySelector('main').addEventListener('click', event => {
     test();
     if (passed) completeLevel();
   } else if (button.id === 'next' && step < lastStep && passed) {
+    get('locked-notice').hidden = true;
     goToLevel(step + 1);
     return;
   } else if (button.id === 'undo') {
