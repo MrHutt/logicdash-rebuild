@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import HammingGame from "../components/HammingGame.astro";
+import StandaloneStats from "../components/StandaloneStats.astro";
 ---
 
 <Layout
@@ -15,6 +16,7 @@ import HammingGame from "../components/HammingGame.astro";
 
   <p class="mode-tip"><strong>Quick reminder:</strong> Tap the digits to choose a pattern, then press Guess. “2 bits off” means exactly two positions differ from the answer — but you won't be told which ones.</p>
   <HammingGame bitLength={6} maxAttempts={6} />
+  <StandaloneStats mode="overclocked" />
 
   <nav class="mode-links" aria-label="Other LogicDash puzzles">
     <a href="/5-bit/"><strong>Classic</strong><span>Learn the rules with five bits ↗</span></a>
