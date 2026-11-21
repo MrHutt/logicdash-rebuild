@@ -163,6 +163,20 @@ test("Story entry buttons resume, finish or reset explicitly without skipping to
   assert.match(circuit,/body\[data-story-screen\] main > \.panel/, "Story panels should have tidy vertical spacing");
 });
 
+test("Completed homepage chapter entries route to final screen and story replay stays available", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  const home = await text("index.html");
+  assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage keeps stable Night Shift entry");
+  assert.match(circuit,/const destination = powerUnlocked === powerFailure\.length \? '#mission-complete' : '#night-shift-complete'/, "A completed Night Shift link must show its appropriate ending");
+  assert.match(circuit,/hash === '#power-failure' && powerUnlocked === powerFailure\.length/, "Completed Power Failure entry must show final report");
+  assert.match(circuit,/history\.replaceState\(null,'',location\.pathname \+ location\.search \+ destination\)/, "Chapter entry routes should update to correct report");
+  assert.match(circuit,/href="#night-shift-intro"/, "Story replay must remain separately available");
+  assert.match(circuit,/href="#power-failure-intro"/, "Power Failure story must be accessible after completion");
+  assert.match(circuit,/<svg viewBox="0 0 48 48"/, "Success tick must be a centred vector graphic");
+  assert.match(circuit,/diagnostic-status/, "Completion should show circuit diagnostics");
+  assert.match(circuit,/BUILDING STATUS/, "Diagnostic report must identify building status");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
