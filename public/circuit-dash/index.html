@@ -234,7 +234,19 @@ td button[aria-pressed=true]{border-color:var(--mint)}
 .power-opening .mission-lineup small{color:#c0dccd}
 .power-opening .action-link{background:#95e3b4;color:#10251d}
 .campaign-complete{width:100%;max-width:none;margin-inline:0;padding:clamp(22px,4vw,38px);border-color:#478366;background:linear-gradient(145deg,#183b32,#142635 68%,#13202f);text-align:center}
-.campaign-complete .complete-symbol{display:grid;place-items:center;margin:0 auto 14px;width:76px;height:76px;border:2px solid #95e3b4;border-radius:50%;background:#1b4638;color:#c8f9db;font-size:2.8rem;font-weight:800}
+.campaign-complete .complete-symbol{display:flex;align-items:center;justify-content:center;margin:24px auto 14px;width:76px;height:76px;border:2px solid #95e3b4;border-radius:50%;background:#1b4638;color:#c8f9db}
+.campaign-complete .complete-symbol svg{display:block;flex:none}
+.campaign-complete .terminal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-16px -20px 22px;padding:12px 18px;border-bottom:1px solid #37634e;background:#10271f;border-radius:12px 12px 0 0;color:#a8d9bd;font:700 .72rem ui-monospace,monospace;letter-spacing:.07em}
+.campaign-complete .terminal-lights{display:flex;gap:6px}
+.campaign-complete .terminal-lights i{width:9px;height:9px;border-radius:50%;background:#ff8f7b}
+.campaign-complete .terminal-lights i:nth-child(2){background:#ffd080}
+.campaign-complete .terminal-lights i:nth-child(3){background:#95e3b4}
+.campaign-complete .diagnostic-status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:640px;margin:18px auto;padding:12px;background:#0c201c;border:1px solid #37634e;border-radius:10px}
+.campaign-complete .diagnostic-status div{display:grid;gap:4px}
+.campaign-complete .diagnostic-status span{color:#adc7b8;font:700 .65rem ui-monospace,monospace;letter-spacing:.05em}
+.campaign-complete .diagnostic-status strong{color:#a8f5c9;font:800 clamp(1rem,2vw,1.35rem) ui-monospace,monospace}
+.campaign-complete .complete-count b{color:#a8f5c9;font-size:.72rem}
+@media(max-width:540px){.campaign-complete .terminal-top{font-size:.6rem}.campaign-complete .terminal-top span:last-child{display:none}.campaign-complete .diagnostic-status{gap:4px;padding:9px 5px}.campaign-complete .diagnostic-status span{font-size:.55rem}}
 .campaign-complete .chapter-label{color:#95e3b4;font:800 .78rem ui-monospace,monospace;letter-spacing:.12em}
 .campaign-complete h2{font-size:clamp(2rem,5vw,3rem);line-height:1.1;letter-spacing:-.04em;margin:10px 0 15px}
 .campaign-complete p{margin:0 auto;max-width:66ch;color:#d4e1ed;line-height:1.7}
@@ -343,9 +355,15 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
   <section class="panel campaign-complete" id="campaign-complete" aria-labelledby="campaign-complete-title" hidden>
-    <div class="complete-symbol" aria-hidden="true">✓</div>
+    <div class="terminal-top" aria-hidden="true"><span class="terminal-lights"><i></i><i></i><i></i></span><span>SYSTEM REPORT / 03:07</span><span>LD://INCIDENT-02</span></div>
+    <div class="complete-symbol" aria-hidden="true"><svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 25L20 34L39 13"/></svg></div>
     <div class="chapter-label">INCIDENT REPORT / ALL SYSTEMS RESTORED</div>
     <h2 id="campaign-complete-title" tabindex="-1">The building is back online.</h2>
+    <div class="diagnostic-status" aria-label="All six circuit repairs verified">
+      <div><span>REPAIRS</span><strong>06 / 06</strong></div>
+      <div><span>DIAGNOSTICS</span><strong>PASS</strong></div>
+      <div><span>BUILDING STATUS</span><strong>ONLINE</strong></div>
+    </div>
     <p>03:07. The emergency lights hold steady. The lift reports the correct safety status. In the control room, every indicator finally agrees with the circuits behind it.</p>
     <div class="complete-call">
       <strong>FINAL CALL · SECURITY DESK</strong>
@@ -353,13 +371,13 @@ body[data-story-screen] main > .panel{margin-top:8px}
     </div>
     <p>You've completed the full Night Shift and Power Failure storyline — diagnosing faulty connections, tracing signal paths and proving each repair across every test case.</p>
     <div class="complete-count" aria-label="Six of six repair missions completed">
-      <span>✓ 1</span><span>✓ 2</span><span>✓ 3</span><span>✓ 4</span><span>✓ 5</span><span>✓ 6</span>
+      <span>01 <b>PASS</b></span><span>10 <b>PASS</b></span><span>11 <b>PASS</b></span><span>100 <b>PASS</b></span><span>101 <b>PASS</b></span><span>110 <b>PASS</b></span>
     </div>
     <p style="margin-top:18px">For now, the maintenance log is closed. More incidents may be waiting after testing — but tonight's work is done. Your progress is saved in this browser.</p>
     <div class="actions">
       <a class="action-link" href="/circuit-dash/">Replay Circuit Dash</a>
-      <a class="action-link secondary" href="#night-shift">Replay Night Shift</a>
-      <a class="action-link secondary" href="#power-failure">Replay Power Failure</a>
+      <a class="action-link secondary" href="#night-shift-intro">Night Shift story</a>
+      <a class="action-link secondary" href="#power-failure-intro">Power Failure story</a>
     </div>
     <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
@@ -744,6 +762,21 @@ function routeStep() {
   if (hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length) return lastChallenge;
   if (hash === '#mission-complete' && powerUnlocked === powerFailure.length &&
       nightUnlocked === nightShift.length && unlocked === stages.length) return lastPower;
+  if (hash === '#power-failure' && powerUnlocked === powerFailure.length &&
+      nightUnlocked === nightShift.length && unlocked === stages.length) {
+    history.replaceState(null,'',location.pathname + location.search + '#mission-complete');
+    return lastPower;
+  }
+  if (hash === '#night-shift' && nightUnlocked === nightShift.length &&
+      unlocked === stages.length) {
+    const destination = powerUnlocked === powerFailure.length ? '#mission-complete' : '#night-shift-complete';
+    history.replaceState(null,'',location.pathname + location.search + destination);
+    return destination === '#mission-complete' ? lastPower : lastChallenge;
+  }
+  if (hash === '#power-failure-intro' && unlocked === stages.length &&
+      nightUnlocked === nightShift.length) return powerStart + Math.min(powerUnlocked,powerFailure.length-1);
+  if (hash === '#night-shift-intro' && unlocked === stages.length)
+    return challengeStep + Math.min(nightUnlocked,nightShift.length-1);
   if (hash === '#power-failure') {
     if (unlocked < stages.length || nightUnlocked < nightShift.length) {
       get('locked-notice').textContent = 'Complete Night Shift to unlock Power Failure.';
@@ -780,8 +813,8 @@ function routeStep() {
   return available;
 }
 function begin(index) {
-  nightIntroOpen = location.hash === '#night-shift' && unlocked >= stages.length;
-  powerIntroOpen = location.hash === '#power-failure' && unlocked >= stages.length && nightUnlocked === nightShift.length;
+  nightIntroOpen = (location.hash === '#night-shift' || location.hash === '#night-shift-intro') && unlocked >= stages.length;
+  powerIntroOpen = (location.hash === '#power-failure' || location.hash === '#power-failure-intro') && unlocked >= stages.length && nightUnlocked === nightShift.length;
   campaignCompleteOpen = location.hash === '#mission-complete' && powerUnlocked === powerFailure.length && nightUnlocked === nightShift.length && unlocked === stages.length;
   nightCompleteOpen = location.hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length;
   step = index;
