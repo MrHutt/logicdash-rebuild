@@ -10,7 +10,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
-main{width:100%;max-width:1200px;margin:auto;padding:clamp(13px,2.6vw,30px)}
+main{width:100%;max-width:1280px;margin:auto;padding:clamp(13px,2.2vw,24px)}
 h1{font-size:clamp(1.85rem,7vw,3.35rem);letter-spacing:-.055em;line-height:1.08;margin:5px 0 12px}
 h2{margin:0 0 8px;font-size:1.2rem}
 p{margin:0}
@@ -126,6 +126,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outlin
 .practice-nav{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
 .practice-nav button{min-width:38px;padding:0 7px}
 .practice-nav [aria-current=step]{background:var(--mint);border-color:var(--mint);color:#09251b;font-weight:800}
+.practice-nav button.done:not([aria-current=step]){border-color:#477e6c;color:var(--mint)}
 .practice-nav.campaign-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}
 .mission-group{min-width:0;border:1px solid var(--group-border);border-radius:11px;padding:8px 9px;background:var(--group-bg)}
 .mission-group.night{--group-accent:#80d9f2;--group-border:#426f85;--group-bg:#142737}
@@ -743,7 +744,9 @@ function render() {
         }).join('') + '</div></div>').join('')
     : stages.map((level,index) => '<button data-level="' + index + '" aria-label="Training level ' +
       (index+1) + ', ' + level.title + '"' + (index === step ? ' aria-current="step"' : '') +
-      (index > unlocked ? ' disabled' : '') + '>' + (index+1) + '</button>').join('');
+      (index < unlocked ? ' class="done"' : '') +
+      (index > unlocked ? ' disabled' : '') + '>' +
+      (index < unlocked ? '<span aria-hidden="true">✓</span> ' : '') + (index+1) + '</button>').join('');
   get('title').textContent = stage.title;
   get('story').hidden = !stage.story;
   if (stage.story) {
