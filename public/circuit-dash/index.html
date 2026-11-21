@@ -33,6 +33,11 @@ p{margin:0}
 .practice-link{color:var(--mint);display:inline-block;margin-top:12px;text-underline-offset:3px}
 .locked-notice{margin:12px 0 0;padding:10px 12px;border:1px solid var(--amber);border-radius:9px;color:var(--amber);background:#2b241b;font-size:.9rem}
 .action-link{display:inline-flex;align-items:center;min-height:44px;border-radius:8px;padding:7px 14px;font-size:.91rem;font-weight:750;text-decoration:none}
+.story{margin-top:14px;padding:13px 15px;border-left:3px solid var(--amber);background:#1d2937;border-radius:0 9px 9px 0}
+.story-tag{font:800 .75rem/1.4 ui-monospace,monospace;letter-spacing:.09em;color:var(--amber);margin-bottom:6px}
+.story p{color:var(--ink);font-size:.93rem;max-width:70ch}
+.story p + p{margin-top:7px}
+.story-lead{font-weight:750}
 .board-head,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px 14px}
 .board-head{justify-content:space-between;margin-bottom:11px}
 .board-head strong{font-size:1rem}
@@ -106,6 +111,25 @@ th,td{padding:6px 2px;border-bottom:1px solid var(--line)}
 td button{padding:3px 7px;min-height:36px}
 td button[aria-pressed=true]{border-color:var(--mint)}
 .bad{color:var(--pink)}
+@media(max-width:600px){
+  main{padding:12px}
+  .panel{margin-top:14px;padding:10px;border-radius:12px}
+  .story{margin-top:11px;padding:11px 12px}
+  .story p{font-size:.9rem;line-height:1.48}
+  .board{gap:3px}
+  .board-head{align-items:baseline}
+  .practice-nav{gap:7px}
+  .practice-nav button{min-width:44px;min-height:44px}
+  .actions{gap:8px}
+  .actions button{min-height:46px;padding:8px 13px}
+  .readout{font-size:.87rem;line-height:1.55}
+  .controls{font-size:.89rem;line-height:1.5}
+  .legend{line-height:1.5}
+  .pointer button{min-height:44px}
+  .gate{font-size:.83rem}
+  table{font-size:.78rem}
+  th,td{padding:7px 3px}
+}
 @media(max-width:390px){.board{padding-inline:4px;grid-template-columns:minmax(84px,1fr) minmax(96px,1.12fr) minmax(65px,.8fr);gap:2px}.toggle{min-width:48px;padding-inline:2px}.port{width:28px}.gate{padding:3px;gap:2px}.lamp{gap:3px;font-size:.72rem}.lamp .port{width:24px}.label{font-size:.68rem}.port-role{font-size:.59rem}}
 </style>
 </head>
@@ -116,6 +140,11 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     <div class="brand" id="brand"></div>
     <h1 id="title" tabindex="-1"></h1>
     <div class="goal" id="goal"></div>
+    <section class="story" id="story" aria-label="Mission briefing" hidden>
+      <div class="story-tag" id="story-tag"></div>
+      <p class="story-lead" id="story-lead"></p>
+      <p id="story-detail"></p>
+    </section>
     <nav class="practice-nav" id="levels" aria-label="Circuit Dash levels"></nav>
     <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Complete the 10-level beginner course to unlock the repair missions permanently. Progress is saved in this browser.</p>
     <a class="practice-link" id="return" href="#course" hidden>Back to the beginner course</a>
@@ -156,16 +185,17 @@ td button[aria-pressed=true]{border-color:var(--mint)}
       </div>
     </details>
     <section class="finish" id="night-finish" aria-labelledby="night-finish-title" hidden>
-      <h2 id="night-finish-title">Night Shift complete</h2>
-      <p>All three repairs passed. The building has another emergency — can you restore its power systems?</p>
+      <h2 id="night-finish-title">Night Shift — systems restored</h2>
+      <p>Entry alarm, sensor check and backup relay are all operational. The security desk signs off your report. But before you can leave, a storm knocks out the building's power. Emergency lighting, the lift controller and the control room need attention.</p>
       <div class="actions"><a class="action-link primary" href="#power-failure">Play Power Failure</a></div>
     </section>
     <section class="finish" id="power-finish" aria-labelledby="power-finish-title" hidden>
-      <h2 id="power-finish-title">Power Failure complete</h2>
-      <p>All three systems restored. The maintenance report is complete, and your progress is saved.</p>
+      <h2 id="power-finish-title">Power Failure — building back online</h2>
+      <p>Emergency lights respond, the lift safety checks work and the control room reports the correct signals. Six repairs completed across two assignments. Your progress is saved in this browser.</p>
     </section>
     <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
-      <h2 id="finish-title">Beginner course complete</h2>
+      <h2 id="finish-title">Training complete — first assignment unlocked</h2>
+      <p>You've learned to trace signals, connect gates and fix a faulty circuit. A late-night call has come in from the security team. Three panels need repairing before the morning shift.</p>
       <div class="actions"><a class="action-link primary" href="#night-shift">Play Night Shift</a></div>
     </section>
     <div class="readout" id="readout" aria-label="Live circuit explanation"></div>
@@ -270,7 +300,10 @@ const stages = [
 ];
 const nightShift = [
   {
-    title:'Entry alarm', objective:'Fix the panel in one wire move',
+    title:'Entry alarm',
+    briefing:'23:42 · SECURITY DESK',
+    story:'The overnight guard reports that the alarm ignores an open window. The entry indicator works, but the armed alarm can miss an intrusion.',
+    objective:'Fix the panel in one wire move',
     goal:'The <strong>Entry</strong> lamp should light when the door or window is open. The <strong>Alarm</strong> should light only when an entry is open and the system is armed.',
     controls:'Test the panel, then trace the signals. To replace a wire, select the new <strong>OUT</strong> and the <strong>IN</strong> it should feed.',
     inputs:{armed:'Armed', door:'Door', window:'Window'}, lamps:{entry:'Entry', alarm:'Alarm'},
@@ -287,7 +320,10 @@ const nightShift = [
     hintRepair:[['or','and2']]
   },
   {
-    title:'Sensor check', objective:'Find the wrong connection in the sensor panel',
+    title:'Sensor check',
+    briefing:'00:18 · EAST WING',
+    story:'The entry panel is fixed, but the east-wing sensors are giving unreliable readings. The alert must depend on a real sensor change, not the Enable switch.',
+    objective:'Find the wrong connection in the sensor panel',
     goal:'The <strong>Check</strong> lamp should light when exactly one of the Left and Right sensors is on. The <strong>Alert</strong> lamp should light only when Check is on and the panel is enabled.',
     controls:'One wire is wrong. Test the panel and compare what the two lamps are reading.',
     inputs:{enabled:'Enable', left:'Left', right:'Right'}, lamps:{check:'Check', alert:'Alert'},
@@ -299,7 +335,10 @@ const nightShift = [
     hintRepair:[['right','xor2']]
   },
   {
-    title:'Backup relay', objective:'Restore the Ready and Alarm lamps',
+    title:'Backup relay',
+    briefing:'01:06 · PLANT ROOM',
+    story:'One last fault before handover: the security relay reports the wrong Ready status. Check the two power supplies and the entry alarm together.',
+    objective:'Restore the Ready and Alarm lamps',
     goal:'Power is available when exactly one supply, <strong>Main</strong> or <strong>Backup</strong>, is on. <strong>Ready</strong> should show whether power is available. <strong>Alarm</strong> should light only when power is available and the door or window is open.',
     controls:'Test the panel across all 16 switch settings. Change one wire to make both lamps match their rules.',
     inputs:{main:'Main', backup:'Backup', door:'Door', window:'Window'}, lamps:{ready:'Ready', alarm:'Alarm'},
@@ -313,7 +352,10 @@ const nightShift = [
 ];
 const powerFailure = [
   {
-    title:'Emergency lighting', objective:'Restore the backup lighting controller',
+    title:'Emergency lighting',
+    briefing:'02:11 · POWER FAILURE',
+    story:'A storm cuts the building supply just as the night shift ends. Backup power is available, but the emergency lights are not responding to it.',
+    objective:'Restore the backup lighting controller',
     goal:'A storm has knocked out the building supply. The <strong>Supply</strong> lamp should light when either Main or Backup provides power. <strong>Lights</strong> should come on only when power is available and the Test switch is on.',
     controls:'The supply indicator works, but the lighting controller ignores the backup supply. Find and replace the one incorrect wire.',
     inputs:{main:'Main',backup:'Backup',test:'Test'},lamps:{supply:'Supply',lights:'Lights'},
@@ -325,7 +367,10 @@ const powerFailure = [
     hintRepair:[['or','and2']]
   },
   {
-    title:'Lift interlock', objective:'Repair both the safety and call indicators',
+    title:'Lift interlock',
+    briefing:'02:26 · LIFT CONTROL',
+    story:'The lights are restored. The lift controller still cannot reliably tell when it is safe to operate or when someone has requested a lift.',
+    objective:'Repair both the safety and call indicators',
     goal:'The lift controller is confused. <strong>Ready</strong> must light only if Power is on and the Doors are closed. The <strong>Call</strong> indicator should light if someone requests the lift or the lift is Ready. Neither indicator may incorrectly claim the lift is safe.',
     controls:'Two connections are wrong. Trace the AND gate first, then check what the OR gate receives. You can replace up to two wires.',
     inputs:{power:'Power',doors:'Doors closed',request:'Request'},lamps:{ready:'Ready',call:'Call'},
@@ -337,7 +382,10 @@ const powerFailure = [
     hintRepair:[['doors','and2'],['and','or1']]
   },
   {
-    title:'Control room', objective:'Restore the building monitoring panel',
+    title:'Control room',
+    briefing:'02:48 · CONTROL ROOM',
+    story:'The building is nearly back online. Two incorrect connections are causing the monitoring display to report the wrong power and hazard conditions.',
+    objective:'Restore the building monitoring panel',
     goal:'The control room needs accurate readings. <strong>Power</strong> should report 1 when exactly one supply (Main or Backup) is active. <strong>Alarm</strong> should light only when power is available and either Heat or Smoke is detected.',
     controls:'Two wires are incorrectly routed. Test all 16 switch combinations, use both repair moves, and make the two lamps agree with the rules.',
     inputs:{main:'Main',backup:'Backup',heat:'Heat',smoke:'Smoke'},lamps:{power:'Power',alarm:'Alarm'},
@@ -569,6 +617,17 @@ function render() {
     (index+1) + ', ' + level.title + '"' + (index+offset === step ? ' aria-current="step"' : '') +
     (index > lastUnlocked ? ' disabled' : '') + '>' + (index+1) + '</button>').join('');
   get('title').textContent = stage.title;
+  get('story').hidden = !stage.story;
+  if (stage.story) {
+    get('story-tag').textContent = stage.briefing;
+    get('story-lead').textContent = stage.story;
+    get('story-detail').textContent = step === challengeStep
+      ? 'Assignment 1 of 2 · Night Shift — three linked repairs, one move each.'
+      : step === powerStart
+        ? 'Assignment 2 of 2 · Power Failure — begin with one wire, then tackle two-wire faults.'
+        : '';
+    get('story-detail').hidden = step !== challengeStep && step !== powerStart;
+  }
   if (step === 0) return;
   const values = valuesFor(pattern,wires);
   board.classList.toggle('two-gates',stage.gates.length > 1);
