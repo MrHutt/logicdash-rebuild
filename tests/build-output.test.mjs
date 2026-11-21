@@ -68,6 +68,15 @@ test("Circuit Dash retains all original levels and adds six story briefings", as
   assert.match(circuit, /min-width:44px/, "Missing improved mobile navigation touch targets");
 });
 
+test("Night Shift keeps three distinct themes without recolouring logic signals", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  for (const theme of ["entry", "sensor", "relay"]) {
+    assert.ok(circuit.includes(`data-night-mission="${theme}"`), `Missing ${theme} mission colours`);
+  }
+  assert.match(circuit, /document\\.body\\.dataset\\.nightMission/, "Missing mission theme switch");
+  assert.match(circuit, /green=1, grey=0, amber=selection/, "Keep signal colours consistent");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
