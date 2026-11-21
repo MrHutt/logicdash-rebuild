@@ -334,6 +334,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
   .progress-track{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
   .progress-track button{min-height:32px}
 }
+.intro-progress-help{border-left:3px solid #ffdc9d;background:#30281f;padding:10px 13px;border-radius:0 8px 8px 0;line-height:1.5;max-width:85ch;margin:14px 0}
 </style>
 </head>
 <body>
@@ -351,6 +352,10 @@ body[data-story-screen] main > .panel{margin-top:8px}
   </nav>
 </header>
 <main>
+  <div class="compact-progress" id="compact-progress" hidden>
+    <div class="compact-progress-head"><span id="progress-current">LEVEL 1 / 16</span><a href="#overview">Mission map</a></div>
+    <div class="progress-track" id="progress-track" role="group" aria-label="Circuit Dash level progress"></div>
+  </div>
   <header>
     <div class="brand" id="brand"></div>
     <h1 id="title" tabindex="-1"></h1>
@@ -466,6 +471,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <div class="chapter-label">SCENARIO A / APPRENTICE SHIFT · LEVEL 1 OF 16</div>
     <h2 id="intro-title">First day on the circuit bench.</h2>
     <p>You're the new apprentice on the building maintenance team. Before anyone hands you an overnight call-out, you'll need to learn how signals travel through switches, wires and logic gates. Pass the bench checks and earn your place on Night Shift.</p>
+    <p class="intro-progress-help"><strong>The numbered strip above is your mission tracker:</strong> levels 1–10 are apprentice training, 11–13 are Night Shift and 14–16 are Power Failure. The highlighted number is your current level; you can revisit completed levels at any time. Choose <strong>Mission map</strong> for the full story.</p>
     <h3>How the board works</h3>
     <p>Tap a switch to try a different input. Follow the wire to see where that value goes. Your job is to make the lamps behave as each level asks.</p>
     <dl>
@@ -477,10 +483,6 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <p>Use <strong>What’s happening now</strong> to see the values behind the lights. <strong>Check step</strong> tells you when you’re ready for the next level.</p>
     <div class="actions"><button class="primary" id="start">Pass induction · Level 2</button></div>
   </section>
-  <div class="compact-progress" id="compact-progress" hidden>
-    <div class="compact-progress-head"><span id="progress-current">LEVEL 1 / 16</span><a href="#overview">Mission map</a></div>
-    <div class="progress-track" id="progress-track" role="group" aria-label="Circuit Dash level progress"></div>
-  </div>
   <section class="panel" id="play" aria-labelledby="objective" hidden>
     <div class="board-head"><strong id="objective"></strong><span class="count" id="count"></span></div>
     <div class="trace-toolbar" id="trace-toolbar" hidden>
