@@ -77,6 +77,15 @@ test("Night Shift keeps three distinct themes without recolouring logic signals"
   assert.match(circuit, /green=1, grey=0, amber=selection/, "Keep signal colours consistent");
 });
 
+test("Circuit Dash repair navigation is continuous and grouped, and tracing has stable height", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  for (const phrase of ["Night Shift · 1–3", "Power Failure · 4–6", "campaign-nav", "mission-numbers", "repairNumber"]) {
+    assert.ok(circuit.includes(phrase), `Missing repair navigation: ${phrase}`);
+  }
+  assert.match(circuit, /trace-description[^}]*height:4\\.35em/, "Desktop trace panel must reserve steady height");
+  assert.match(circuit, /trace-description\\{height:5\\.8em\\}/, "Mobile trace panel must reserve steady height");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
