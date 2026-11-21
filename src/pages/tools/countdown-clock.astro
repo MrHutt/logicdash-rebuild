@@ -196,6 +196,19 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 			</div>
 		</div>
 
+		<section class="exam-presets countdown-only page-only" aria-label="Exam countdown presets">
+			<p class="exam-presets-label">EXAM TIMES <span>Choose a duration, then press Start</span></p>
+			<div class="exam-presets-grid" role="group" aria-label="Exam times in minutes">
+				<button type="button" class="preset-chip" data-preset="600">10 min</button>
+				<button type="button" class="preset-chip" data-preset="1800">30 min</button>
+				<button type="button" class="preset-chip" data-preset="2700">45 min</button>
+				<button type="button" class="preset-chip" data-preset="3000">50 min</button>
+				<button type="button" class="preset-chip" data-preset="3600">60 min</button>
+				<button type="button" class="preset-chip" data-preset="5400">90 min</button>
+				<button type="button" class="preset-chip" data-preset="7200">120 min</button>
+			</div>
+		</section>
+
 		<div class="controls-drawer" id="clock-settings" data-controls-drawer hidden>
 			<div class="mode-toggle" data-mode-toggle>
 				<button type="button" class="mode-btn" data-mode-btn="countdown" aria-selected="true">Countdown</button>
@@ -203,19 +216,15 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 			</div>
 
 			<div class="control-panel" data-countdown-panel>
-				<p class="drawer-section-label">Quick times</p>
-				<div class="quick-presets" role="group" aria-label="Quick times">
-					<button type="button" class="preset-chip" data-preset="60">1 min</button>
-					<button type="button" class="preset-chip" data-preset="120">2 min</button>
-					<button type="button" class="preset-chip" data-preset="180">3 min</button>
-					<button type="button" class="preset-chip" data-preset="300">5 min</button>
-					<button type="button" class="preset-chip" data-preset="600">10 min</button>
-					<button type="button" class="preset-chip" data-preset="900">15 min</button>
-					<button type="button" class="preset-chip" data-preset="1200">20 min</button>
-					<button type="button" class="preset-chip" data-preset="1800">30 min</button>
-					<button type="button" class="preset-chip" data-preset="2700">45 min</button>
-					<button type="button" class="preset-chip" data-preset="3600">1 hour</button>
-				</div>
+				<p class="drawer-section-label">Short classroom timers</p>
+					<div class="quick-presets" role="group" aria-label="Short classroom timers">
+						<button type="button" class="preset-chip" data-preset="60">1 min</button>
+						<button type="button" class="preset-chip" data-preset="120">2 min</button>
+						<button type="button" class="preset-chip" data-preset="180">3 min</button>
+						<button type="button" class="preset-chip" data-preset="300">5 min</button>
+						<button type="button" class="preset-chip" data-preset="900">15 min</button>
+						<button type="button" class="preset-chip" data-preset="1200">20 min</button>
+					</div>
 
 				<p class="drawer-section-label">Any time you like</p>
 				<div class="time-input-row">
@@ -1744,6 +1753,15 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		letter-spacing: 0.1em;
 		color: var(--color-text-muted);
 	}
+
+	/* Frequently used exam durations stay on the page, sharing existing preset logic. */
+	.exam-presets { width:100%; padding:.6rem .4rem .25rem; margin:0 auto; }
+	.exam-presets-label { display:flex; align-items:baseline; justify-content:center; gap:.6rem; flex-wrap:wrap; margin:0 0 .6rem; font:700 .72rem var(--font-mono); letter-spacing:.08em; color:var(--color-accent); text-align:center; }
+	.exam-presets-label span { font:400 .72rem sans-serif; letter-spacing:0; color:var(--color-text-muted); }
+	.exam-presets-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.4rem; max-width:58rem; margin-inline:auto; }
+	.exam-presets-grid .preset-chip { width:100%; min-width:0; min-height:44px; padding:.45rem .15rem; font-size:clamp(.69rem,1.45vw,.92rem); white-space:nowrap; }
+	@media (max-width:700px) { .exam-presets-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } .exam-presets-grid .preset-chip { font-size:.83rem; } }
+	@media (max-width:350px) { .exam-presets { padding-inline:0; } .exam-presets-grid { gap:.3rem; } .exam-presets-grid .preset-chip { font-size:.76rem; padding-inline:0; } }
 
 	/* --- Controls drawer ---------------------------------------------------- */
 
