@@ -54,6 +54,20 @@ test("Power Failure includes three missions, chapter unlocks, and configurable m
   assert.match(circuit, /step === lastChallenge/, "Night Shift must end with the next-chapter action");
 });
 
+test("Circuit Dash retains all original levels and adds six story briefings", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  for (const phrase of [
+    "Follow the signal", "Fix a fault", "Entry alarm", "Sensor check", "Backup relay",
+    "Emergency lighting", "Lift interlock", "Control room",
+    "23:42 · SECURITY DESK", "02:48 · CONTROL ROOM",
+    "Training complete", "Night Shift — systems restored", "Power Failure — building back online",
+  ]) {
+    assert.ok(circuit.includes(phrase), `Missing story or original level: ${phrase}`);
+  }
+  assert.match(circuit, /id="story"/, "Missing inline story briefing");
+  assert.match(circuit, /min-width:44px/, "Missing improved mobile navigation touch targets");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
