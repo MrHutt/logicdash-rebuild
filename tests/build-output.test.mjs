@@ -122,6 +122,19 @@ test("Power Failure has a story introduction and separate direct repair routes",
   assert.match(circuit,/nightUnlocked < nightShift\.length/, "Power Failure requires Night Shift completion");
 });
 
+test("Final repair opens a saved six-repair success screen with replay routes", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  assert.match(circuit,/id="campaign-complete"/, "Missing final success screen");
+  assert.match(circuit,/id="campaign-complete-title"/, "Missing accessible success heading");
+  assert.match(circuit,/location\.hash = '#mission-complete'/, "Last repair must open final success screen");
+  assert.match(circuit,/campaignCompleteOpen = location\.hash === '#mission-complete'/, "Success screen must be independently navigable");
+  assert.match(circuit,/hash === '#mission-complete' && powerUnlocked === powerFailure\.length/, "Only completed players can open success screen");
+  assert.match(circuit,/Six faults found, six systems checked/, "Final story handover must recognise six repairs");
+  assert.match(circuit,/href="\/circuit-dash\/"/, "Success screen must link to training");
+  assert.match(circuit,/href="#night-shift"/, "Success screen must allow Night Shift replay");
+  assert.match(circuit,/href="#power-failure"/, "Success screen must allow Power Failure replay");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
