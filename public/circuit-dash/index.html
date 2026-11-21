@@ -269,6 +269,11 @@ body[data-story-screen] main > .panel{margin-top:8px}
 .chapter-outro .dispatch{max-width:90ch;padding:12px 15px;border-left:3px solid #80d9f2;background:#0d2032;margin:15px 0}
 .chapter-outro .actions{margin-top:20px}
 .chapter-outro .action-link{background:#80d9f2;color:#102431}
+.apprentice-outro{background:linear-gradient(145deg,#30281f,#172235);border-color:#887454}
+.apprentice-outro .chapter-label{color:#ffdc9d}
+.apprentice-outro .dispatch{background:#332719;border-left-color:#ffdc9d}
+.apprentice-outro .dispatch strong{display:block;color:#ffdc9d;font:.8rem ui-monospace,monospace;margin-bottom:8px}
+.apprentice-outro .action-link{background:#ffdc9d;color:#191e24}
 @media(min-width:900px){:is(.night-opening,.power-opening,.chapter-outro){padding:28px 36px}}
 
 .campaign-complete .action-link{background:#95e3b4;color:#10251d}
@@ -393,6 +398,18 @@ body[data-story-screen] main > .panel{margin-top:8px}
     </div>
     <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
+  <section class="panel chapter-outro apprentice-outro" id="apprentice-complete" aria-labelledby="apprentice-complete-title" hidden>
+    <div class="chapter-label">SCENARIO A / APPRENTICE SHIFT · ALL 10 CHECKS PASSED</div>
+    <h2 id="apprentice-complete-title" tabindex="-1">Congratulations. You've been promoted… sort of.</h2>
+    <p>18:06. Ten test circuits passed. Not one resistor was harmed. You put down your clipboard and prepare to clock off, rather pleased with yourself.</p>
+    <div class="dispatch">
+      <strong>MAINTENANCE SUPERVISOR · FINAL SIGN-OFF</strong>
+      <p>“Well done. You understand your AND from your OR, your XOR from your elbow. Here's your first assignment. Should be a quiet night.”</p>
+    </div>
+    <p>You're now an authorised circuit technician. The security team has three troublesome controllers waiting for the overnight shift. The simulator is over; it's time to fix something that matters.</p>
+    <p>23:42. Your phone rings. The caller ID reads <strong>SECURITY DESK</strong>.</p>
+    <div class="actions"><a class="action-link" href="#night-shift">Accept your first Night Shift</a><a class="action-link" href="#overview" style="background:#26374a;color:#f1f6f9">Mission map</a></div>
+  </section>
   <section class="panel chapter-outro" id="night-complete" aria-labelledby="night-complete-title" hidden>
     <div class="chapter-label">INCIDENT 01 / THREE REPAIRS COMPLETE</div>
     <h2 id="night-complete-title" tabindex="-1">Night Shift — systems restored.</h2>
@@ -423,9 +440,9 @@ body[data-story-screen] main > .panel{margin-top:8px}
     </div>
     <p style="margin-top:18px">For now, the maintenance log is closed. More incidents may be waiting after testing — but tonight's work is done. Your progress is saved in this browser.</p>
     <div class="actions">
-      <a class="action-link" href="/circuit-dash/">Replay Circuit Dash</a>
-      <a class="action-link secondary" href="#night-shift-intro">Night Shift story</a>
-      <a class="action-link secondary" href="#power-failure-intro">Power Failure story</a>
+      <a class="action-link" href="#overview">Mission map</a>
+      <a class="action-link secondary" href="#night-shift">Night Shift story</a>
+      <a class="action-link secondary" href="#power-failure">Power Failure story</a>
     </div>
     <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
@@ -482,9 +499,9 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <div class="actions"><a class="action-link primary" href="#mission-complete">View mission report</a></div>
     </section>
     <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
-      <h2 id="finish-title">Training complete — first assignment unlocked</h2>
+      <h2 id="finish-title">Apprentice Shift complete — Night Shift unlocked</h2>
       <p>You've learned to trace signals, connect gates and fix a faulty circuit. A late-night call has come in from the security team. Three panels need repairing before the morning shift.</p>
-      <div class="actions"><a class="action-link primary" href="#night-shift">Read the Night Shift briefing</a></div>
+      <div class="actions"><a class="action-link primary" href="#apprentice-complete">Read your supervisor's sign-off</a></div>
     </section>
     <div class="readout" id="readout" aria-label="Live circuit explanation"></div>
     <details id="reference" hidden><summary>Gate rules and truth table</summary><div id="rules"></div></details>
