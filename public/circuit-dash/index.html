@@ -866,7 +866,7 @@ function routeStep() {
       locked('Complete Scenario B to unlock Power Failure.');
   if (hash === '#mission-complete')
     return finishedAll ? lastPower : locked('Complete all 16 levels to unlock the final report.');
-  const levelMatch = /^#level-(\\d{1,2})$/.exec(hash);
+  const levelMatch = /^#level-(\d{1,2})$/.exec(hash);
   if (levelMatch) {
     const index = Number(levelMatch[1]) - 1;
     return canEnter(index) ? index : locked('Complete earlier levels to unlock this mission.');
@@ -1051,7 +1051,7 @@ function render() {
   get('title').hidden = showingIntro;
   get('campaign-complete').hidden = !campaignCompleteOpen;
   get('night-complete').hidden = !nightCompleteOpen;
-  get('return').hidden = !(isPower || isNight) || showingIntro;
+  get('return').hidden = showingIntro;
   get('night-opening').hidden = !nightIntroOpen;
   get('power-opening').hidden = !powerIntroOpen;
   get('power-begin').textContent = powerUnlocked === 0 ? 'Start Power Failure' :
@@ -1134,7 +1134,7 @@ function render() {
   get('objective').textContent = stage.objective;
   get('controls').innerHTML = stage.controls;
   get('test').textContent = stage.repair ? 'Test panel' : 'Check step';
-  get('next').textContent = 'Next level';
+  get('next').textContent = 'Next level · ' + (step+2) + ' / ' + allStages.length;
   get('next').hidden = !passed || step === lastPower || step === lastStep || step === lastChallenge;
   get('inputs').innerHTML = '<span class="label">Switches</span>' + Object.entries(stage.inputs).map(([id,name]) =>
     '<div class="input"><button class="toggle' + (tracePaths && ![...tracePaths].some(socket => wires[socket] === id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-toggle="' + id + '" aria-pressed="' + Boolean(values[id]) + '">' +
@@ -1333,7 +1333,9 @@ function goToLevel(index) {
   begin(index);
   get('details').open = false;
   render();
-  if (nightCompleteOpen) get('night-complete-title').focus({preventScroll:true});
+  if (overviewOpen) get('campaign-overview-title').focus({preventScroll:true});
+  else if (apprenticeCompleteOpen) get('apprentice-complete-title').focus({preventScroll:true});
+  else if (nightCompleteOpen) get('night-complete-title').focus({preventScroll:true});
   else if (nightIntroOpen) get('night-opening-title').focus({preventScroll:true});
   else if (powerIntroOpen) get('power-opening-title').focus({preventScroll:true});
   else if (campaignCompleteOpen) get('campaign-complete-title').focus({preventScroll:true});
@@ -1345,20 +1347,28 @@ function openLevel(index) {
     get('locked-notice').hidden = false;
     return;
   }
-  if (index < challengeStep || location.hash === challengeHash(index)) goToLevel(index);
-  else location.hash = challengeHash(index);
+  if (location.hash === levelHash(index)) goToLevel(index);
+  else location.hash = levelHash(index);
 }
 document.querySelector('main').addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button || button.disabled) return;
   const {toggle,source:jack,socket,case:index,level,trace:traceId} = button.dataset;
+  if (button.id === 'campaign-continue') {
+    if (completedCount() === allStages.length) location.hash = '#mission-complete';
+    else if (nextCampaignLevel() === challengeStep) location.hash = '#night-shift';
+    else if (nextCampaignLevel() === powerStart) location.hash = '#power-failure';
+    else if (nextCampaignLevel() === 0) location.hash = '#apprentice';
+    else openLevel(nextCampaignLevel());
+    return;
+  }
   if (button.classList.contains('reset-progress')) {
     if (!window.confirm('Reset ALL Circuit Dash training, Night Shift and Power Failure progress in this browser? This cannot be undone.')) return;
     for (const key of [progressKey,previousProgressKey,nightProgressKey,powerProgressKey]) {
       try { localStorage.removeItem(key); } catch {}
     }
     unlocked = 0; nightUnlocked = 0; powerUnlocked = 0;
-    history.replaceState(null,'',location.pathname);
+    history.replaceState(null,'',location.pathname + '#overview');
     goToLevel(0);
     return;
   }
@@ -1406,6 +1416,14 @@ document.querySelector('main').addEventListener('click', event => {
     test();
     if (passed) {
       completeLevel();
+      if (step === lastStep && unlocked === stages.length) {
+        location.hash = '#apprentice-complete';
+        return;
+      }
+      if (step === lastChallenge && nightUnlocked === nightShift.length) {
+        location.hash = '#night-shift-complete';
+        return;
+      }
       if (step === lastPower && powerUnlocked === powerFailure.length) {
         location.hash = '#mission-complete';
         return;
