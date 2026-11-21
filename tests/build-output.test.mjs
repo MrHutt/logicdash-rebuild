@@ -45,136 +45,87 @@ test("Circuit Dash includes the tutorial progression and Night Shift repair chal
   assert.match(circuit, /testCases\(wires\)/, "Missing repair case checker");
 });
 
-test("Power Failure includes three missions, chapter unlocks, and configurable move limits", async () => {
-  const circuit = await text("circuit-dash/index.html");
-  for (const phrase of ["Emergency lighting", "Lift interlock", "Control room", "POWER FAILURE", "powerProgressKey", "const powerStart", "movesUsed()", "canRewire()"]) {
-    assert.ok(circuit.includes(phrase), `Missing Power Failure mechanic: ${phrase}`);
-  }
-  assert.match(circuit, /nightUnlocked < nightShift\.length/, "Power Failure should remain locked before Night Shift completion");
-  assert.match(circuit, /step === lastChallenge/, "Night Shift must end with the next-chapter action");
-});
 
-test("Circuit Dash retains all original levels and adds six story briefings", async () => {
-  const circuit = await text("circuit-dash/index.html");
-  for (const phrase of [
-    "Follow the signal", "Fix a fault", "Entry alarm", "Sensor check", "Backup relay",
-    "Emergency lighting", "Lift interlock", "Control room",
-    "23:42 · SECURITY DESK", "02:48 · CONTROL ROOM",
-    "Training complete", "Night Shift — systems restored", "Power Failure — building back online",
-  ]) {
-    assert.ok(circuit.includes(phrase), `Missing story or original level: ${phrase}`);
-  }
-  assert.match(circuit, /id="story"/, "Missing inline story briefing");
-  assert.match(circuit, /min-width:44px/, "Missing improved mobile navigation touch targets");
-});
-
-test("Repair chapter colours distinguish blue Night Shift and green Power Failure without recolouring signals", async () => {
-  const circuit = await text("circuit-dash/index.html");
-  for (const chapter of ["night", "power"]) {
-    assert.ok(circuit.includes(`data-repair-chapter="${chapter}"`), `Missing ${chapter} theme`);
-  }
-  assert.match(circuit, /document\.body\.dataset\.repairChapter/, "Missing chapter theme selection");
-  assert.match(circuit, /green=1, grey=0, amber=selection/, "Signal colours must stay consistent");
-});
-
-test("Circuit Dash repair navigation is continuous and grouped, and tracing has stable height", async () => {
-  const circuit = await text("circuit-dash/index.html");
-  for (const phrase of ["Night Shift · 1–3", "Power Failure · 4–6", "campaign-nav", "mission-numbers", "repairNumber"]) {
-    assert.ok(circuit.includes(phrase), `Missing repair navigation: ${phrase}`);
-  }
-  assert.match(circuit, /trace-description[^}]*height:4\.35em/, "Desktop trace panel must reserve steady height");
-  assert.match(circuit, /trace-description\{height:5\.8em\}/, "Mobile trace panel must reserve steady height");
-});
-
-test("Circuit Dash resumes current repair, shows completion ticks and uses the homepage frame width", async () => {
+test("Circuit Dash is one 16-level campaign with three scenarios", async () => {
   const circuit = await text("circuit-dash/index.html");
   const home = await text("index.html");
-  assert.match(circuit,/max-width:1280px/, "Game should match homepage wide container");
-  assert.match(circuit,/if \(!hash \|\| hash === '#course' \|\| hash === '#training'\) return Math\.min\(unlocked,lastStep\)/, "Circuit Dash opens the course, not Night Shift");
-  assert.match(circuit,/if \(unlocked >= stages\.length\) return challengeStep \+ Math\.min\(nightUnlocked,nightShift\.length-1\)/, "Night Shift introduction must resume unfinished repairs");
-  assert.match(circuit,/<span aria-hidden="true">✓<\/span>/, "Completed steps need ticks");
-  assert.match(circuit,/body\[data-repair-chapter\] \.story\{height:/, "Briefing should reserve stable space");
-  assert.match(home,/href="\/circuit-dash\/"/, "Homepage must link Circuit Dash");
-  assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage must link Night Shift");
+  assert.match(circuit,/const allStages = \[\.\.\.stages,\.\.\.nightShift,\.\.\.powerFailure\]/);
+  for(const word of ["SCENARIO A / APPRENTICE SHIFT","SCENARIO B / NIGHT SHIFT","SCENARIO C / POWER FAILURE","Entry alarm","Sensor check","Backup relay","Emergency lighting","Lift interlock","Control room","Follow the signal","Fix a fault"]) {
+    assert.ok(circuit.includes(word), "Missing campaign feature: "+word);
+  }
+  for(const id of ["campaign-overview","campaign-map","apprentice-complete","night-opening","night-complete","power-opening","campaign-complete"]) {
+    assert.match(circuit,new RegExp('id="'+id+'"'));
+  }
+  assert.match(home,/16-LEVEL STORY PUZZLE/);
+  assert.match(home,/Open Circuit Dash mission map/);
+  assert.doesNotMatch(home,/Circuit Dash \+ Night Shift/);
 });
 
-test("Circuit Dash and Night Shift have separate entry routes and a dedicated story introduction", async () => {
+test("All 16 levels appear on the map and the persistent navigation", async () => {
   const circuit = await text("circuit-dash/index.html");
-  const home = await text("index.html");
-  assert.match(circuit,/if \(!hash \|\| hash === '#course' \|\| hash === '#training'\) return Math\.min\(unlocked,lastStep\)/, "Circuit Dash must stay on its training path");
-  assert.match(circuit,/if \(hash === '#night-shift'\)/, "Night Shift must have an independent entry route");
-  assert.match(circuit,/id="night-opening"/, "Missing Night Shift introduction");
-  assert.match(circuit,/id="night-begin"/, "Missing story CTA");
-  assert.match(circuit,/nightIntroOpen = \(location\.hash === '#night-shift' \|\| location\.hash === '#night-shift-intro'\)/, "Story must remain available through an explicit intro link");
-  assert.match(circuit,/return '#night-shift-' \+ level/, "Mission deep links must differ from the story entry");
-  assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage Night Shift link should open the story");
+  for (const line of ["function levelCompleted(index)","function nextCampaignLevel()","get('levels').innerHTML = groups.map","get('campaign-map').innerHTML = groups.map","levelButton(level,group.start+index)","if (canEnter(index)) openLevel(index)"]) {
+    assert.ok(circuit.includes(line), "Missing unified navigation: "+line);
+  }
+  assert.match(circuit,/min-height:44px/);
+  assert.match(circuit,/return index <= unlocked/);
+  assert.match(circuit,/return nightUnlocked >= nightShift\.length && index <= powerStart \+ powerUnlocked/);
 });
 
-test("Power Failure has a story introduction and separate direct repair routes", async () => {
+test("Routing has stable chapter destinations and allows replay of completed levels", async () => {
   const circuit = await text("circuit-dash/index.html");
-  assert.match(circuit,/id="power-opening"/, "Power Failure intro is missing");
-  assert.match(circuit,/id="power-begin"/, "Power Failure begin button is missing");
-  assert.match(circuit,/if \(hash === '#power-failure'\)/, "Power Failure chapter entry is missing");
-  assert.match(circuit,/return '#power-failure-' \+ chapterLevel/, "Individual repair routes must not conflict with intro");
-  assert.match(circuit,/powerIntroOpen = \(location\.hash === '#power-failure' \|\| location\.hash === '#power-failure-intro'\)/, "Power Failure intro remains available after completion");
-  assert.match(circuit,/id="night-finish"/, "Night Shift must link to the new chapter");
-  assert.match(circuit,/Read the Power Failure briefing/, "Night Shift handover must introduce story");
-  assert.match(circuit,/nightUnlocked < nightShift\.length/, "Power Failure requires Night Shift completion");
+  const start = circuit.indexOf("function completedCount()");
+  const end = circuit.indexOf("function begin(index)",start);
+  assert.ok(start>=0 && end>start,"Missing route implementation");
+  const code = circuit.slice(start,end);
+  const {runInNewContext} = await import("node:vm");
+  function route(hash,progress) {
+    const [unlocked,nightUnlocked,powerUnlocked] = progress;
+    const ctx = {
+      unlocked,nightUnlocked,powerUnlocked,
+      stages:{length:10},nightShift:{length:3},powerFailure:{length:3},
+      allStages:Array(16).fill(null),challengeStep:10,powerStart:13,lastStep:9,lastChallenge:12,lastPower:15,
+      location:{hash},get:()=>({hidden:true,textContent:""}),
+      canEnter:index=>index>=0&&index<=15&&(index<10?index<=unlocked:index<13?
+        unlocked===10&&index<=10+nightUnlocked:unlocked===10&&nightUnlocked===3&&index<=13+powerUnlocked),
+      challengeHash:index=>index>=13?"#power-failure-"+(index-12):"#night-shift-"+(index-9)
+    };
+    return runInNewContext(code+"\nrouteStep()",ctx,{timeout:2000});
+  }
+  assert.equal(route("#overview",[0,0,0]),0);
+  assert.equal(route("#overview",[10,2,0]),12);
+  assert.equal(route("#overview",[10,3,3]),15);
+  assert.equal(route("#apprentice",[10,3,3]),0);
+  assert.equal(route("#level-2",[10,3,3]),1);
+  assert.equal(route("#level-11",[10,3,3]),10);
+  assert.equal(route("#level-14",[10,3,3]),13);
+  assert.equal(route("#night-shift",[10,3,3]),12);
+  assert.equal(route("#power-failure",[10,3,3]),15);
+  assert.equal(route("#night-shift",[9,0,0]),9);
+  assert.equal(route("#level-16",[10,3,1]),14);
+  assert.equal(route("#mission-complete",[10,3,3]),15);
 });
 
-test("Final repair opens a saved six-repair success screen with replay routes", async () => {
+test("Story checkpoints occur at levels 10, 13 and 16", async () => {
   const circuit = await text("circuit-dash/index.html");
-  assert.match(circuit,/id="campaign-complete"/, "Missing final success screen");
-  assert.match(circuit,/id="campaign-complete-title"/, "Missing accessible success heading");
-  assert.match(circuit,/location\.hash = '#mission-complete'/, "Last repair must open final success screen");
-  assert.match(circuit,/campaignCompleteOpen = location\.hash === '#mission-complete'/, "Success screen must be independently navigable");
-  assert.match(circuit,/hash === '#mission-complete' && powerUnlocked === powerFailure\.length/, "Only completed players can open success screen");
-  assert.match(circuit,/Six faults found, six systems checked/, "Final story handover must recognise six repairs");
-  assert.match(circuit,/href="\/circuit-dash\/"/, "Success screen must link to training");
-  assert.match(circuit,/href="#night-shift"/, "Success screen must allow Night Shift replay");
-  assert.match(circuit,/href="#power-failure"/, "Success screen must allow Power Failure replay");
+  assert.match(circuit,/step === lastStep && unlocked === stages\.length[\s\S]*?location\.hash = '#apprentice-complete'/);
+  assert.match(circuit,/step === lastChallenge && nightUnlocked === nightShift\.length[\s\S]*?location\.hash = '#night-shift-complete'/);
+  assert.match(circuit,/step === lastPower && powerUnlocked === powerFailure\.length[\s\S]*?location\.hash = '#mission-complete'/);
+  for (const phrase of ["You've been promoted… sort of","Accept your first Night Shift","Continue to Power Failure","Six faults found, six systems checked","16 / 16"]) {
+    assert.ok(circuit.includes(phrase),"Missing checkpoint content: "+phrase);
+  }
+  for(const bits of ["001","010","011","100","101","110"]) assert.ok(circuit.includes("<span>"+bits+" <b>PASS</b>"));
 });
 
-test("Circuit Dash matches full-width chapter panels and has accessible site navigation and footer", async () => {
+test("Campaign retains its game mechanics, responsive layout and safe reset", async () => {
   const circuit = await text("circuit-dash/index.html");
-  assert.match(circuit,/:is\(\.night-opening,\.power-opening\)\{width:100%;max-width:none/, "Story screens should use the full game frame");
-  assert.match(circuit,/\.campaign-complete\{width:100%;max-width:none/, "Success screen should use the full game frame");
-  assert.match(circuit,/<header class="site-header">/, "Game should display site header");
-  assert.match(circuit,/<nav class="site-nav" id="site-nav" aria-label="Main navigation">/, "Game should offer accessible primary navigation");
-  assert.match(circuit,/<footer class="site-footer">/, "Game should include site footer");
-  assert.match(circuit,/siteMenuToggle\.setAttribute\('aria-expanded',String\(opened\)\)/, "Mobile menu must announce its state");
-  assert.match(circuit,/href="\/quick-byte\/"/, "Main navigation should link to Quick Byte");
-});
-
-test("Story entry buttons resume, finish or reset explicitly without skipping to final repair", async () => {
-  const circuit = await text("circuit-dash/index.html");
-  assert.match(circuit,/nightUnlocked === nightShift\.length\) location\.hash = '#night-shift-complete'/);
-  assert.match(circuit,/powerUnlocked === powerFailure\.length\) location\.hash = '#mission-complete'/);
-  assert.match(circuit,/else openLevel\(challengeStep \+ nightUnlocked\)/);
-  assert.match(circuit,/else openLevel\(powerStart \+ powerUnlocked\)/);
-  assert.match(circuit,/id="night-complete"/);
-  assert.match(circuit,/View Night Shift ending/);
-  assert.match(circuit,/View mission completion/);
+  for(const phrase of ["function tracedSockets()","testCases(wires)","powerProgressKey","max-width:1280px","green=1, grey=0, amber=selection","Progress &amp; settings"]) {
+    assert.ok(circuit.includes(phrase),"Missing baseline feature: "+phrase);
+  }
+  assert.match(circuit,/<header class="site-header">/);
+  assert.match(circuit,/<footer class="site-footer">/);
+  assert.match(circuit,/trace-description[^}]*height:4\.35em/);
   assert.match(circuit,/window\.confirm\('Reset ALL Circuit Dash training/);
-  for (const key of ["progressKey","previousProgressKey","nightProgressKey","powerProgressKey"]) assert.ok(circuit.includes(key));
-  assert.match(circuit,/history\.replaceState\(null,'',location\.pathname\)/);
-  assert.doesNotMatch(circuit,/← LogicDash home/, "Redundant home link should be removed");
-  assert.doesNotMatch(circuit,/Replay · Final Repair/, "Finished chapters should not arbitrarily replay last level");
-  assert.match(circuit,/body\[data-story-screen\] main > \.panel/, "Story panels should have tidy vertical spacing");
-});
-
-test("Completed homepage chapter entries route to final screen and story replay stays available", async () => {
-  const circuit = await text("circuit-dash/index.html");
-  const home = await text("index.html");
-  assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage keeps stable Night Shift entry");
-  assert.match(circuit,/const destination = powerUnlocked === powerFailure\.length \? '#mission-complete' : '#night-shift-complete'/, "A completed Night Shift link must show its appropriate ending");
-  assert.match(circuit,/hash === '#power-failure' && powerUnlocked === powerFailure\.length/, "Completed Power Failure entry must show final report");
-  assert.match(circuit,/history\.replaceState\(null,'',location\.pathname \+ location\.search \+ destination\)/, "Chapter entry routes should update to correct report");
-  assert.match(circuit,/href="#night-shift-intro"/, "Story replay must remain separately available");
-  assert.match(circuit,/href="#power-failure-intro"/, "Power Failure story must be accessible after completion");
-  assert.match(circuit,/<svg viewBox="0 0 48 48"/, "Success tick must be a centred vector graphic");
-  assert.match(circuit,/diagnostic-status/, "Completion should show circuit diagnostics");
-  assert.match(circuit,/BUILDING STATUS/, "Diagnostic report must identify building status");
+  assert.match(circuit,/<svg viewBox="0 0 48 48"/);
 });
 
 test("built CSS/JavaScript files are generated", async () => {
