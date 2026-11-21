@@ -68,13 +68,13 @@ test("Circuit Dash retains all original levels and adds six story briefings", as
   assert.match(circuit, /min-width:44px/, "Missing improved mobile navigation touch targets");
 });
 
-test("Night Shift keeps three distinct themes without recolouring logic signals", async () => {
+test("Repair chapter colours distinguish blue Night Shift and green Power Failure without recolouring signals", async () => {
   const circuit = await text("circuit-dash/index.html");
-  for (const theme of ["entry", "sensor", "relay"]) {
-    assert.ok(circuit.includes(`data-night-mission="${theme}"`), `Missing ${theme} mission colours`);
+  for (const chapter of ["night", "power"]) {
+    assert.ok(circuit.includes(`data-repair-chapter="${chapter}"`), `Missing ${chapter} theme`);
   }
-  assert.match(circuit, /document\.body\.dataset\.nightMission/, "Missing mission theme switch");
-  assert.match(circuit, /green=1, grey=0, amber=selection/, "Keep signal colours consistent");
+  assert.match(circuit, /document\.body\.dataset\.repairChapter/, "Missing chapter theme selection");
+  assert.match(circuit, /green=1, grey=0, amber=selection/, "Signal colours must stay consistent");
 });
 
 test("Circuit Dash repair navigation is continuous and grouped, and tracing has stable height", async () => {
