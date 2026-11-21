@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Learn logic gates, connect wires, and fix real circuit puzzles in Circuit Dash — a free LogicDash game.">
+<meta name="description" content="Learn to read, wire and repair logic circuits in Circuit Dash, then take on the three-part Night Shift challenge.">
 <title>Circuit Dash | LogicDash</title>
 <style>
 :root{color-scheme:dark;--bg:#0b121d;--panel:#121d2c;--line:#394b60;--ink:#f1f6f9;--muted:#b5c3d2;--mint:#79efbc;--amber:#ffd080;--pink:#ffadb2}
@@ -19,6 +19,7 @@ p{margin:0}
 .goal{display:grid;max-width:62ch;color:var(--muted)}
 .goal p{grid-area:1/1;visibility:hidden}
 .goal p.current{visibility:visible}
+.goal.night-goals p:not(.night-goal),.goal:not(.night-goals) p.night-goal{display:none}
 .goal strong{color:var(--ink)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-top:20px;padding:clamp(9px,2.3vw,18px)}
 .intro{padding:clamp(14px,3vw,24px)}
@@ -39,6 +40,10 @@ p{margin:0}
 .board{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(105px,1fr) minmax(113px,1.35fr) minmax(92px,.85fr);gap:5px;min-height:254px;padding:10px 7px 13px;border:1px solid var(--line);border-radius:11px;background:#0c1624 radial-gradient(#2a3b50 1px,transparent 1px) 0 0/14px 14px}
 .board.two-gates{min-height:342px}
 .two-gates #gates{row-gap:22px}
+.board.three-gates{min-height:460px}
+.three-gates #gates{grid-template-rows:22px repeat(3,1fr)}
+.three-gates .gate{justify-self:center}
+.three-gates .inputs{grid-template-rows:22px repeat(4,1fr)}
 .wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:1}
 .column{display:grid;min-width:0;align-items:center;justify-items:center;grid-template-rows:22px repeat(2,1fr);row-gap:10px}
 .inputs{grid-template-rows:22px repeat(3,1fr)}
@@ -61,6 +66,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outlin
 .port-role{font:750 .65rem/1 ui-monospace,monospace;letter-spacing:.01em}
 .port[data-source].selected,.port[data-source].selected:hover{background:var(--amber);border-color:var(--amber);color:#251604}
 .port[data-socket].eligible{outline:1px dashed var(--amber);outline-offset:1px}
+.port.hint-port{outline:2px solid var(--amber);outline-offset:2px}
 .dot{height:9px;width:9px;border-radius:50%;border:1px solid currentColor;color:#b5c3d2}
 .on .dot{background:var(--mint);border-color:var(--mint)}
 .unfed .dot{border-style:dashed}
@@ -91,6 +97,8 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outlin
 .primary{background:var(--mint);border-color:var(--mint);color:#09251b}
 .result{margin-top:12px;min-height:2.7em;color:var(--muted)}
 .result[data-kind=win]{color:var(--mint)}.result[data-kind=fail]{color:var(--pink)}
+.pointer{color:var(--muted);padding:8px 0}
+.pointer button{margin-top:8px;padding:5px 9px}
 details{margin-top:8px;padding:9px 0 0;border-top:1px solid var(--line)}
 summary{color:var(--muted);width:fit-content;font-size:.9rem}
 table{width:100%;margin-top:8px;border-collapse:collapse;font-size:.84rem;text-align:center}
@@ -109,7 +117,7 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     <h1 id="title" tabindex="-1"></h1>
     <div class="goal" id="goal"></div>
     <nav class="practice-nav" id="levels" aria-label="Circuit Dash levels"></nav>
-    <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Finish the beginner course to unlock it permanently. Your progress is saved on this device.</p>
+    <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Complete the 10-level beginner course to unlock the repair missions permanently. Progress is saved in this browser.</p>
     <a class="practice-link" id="return" href="#course" hidden>Back to the beginner course</a>
   </header>
   <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
@@ -140,6 +148,13 @@ td button[aria-pressed=true]{border-color:var(--mint)}
       <button id="undo" disabled>Undo move</button>
     </div>
     <p class="result" id="result" role="status"></p>
+    <details id="pointers" hidden>
+      <summary>Show pointers</summary>
+      <div class="pointer">
+        <p id="pointer-text" aria-live="polite"></p>
+        <button id="hint">Next pointer</button>
+      </div>
+    </details>
     <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
       <h2 id="finish-title">Beginner course complete</h2>
       <div class="actions"><a class="action-link primary" href="#night-shift">Play Night Shift</a></div>
@@ -244,24 +259,56 @@ const stages = [
     pass:'Both switches now have to be on for Ready to light.'
   }
 ];
-const nightShift = {
-    title:'Night Shift', objective:'Fix the panel in one wire move',
+const nightShift = [
+  {
+    title:'Entry alarm', objective:'Fix the panel in one wire move',
     goal:'The <strong>Entry</strong> lamp should light when the door or window is open. The <strong>Alarm</strong> should light only when an entry is open and the system is armed.',
     controls:'Test the panel, then trace the signals. To replace a wire, select the new <strong>OUT</strong> and the <strong>IN</strong> it should feed.',
     inputs:{armed:'Armed', door:'Door', window:'Window'}, lamps:{entry:'Entry', alarm:'Alarm'},
     gates:['or','and'], repair:true, initial:4,
     wiring:{or1:'door', or2:'window', and1:'armed', and2:'door', entry:'or', alarm:'and'},
     target:({armed,door,window}) => ({entry:door | window, alarm:(door | window) & armed}),
-    pass:'Entry and Alarm now work as intended.'
-};
+    pass:'Entry and Alarm now work as intended.',
+    pointers:[
+      'Press Test panel. It sets the switches to the first failing case so you can follow the signals on the board.',
+      'When only the window is open, Entry lights but Alarm stays off. The OR gate already knows when either opening is open. What is the AND gate reading instead?',
+      'Connect OR OUT to AND IN 2. This replaces the Door wire at that socket. Leave Armed connected to AND IN 1, then test again.'
+    ],
+    highlight:['or','and2']
+  },
+  {
+    title:'Sensor check', objective:'Find the wrong connection in the sensor panel',
+    goal:'The <strong>Check</strong> lamp should light when exactly one of the Left and Right sensors is on. The <strong>Alert</strong> lamp should light only when Check is on and the panel is enabled.',
+    controls:'One wire is wrong. Test the panel and compare what the two lamps are reading.',
+    inputs:{enabled:'Enable', left:'Left', right:'Right'}, lamps:{check:'Check', alert:'Alert'},
+    gates:['xor','and'], repair:true, initial:4,
+    wiring:{xor1:'left', xor2:'enabled', and1:'enabled', and2:'xor', check:'xor', alert:'and'},
+    target:({enabled,left,right}) => ({check:left ^ right, alert:(left ^ right) & enabled}),
+    pass:'The sensors now drive Check, and Enable controls whether Alert can light.'
+  },
+  {
+    title:'Backup relay', objective:'Restore the Ready and Alarm lamps',
+    goal:'Power is available when exactly one supply, <strong>Main</strong> or <strong>Backup</strong>, is on. <strong>Ready</strong> should show whether power is available. <strong>Alarm</strong> should light only when power is available and the door or window is open.',
+    controls:'Test the panel across all 16 switch settings. Change one wire to make both lamps match their rules.',
+    inputs:{main:'Main', backup:'Backup', door:'Door', window:'Window'}, lamps:{ready:'Ready', alarm:'Alarm'},
+    gates:['xor','or','and'], repair:true, initial:10,
+    wiring:{xor1:'main', xor2:'backup', or1:'door', or2:'window', and1:'xor', and2:'or', ready:'and', alarm:'and'},
+    target:({main,backup,door,window}) => ({ready:main ^ backup, alarm:(main ^ backup) & (door | window)}),
+    pass:'Night Shift complete. Ready now shows power, and Alarm also checks for an open entry.'
+  }
+];
+const allStages = [...stages,...nightShift];
 const lastStep = stages.length - 1;
 const challengeStep = stages.length;
+const lastChallenge = allStages.length - 1;
 const progressKey = 'logicdash-circuit-dash-course';
 const previousProgressKey = 'logicdash-circuit-dash-beginner-path';
+const nightProgressKey = 'logicdash-circuit-dash-night-shift';
 const get = id => document.getElementById(id);
 const board = get('board');
-let step, stage, wires, pattern, source, tested, passed, message;
+let step, stage, wires, pattern, source, tested, passed, message, pointer;
 let unlocked = savedProgress();
+let nightUnlocked = savedNightProgress();
 
 function savedProgress() {
   try {
@@ -278,30 +325,63 @@ function savedProgress() {
   }
 }
 function completeLevel() {
-  if (step >= stages.length || step < unlocked) return;
+  if (step >= challengeStep) {
+    const next = step - challengeStep + 1;
+    if (next > nightUnlocked && step < lastChallenge) {
+      nightUnlocked = next;
+      saveProgress(nightProgressKey,nightUnlocked);
+    }
+    return;
+  }
+  if (step < unlocked) return;
   unlocked = step + 1;
-  try { localStorage.setItem(progressKey, String(unlocked)); } catch {}
+  saveProgress(progressKey,unlocked);
+}
+function savedNightProgress() {
+  try {
+    const value = Number(localStorage.getItem(nightProgressKey));
+    return Number.isInteger(value) && value >= 0 && value < nightShift.length ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+function saveProgress(key,value) {
+  try { localStorage.setItem(key,String(value)); } catch {}
+}
+function challengeHash(index) {
+  const level = index - challengeStep + 1;
+  return level === 1 ? '#night-shift' : '#night-shift-' + level;
 }
 function routeStep() {
-  if (location.hash === '#night-shift') {
-    // Direct links never bypass the tutorial sequence. Completing the last
-    // beginner level saves the permanent local unlock.
-    if (unlocked >= stages.length) return challengeStep;
+  const requested = nightShift.findIndex((_,index) => challengeHash(challengeStep + index) === location.hash);
+  if (requested < 0) return Math.min(unlocked,lastStep);
+  if (unlocked < stages.length) {
+    // A direct link must not skip the prerequisite beginner course.
     history.replaceState(null, '', location.pathname + location.search + '#course');
     get('locked-notice').hidden = false;
+    return Math.min(unlocked,lastStep);
   }
-  return Math.min(unlocked, lastStep);
+  const available = Math.min(requested,nightUnlocked);
+  if (requested !== available) {
+    // Keep the address in sync with the actual unlocked mission.
+    history.replaceState(null, '', location.pathname + location.search + challengeHash(challengeStep + available));
+  }
+  return challengeStep + available;
 }
 function begin(index) {
   step = index;
-  stage = step === challengeStep ? nightShift : stages[step];
-  Array.from(get('goal').children).forEach((paragraph, i) => paragraph.classList.toggle('current',i === step));
+  stage = allStages[step];
+  const goal = get('goal');
+  goal.classList.toggle('night-goals',step >= challengeStep);
+  Array.from(goal.children).forEach((paragraph, i) => paragraph.classList.toggle('current',i === step));
   wires = {...stage.wiring};
   pattern = stage.initial;
   source = null;
   tested = false;
   passed = false;
   message = '';
+  pointer = 0;
+  get('pointers').open = false;
 }
 function inputMask(id) {
   const keys = Object.keys(stage.inputs);
@@ -358,9 +438,10 @@ function port(kind, id, value) {
   const name = isSource ? sourceName(id) + ' output' : socketName(id) + ' socket';
   const selected = isSource && source === id;
   const eligible = !isSource && source && wires[id] !== source && !makesLoop(source,id);
+  const hinted = stage.highlight?.includes(id) && pointer === stage.pointers.length - 1 && !moveUsed();
   const pinLabel = isSource ? 'OUT' : ('IN' + (id in stage.lamps ? '' : ' ' + id.at(-1)));
   return '<button class="port' + (value ? ' on' : '') + (value == null ? ' unfed' : '') +
-    (selected ? ' selected' : '') + (eligible ? ' eligible' : '') +
+    (selected ? ' selected' : '') + (eligible ? ' eligible' : '') + (hinted ? ' hint-port' : '') +
     '" data-' + kind + '="' + id + '" aria-label="' + name + ', ' + (value == null ? 'no signal' : value ? 'on' : 'off') + '"' +
     (isSource ? ' aria-pressed="' + selected + '"' : '') + (!stage.target || moveUsed() ? ' disabled' : '') +
     '><span class="dot" aria-hidden="true"></span><span class="port-role" aria-hidden="true">' +
@@ -368,25 +449,30 @@ function port(kind, id, value) {
 }
 function render() {
   const focused = document.activeElement?.dataset;
-  const challenge = step === challengeStep;
-  get('brand').textContent = challenge ? 'CIRCUIT DASH / REPAIR CHALLENGE' : 'CIRCUIT DASH / LEVEL ' + (step+1) + ' OF ' + stages.length;
-  get('levels').hidden = challenge;
+  const challenge = step >= challengeStep;
+  const stageList = challenge ? nightShift : stages;
+  const offset = challenge ? challengeStep : 0;
+  const lastUnlocked = challenge ? nightUnlocked : unlocked;
+  get('brand').textContent = (challenge ? 'NIGHT SHIFT' : 'CIRCUIT DASH') +
+    ' / LEVEL ' + (step-offset+1) + ' OF ' + stageList.length;
+  get('levels').setAttribute('aria-label', challenge ? 'Night Shift levels' : 'Circuit Dash levels');
   get('return').hidden = !challenge;
   get('intro').hidden = step !== 0;
   get('play').hidden = step === 0;
   get('finish').hidden = step !== lastStep || unlocked !== stages.length;
-  get('levels').innerHTML = stages.map((level,index) => '<button data-level="' + index + '" aria-label="Level ' +
-    (index+1) + ', ' + level.title + '"' + (index === step ? ' aria-current="step"' : '') +
-    (index > unlocked ? ' disabled' : '') + '>' + (index+1) + '</button>').join('');
+  get('levels').innerHTML = stageList.map((level,index) => '<button data-level="' + (index+offset) + '" aria-label="Level ' +
+    (index+1) + ', ' + level.title + '"' + (index+offset === step ? ' aria-current="step"' : '') +
+    (index > lastUnlocked ? ' disabled' : '') + '>' + (index+1) + '</button>').join('');
   get('title').textContent = stage.title;
   if (step === 0) return;
   const values = valuesFor(pattern,wires);
   board.classList.toggle('two-gates',stage.gates.length > 1);
+  board.classList.toggle('three-gates',stage.gates.length > 2);
   get('objective').textContent = stage.objective;
   get('controls').innerHTML = stage.controls;
   get('test').textContent = stage.repair ? 'Test panel' : 'Check step';
   get('next').textContent = 'Next level';
-  get('next').hidden = step >= lastStep || !passed;
+  get('next').hidden = !passed || step === (challenge ? lastChallenge : lastStep);
   get('inputs').innerHTML = '<span class="label">Switches</span>' + Object.entries(stage.inputs).map(([id,name]) =>
     '<div class="input"><button class="toggle" data-toggle="' + id + '" aria-pressed="' + Boolean(values[id]) + '">' +
     name + '<span>' + (values[id] ? 'ON' : 'OFF') + '</span></button>' + port('source',id,values[id]) + '</div>').join('');
@@ -406,6 +492,12 @@ function render() {
   result.dataset.kind = tested ? (passed ? 'win' : 'fail') : '';
   result.textContent = message || (source ? sourceName(source) + ' OUT selected. Choose a highlighted IN.' :
     (moveUsed() ? (stage.repair ? 'Wire moved. Test the panel to check your repair.' : 'Wire connected. Check the step to test every switch setting.') : ''));
+  get('pointers').hidden = !stage.pointers || passed;
+  if (stage.pointers) {
+    get('pointer-text').textContent = stage.pointers[pointer];
+    get('hint').textContent = pointer === 1 ? 'Show the move' : 'Next pointer';
+    get('hint').hidden = pointer === stage.pointers.length - 1;
+  }
   renderReadout(values);
   get('reference').hidden = !stage.gates.length;
   get('details').hidden = !stage.repair || !tested;
@@ -476,12 +568,18 @@ function draw() {
       middle + ' ' + endY + ', ' + endTurn + ' ' + endY + ' H ' + endX;
     const toGate = socket.slice(0,-1);
     if (stage.gates.includes(jack) && stage.gates.includes(toGate)) {
-      const fromGate = board.querySelector('[data-body="' + jack + '"]').getBoundingClientRect();
-      const destGate = board.querySelector('[data-body="' + toGate + '"]').getBoundingClientRect();
-      const gap = (fromGate.top < destGate.top ? (fromGate.bottom + destGate.top) :
-        (fromGate.top + destGate.bottom))/2 - base.top;
-      const clearance = base.width < 340 ? 7 : 14;
-      const outsideOut = fromGate.right - base.left + clearance;
+      const gateBox = id => board.querySelector('[data-body="' + id + '"]').getBoundingClientRect();
+      const fromGate = gateBox(jack);
+      const destGate = gateBox(toGate);
+      const destIndex = stage.gates.indexOf(toGate);
+      const stepDirection = Math.sign(stage.gates.indexOf(jack) - destIndex);
+      const adjacent = gateBox(stage.gates[destIndex + stepDirection]);
+      const lower = stepDirection === -1 ? destGate : adjacent;
+      const upper = stepDirection === -1 ? adjacent : destGate;
+      const extraLane = stage.gates.length === 3 && socket.endsWith('2') ? 6 : 0;
+      const gap = (upper.bottom + lower.top)/2 - base.top + extraLane;
+      const clearance = (base.width < 340 ? 7 : 14) + extraLane;
+      const outsideOut = Math.max(fromGate.right,adjacent.right) - base.left + clearance;
       const outsideIn = destGate.left - base.left - clearance;
       path = roundedRoute([[x,y],[outsideOut,y],[outsideOut,gap],[outsideIn,gap],[outsideIn,endY],[endX,endY]]);
     }
@@ -552,17 +650,25 @@ function test() {
     stage.lamps[lamp] + ' should be ' + (expected[lamp] ? 'on' : 'off') + ' but ' + observed + '.';
 }
 function goToLevel(index) {
-  // Guard programmatic navigation as well as URL navigation.
-  if (index === challengeStep && unlocked < stages.length) {
+  if (!Number.isInteger(index) || index < 0 || index > lastChallenge) return;
+  if (index >= challengeStep && (unlocked < stages.length || index > challengeStep + nightUnlocked)) {
     get('locked-notice').hidden = false;
     return;
   }
-  if (index < 0 || index > challengeStep || (index < challengeStep && index > unlocked)) return;
-  if (index === challengeStep) get('locked-notice').hidden = true;
+  if (index < challengeStep && index > unlocked) return;
+  get('locked-notice').hidden = true;
   begin(index);
   get('details').open = false;
   render();
   get('title').focus();
+}
+function openLevel(index) {
+  if (index >= challengeStep && (unlocked < stages.length || index > challengeStep + nightUnlocked)) {
+    get('locked-notice').hidden = false;
+    return;
+  }
+  if (index < challengeStep || location.hash === challengeHash(index)) goToLevel(index);
+  else location.hash = challengeHash(index);
 }
 document.querySelector('main').addEventListener('click', event => {
   const button = event.target.closest('button');
@@ -577,9 +683,10 @@ document.querySelector('main').addEventListener('click', event => {
     }
   } else if (index !== undefined) {
     pattern = Number(index);
-  } else if (level !== undefined && Number(level) <= unlocked && Number(level) !== step) {
-    get('locked-notice').hidden = true;
-    goToLevel(Number(level));
+  } else if (level !== undefined) {
+    const index = Number(level);
+    const maxLevel = step >= challengeStep ? challengeStep + nightUnlocked : unlocked;
+    if (index <= maxLevel && index !== step) openLevel(index);
     return;
   } else if (button.id === 'start') {
     completeLevel();
@@ -588,10 +695,11 @@ document.querySelector('main').addEventListener('click', event => {
   } else if (button.id === 'test') {
     test();
     if (passed) completeLevel();
-  } else if (button.id === 'next' && step < lastStep && passed) {
-    get('locked-notice').hidden = true;
-    goToLevel(step + 1);
+  } else if (button.id === 'next' && passed && step !== lastStep && step < lastChallenge) {
+    openLevel(step + 1);
     return;
+  } else if (button.id === 'hint' && stage.pointers) {
+    pointer = Math.min(pointer + 1,stage.pointers.length - 1);
   } else if (button.id === 'undo') {
     wires = {...stage.wiring};
     source = null;
@@ -623,7 +731,8 @@ document.addEventListener('keydown', event => {
   }
 });
 window.addEventListener('hashchange',() => goToLevel(routeStep()));
-get('goal').innerHTML = [...stages,nightShift].map(level => '<p>' + level.goal + '</p>').join('');
+get('goal').innerHTML = allStages.map((level,index) =>
+  (index >= challengeStep ? '<p class="night-goal">' : '<p>') + level.goal + '</p>').join('');
 begin(routeStep());
 renderRules();
 new ResizeObserver(draw).observe(board);
