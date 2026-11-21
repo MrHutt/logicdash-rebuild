@@ -110,6 +110,18 @@ test("Circuit Dash and Night Shift have separate entry routes and a dedicated st
   assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage Night Shift link should open the story");
 });
 
+test("Power Failure has a story introduction and separate direct repair routes", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  assert.match(circuit,/id="power-opening"/, "Power Failure intro is missing");
+  assert.match(circuit,/id="power-begin"/, "Power Failure begin button is missing");
+  assert.match(circuit,/if \(hash === '#power-failure'\)/, "Power Failure chapter entry is missing");
+  assert.match(circuit,/return '#power-failure-' \+ chapterLevel/, "Individual repair routes must not conflict with intro");
+  assert.match(circuit,/powerIntroOpen = location\.hash === '#power-failure'/, "Power Failure link must show introduction");
+  assert.match(circuit,/id="night-finish"/, "Night Shift must link to the new chapter");
+  assert.match(circuit,/Read the Power Failure briefing/, "Night Shift handover must introduce story");
+  assert.match(circuit,/nightUnlocked < nightShift\.length/, "Power Failure requires Night Shift completion");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
