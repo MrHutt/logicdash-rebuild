@@ -10,13 +10,13 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
-main{max-width:920px;margin:auto;padding:clamp(13px,4vw,36px)}
+main{width:100%;max-width:1200px;margin:auto;padding:clamp(13px,2.6vw,30px)}
 h1{font-size:clamp(1.85rem,7vw,3.35rem);letter-spacing:-.055em;line-height:1.08;margin:5px 0 12px}
 h2{margin:0 0 8px;font-size:1.2rem}
 p{margin:0}
 .brand,.label,.gate,.count{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 .brand{color:var(--mint);font-weight:750;font-size:.85rem;letter-spacing:.08em}
-.goal{display:grid;max-width:62ch;color:var(--muted)}
+.goal{display:grid;max-width:75ch;color:var(--muted)}
 .goal p{grid-area:1/1;visibility:hidden}
 .goal p.current{visibility:visible}
 .goal.night-goals p:not(.night-goal),.goal.power-goals p:not(.power-goal),.goal:not(.night-goals) p.night-goal,.goal:not(.power-goals) p.power-goal{display:none}
@@ -34,6 +34,9 @@ p{margin:0}
 .locked-notice{margin:12px 0 0;padding:10px 12px;border:1px solid var(--amber);border-radius:9px;color:var(--amber);background:#2b241b;font-size:.9rem}
 .action-link{display:inline-flex;align-items:center;min-height:44px;border-radius:8px;padding:7px 14px;font-size:.91rem;font-weight:750;text-decoration:none}
 .story{margin-top:14px;padding:13px 15px;border-left:3px solid var(--amber);background:#1d2937;border-radius:0 9px 9px 0}
+body[data-repair-chapter] #title{min-height:2.16em}
+body[data-repair-chapter] .goal{height:5.8em;overflow-y:auto}
+body[data-repair-chapter] .story{height:9.6em;overflow-y:auto;scrollbar-width:thin}
 .story-tag{font:800 .75rem/1.4 ui-monospace,monospace;letter-spacing:.09em;color:var(--amber);margin-bottom:6px}
 .story p{color:var(--ink);font-size:.93rem;max-width:70ch}
 .story p + p{margin-top:7px}
@@ -153,6 +156,9 @@ td button[aria-pressed=true]{border-color:var(--mint)}
   .panel{margin-top:14px;padding:10px;border-radius:12px}
   .story{margin-top:11px;padding:11px 12px}
   .story p{font-size:.9rem;line-height:1.48}
+  body[data-repair-chapter] #title{min-height:2.16em}
+  body[data-repair-chapter] .goal{height:7.1em}
+  body[data-repair-chapter] .story{height:12.8em}
   .board{gap:3px}
   .board-head{align-items:baseline}
   .practice-nav{gap:7px}
@@ -526,14 +532,23 @@ function challengeHash(index) {
 }
 function routeStep() {
   const requested = allStages.findIndex((_,index) => index >= challengeStep && challengeHash(index) === location.hash);
-  if (requested < challengeStep) return Math.min(unlocked,lastStep);
+  if (requested < challengeStep) {
+    if (location.hash === '#course' || location.hash === '#training') return Math.min(unlocked,lastStep);
+    // Opening Circuit Dash normally resumes the first incomplete mission.
+    if (unlocked < stages.length) return Math.min(unlocked,lastStep);
+    if (nightUnlocked < nightShift.length) return challengeStep + nightUnlocked;
+    return powerStart + Math.min(powerUnlocked,powerFailure.length - 1);
+  }
   let available;
   if (unlocked < stages.length) {
     available = Math.min(unlocked,lastStep);
   } else if (requested >= powerStart) {
-    available = nightUnlocked < nightShift.length ? challengeStep + nightUnlocked : powerStart + Math.min(requested - powerStart,powerUnlocked);
+    available = nightUnlocked < nightShift.length
+      ? challengeStep + nightUnlocked
+      : powerStart + Math.min(requested === powerStart ? powerUnlocked : requested - powerStart,powerUnlocked,powerFailure.length - 1);
   } else {
-    available = challengeStep + Math.min(requested - challengeStep,nightUnlocked);
+    // The chapter entry resumes the next unfinished repair.
+    available = challengeStep + Math.min(requested === challengeStep ? nightUnlocked : requested - challengeStep,nightUnlocked);
   }
   if (available !== requested) {
     history.replaceState(null,'',location.pathname + location.search +
@@ -723,7 +738,8 @@ function render() {
           return '<button type="button" data-level="' + absolute + '" aria-label="' + accessible + '"' +
             (absolute === step ? ' aria-current="step"' : '') +
             (index < group.unlocked ? ' class="done"' : '') +
-            (!canEnter(absolute) ? ' disabled' : '') + '>' + number + '</button>';
+            (!canEnter(absolute) ? ' disabled' : '') + '>' +
+            (index < group.unlocked ? '<span aria-hidden="true">✓</span> ' : '') + number + '</button>';
         }).join('') + '</div></div>').join('')
     : stages.map((level,index) => '<button data-level="' + index + '" aria-label="Training level ' +
       (index+1) + ', ' + level.title + '"' + (index === step ? ' aria-current="step"' : '') +
