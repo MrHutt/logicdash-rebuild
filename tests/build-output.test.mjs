@@ -63,7 +63,7 @@ test("Circuit Dash is one 16-level campaign with three scenarios", async () => {
 
 test("All 16 levels appear on the map and the persistent navigation", async () => {
   const circuit = await text("circuit-dash/index.html");
-  for (const line of ["function levelCompleted(index)","function nextCampaignLevel()","get('levels').innerHTML = groups.map","get('campaign-map').innerHTML = groups.map","levelButton(level,group.start+index)","if (canEnter(index)) openLevel(index)"]) {
+  for (const line of ["function levelCompleted(index)","function nextCampaignLevel()","get('progress-track').innerHTML = allStages.map","get('campaign-map').innerHTML = groups.map","if (canEnter(index)) openLevel(index)"]) {
     assert.ok(circuit.includes(line), "Missing unified navigation: "+line);
   }
   assert.match(circuit,/min-height:44px/);
@@ -128,16 +128,16 @@ test("Campaign retains its game mechanics, responsive layout and safe reset", as
   assert.match(circuit,/<svg viewBox="0 0 48 48"/);
 });
 
-test("Game view uses a lightweight progress strip and puts the full mission navigator below the circuit", async () => {
+test("Game view has only the top progress strip, placed after Level 1's induction text", async () => {
   const circuit = await text("circuit-dash/index.html");
   assert.match(circuit,/id="compact-progress"/, "Game needs compact progress");
   assert.match(circuit,/id="progress-track"/, "Sixteen numbered progress indicators missing");
   assert.match(circuit,/grid-template-columns:repeat\(16,minmax\(0,1fr\)\)/, "Desktop progress should be one row");
   assert.match(circuit,/grid-template-columns:repeat\(8,minmax\(0,1fr\)\)/, "Mobile progress should have short rows");
-  assert.match(circuit,/<details class="level-review" id="level-review" hidden>/, "Review navigation should be collapsed by default");
-  assert.ok(circuit.indexOf('id="level-review"') > circuit.indexOf('id="play"'), "Detailed navigation must follow circuit board");
+  assert.ok(circuit.indexOf('id="compact-progress"') > circuit.indexOf('id="intro"'), "Level 1 progress must sit below its induction text");
   assert.ok(circuit.indexOf('id="compact-progress"') < circuit.indexOf('id="play"'), "Progress strip should precede circuit board");
-  assert.match(circuit,/get\('level-review'\)\.hidden = showingIntro/);
+  assert.doesNotMatch(circuit,/id="level-review"/, "Do not duplicate progress navigation below the puzzle");
+  assert.doesNotMatch(circuit,/id="levels"/, "Do not keep a second level navigator");
   assert.match(circuit,/get\('progress-track'\)\.innerHTML = allStages\.map/);
 });
 
