@@ -128,6 +128,19 @@ test("Campaign retains its game mechanics, responsive layout and safe reset", as
   assert.match(circuit,/<svg viewBox="0 0 48 48"/);
 });
 
+test("Game view uses a lightweight progress strip and puts the full mission navigator below the circuit", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  assert.match(circuit,/id="compact-progress"/, "Game needs compact progress");
+  assert.match(circuit,/id="progress-track"/, "Sixteen numbered progress indicators missing");
+  assert.match(circuit,/grid-template-columns:repeat\(16,minmax\(0,1fr\)\)/, "Desktop progress should be one row");
+  assert.match(circuit,/grid-template-columns:repeat\(8,minmax\(0,1fr\)\)/, "Mobile progress should have short rows");
+  assert.match(circuit,/<details class="level-review" id="level-review" hidden>/, "Review navigation should be collapsed by default");
+  assert.ok(circuit.indexOf('id="level-review"') > circuit.indexOf('id="play"'), "Detailed navigation must follow circuit board");
+  assert.ok(circuit.indexOf('id="compact-progress"') < circuit.indexOf('id="play"'), "Progress strip should precede circuit board");
+  assert.match(circuit,/get\('level-review'\)\.hidden = showingIntro/);
+  assert.match(circuit,/get\('progress-track'\)\.innerHTML = allStages\.map/);
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
