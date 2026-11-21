@@ -26,6 +26,21 @@ p{margin:0}
 .intro p,.intro dd{color:var(--muted)}
 .intro dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px;margin:16px 0}
 .intro dl div{border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+.night-opening{max-width:850px;margin-inline:auto;padding:clamp(18px,4vw,32px);border-color:#456f84;background:linear-gradient(155deg,#162d42,#121d2c 65%)}
+.night-opening .chapter-label{color:#80d9f2;font:800 .76rem ui-monospace,monospace;letter-spacing:.1em}
+.night-opening h2{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.16;margin:9px 0 15px}
+.night-opening p{color:#d4e1ed;max-width:67ch;line-height:1.65}
+.night-opening p+p{margin-top:12px}
+.night-opening .dispatch{border-left:3px solid #80d9f2;padding:11px 15px;margin:19px 0;background:#0d2032;border-radius:0 9px 9px 0}
+.night-opening .dispatch p{color:#f1f6f9;font-weight:650}
+.night-opening .mission-lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px}
+.night-opening .mission-lineup div{border:1px solid #456f84;border-radius:10px;padding:12px;background:#102338}
+.night-opening .mission-lineup strong{display:block;color:#80d9f2;font:800 .76rem ui-monospace,monospace}
+.night-opening .mission-lineup span{display:block;font-weight:800;margin:6px 0}
+.night-opening .mission-lineup small{color:#bcd1df;line-height:1.5;display:block}
+.night-opening .actions{margin-top:20px}
+.night-opening .action-link{background:#80d9f2;color:#0b1f2d}
+@media(max-width:570px){.night-opening .mission-lineup{grid-template-columns:1fr}.night-opening .mission-lineup div{padding:10px 12px}}
 .intro dt{font-weight:800;color:var(--mint)}
 .intro dd{margin:4px 0 0}
 .intro .actions,.finish .actions{margin-top:14px}
@@ -199,6 +214,26 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Complete the 10-level beginner course to unlock the repair missions permanently. Progress is saved in this browser.</p>
     <a class="practice-link" id="return" href="#course" hidden>Back to the beginner course</a>
   </header>
+  <section class="panel night-opening" id="night-opening" aria-labelledby="night-opening-title" hidden>
+    <div class="chapter-label">INCIDENT 01 / NIGHT SHIFT</div>
+    <h2 id="night-opening-title">The building should be quiet.</h2>
+    <p>It's 23:42. The day staff have gone home, the corridors are empty, and the security desk is halfway through its final checks. Then the first warning comes in: an armed alarm has failed to respond to an open window.</p>
+    <div class="dispatch">
+      <div class="chapter-label">INCOMING CALL · SECURITY DESK</div>
+      <p>“We can see the entry sensor working, but the alarm isn't following it. There's nobody here to replace the whole panel. Can you find the bad connection?”</p>
+    </div>
+    <p>You're the technician on call. The circuits are already installed, but some wires go to the wrong inputs. You'll examine what each panel is supposed to do, test different switch settings, and repair the faulty connection before moving on.</p>
+    <p>One successful test isn't enough: your repair must work for <strong>every</strong> combination. If you lose the trail, switch on Trace Mode or reveal a hint. Neither costs a repair move.</p>
+    <div class="mission-lineup" aria-label="Tonight's repair assignments">
+      <div><strong>01 · 23:42</strong><span>Entry Alarm</span><small>An open window slips past the armed alarm</small></div>
+      <div><strong>02 · 00:18</strong><span>Sensor Check</span><small>The east-wing sensors are reporting the wrong state</small></div>
+      <div><strong>03 · 01:06</strong><span>Backup Relay</span><small>The last power-status check fails before handover</small></div>
+    </div>
+    <div class="actions">
+      <button id="night-begin" class="primary">Begin Night Shift</button>
+      <a class="action-link" href="#course" style="background:#26374a;color:#f1f6f9">Back to Circuit Dash</a>
+    </div>
+  </section>
   <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
     <h2 id="intro-title">How the board works</h2>
     <p>Tap a switch to try a different input. Follow the wire to see where that value goes. Your job is to make the lamps behave as each level asks.</p>
@@ -250,7 +285,7 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
       <h2 id="finish-title">Training complete — first assignment unlocked</h2>
       <p>You've learned to trace signals, connect gates and fix a faulty circuit. A late-night call has come in from the security team. Three panels need repairing before the morning shift.</p>
-      <div class="actions"><a class="action-link primary" href="#night-shift">Play Night Shift</a></div>
+      <div class="actions"><a class="action-link primary" href="#night-shift">Read the Night Shift briefing</a></div>
     </section>
     <div class="readout" id="readout" aria-label="Live circuit explanation"></div>
     <details id="reference" hidden><summary>Gate rules and truth table</summary><div id="rules"></div></details>
@@ -465,6 +500,7 @@ const get = id => document.getElementById(id);
 const board = get('board');
 let step, stage, wires, pattern, source, tested, passed, message, hintStep;
 let tracing = false, traceTarget = null;
+let nightIntroOpen = false;
 let unlocked = savedProgress();
 let nightUnlocked = savedNightProgress();
 let powerUnlocked = savedPowerProgress();
@@ -529,39 +565,41 @@ function challengeHash(index) {
     return chapterLevel === 1 ? '#power-failure' : '#power-failure-' + chapterLevel;
   }
   const level = index - challengeStep + 1;
-  return level === 1 ? '#night-shift' : '#night-shift-' + level;
+  return '#night-shift-' + level;
 }
 function routeStep() {
-  const requested = allStages.findIndex((_,index) => index >= challengeStep && challengeHash(index) === location.hash);
-  if (requested < challengeStep) {
-    if (location.hash === '#course' || location.hash === '#training') return Math.min(unlocked,lastStep);
-    // Opening Circuit Dash normally resumes the first incomplete mission.
-    if (unlocked < stages.length) return Math.min(unlocked,lastStep);
-    if (nightUnlocked < nightShift.length) return challengeStep + nightUnlocked;
-    return powerStart + Math.min(powerUnlocked,powerFailure.length - 1);
+  const hash = location.hash;
+  // Circuit Dash is a separate training entry, never an automatic Night Shift redirect.
+  if (!hash || hash === '#course' || hash === '#training') return Math.min(unlocked,lastStep);
+  if (hash === '#night-shift') {
+    if (unlocked >= stages.length) return challengeStep + Math.min(nightUnlocked,nightShift.length-1);
+    get('locked-notice').textContent = 'Complete Circuit Dash training to unlock the Night Shift assignment.';
+    get('locked-notice').hidden = false;
+    return Math.min(unlocked,lastStep);
   }
+  const requested = allStages.findIndex((_,index) => index >= challengeStep && challengeHash(index) === hash);
+  if (requested < challengeStep) return Math.min(unlocked,lastStep);
   let available;
-  if (unlocked < stages.length) {
-    available = Math.min(unlocked,lastStep);
-  } else if (requested >= powerStart) {
+  if (unlocked < stages.length) available = Math.min(unlocked,lastStep);
+  else if (requested >= powerStart) {
     available = nightUnlocked < nightShift.length
-      ? challengeStep + nightUnlocked
-      : powerStart + Math.min(requested === powerStart ? powerUnlocked : requested - powerStart,powerUnlocked,powerFailure.length - 1);
+      ? challengeStep + Math.min(nightUnlocked,nightShift.length-1)
+      : powerStart + Math.min(requested-powerStart,powerUnlocked,powerFailure.length-1);
   } else {
-    // The chapter entry resumes the next unfinished repair.
-    available = challengeStep + Math.min(requested === challengeStep ? nightUnlocked : requested - challengeStep,nightUnlocked);
+    available = challengeStep + Math.min(requested-challengeStep,nightUnlocked,nightShift.length-1);
   }
   if (available !== requested) {
     history.replaceState(null,'',location.pathname + location.search +
       (available >= challengeStep ? challengeHash(available) : '#course'));
     get('locked-notice').textContent = available < challengeStep
-      ? 'Finish the beginner course to unlock Night Shift and Power Failure.'
-      : 'Finish the earlier repair missions to unlock this chapter.';
+      ? 'Finish Circuit Dash training to unlock Night Shift.'
+      : 'Finish the earlier repair missions to unlock this level.';
     get('locked-notice').hidden = false;
   }
   return available;
 }
 function begin(index) {
+  nightIntroOpen = location.hash === '#night-shift' && unlocked >= stages.length;
   step = index;
   stage = allStages[step];
   const goal = get('goal');
@@ -720,9 +758,16 @@ function render() {
     : chapter + ' / LEVEL ' + (step+1) + ' OF ' + stages.length;
   get('levels').setAttribute('aria-label', isRepair ? 'All repair missions, grouped by chapter' : 'Circuit Dash training levels');
   get('levels').classList.toggle('campaign-nav',isRepair);
-  get('return').hidden = !(isPower || isNight);
-  get('intro').hidden = step !== 0;
-  get('play').hidden = step === 0;
+  get('return').hidden = !(isPower || isNight) || nightIntroOpen;
+  get('night-opening').hidden = !nightIntroOpen;
+  get('night-begin').textContent = nightUnlocked === 0 ? 'Begin Night Shift' :
+    nightUnlocked < nightShift.length ? 'Continue · Repair ' + (nightUnlocked+1) : 'Replay · Final Repair';
+  get('levels').hidden = nightIntroOpen;
+  get('goal').hidden = nightIntroOpen;
+  get('story').hidden = nightIntroOpen || !stage.story;
+  get('intro').hidden = step !== 0 || nightIntroOpen;
+  get('play').hidden = step === 0 || nightIntroOpen;
+  get('title').textContent = nightIntroOpen ? 'Night Shift' : stage.title;
   get('finish').hidden = step !== lastStep || unlocked !== stages.length;
   get('night-finish').hidden = step !== lastChallenge || nightUnlocked !== nightShift.length;
   get('power-finish').hidden = step !== lastPower || powerUnlocked !== powerFailure.length;
@@ -747,8 +792,6 @@ function render() {
       (index < unlocked ? ' class="done"' : '') +
       (index > unlocked ? ' disabled' : '') + '>' +
       (index < unlocked ? '<span aria-hidden="true">✓</span> ' : '') + (index+1) + '</button>').join('');
-  get('title').textContent = stage.title;
-  get('story').hidden = !stage.story;
   if (stage.story) {
     get('story-tag').textContent = stage.briefing;
     get('story-lead').textContent = stage.story;
@@ -986,6 +1029,10 @@ document.querySelector('main').addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button || button.disabled) return;
   const {toggle,source:jack,socket,case:index,level,trace:traceId} = button.dataset;
+  if (button.id === 'night-begin') {
+    openLevel(challengeStep + Math.min(nightUnlocked,nightShift.length-1));
+    return;
+  }
   if (button.id === 'trace-toggle') {
     tracing = !tracing;
     traceTarget = null;
