@@ -86,6 +86,18 @@ test("Circuit Dash repair navigation is continuous and grouped, and tracing has 
   assert.match(circuit, /trace-description\{height:5\.8em\}/, "Mobile trace panel must reserve steady height");
 });
 
+test("Circuit Dash resumes current repair, shows completion ticks and uses the homepage frame width", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  const home = await text("index.html");
+  assert.match(circuit,/max-width:1280px/, "Game should match homepage wide container");
+  assert.match(circuit,/Opening Circuit Dash normally resumes the first incomplete mission/, "Root entry must resume unlocked progress");
+  assert.match(circuit,/if \(nightUnlocked < nightShift\.length\) return challengeStep \+ nightUnlocked/, "Resume next Night Shift repair");
+  assert.match(circuit,/<span aria-hidden="true">✓<\/span>/, "Completed steps need ticks");
+  assert.match(circuit,/body\[data-repair-chapter\] \.story\{height:/, "Briefing should reserve stable space");
+  assert.match(home,/href="\/circuit-dash\/"/, "Homepage must link Circuit Dash");
+  assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage must link Night Shift");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
