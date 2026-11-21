@@ -59,9 +59,9 @@ p{margin:0}
 :is(.night-opening,.power-opening){width:100%;max-width:none;margin-inline:0;padding:clamp(18px,4vw,32px);border-color:#456f84;background:linear-gradient(155deg,#162d42,#121d2c 65%)}
 :is(.night-opening,.power-opening) .chapter-label{color:#80d9f2;font:800 .76rem ui-monospace,monospace;letter-spacing:.1em}
 :is(.night-opening,.power-opening) h2{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.16;margin:9px 0 15px}
-:is(.night-opening,.power-opening) p{color:#d4e1ed;max-width:67ch;line-height:1.65}
+:is(.night-opening,.power-opening) p{color:#d4e1ed;max-width:92ch;line-height:1.65}
 :is(.night-opening,.power-opening) p+p{margin-top:12px}
-:is(.night-opening,.power-opening) .dispatch{border-left:3px solid #80d9f2;padding:11px 15px;margin:19px 0;background:#0d2032;border-radius:0 9px 9px 0}
+:is(.night-opening,.power-opening) .dispatch{max-width:92ch;border-left:3px solid #80d9f2;padding:11px 15px;margin:19px 0;background:#0d2032;border-radius:0 9px 9px 0}
 :is(.night-opening,.power-opening) .dispatch p{color:#f1f6f9;font-weight:650}
 :is(.night-opening,.power-opening) .mission-lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px}
 :is(.night-opening,.power-opening) .mission-lineup div{border:1px solid #456f84;border-radius:10px;padding:12px;background:#102338}
@@ -239,11 +239,26 @@ td button[aria-pressed=true]{border-color:var(--mint)}
 .campaign-complete h2{font-size:clamp(2rem,5vw,3rem);line-height:1.1;letter-spacing:-.04em;margin:10px 0 15px}
 .campaign-complete p{margin:0 auto;max-width:66ch;color:#d4e1ed;line-height:1.7}
 .campaign-complete p+p{margin-top:11px}
-.campaign-complete .complete-call{margin:20px auto;padding:15px 17px;text-align:left;max-width:65ch;border-left:3px solid #95e3b4;border-radius:0 9px 9px 0;background:#10281e}
+.campaign-complete .complete-call{margin:20px auto;padding:15px 17px;text-align:left;max-width:78ch;border-left:3px solid #95e3b4;border-radius:0 9px 9px 0;background:#10281e}
 .campaign-complete .complete-call strong{color:#95e3b4;display:block;margin-bottom:5px;font:.78rem ui-monospace,monospace}
 .campaign-complete .complete-count{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}
 .campaign-complete .complete-count span{border:1px solid #478366;color:#cbf5d9;border-radius:8px;padding:8px 11px;font:800 .85rem ui-monospace,monospace}
 .campaign-complete .actions{margin-top:23px;justify-content:center}
+body[data-story-screen] main > header{margin-bottom:0}
+body[data-story-screen] main > .panel{margin-top:8px}
+.progress-reset{margin-top:14px}
+.progress-reset button{background:transparent;border-color:#52667c;color:#cbd4dd;font-size:.83rem;padding:7px 12px;min-height:44px}
+.progress-reset button:hover{color:#f1f6f9;border-color:#f1f6f9}
+.chapter-outro{background:linear-gradient(140deg,#163448,#142535);border-color:#456f84}
+.chapter-outro .chapter-label{color:#80d9f2;font:800 .76rem ui-monospace,monospace;letter-spacing:.1em}
+.chapter-outro h2{font-size:clamp(1.7rem,4vw,2.4rem);margin:8px 0 14px}
+.chapter-outro p{max-width:85ch;color:#d4e1ed;line-height:1.65}
+.chapter-outro p+p{margin-top:12px}
+.chapter-outro .dispatch{max-width:90ch;padding:12px 15px;border-left:3px solid #80d9f2;background:#0d2032;margin:15px 0}
+.chapter-outro .actions{margin-top:20px}
+.chapter-outro .action-link{background:#80d9f2;color:#102431}
+@media(min-width:900px){:is(.night-opening,.power-opening,.chapter-outro){padding:28px 36px}}
+
 .campaign-complete .action-link{background:#95e3b4;color:#10251d}
 .campaign-complete .action-link.secondary{background:#273c4b;border:1px solid #52667c;color:#f1f6f9}
 </style>
@@ -264,7 +279,6 @@ td button[aria-pressed=true]{border-color:var(--mint)}
 </header>
 <main>
   <header>
-    <a class="practice-link" href="/" style="margin:0 0 12px">← LogicDash home</a>
     <div class="brand" id="brand"></div>
     <h1 id="title" tabindex="-1"></h1>
     <div class="goal" id="goal"></div>
@@ -279,7 +293,7 @@ td button[aria-pressed=true]{border-color:var(--mint)}
   </header>
   <section class="panel night-opening" id="night-opening" aria-labelledby="night-opening-title" hidden>
     <div class="chapter-label">INCIDENT 01 / NIGHT SHIFT</div>
-    <h2 id="night-opening-title">The building should be quiet.</h2>
+    <h2 id="night-opening-title" tabindex="-1">The building should be quiet.</h2>
     <p>It's 23:42. The day staff have gone home, the corridors are empty, and the security desk is halfway through its final checks. Then the first warning comes in: an armed alarm has failed to respond to an open window.</p>
     <div class="dispatch">
       <div class="chapter-label">INCOMING CALL · SECURITY DESK</div>
@@ -294,12 +308,13 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     </div>
     <div class="actions">
       <button id="night-begin" class="primary">Begin Night Shift</button>
-      <a class="action-link" href="#course" style="background:#26374a;color:#f1f6f9">Back to Circuit Dash</a>
+      <a class="action-link" href="#course" style="background:#26374a;color:#f1f6f9">Circuit Dash training</a>
     </div>
+    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
   <section class="panel power-opening" id="power-opening" aria-labelledby="power-opening-title" hidden>
     <div class="chapter-label">INCIDENT 02 / POWER FAILURE</div>
-    <h2 id="power-opening-title">Just when you thought it was over.</h2>
+    <h2 id="power-opening-title" tabindex="-1">Just when you thought it was over.</h2>
     <p>It's 02:11. The security faults are fixed, and your Night Shift report is almost signed off. Outside, the rain gets heavier. A flash of lightning is followed by a low thud from the plant room. Then the building lights go out.</p>
     <div class="dispatch">
       <div class="chapter-label">INCOMING CALL · CONTROL ROOM</div>
@@ -316,11 +331,21 @@ td button[aria-pressed=true]{border-color:var(--mint)}
       <button id="power-begin" class="primary">Begin Power Failure</button>
       <a class="action-link" href="#night-shift" style="background:#26374a;color:#f1f6f9">Night Shift briefing</a>
     </div>
+    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
+  </section>
+  <section class="panel chapter-outro" id="night-complete" aria-labelledby="night-complete-title" hidden>
+    <div class="chapter-label">INCIDENT 01 / THREE REPAIRS COMPLETE</div>
+    <h2 id="night-complete-title" tabindex="-1">Night Shift — systems restored.</h2>
+    <p>01:34. The entry alarm is responding again. The sensor checks agree with the control panel, and the backup relay has passed its final test. You begin writing the handover report.</p>
+    <div class="dispatch"><p>“All three faults cleared. That's everything for tonight… unless the weather gets any worse.”</p></div>
+    <p>Outside, the rain is getting heavier. An ominous crack of thunder breaks the silence. Your phone rings again.</p>
+    <div class="actions"><a class="action-link" href="#power-failure">Continue to Power Failure</a><a class="action-link" href="#night-shift" style="background:#26374a;color:#f1f6f9">Night Shift introduction</a></div>
+    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
   <section class="panel campaign-complete" id="campaign-complete" aria-labelledby="campaign-complete-title" hidden>
     <div class="complete-symbol" aria-hidden="true">✓</div>
     <div class="chapter-label">INCIDENT REPORT / ALL SYSTEMS RESTORED</div>
-    <h2 id="campaign-complete-title">The building is back online.</h2>
+    <h2 id="campaign-complete-title" tabindex="-1">The building is back online.</h2>
     <p>03:07. The emergency lights hold steady. The lift reports the correct safety status. In the control room, every indicator finally agrees with the circuits behind it.</p>
     <div class="complete-call">
       <strong>FINAL CALL · SECURITY DESK</strong>
@@ -335,8 +360,8 @@ td button[aria-pressed=true]{border-color:var(--mint)}
       <a class="action-link" href="/circuit-dash/">Replay Circuit Dash</a>
       <a class="action-link secondary" href="#night-shift">Replay Night Shift</a>
       <a class="action-link secondary" href="#power-failure">Replay Power Failure</a>
-      <a class="action-link secondary" href="/">LogicDash home</a>
     </div>
+    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
   <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
     <h2 id="intro-title">How the board works</h2>
@@ -645,7 +670,7 @@ const get = id => document.getElementById(id);
 const board = get('board');
 let step, stage, wires, pattern, source, tested, passed, message, hintStep;
 let tracing = false, traceTarget = null;
-let nightIntroOpen = false, powerIntroOpen = false, campaignCompleteOpen = false;
+let nightIntroOpen = false, powerIntroOpen = false, campaignCompleteOpen = false, nightCompleteOpen = false;
 let unlocked = savedProgress();
 let nightUnlocked = savedNightProgress();
 let powerUnlocked = savedPowerProgress();
@@ -716,6 +741,7 @@ function routeStep() {
   const hash = location.hash;
   // Circuit Dash is a separate training entry, never an automatic Night Shift redirect.
   if (!hash || hash === '#course' || hash === '#training') return Math.min(unlocked,lastStep);
+  if (hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length) return lastChallenge;
   if (hash === '#mission-complete' && powerUnlocked === powerFailure.length &&
       nightUnlocked === nightShift.length && unlocked === stages.length) return lastPower;
   if (hash === '#power-failure') {
@@ -757,6 +783,7 @@ function begin(index) {
   nightIntroOpen = location.hash === '#night-shift' && unlocked >= stages.length;
   powerIntroOpen = location.hash === '#power-failure' && unlocked >= stages.length && nightUnlocked === nightShift.length;
   campaignCompleteOpen = location.hash === '#mission-complete' && powerUnlocked === powerFailure.length && nightUnlocked === nightShift.length && unlocked === stages.length;
+  nightCompleteOpen = location.hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length;
   step = index;
   stage = allStages[step];
   const goal = get('goal');
@@ -915,21 +942,25 @@ function render() {
     : chapter + ' / LEVEL ' + (step+1) + ' OF ' + stages.length;
   get('levels').setAttribute('aria-label', isRepair ? 'All repair missions, grouped by chapter' : 'Circuit Dash training levels');
   get('levels').classList.toggle('campaign-nav',isRepair);
-  const showingIntro = nightIntroOpen || powerIntroOpen || campaignCompleteOpen;
+  const showingIntro = nightIntroOpen || powerIntroOpen || campaignCompleteOpen || nightCompleteOpen;
+  document.body.toggleAttribute('data-story-screen',showingIntro);
+  get('brand').hidden = showingIntro;
+  get('title').hidden = showingIntro;
   get('campaign-complete').hidden = !campaignCompleteOpen;
+  get('night-complete').hidden = !nightCompleteOpen;
   get('return').hidden = !(isPower || isNight) || showingIntro;
   get('night-opening').hidden = !nightIntroOpen;
   get('power-opening').hidden = !powerIntroOpen;
-  get('power-begin').textContent = powerUnlocked === 0 ? 'Begin Power Failure' :
-    powerUnlocked < powerFailure.length ? 'Continue · Repair ' + (powerUnlocked+4) : 'Replay · Final Repair';
-  get('night-begin').textContent = nightUnlocked === 0 ? 'Begin Night Shift' :
-    nightUnlocked < nightShift.length ? 'Continue · Repair ' + (nightUnlocked+1) : 'Replay · Final Repair';
+  get('power-begin').textContent = powerUnlocked === 0 ? 'Start Power Failure' :
+    powerUnlocked < powerFailure.length ? 'Continue · Repair ' + (powerUnlocked+4) : 'View mission completion';
+  get('night-begin').textContent = nightUnlocked === 0 ? 'Start Night Shift' :
+    nightUnlocked < nightShift.length ? 'Continue · Repair ' + (nightUnlocked+1) : 'View Night Shift ending';
   get('levels').hidden = showingIntro;
   get('goal').hidden = showingIntro;
   get('story').hidden = showingIntro || !stage.story;
   get('intro').hidden = step !== 0 || showingIntro;
   get('play').hidden = step === 0 || showingIntro;
-  get('title').textContent = campaignCompleteOpen ? 'Mission Complete' : nightIntroOpen ? 'Night Shift' : powerIntroOpen ? 'Power Failure' : stage.title;
+  get('title').textContent = campaignCompleteOpen ? 'Mission Complete' : nightCompleteOpen ? 'Night Shift complete' : nightIntroOpen ? 'Night Shift' : powerIntroOpen ? 'Power Failure' : stage.title;
   get('finish').hidden = step !== lastStep || unlocked !== stages.length;
   get('night-finish').hidden = step !== lastChallenge || nightUnlocked !== nightShift.length;
   get('power-finish').hidden = step !== lastPower || powerUnlocked !== powerFailure.length;
@@ -1176,7 +1207,11 @@ function goToLevel(index) {
   begin(index);
   get('details').open = false;
   render();
-  get('title').focus();
+  if (nightCompleteOpen) get('night-complete-title').focus({preventScroll:true});
+  else if (nightIntroOpen) get('night-opening-title').focus({preventScroll:true});
+  else if (powerIntroOpen) get('power-opening-title').focus({preventScroll:true});
+  else if (campaignCompleteOpen) get('campaign-complete-title').focus({preventScroll:true});
+  else get('title').focus({preventScroll:true});
 }
 function openLevel(index) {
   if (!canEnter(index)) {
@@ -1191,12 +1226,24 @@ document.querySelector('main').addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button || button.disabled) return;
   const {toggle,source:jack,socket,case:index,level,trace:traceId} = button.dataset;
+  if (button.classList.contains('reset-progress')) {
+    if (!window.confirm('Reset ALL Circuit Dash training, Night Shift and Power Failure progress in this browser? This cannot be undone.')) return;
+    for (const key of [progressKey,previousProgressKey,nightProgressKey,powerProgressKey]) {
+      try { localStorage.removeItem(key); } catch {}
+    }
+    unlocked = 0; nightUnlocked = 0; powerUnlocked = 0;
+    history.replaceState(null,'',location.pathname);
+    goToLevel(0);
+    return;
+  }
   if (button.id === 'power-begin') {
-    openLevel(powerStart + Math.min(powerUnlocked,powerFailure.length-1));
+    if (powerUnlocked === powerFailure.length) location.hash = '#mission-complete';
+    else openLevel(powerStart + powerUnlocked);
     return;
   }
   if (button.id === 'night-begin') {
-    openLevel(challengeStep + Math.min(nightUnlocked,nightShift.length-1));
+    if (nightUnlocked === nightShift.length) location.hash = '#night-shift-complete';
+    else openLevel(challengeStep + nightUnlocked);
     return;
   }
   if (button.id === 'trace-toggle') {
