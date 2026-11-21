@@ -73,7 +73,7 @@ test("Night Shift keeps three distinct themes without recolouring logic signals"
   for (const theme of ["entry", "sensor", "relay"]) {
     assert.ok(circuit.includes(`data-night-mission="${theme}"`), `Missing ${theme} mission colours`);
   }
-  assert.match(circuit, /document\\.body\\.dataset\\.nightMission/, "Missing mission theme switch");
+  assert.match(circuit, /document\.body\.dataset\.nightMission/, "Missing mission theme switch");
   assert.match(circuit, /green=1, grey=0, amber=selection/, "Keep signal colours consistent");
 });
 
