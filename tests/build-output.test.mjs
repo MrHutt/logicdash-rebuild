@@ -16,6 +16,7 @@ test("the essential site pages are present in the production build", async () =>
     "5-bit/index.html",
     "overclocked/index.html",
     "quick-byte/index.html",
+    "circuit-dash/index.html",
     "how-to-play/index.html",
     "learn/index.html",
     "tools/index.html",
@@ -34,6 +35,14 @@ test("the homepage and all three game pages render identifiable content", async 
   ]) {
     assert.match(await text(path), expected, `Page has unexpected content: ${path}`);
   }
+});
+
+test("Circuit Dash includes the tutorial progression and Night Shift repair challenge", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  for (const phrase of ["Follow the signal", "Wire a switch", "The AND gate", "The OR gate", "The XOR gate", "Fix a fault", "Night Shift"]) {
+    assert.ok(circuit.includes(phrase), `Missing circuit level: ${phrase}`);
+  }
+  assert.match(circuit, /testCases\(wires\)/, "Missing repair case checker");
 });
 
 test("built CSS/JavaScript files are generated", async () => {
