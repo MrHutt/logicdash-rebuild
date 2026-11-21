@@ -149,10 +149,10 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     </div>
     <p class="result" id="result" role="status"></p>
     <details id="pointers" hidden>
-      <summary>Show pointers</summary>
+      <summary>Need a hint? (optional)</summary>
       <div class="pointer">
-        <p id="pointer-text" aria-live="polite"></p>
-        <button id="hint">Next pointer</button>
+        <p id="pointer-text" aria-live="polite" role="status">Choose how much help you want. Hints reveal one at a time.</p>
+        <button id="hint" type="button">Reveal hint 1 of 3</button>
       </div>
     </details>
     <section class="finish" id="night-finish" aria-labelledby="night-finish-title" hidden>
@@ -283,7 +283,8 @@ const nightShift = [
       'When only the window is open, Entry lights but Alarm stays off. The OR gate already knows when either opening is open. What is the AND gate reading instead?',
       'Connect OR OUT to AND IN 2. This replaces the Door wire at that socket. Leave Armed connected to AND IN 1, then test again.'
     ],
-    highlight:['or','and2']
+    hintFocus:'The OR gate already combines Door and Window correctly. The AND gate should use that combined signal, rather than one opening directly.',
+    hintRepair:[['or','and2']]
   },
   {
     title:'Sensor check', objective:'Find the wrong connection in the sensor panel',
@@ -293,7 +294,9 @@ const nightShift = [
     gates:['xor','and'], repair:true, initial:4,
     wiring:{xor1:'left', xor2:'enabled', and1:'enabled', and2:'xor', check:'xor', alert:'and'},
     target:({enabled,left,right}) => ({check:left ^ right, alert:(left ^ right) & enabled}),
-    pass:'The sensors now drive Check, and Enable controls whether Alert can light.'
+    pass:'The sensors now drive Check, and Enable controls whether Alert can light.',
+    hintFocus:'XOR must compare Left and Right. One of its inputs currently reads Enable instead of a sensor.',
+    hintRepair:[['right','xor2']]
   },
   {
     title:'Backup relay', objective:'Restore the Ready and Alarm lamps',
@@ -303,7 +306,9 @@ const nightShift = [
     gates:['xor','or','and'], repair:true, initial:10,
     wiring:{xor1:'main', xor2:'backup', or1:'door', or2:'window', and1:'xor', and2:'or', ready:'and', alarm:'and'},
     target:({main,backup,door,window}) => ({ready:main ^ backup, alarm:(main ^ backup) & (door | window)}),
-    pass:'Night Shift complete. Ready now shows power, and Alarm also checks for an open entry.'
+    pass:'Night Shift complete. Ready now shows power, and Alarm also checks for an open entry.',
+    hintFocus:'XOR correctly detects whether one supply is active. Alarm already uses AND, but Ready should not require an open door or window.',
+    hintRepair:[['xor','ready']]
   }
 ];
 const powerFailure = [
@@ -315,7 +320,9 @@ const powerFailure = [
     gates:['or','and'],repair:true,moves:1,initial:5,
     wiring:{or1:'main',or2:'backup',and1:'test',and2:'main',supply:'or',lights:'and'},
     target:({main,backup,test:testing}) => ({supply:main | backup,lights:(main | backup) & testing}),
-    pass:'Emergency lights now work with either power source when Test is enabled.'
+    pass:'Emergency lights now work with either power source when Test is enabled.',
+    hintFocus:'OR already detects Main or Backup. The AND gate should combine Test with OR, not Test with Main alone.',
+    hintRepair:[['or','and2']]
   },
   {
     title:'Lift interlock', objective:'Repair both the safety and call indicators',
@@ -325,7 +332,9 @@ const powerFailure = [
     gates:['and','or'],repair:true,moves:2,initial:6,
     wiring:{and1:'power',and2:'request',or1:'doors',or2:'request',ready:'and',call:'or'},
     target:({power,doors,request}) => ({ready:power & doors,call:(power & doors) | request}),
-    pass:'Ready now requires power and closed doors; Call correctly combines the request and Ready signals.'
+    pass:'Ready now requires power and closed doors; Call correctly combines the request and Ready signals.',
+    hintFocus:'AND must check Power and Doors closed. OR must then combine that AND result with Request. Trace both inputs of both gates.',
+    hintRepair:[['doors','and2'],['and','or1']]
   },
   {
     title:'Control room', objective:'Restore the building monitoring panel',
@@ -335,7 +344,9 @@ const powerFailure = [
     gates:['xor','or','and'],repair:true,moves:2,initial:10,
     wiring:{xor1:'main',xor2:'heat',or1:'heat',or2:'smoke',and1:'xor',and2:'backup',power:'xor',alarm:'and'},
     target:({main,backup,heat,smoke}) => ({power:main ^ backup,alarm:(main ^ backup) & (heat | smoke)}),
-    pass:'Power Failure complete. Both monitoring circuits now pass every combination.'
+    pass:'Power Failure complete. Both monitoring circuits now pass every combination.',
+    hintFocus:'XOR should read Main and Backup. AND should receive the XOR result and the OR gate’s Heat-or-Smoke result.',
+    hintRepair:[['backup','xor2'],['or','and2']]
   }
 ];
 const allStages = [...stages,...nightShift,...powerFailure];
@@ -350,7 +361,7 @@ const nightProgressKey = 'logicdash-circuit-dash-night-shift';
 const powerProgressKey = 'logicdash-circuit-dash-power-failure';
 const get = id => document.getElementById(id);
 const board = get('board');
-let step, stage, wires, pattern, source, tested, passed, message, pointer;
+let step, stage, wires, pattern, source, tested, passed, message, hintStep;
 let unlocked = savedProgress();
 let nightUnlocked = savedNightProgress();
 let powerUnlocked = savedPowerProgress();
@@ -451,7 +462,7 @@ function begin(index) {
   tested = false;
   passed = false;
   message = '';
-  pointer = 0;
+  hintStep = 0;
   get('pointers').open = false;
 }
 function inputMask(id) {
@@ -511,7 +522,7 @@ function port(kind, id, value) {
   const name = isSource ? sourceName(id) + ' output' : socketName(id) + ' socket';
   const selected = isSource && source === id;
   const eligible = !isSource && source && wires[id] !== source && !makesLoop(source,id);
-  const hinted = stage.highlight?.includes(id) && pointer === stage.pointers.length - 1 && !moveUsed();
+  const hinted = hintStep === 3 && stage.hintRepair?.some(([from,to]) => (isSource && from === id) || (!isSource && to === id));
   const pinLabel = isSource ? 'OUT' : ('IN' + (id in stage.lamps ? '' : ' ' + id.at(-1)));
   return '<button class="port' + (value ? ' on' : '') + (value == null ? ' unfed' : '') +
     (selected ? ' selected' : '') + (eligible ? ' eligible' : '') + (hinted ? ' hint-port' : '') +
@@ -519,6 +530,24 @@ function port(kind, id, value) {
     (isSource ? ' aria-pressed="' + selected + '"' : '') + (!stage.target || !canRewire() ? ' disabled' : '') +
     '><span class="dot" aria-hidden="true"></span><span class="port-role" aria-hidden="true">' +
     pinLabel + '</span></button>';
+}
+function hintText() {
+  if (!stage.hintRepair) return '';
+  if (!hintStep) return 'Reveal hints only if you need them. Each step gives more help.';
+  if (hintStep === 1) {
+    const failed = testCases(wires).find(row => row.failed.length);
+    if (!failed) return 'Every test case currently passes. Press Test panel to finish.';
+    const lamp = failed.failed[0];
+    const state = Object.entries(stage.inputs).map(([id,name]) => name + '=' + failed.actual[id]).join(', ');
+    return 'Hint 1 — Failing case: ' + state + '. ' + stage.lamps[lamp] +
+      ' should be ' + failed.expected[lamp] + ' but is ' +
+      (failed.actual[lamp] === null ? 'not connected' : failed.actual[lamp]) +
+      '. The switches have been set to this case.';
+  }
+  if (hintStep === 2) return 'Hint 2 — Trace the relevant gate: ' + stage.hintFocus;
+  return 'Hint 3 — Exact repair: ' + stage.hintRepair.map(([from,to]) =>
+    'Connect ' + sourceName(from) + ' OUT to ' + socketName(to) + ' IN').join('; then ') +
+    '. The required sockets are highlighted. If you have already used the move limit, choose Undo moves first.';
 }
 function render() {
   const focused = document.activeElement?.dataset;
@@ -569,12 +598,11 @@ function render() {
   result.dataset.kind = tested ? (passed ? 'win' : 'fail') : '';
   result.textContent = message || (source ? sourceName(source) + ' OUT selected. Choose a highlighted IN.' :
     (moveUsed() ? (stage.repair ? (canRewire() ? 'Wire moved. You can test the panel or use another available move.' : 'Move limit reached. Test the panel or undo your moves.') : 'Wire connected. Check the step to test every switch setting.') : ''));
-  get('pointers').hidden = !stage.pointers || passed;
-  if (stage.pointers) {
-    get('pointer-text').textContent = stage.pointers[pointer];
-    get('hint').textContent = pointer === 1 ? 'Show the move' : 'Next pointer';
-    get('hint').hidden = pointer === stage.pointers.length - 1;
-  }
+  get('pointers').hidden = !stage.hintRepair || passed;
+  get('hint').hidden = hintStep >= 3;
+  get('hint').textContent = hintStep === 0 ? 'Reveal hint 1 of 3' :
+    hintStep === 1 ? 'Reveal hint 2 of 3' : 'Reveal solution (hint 3 of 3)';
+  get('pointer-text').textContent = hintText();
   renderReadout(values);
   get('reference').hidden = !stage.gates.length;
   get('details').hidden = !stage.repair || !tested;
@@ -715,7 +743,8 @@ function test() {
   const first = failed[0];
   passed = !first;
   if (!first) {
-    message = 'All ' + cases.length + ' cases passed in one move. ' + stage.pass;
+    message = 'All ' + cases.length + ' cases passed in ' + movesUsed() + ' ' +
+      (movesUsed() === 1 ? 'move' : 'moves') + '. ' + stage.pass;
     return;
   }
   pattern = first.index;
@@ -781,8 +810,12 @@ document.querySelector('main').addEventListener('click', event => {
   } else if (button.id === 'next' && passed && step !== lastStep && step !== lastChallenge && step < lastPower) {
     openLevel(step + 1);
     return;
-  } else if (button.id === 'hint' && stage.pointers) {
-    pointer = Math.min(pointer + 1,stage.pointers.length - 1);
+  } else if (button.id === 'hint' && stage.hintRepair && hintStep < 3 && !passed) {
+    hintStep++;
+    if (hintStep === 1) {
+      const failed = testCases(wires).find(row => row.failed.length);
+      if (failed) pattern = failed.index;
+    }
   } else if (button.id === 'undo') {
     wires = {...stage.wiring};
     source = null;
