@@ -98,6 +98,18 @@ test("Circuit Dash resumes current repair, shows completion ticks and uses the h
   assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage must link Night Shift");
 });
 
+test("Circuit Dash and Night Shift have separate entry routes and a dedicated story introduction", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  const home = await text("index.html");
+  assert.match(circuit,/if \(!hash \|\| hash === '#course' \|\| hash === '#training'\) return Math\.min\(unlocked,lastStep\)/, "Circuit Dash must stay on its training path");
+  assert.match(circuit,/if \(hash === '#night-shift'\)/, "Night Shift must have an independent entry route");
+  assert.match(circuit,/id="night-opening"/, "Missing Night Shift introduction");
+  assert.match(circuit,/id="night-begin"/, "Missing story CTA");
+  assert.match(circuit,/nightIntroOpen = location\.hash === '#night-shift'/, "Story must open on the Night Shift link");
+  assert.match(circuit,/return '#night-shift-' \+ level/, "Mission deep links must differ from the story entry");
+  assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage Night Shift link should open the story");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
