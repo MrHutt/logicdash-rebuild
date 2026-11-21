@@ -38,6 +38,36 @@ p{margin:0}
 .story p{color:var(--ink);font-size:.93rem;max-width:70ch}
 .story p + p{margin-top:7px}
 .story-lead{font-weight:750}
+/* Night Shift mission identity: panel and frame colours only.
+   Logic states retain green=1, grey=0, amber=selection across every level. */
+body[data-night-mission="entry"]{--mission-accent:#80d9f2;--mission-panel:#142a3b;--mission-border:#456f84;--mission-grid:#294457}
+body[data-night-mission="sensor"]{--mission-accent:#c7a6ff;--mission-panel:#27203e;--mission-border:#69578e;--mission-grid:#3b3458}
+body[data-night-mission="relay"]{--mission-accent:#ffbd86;--mission-panel:#33251e;--mission-border:#86644e;--mission-grid:#4a392f}
+body[data-night-mission] .brand,
+body[data-night-mission] .story-tag{color:var(--mission-accent)}
+body[data-night-mission] .story{
+  border-left-color:var(--mission-accent);
+  background:var(--mission-panel)
+}
+body[data-night-mission] .panel#play{border-color:var(--mission-border)}
+body[data-night-mission] .board{
+  border-color:var(--mission-border);
+  background-color:var(--mission-panel);
+  background-image:radial-gradient(var(--mission-grid) 1px,transparent 1px)
+}
+body[data-night-mission] .gate{
+  background:var(--mission-panel);
+  border-color:var(--mission-border);
+  box-shadow:inset 0 2px 0 var(--mission-accent)
+}
+body[data-night-mission] .lamp:not(.lit){background:var(--mission-panel)}
+body[data-night-mission] .practice-nav [aria-current="step"]{
+  background:var(--mission-accent);
+  border-color:var(--mission-accent);
+  color:#111827
+}
+body[data-night-mission] #objective{color:var(--mission-accent)}
+body[data-night-mission] .readout{border-color:var(--mission-border)}
 .board-head,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px 14px}
 .board-head{justify-content:space-between;margin-bottom:11px}
 .board-head strong{font-size:1rem}
@@ -601,6 +631,8 @@ function render() {
   const focused = document.activeElement?.dataset;
   const isPower = step >= powerStart;
   const isNight = step >= challengeStep && step < powerStart;
+  if (isNight) document.body.dataset.nightMission = ['entry','sensor','relay'][step - challengeStep];
+  else delete document.body.dataset.nightMission;
   const stageList = isPower ? powerFailure : isNight ? nightShift : stages;
   const offset = isPower ? powerStart : isNight ? challengeStep : 0;
   const lastUnlocked = isPower ? powerUnlocked : isNight ? nightUnlocked : unlocked;
