@@ -1,0 +1,58 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile, readdir, stat } from "node:fs/promises";
+import { join } from "node:path";
+
+const root = new URL("../dist/", import.meta.url);
+
+async function text(path) {
+  return readFile(new URL(path, root), "utf8");
+}
+
+test("the essential site pages are present in the production build", async () => {
+  for (const path of [
+    "index.html",
+    "404.html",
+    "5-bit/index.html",
+    "overclocked/index.html",
+    "quick-byte/index.html",
+    "how-to-play/index.html",
+    "learn/index.html",
+    "tools/index.html",
+    "tools/countdown-clock/index.html",
+  ]) {
+    assert.ok((await stat(new URL(path, root))).isFile(), `Missing ${path}`);
+  }
+});
+
+test("the homepage and all three game pages render identifiable content", async () => {
+  for (const [path, expected] of [
+    ["index.html", /Quick\s*(?:<[^>]+>\s*)*Byte/i],
+    ["5-bit/index.html", /Classic/i],
+    ["overclocked/index.html", /OverClocked/i],
+    ["quick-byte/index.html", /Quick\s*Byte/i],
+  ]) {
+    assert.match(await text(path), expected, `Page has unexpected content: ${path}`);
+  }
+});
+
+test("built CSS/JavaScript files are generated", async () => {
+  const entries = await readdir(new URL("_astro/", root));
+  assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
+  assert.ok(entries.some((name) => name.endsWith(".js")), "Missing built JavaScript");
+});
+
+test("SiteGround .htaccess contains case-insensitive lesson redirects and 404 handling", async () => {
+  const htaccess = await text(".htaccess");
+  assert.match(htaccess, /RewriteEngine On/);
+  assert.match(htaccess, /RewriteRule\s+\^\(1A2\)\/\?\$\s+\/learn\/what-is-binary\/\s+\[NC,R=302,L\]/);
+  assert.match(htaccess, /ErrorDocument 404 \/404\.html/);
+  assert.match(htaccess, /END LogicDash lesson codes/);
+});
+
+test("SiteGround artifact has a root-level homepage and redirects", async () => {
+  const index = await text("index.html");
+  assert.match(index, /<html/i);
+  const htaccess = await text(".htaccess");
+  assert.ok(htaccess.trim().length > 100);
+});
