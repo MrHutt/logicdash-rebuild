@@ -155,6 +155,10 @@ td button[aria-pressed=true]{border-color:var(--mint)}
         <button id="hint">Next pointer</button>
       </div>
     </details>
+    <section class="finish" id="night-finish" aria-labelledby="night-finish-title" hidden>
+      <h2 id="night-finish-title">Night Shift complete</h2>
+      <p>All three repairs passed. Your progress is saved on this device. More repair missions are coming.</p>
+    </section>
     <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
       <h2 id="finish-title">Beginner course complete</h2>
       <div class="actions"><a class="action-link primary" href="#night-shift">Play Night Shift</a></div>
@@ -327,7 +331,7 @@ function savedProgress() {
 function completeLevel() {
   if (step >= challengeStep) {
     const next = step - challengeStep + 1;
-    if (next > nightUnlocked && step < lastChallenge) {
+    if (next > nightUnlocked && step <= lastChallenge) {
       nightUnlocked = next;
       saveProgress(nightProgressKey,nightUnlocked);
     }
@@ -340,7 +344,7 @@ function completeLevel() {
 function savedNightProgress() {
   try {
     const value = Number(localStorage.getItem(nightProgressKey));
-    return Number.isInteger(value) && value >= 0 && value < nightShift.length ? value : 0;
+    return Number.isInteger(value) && value >= 0 && value <= nightShift.length ? value : 0;
   } catch {
     return 0;
   }
@@ -460,6 +464,7 @@ function render() {
   get('intro').hidden = step !== 0;
   get('play').hidden = step === 0;
   get('finish').hidden = step !== lastStep || unlocked !== stages.length;
+  get('night-finish').hidden = step !== lastChallenge || nightUnlocked !== nightShift.length;
   get('levels').innerHTML = stageList.map((level,index) => '<button data-level="' + (index+offset) + '" aria-label="Level ' +
     (index+1) + ', ' + level.title + '"' + (index+offset === step ? ' aria-current="step"' : '') +
     (index > lastUnlocked ? ' disabled' : '') + '>' + (index+1) + '</button>').join('');
