@@ -375,7 +375,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <button id="night-begin" class="primary">Begin Night Shift</button>
       <a class="action-link" href="#course" style="background:#26374a;color:#f1f6f9">Circuit Dash training</a>
     </div>
-    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
+
   </section>
   <section class="panel power-opening" id="power-opening" aria-labelledby="power-opening-title" hidden>
     <div class="chapter-label">SCENARIO C / POWER FAILURE · LEVELS 14–16</div>
@@ -396,7 +396,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <button id="power-begin" class="primary">Begin Power Failure</button>
       <a class="action-link" href="#night-shift-intro" style="background:#26374a;color:#f1f6f9">Night Shift briefing</a>
     </div>
-    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
+
   </section>
   <section class="panel chapter-outro apprentice-outro" id="apprentice-complete" aria-labelledby="apprentice-complete-title" hidden>
     <div class="chapter-label">SCENARIO A / APPRENTICE SHIFT · ALL 10 CHECKS PASSED</div>
@@ -417,7 +417,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <div class="dispatch"><p>“All three faults cleared. That's everything for tonight… unless the weather gets any worse.”</p></div>
     <p>Outside, the rain is getting heavier. An ominous crack of thunder breaks the silence. Your phone rings again.</p>
     <div class="actions"><a class="action-link" href="#power-failure">Continue to Power Failure</a><a class="action-link" href="#night-shift-intro" style="background:#26374a;color:#f1f6f9">Night Shift introduction</a></div>
-    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
+
   </section>
   <section class="panel campaign-complete" id="campaign-complete" aria-labelledby="campaign-complete-title" hidden>
     <div class="terminal-top" aria-hidden="true"><span class="terminal-lights"><i></i><i></i><i></i></span><span>SYSTEM REPORT / 03:07</span><span>LD://INCIDENT-02</span></div>
@@ -425,8 +425,8 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <div class="chapter-label">INCIDENT REPORT / ALL SYSTEMS RESTORED</div>
     <h2 id="campaign-complete-title" tabindex="-1">The building is back online.</h2>
     <div class="diagnostic-status" aria-label="All six circuit repairs verified">
-      <div><span>REPAIRS</span><strong>06 / 06</strong></div>
-      <div><span>DIAGNOSTICS</span><strong>PASS</strong></div>
+      <div><span>CAMPAIGN LEVELS</span><strong>16 / 16</strong></div>
+      <div><span>REPAIRS</span><strong>06 / 06 PASS</strong></div>
       <div><span>BUILDING STATUS</span><strong>ONLINE</strong></div>
     </div>
     <p>03:07. The emergency lights hold steady. The lift reports the correct safety status. In the control room, every indicator finally agrees with the circuits behind it.</p>
@@ -435,8 +435,8 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <p>“All green here. Six faults found, six systems checked. That's the handover we needed. You can finally clock off.”</p>
     </div>
     <p>You've completed the full Night Shift and Power Failure storyline — diagnosing faulty connections, tracing signal paths and proving each repair across every test case.</p>
-    <div class="complete-count" aria-label="Six of six repair missions completed">
-      <span>01 <b>PASS</b></span><span>10 <b>PASS</b></span><span>11 <b>PASS</b></span><span>100 <b>PASS</b></span><span>101 <b>PASS</b></span><span>110 <b>PASS</b></span>
+    <div class="complete-count" aria-label="Repair missions one through six in three-bit binary, all completed">
+      <span>001 <b>PASS</b></span><span>010 <b>PASS</b></span><span>011 <b>PASS</b></span><span>100 <b>PASS</b></span><span>101 <b>PASS</b></span><span>110 <b>PASS</b></span>
     </div>
     <p style="margin-top:18px">For now, the maintenance log is closed. More incidents may be waiting after testing — but tonight's work is done. Your progress is saved in this browser.</p>
     <div class="actions">
@@ -444,7 +444,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <a class="action-link secondary" href="#night-shift">Night Shift story</a>
       <a class="action-link secondary" href="#power-failure">Power Failure story</a>
     </div>
-    <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
+
   </section>
   <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
     <div class="chapter-label">SCENARIO A / APPRENTICE SHIFT · LEVEL 1 OF 16</div>
@@ -512,7 +512,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
   <div class="site-footer-inner">
     <div><a class="site-logo" href="/">Logic<span>Dash</span></a><p>Puzzles. Learning. Useful tools.</p></div>
     <div class="site-footer-groups">
-      <div><strong>Puzzles</strong><ul><li><a href="/5-bit/">Classic</a></li><li><a href="/overclocked/">OverClocked</a></li><li><a href="/quick-byte/">Quick Byte</a></li><li><a href="/circuit-dash/">Circuit Dash</a></li><li><a href="/circuit-dash/#night-shift">Night Shift</a></li></ul></div>
+      <div><strong>Puzzles</strong><ul><li><a href="/5-bit/">Classic</a></li><li><a href="/overclocked/">OverClocked</a></li><li><a href="/quick-byte/">Quick Byte</a></li><li><a href="/circuit-dash/">Circuit Dash</a></li><li><a href="/circuit-dash/#overview">Mission map</a></li></ul></div>
       <div><strong>Learn &amp; More</strong><ul><li><a href="/learn/">Learn / Byte Lab</a></li><li><a href="/tools/">The Tool Hut</a></li><li><a href="/how-to-play/">How to Play</a></li><li><a href="/about/">About</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/contact/">Contact</a></li></ul></div>
     </div>
   </div>
@@ -1406,11 +1406,11 @@ document.querySelector('main').addEventListener('click', event => {
     pattern = Number(index);
   } else if (level !== undefined) {
     const index = Number(level);
-    if (canEnter(index) && index !== step) openLevel(index);
+    if (canEnter(index)) openLevel(index);
     return;
   } else if (button.id === 'start') {
     completeLevel();
-    goToLevel(1);
+    openLevel(1);
     return;
   } else if (button.id === 'test') {
     test();
