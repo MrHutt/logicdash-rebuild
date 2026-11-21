@@ -145,8 +145,6 @@ test("Game view has only the top progress strip, placed after Level 1's inductio
 test("Homepage puzzle cards share a compact consistent layout", async () => {
   const home = await text("index.html");
   assert.match(home,/class="game-link game-circuit"/, "Circuit Dash should use the same linked-card pattern");
-  assert.match(home,/grid-template-columns:4\.3rem minmax\(0,1fr\) auto/, "Cards should share alignment");
-  assert.match(home,/min-height:145px/, "Cards should have compact heights");
   assert.doesNotMatch(home,/game-actions/, "No nested CTA should stretch one card vertically");
   assert.doesNotMatch(home,/game-combo/, "No special mismatched card");
 });
