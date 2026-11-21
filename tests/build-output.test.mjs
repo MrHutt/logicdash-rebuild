@@ -135,6 +135,17 @@ test("Final repair opens a saved six-repair success screen with replay routes", 
   assert.match(circuit,/href="#power-failure"/, "Success screen must allow Power Failure replay");
 });
 
+test("Circuit Dash matches full-width chapter panels and has accessible site navigation and footer", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  assert.match(circuit,/:is\(\.night-opening,\.power-opening\)\{width:100%;max-width:none/, "Story screens should use the full game frame");
+  assert.match(circuit,/\.campaign-complete\{width:100%;max-width:none/, "Success screen should use the full game frame");
+  assert.match(circuit,/<header class="site-header">/, "Game should display site header");
+  assert.match(circuit,/<nav class="site-nav" id="site-nav" aria-label="Main navigation">/, "Game should offer accessible primary navigation");
+  assert.match(circuit,/<footer class="site-footer">/, "Game should include site footer");
+  assert.match(circuit,/siteMenuToggle\.setAttribute\('aria-expanded',String\(opened\)\)/, "Mobile menu must announce its state");
+  assert.match(circuit,/href="\/quick-byte\/"/, "Main navigation should link to Quick Byte");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
