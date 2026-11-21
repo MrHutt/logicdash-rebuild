@@ -273,6 +273,44 @@ body[data-story-screen] main > .panel{margin-top:8px}
 
 .campaign-complete .action-link{background:#95e3b4;color:#10251d}
 .campaign-complete .action-link.secondary{background:#273c4b;border:1px solid #52667c;color:#f1f6f9}
+
+.campaign-status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;font:.78rem ui-monospace,monospace;color:#b5c3d2}
+.campaign-back{color:#80d9f2;text-decoration:none;font-weight:800}
+.campaign-back:hover{text-decoration:underline}
+.campaign-overview{border-color:#527f7c;background:linear-gradient(155deg,#142a3b,#111d2b)}
+.campaign-overview .chapter-label{font:.76rem ui-monospace,monospace;color:#a5e5e4;letter-spacing:.08em}
+.campaign-overview h2{font-size:clamp(1.6rem,3.8vw,2.7rem);margin:6px 0 12px}
+.campaign-overview>p{max-width:85ch;color:#d3deea;line-height:1.65}
+.campaign-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 12px}
+.map-chapter{min-width:0;border:1px solid var(--chapter-border);background:var(--chapter-bg);border-radius:12px;padding:14px}
+.map-chapter.apprentice{--chapter-border:#887454;--chapter-bg:#30281f;--chapter-accent:#ffdc9d}
+.map-chapter.night{--chapter-border:#456f84;--chapter-bg:#142a3b;--chapter-accent:#80d9f2}
+.map-chapter.power{--chapter-border:#478366;--chapter-bg:#142d26;--chapter-accent:#95e3b4}
+.map-chapter .chapter-name{color:var(--chapter-accent);font:800 .76rem ui-monospace,monospace;letter-spacing:.06em}
+.map-chapter h3{font-size:1.18rem;margin:7px 0 4px}
+.map-chapter .chapter-summary{color:#bcd0dd;font-size:.83rem;margin-bottom:12px;min-height:3em}
+.map-chapter .chapter-link{color:var(--chapter-accent);font-weight:750;text-decoration:none;display:inline-block;margin:5px 0 11px}
+.map-chapter .chapter-link:hover{text-decoration:underline}
+.map-levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.map-chapter:not(.apprentice) .map-levels{grid-template-columns:repeat(3,minmax(0,1fr))}
+.map-levels button,.campaign-levels button{min-height:44px;min-width:0;padding:6px 4px;border-radius:7px;font:800 .78rem ui-monospace,monospace}
+.map-levels button{color:var(--chapter-accent);border-color:var(--chapter-border);background:#172332}
+.map-levels button.done{border-color:var(--chapter-accent)}
+.map-levels button.next{background:var(--chapter-accent);color:#101923}
+.map-levels button:disabled{opacity:.42}
+.campaign-map-note{font-size:.8rem}
+.campaign-settings{margin-top:18px;color:#b5c3d2;font-size:.85rem}
+.campaign-settings summary{cursor:pointer;min-height:44px;padding:11px 0}
+.campaign-settings button{min-height:44px;background:transparent;border-color:#52667c;color:#d3deea}
+.campaign-nav{display:grid;grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr));gap:8px}
+.campaign-nav .mission-group{min-width:0}
+.campaign-nav .mission-group.apprentice{--group-accent:#ffdc9d;--group-border:#887454;--group-bg:#30281f}
+.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(10,minmax(0,1fr))}
+.campaign-nav .mission-group.apprentice .mission-numbers button{background:#30281f}
+.campaign-nav .mission-group-title a{color:var(--group-accent);text-decoration:none}
+.campaign-nav .mission-group-title a:hover{text-decoration:underline}
+@media(max-width:940px){.campaign-map{grid-template-columns:1fr}.campaign-nav{grid-template-columns:1fr}.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(10,minmax(0,1fr))}}
+@media(max-width:570px){.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(5,minmax(0,1fr))}.map-levels{grid-template-columns:repeat(5,minmax(0,1fr))}.campaign-map{gap:8px}.campaign-status{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -299,12 +337,22 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <p class="story-lead" id="story-lead"></p>
       <p id="story-detail"></p>
     </section>
-    <nav class="practice-nav" id="levels" aria-label="Circuit Dash levels"></nav>
+    <div class="campaign-status"><a href="#overview" class="campaign-back">⌂ Mission map</a><span id="overall-progress">0 / 16 completed</span></div>
+    <nav class="practice-nav" id="levels" aria-label="Circuit Dash: all 16 levels"></nav>
     <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Complete the 10-level beginner course to unlock the repair missions permanently. Progress is saved in this browser.</p>
-    <a class="practice-link" id="return" href="#course" hidden>Back to the beginner course</a>
+    <a class="practice-link" id="return" href="#overview" hidden>Return to mission map</a>
   </header>
+  <section class="panel campaign-overview" id="campaign-overview" aria-labelledby="campaign-overview-title" hidden>
+    <div class="chapter-label">CIRCUIT DASH / CAMPAIGN MAP</div>
+    <h2 id="campaign-overview-title" tabindex="-1">Sixteen levels. One night on call.</h2>
+    <p>Start as an apprentice learning the wiring bench. Graduate to the overnight security call, then keep the building running when the storm arrives. Every completed mission stays available to review.</p>
+    <div class="campaign-map" id="campaign-map"></div>
+    <p class="campaign-map-note">✓ Completed &nbsp; · &nbsp; ● Next mission &nbsp; · &nbsp; <span aria-hidden="true">🔒</span> Locked until the previous level is complete</p>
+    <div class="actions"><button class="primary" id="campaign-continue">Continue campaign</button></div>
+    <details class="campaign-settings"><summary>Progress &amp; settings</summary><button type="button" class="reset-progress">Reset all saved progress</button></details>
+  </section>
   <section class="panel night-opening" id="night-opening" aria-labelledby="night-opening-title" hidden>
-    <div class="chapter-label">INCIDENT 01 / NIGHT SHIFT</div>
+    <div class="chapter-label">SCENARIO B / NIGHT SHIFT · LEVELS 11–13</div>
     <h2 id="night-opening-title" tabindex="-1">The building should be quiet.</h2>
     <p>It's 23:42. The day staff have gone home, the corridors are empty, and the security desk is halfway through its final checks. Then the first warning comes in: an armed alarm has failed to respond to an open window.</p>
     <div class="dispatch">
@@ -325,7 +373,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
   <section class="panel power-opening" id="power-opening" aria-labelledby="power-opening-title" hidden>
-    <div class="chapter-label">INCIDENT 02 / POWER FAILURE</div>
+    <div class="chapter-label">SCENARIO C / POWER FAILURE · LEVELS 14–16</div>
     <h2 id="power-opening-title" tabindex="-1">Just when you thought it was over.</h2>
     <p>It's 02:11. The security faults are fixed, and your Night Shift report is almost signed off. Outside, the rain gets heavier. A flash of lightning is followed by a low thud from the plant room. Then the building lights go out.</p>
     <div class="dispatch">
@@ -382,7 +430,10 @@ body[data-story-screen] main > .panel{margin-top:8px}
     <div class="progress-reset"><button type="button" class="reset-progress">Reset all saved progress</button></div>
   </section>
   <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
-    <h2 id="intro-title">How the board works</h2>
+    <div class="chapter-label">SCENARIO A / APPRENTICE SHIFT · LEVEL 1 OF 16</div>
+    <h2 id="intro-title">First day on the circuit bench.</h2>
+    <p>You're the new apprentice on the building maintenance team. Before anyone hands you an overnight call-out, you'll need to learn how signals travel through switches, wires and logic gates. Pass the bench checks and earn your place on Night Shift.</p>
+    <h3>How the board works</h3>
     <p>Tap a switch to try a different input. Follow the wire to see where that value goes. Your job is to make the lamps behave as each level asks.</p>
     <dl>
       <div><dt>Switches</dt><dd>These are the inputs. A switch sends <strong>1</strong> when it’s on and <strong>0</strong> when it’s off.</dd></div>
@@ -391,7 +442,7 @@ body[data-story-screen] main > .panel{margin-top:8px}
       <div><dt>Lamps</dt><dd>A lamp lights when it receives 1 and stays dark when it receives 0. <strong>No signal</strong> means it has no value coming in yet.</dd></div>
     </dl>
     <p>Use <strong>What’s happening now</strong> to see the values behind the lights. <strong>Check step</strong> tells you when you’re ready for the next level.</p>
-    <div class="actions"><button class="primary" id="start">Start Level 2</button></div>
+    <div class="actions"><button class="primary" id="start">Pass induction · Level 2</button></div>
   </section>
   <section class="panel" id="play" aria-labelledby="objective" hidden>
     <div class="board-head"><strong id="objective"></strong><span class="count" id="count"></span></div>
