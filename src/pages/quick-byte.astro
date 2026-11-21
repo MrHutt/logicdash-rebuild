@@ -528,16 +528,19 @@ import HammingBoard from "../components/HammingBoard.astro";
 		return `${String(day).padStart(2, "0")} ${MONTH_ABBR[month - 1]} ${year}`;
 	}
 
-	// --- Clean share texts (single source — no duplicated lines) ---
+	// Single canonical result share text, reused by Copy, X, WhatsApp and native mobile sharing.
 	function buildResultShareText(): string {
+		const [year, month, day] = dateString.split("-");
+		const shortDate = `${day}-${month}-${year.slice(-2)}`;
 		const sequence = formatResultSequence(resultScores);
 		const streakCount = getCurrentStreak();
-		const lines = [`LogicDash Quick Byte – ${humanDate(dateString)}`, `${sequence} (${currentGameTotal ?? "Incomplete"} guesses)`];
-		if (currentGameTotal !== null) lines.push(`Avg: ${(currentGameTotal / ROUND_COUNT).toFixed(1)}/round`);
-		if (streakCount > 0) lines.push(`Streak: ${getBinaryStreak(streakCount)} (${streakCount} ${streakCount === 1 ? "day" : "days"}) 🔥${isPowerOfTwo(streakCount) ? " ✦ Power of 2!" : ""}`);
-		const egg = getSequenceEasterEgg(sequence);
-		if (egg) lines.push(egg);
-		if (hasFullDeck()) lines.push("✦ FULL DECK — Certified Byte Operator [32]");
+		const guesses = currentGameTotal === null ? "Incomplete" : `${currentGameTotal} ${currentGameTotal === 1 ? "guess" : "guesses"}`;
+		const lines = [`Quick Byte · ${shortDate}`, `${sequence} · ${guesses}`];
+		if (streakCount > 0) {
+			const exponent = Math.log2(streakCount);
+			const superscript = String(exponent).replace(/[0-9]/g, (digit) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(digit)]);
+			lines.push(`🔥 ${streakCount}-day streak · ${getBinaryStreak(streakCount)}${isPowerOfTwo(streakCount) ? ` · 2${superscript}` : ""}`);
+		}
 		lines.push("", "logicdash.io");
 		return lines.join("\n");
 	}
@@ -571,7 +574,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 	async function shareText(button: HTMLButtonElement, text: string, url: string) {
 		if (typeof navigator.share === "function") {
 			try {
-				await navigator.share({ title: "LogicDash", text, url });
+				await navigator.share({ text });
 				return;
 			} catch (err) {
 				// User dismissed the share sheet — nothing further to do.
@@ -831,7 +834,7 @@ import HammingBoard from "../components/HammingBoard.astro";
 			streakText = perfect ? `🔥 ${streakCount}-day streak` : `🔥 ${streakCount}-day streak ended today`;
 			// Neon binary flourish on the live-streak line, e.g. "· 111₂".
 			if (perfect) streakText += ` · ${getBinaryStreak(streakCount)}`;
-			if (perfect && isPowerOfTwo(streakCount)) streakText += " ✦ Power of 2!";
+			if (perfect && isPowerOfTwo(streakCount)) streakText += ` · 2${String(Math.log2(streakCount)).replace(/[0-9]/g, (digit) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(digit)])}`;
 			if (longest > streakCount) {
 				streakText += ` · Longest: ${longest}`;
 			} else if (longest === streakCount && streakCount > 1) {
