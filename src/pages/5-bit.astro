@@ -4,46 +4,124 @@ import HammingGame from "../components/HammingGame.astro";
 ---
 
 <Layout
-	title="Classic"
-	description="Play LogicDash Classic: guess the secret 5-bit binary pattern in 6 tries. Each guess reveals only how many bits are wrong, never which ones."
+  title="Classic"
+  description="Play LogicDash Classic: guess the secret 5-bit binary pattern in 6 tries. Each guess reveals only how many bits are wrong, never which ones."
 >
-	<div class="page-intro">
-		<h1>Classic</h1>
-		<p>Guess the 5-bit secret. Each guess shows how many bits differ from the answer.</p>
-	</div>
-	<HammingGame bitLength={5} maxAttempts={6} />
+  <div class="mode-intro">
+    <div class="mode-heading">
+      <p class="mode-kicker">PUZZLES / THE ORIGINAL</p>
+      <h1>Classic <span class="mode-tag">5-BIT</span></h1>
+      <p>Find the hidden five-bit pattern in six guesses. Every guess tells you <strong>how many</strong> digits are wrong — never which ones.</p>
+    </div>
+    <button class="tutorial-reopen" type="button" aria-expanded="false" aria-controls="classic-tutorial">How to play <span aria-hidden="true">?</span></button>
+  </div>
 
-	<img
-		class="game-art"
-		src="/logicdash-runners.png"
-		alt="Two cartoon figures shaped like a running &quot;0&quot; and &quot;1&quot;, sprinting side by side"
-		width="904"
-		height="319"
-		loading="lazy"
-	/>
+  <section id="classic-tutorial" class="classic-tutorial" aria-label="Classic game tutorial" hidden>
+    <div class="tutorial-topline">
+      <span class="tutorial-step">CLASSIC / QUICK TUTORIAL</span>
+      <button type="button" class="tutorial-close" aria-label="Dismiss tutorial">Close ×</button>
+    </div>
+    <strong class="tutorial-title">1. Make your first guess</strong>
+    <p class="tutorial-message" role="status">Tap any of the five digits below to change 0 to 1 (or back again). Then press Guess. You can start with any combination.</p>
+    <p class="tutorial-note">This tutorial uses the real game — no extra practice round or reset required.</p>
+  </section>
+
+  <HammingGame bitLength={5} maxAttempts={6} />
+
+  <nav class="mode-links" aria-label="Other LogicDash puzzles and learning">
+    <a href="/quick-byte/"><strong>Quick Byte</strong><span>Three rounds. One daily challenge ↗</span></a>
+    <a href="/overclocked/"><strong>OverClocked</strong><span>Six bits. A tougher test ↗</span></a>
+    <a href="/learn/hamming-distance/"><strong>Hamming distance</strong><span>Learn why the feedback works ↗</span></a>
+  </nav>
+
+  <img class="game-art" src="/logicdash-runners.png"
+    alt="Two cartoon figures shaped like a running 0 and 1, sprinting side by side"
+    width="904" height="319" loading="lazy" />
 </Layout>
 
 <style>
-	.page-intro {
-		margin-bottom: 0.5rem;
-	}
-
-	.page-intro h1 {
-		margin: 0 0 0.15rem;
-		font-size: clamp(1.25rem, 3vw, 1.6rem);
-	}
-
-	.page-intro p {
-		margin: 0;
-		font-size: 0.85rem;
-	}
-
-	.game-art {
-		display: block;
-		width: 100%;
-		max-width: 6rem;
-		height: auto;
-		margin: 1.5rem auto 0;
-		opacity: 0.85;
-	}
+  .mode-intro { display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; margin-bottom:.8rem; }
+  .mode-heading { min-width:0; }
+  .mode-kicker { margin:0 0 .3rem; font:700 .67rem var(--font-mono); letter-spacing:.12em; color:var(--color-text-muted); }
+  .mode-heading h1 { margin:0 0 .25rem; font-size:clamp(1.5rem,5vw,2rem); }
+  .mode-heading p:last-child { margin:0; font-size:.86rem; max-width:38rem; line-height:1.5; }
+  .mode-tag { display:inline-block; vertical-align:middle; border:1px solid var(--color-border); border-radius:5px; padding:.22rem .35rem; font:700 .65rem var(--font-mono); letter-spacing:.08em; color:var(--color-accent); }
+  .tutorial-reopen { flex-shrink:0; cursor:pointer; min-height:44px; padding:.5rem .7rem; border-radius:9px; border:1px solid var(--color-border); color:var(--color-text); background:var(--color-surface); font-size:.78rem; font-weight:700; }
+  .tutorial-reopen[aria-expanded="true"] { border-color:var(--color-accent); }
+  .classic-tutorial { padding:.85rem 1rem; border-radius:12px; border:1px solid var(--color-accent); background:var(--color-surface); margin-bottom:.8rem; }
+  .classic-tutorial[hidden] { display:none; }
+  .tutorial-topline { display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.4rem; }
+  .tutorial-step { font:700 .67rem var(--font-mono); letter-spacing:.08em; color:var(--color-accent); }
+  .tutorial-close { min-height:40px; padding:.35rem .6rem; cursor:pointer; background:transparent; color:var(--color-text); border:1px solid var(--color-border); border-radius:7px; font-size:.75rem; }
+  .tutorial-title { display:block; font-size:.94rem; }
+  .tutorial-message { margin:.3rem 0 0; line-height:1.5; font-size:.84rem; }
+  .tutorial-note { margin:.4rem 0 0; color:var(--color-text-muted); font-size:.72rem; }
+  .mode-links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.55rem; margin-top:1.1rem; }
+  .mode-links a { text-decoration:none; color:var(--color-text); padding:.75rem; border:1px solid var(--color-border); border-radius:10px; background:var(--color-surface); }
+  .mode-links a strong { display:block; font-size:.84rem; }
+  .mode-links a span { display:block; font-size:.72rem; margin-top:.22rem; color:var(--color-text-muted); line-height:1.4; }
+  .game-art { display:block; width:100%; max-width:6rem; height:auto; margin:1.5rem auto 0; opacity:.85; }
+  @media (max-width:560px) { .mode-intro { align-items:flex-start; } .tutorial-reopen { white-space:nowrap; } .mode-links { grid-template-columns:1fr; } }
+  @media (max-width:350px) { .mode-intro { flex-direction:column; } .tutorial-reopen { align-self:flex-end; } }
 </style>
+
+<script>
+  const board = document.querySelector<HTMLElement>(".hamming-game");
+  const tutorial = document.querySelector<HTMLElement>("#classic-tutorial");
+  const toggle = document.querySelector<HTMLButtonElement>(".tutorial-reopen");
+  const close = document.querySelector<HTMLButtonElement>(".tutorial-close");
+  const title = document.querySelector<HTMLElement>(".tutorial-title");
+  const message = document.querySelector<HTMLElement>(".tutorial-message");
+  const note = document.querySelector<HTMLElement>(".tutorial-note");
+  const key = "logicdash:classic:tutorial-seen";
+  let guideActive = false;
+  let firstGuessMade = false;
+
+  function setVisible(open: boolean) {
+    guideActive = open;
+    if (tutorial) tutorial.hidden = !open;
+    toggle?.setAttribute("aria-expanded", String(open));
+    if (!open) {
+      try { localStorage.setItem(key, "yes"); } catch {}
+    }
+  }
+  function startGuide() {
+    firstGuessMade = false;
+    if (title) title.textContent = "1. Make your first guess";
+    if (message) message.textContent = "Tap any of the five digits below to change 0 to 1 (or back again). Then press Guess. You can start with any combination.";
+    if (note) note.textContent = "This tutorial uses the real game — no extra practice round or reset required.";
+    setVisible(true);
+  }
+
+  toggle?.addEventListener("click", () => {
+    if (guideActive) setVisible(false);
+    else startGuide();
+  });
+  close?.addEventListener("click", () => setVisible(false));
+  board?.addEventListener("click", (event) => {
+    if (!guideActive || firstGuessMade) return;
+    if (!(event.target instanceof Element) || !event.target.closest(".bit-toggle")) return;
+    if (title) title.textContent = "2. Test your pattern";
+    if (message) message.textContent = "Good. Press Guess to find out how many bits differ from the hidden answer. You have six attempts.";
+  });
+  board?.addEventListener("logicdash:guess", (event) => {
+    if (!guideActive) return;
+    firstGuessMade = true;
+    const info = (event as CustomEvent<{distance:number;won:boolean;attempts:number;gameOver:boolean}>).detail;
+    if (info.won) {
+      if (title) title.textContent = "You solved it!";
+      if (message) message.textContent = "A distance of zero means every bit matches. Play Again starts a completely new Classic puzzle.";
+    } else {
+      if (title) title.textContent = "3. Use the feedback";
+      if (message) message.textContent = `Your last guess was ${info.distance} ${info.distance === 1 ? "bit" : "bits"} off. This tells you how many positions differ, but not which ones. Compare guesses and change your pattern to narrow down the possibilities.`;
+    }
+    if (note) note.textContent = info.gameOver ? "You can replay this tutorial at any time using How to play." : "Keep experimenting. The game records each guess so you can compare clues.";
+  });
+  board?.addEventListener("logicdash:round-end", () => {
+    if (!guideActive) return;
+    if (note) note.textContent = "Finished your first round? Close this guide, or choose Play Again to try another pattern.";
+  });
+  let seen = false;
+  try { seen = localStorage.getItem(key) === "yes"; } catch {}
+  if (!seen) startGuide();
+</script>
