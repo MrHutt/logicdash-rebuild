@@ -146,6 +146,23 @@ test("Circuit Dash matches full-width chapter panels and has accessible site nav
   assert.match(circuit,/href="\/quick-byte\/"/, "Main navigation should link to Quick Byte");
 });
 
+test("Story entry buttons resume, finish or reset explicitly without skipping to final repair", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  assert.match(circuit,/nightUnlocked === nightShift\.length\) location\.hash = '#night-shift-complete'/);
+  assert.match(circuit,/powerUnlocked === powerFailure\.length\) location\.hash = '#mission-complete'/);
+  assert.match(circuit,/else openLevel\(challengeStep \+ nightUnlocked\)/);
+  assert.match(circuit,/else openLevel\(powerStart \+ powerUnlocked\)/);
+  assert.match(circuit,/id="night-complete"/);
+  assert.match(circuit,/View Night Shift ending/);
+  assert.match(circuit,/View mission completion/);
+  assert.match(circuit,/window\.confirm\('Reset ALL Circuit Dash training/);
+  for (const key of ["progressKey","previousProgressKey","nightProgressKey","powerProgressKey"]) assert.ok(circuit.includes(key));
+  assert.match(circuit,/history\.replaceState\(null,'',location\.pathname\)/);
+  assert.doesNotMatch(circuit,/← LogicDash home/, "Redundant home link should be removed");
+  assert.doesNotMatch(circuit,/Replay · Final Repair/, "Finished chapters should not arbitrarily replay last level");
+  assert.match(circuit,/body\[data-story-screen\] main > \.panel/, "Story panels should have tidy vertical spacing");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
