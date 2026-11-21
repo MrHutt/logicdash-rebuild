@@ -548,7 +548,7 @@ function render() {
   get('controls').innerHTML = stage.controls;
   get('test').textContent = stage.repair ? 'Test panel' : 'Check step';
   get('next').textContent = 'Next level';
-  get('next').hidden = !passed || step === lastPower || step === lastStep;
+  get('next').hidden = !passed || step === lastPower || step === lastStep || step === lastChallenge;
   get('inputs').innerHTML = '<span class="label">Switches</span>' + Object.entries(stage.inputs).map(([id,name]) =>
     '<div class="input"><button class="toggle" data-toggle="' + id + '" aria-pressed="' + Boolean(values[id]) + '">' +
     name + '<span>' + (values[id] ? 'ON' : 'OFF') + '</span></button>' + port('source',id,values[id]) + '</div>').join('');
@@ -568,7 +568,7 @@ function render() {
   const result = get('result');
   result.dataset.kind = tested ? (passed ? 'win' : 'fail') : '';
   result.textContent = message || (source ? sourceName(source) + ' OUT selected. Choose a highlighted IN.' :
-    (moveUsed() ? (stage.repair ? 'Wire moved. You can test the panel or use another available move.' : 'Wire connected. Check the step to test every switch setting.') : ''));
+    (moveUsed() ? (stage.repair ? (canRewire() ? 'Wire moved. You can test the panel or use another available move.' : 'Move limit reached. Test the panel or undo your moves.') : 'Wire connected. Check the step to test every switch setting.') : ''));
   get('pointers').hidden = !stage.pointers || passed;
   if (stage.pointers) {
     get('pointer-text').textContent = stage.pointers[pointer];
