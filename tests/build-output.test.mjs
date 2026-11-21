@@ -90,7 +90,7 @@ test("Circuit Dash resumes current repair, shows completion ticks and uses the h
   const circuit = await text("circuit-dash/index.html");
   const home = await text("index.html");
   assert.match(circuit,/max-width:1280px/, "Game should match homepage wide container");
-  assert.match(circuit,/Opening Circuit Dash normally resumes the first incomplete mission/, "Root entry must resume unlocked progress");
+  assert.match(circuit,/if \(!hash \|\| hash === '#course' \|\| hash === '#training'\) return Math\.min\(unlocked,lastStep\)/, "Circuit Dash opens the course, not Night Shift");
   assert.match(circuit,/if \(nightUnlocked < nightShift\.length\) return challengeStep \+ nightUnlocked/, "Resume next Night Shift repair");
   assert.match(circuit,/<span aria-hidden="true">✓<\/span>/, "Completed steps need ticks");
   assert.match(circuit,/body\[data-repair-chapter\] \.story\{height:/, "Briefing should reserve stable space");
