@@ -4,6 +4,7 @@ import Layout from "../layouts/Layout.astro";
 const destinations = [
   { href: "/5-bit/", eyebrow: "UNLIMITED PUZZLE", title: "Classic", description: "Five bits, six guesses. The original LogicDash challenge.", icon: "01010" },
   { href: "/overclocked/", eyebrow: "LEVEL UP", title: "OverClocked", description: "Six bits. More combinations. A little more brainwork.", icon: "101101" },
+  { href: "/circuit-dash/", eyebrow: "NEW · LEVELLED PUZZLE", title: "Circuit Dash", description: "Learn the logic gates. Repair the wires. Take on Night Shift.", icon: "⊕→1" },
 ];
 
 const explore = [
@@ -156,7 +157,7 @@ const explore = [
   .pillar-action { color:var(--pillar-color); font:700 .78rem var(--font-mono); }
   .more-games { margin:1.8rem 0 0; }
   .section-heading--compact { margin-bottom:.85rem; }
-  .game-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; }
+  .game-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
   .game-link { display:flex; align-items:center; gap:.85rem; min-width:0; padding:1rem; border:1px solid var(--color-border); background:var(--color-surface); border-radius:12px; text-decoration:none; transition:border-color .15s; }
   .game-link:hover { border-color:var(--color-accent); }
   .game-mark { flex:none; padding:.7rem .5rem; min-width:5rem; text-align:center; background:#262318; border-radius:6px; color:#FBC66E; font:700 .81rem var(--font-mono); }
@@ -173,6 +174,7 @@ const explore = [
     .daily-feature { grid-template-columns:minmax(0,1.4fr) minmax(285px,.6fr); }
     .welcome { padding-bottom:.85rem; }
   }
+  @media(max-width:900px) { .game-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media(max-width:760px) {
     .welcome { gap:.6rem; }
     .hero-art { width:26%; }
