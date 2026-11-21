@@ -43,15 +43,18 @@ const explore = [
       <a href="/quick-byte/" class="daily-cta">Play today's Quick Byte <span aria-hidden="true">↗</span></a>
       <a href="/how-to-play/" class="daily-help">New here? See how to play →</a>
     </div>
-    <div class="daily-art" aria-hidden="true">
-      <p class="board-label"><span>DAILY / 5-BIT</span><span>ROUND 01—03</span></p>
-      <div class="demo-bits">
-        <span>0</span><span>1</span><span>1</span><span>0</span><span>1</span>
+    <div class="daily-art" aria-label="Example Quick Byte game">
+      <p class="board-label"><span class="board-example-label">EXAMPLE GAME</span><span>DAILY / 5-BIT</span></p>
+      <div aria-hidden="true">
+        <div class="demo-bits">
+          <span>0</span><span>1</span><span>1</span><span>0</span><span>1</span>
+        </div>
+        <div class="demo-trace"><span>10100</span><span class="trace-status">3 WRONG</span></div>
+        <div class="demo-trace"><span>00111</span><span class="trace-status">2 WRONG</span></div>
+        <div class="demo-trace"><span>01101</span><span class="trace-status trace-win">✓ SOLVED</span></div>
+        <p class="board-foot">THINK IN BITS. NOT IN GUESSES.</p>
       </div>
-      <div class="demo-trace"><span>10100</span><span class="trace-status">3 WRONG</span></div>
-      <div class="demo-trace"><span>00111</span><span class="trace-status">2 WRONG</span></div>
-      <div class="demo-trace"><span>01101</span><span class="trace-status trace-win">✓ SOLVED</span></div>
-      <p class="board-foot">THINK IN BITS. NOT IN GUESSES.</p>
+      <a class="demo-play-link" href="/quick-byte/">Play Quick Byte <span aria-hidden="true">↗</span></a>
     </div>
   </section>
 
@@ -97,6 +100,15 @@ const explore = [
           <span class="game-arrow" aria-hidden="true">↗</span>
         </a>
       ))}
+      <a href="/circuit-dash/" class="game-link game-circuit">
+        <span class="game-mark" aria-hidden="true">⊕→1</span>
+        <span class="game-info">
+          <small>16-LEVEL STORY PUZZLE</small>
+          <strong>Circuit Dash</strong>
+          <span>Train as an apprentice. Repair Night Shift circuits. Save the building.</span>
+        </span>
+        <span class="game-arrow" aria-hidden="true">↗</span>
+      </a>
     </div>
   </section>
 
@@ -128,6 +140,10 @@ const explore = [
   .daily-help:hover { color:var(--color-text); }
   .daily-art { align-self:center; min-width:0; padding:.8rem; background:#10131C; border:1px solid #394050; border-radius:12px; font-family:var(--font-mono); }
   .board-label { display:flex; justify-content:space-between; gap:.5rem; color:#D5B57D; font-size:.59rem; letter-spacing:.07em; margin:0 0 .5rem; }
+  .board-example-label { font-weight:800; color:#10131C; background:#FFD285; border-radius:4px; padding:.22rem .4rem; letter-spacing:.09em; }
+  .demo-play-link { display:flex; align-items:center; justify-content:center; gap:.5rem; min-height:44px; margin-top:.7rem; padding:.4rem .6rem; border:1px solid #A87322; border-radius:8px; color:#FFD285; font-size:.79rem; font-weight:700; text-decoration:none; transition:background .15s; }
+  .demo-play-link:hover,.demo-play-link:focus-visible { background:#2B251B; }
+
   .demo-bits { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; margin-bottom:.6rem; }
   .demo-bits span { display:grid; place-items:center; padding:.45rem 0; border:1px solid #72572B; border-radius:7px; background:#2B251B; color:#FFD285; font-weight:700; font-size:1.15rem; }
   .demo-trace { display:flex; justify-content:space-between; gap:.6rem; margin-top:.35rem; padding:.35rem .65rem; border:1px solid #333A49; border-radius:5px; color:#D8DCE8; font-size:.78rem; }
@@ -149,15 +165,17 @@ const explore = [
   .pillar-action { color:var(--pillar-color); font:700 .78rem var(--font-mono); }
   .more-games { margin:1.8rem 0 0; }
   .section-heading--compact { margin-bottom:.85rem; }
-  .game-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; }
-  .game-link { display:flex; align-items:center; gap:.85rem; min-width:0; padding:1rem; border:1px solid var(--color-border); background:var(--color-surface); border-radius:12px; text-decoration:none; transition:border-color .15s; }
-  .game-link:hover { border-color:var(--color-accent); }
-  .game-mark { flex:none; padding:.7rem .5rem; min-width:5rem; text-align:center; background:#262318; border-radius:6px; color:#FBC66E; font:700 .81rem var(--font-mono); }
-  .game-info { min-width:0; display:flex; flex-direction:column; gap:.18rem; }
+  .game-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; align-items:stretch; }
+  .game-link { display:grid; grid-template-columns:4.3rem minmax(0,1fr) auto; align-items:center; gap:.8rem; min-width:0; min-height:145px; padding:1.1rem .9rem; border:1px solid var(--color-border); background:var(--color-surface); border-radius:12px; text-decoration:none; transition:border-color .15s,transform .15s; }
+  .game-link:hover,.game-link:focus-visible { border-color:var(--color-accent); transform:translateY(-2px); }
+  .game-link:focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
+
+  .game-mark { flex:none; padding:.7rem .35rem; min-width:0; text-align:center; background:#262318; border-radius:6px; color:#FBC66E; font:700 .81rem var(--font-mono); }
+  .game-info { min-width:0; display:flex; flex-direction:column; gap:.22rem; }
   .game-info small { color:var(--color-accent); font:700 .63rem var(--font-mono); letter-spacing:.08em; }
   .game-info strong { font-size:1rem; color:var(--color-text); }
   .game-info > span { font-size:.77rem; color:var(--color-text-muted); line-height:1.4; }
-  .game-arrow { color:var(--color-accent); margin-left:auto; align-self:start; }
+  .game-arrow { color:var(--color-accent); align-self:start; font-size:1.02rem; }
   .bottom-note { margin:1.5rem 0 .3rem; display:flex; align-items:center; justify-content:center; gap:.65rem; font-size:.83rem; color:var(--color-text-muted); text-align:center; }
   .terminal-prompt { color:#A3E635; font:700 1.2rem var(--font-mono); }
   .bottom-note p { margin:0; }
@@ -166,6 +184,7 @@ const explore = [
     .daily-feature { grid-template-columns:minmax(0,1.4fr) minmax(285px,.6fr); }
     .welcome { padding-bottom:.85rem; }
   }
+  @media(max-width:1000px) { .game-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media(max-width:760px) {
     .welcome { gap:.6rem; }
     .hero-art { width:26%; }
@@ -184,6 +203,7 @@ const explore = [
     .daily-feature { padding:1.2rem; gap:1rem; }
     .daily-feature h2 { font-size:3rem; }
     .game-grid { grid-template-columns:1fr; }
+    .game-link { min-height:120px; }
   }
   @media(prefers-reduced-motion:reduce) { .daily-cta,.pillar,.game-link { transition:none; } }
 </style>

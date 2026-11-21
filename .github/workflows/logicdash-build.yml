@@ -38,7 +38,7 @@ jobs:
           npm run build
 
       - name: Verify critical pages, assets and redirects
-        run: node --test tests/build-output.test.mjs
+        run: node --test tests/*.test.mjs
 
       # upload-artifact downloads as a ZIP whose root contains index.html,
       # .htaccess, _astro/, quick-byte/, learn/, etc. No nested dist/ folder.

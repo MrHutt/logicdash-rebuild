@@ -1,50 +1,45 @@
-	---
+---
 import Layout from "../layouts/Layout.astro";
 import HammingGame from "../components/HammingGame.astro";
+import StandaloneStats from "../components/StandaloneStats.astro";
 ---
 
 <Layout
-	title="OverClocked"
-	description="Play LogicDash OverClocked: guess the secret 6-bit binary pattern in 6 tries — tighter odds and sharper focus than the 5-bit Classic mode."
+  title="OverClocked"
+  description="Play LogicDash OverClocked: guess the secret 6-bit binary pattern in 6 tries — tighter odds and sharper focus than the 5-bit Classic mode."
 >
-	<div class="page-intro">
-		<h1>OverClocked</h1>
-		<p>Guess the 6-bit secret. Each guess shows how many bits differ from the answer.</p>
-	</div>
-	<HammingGame bitLength={6} maxAttempts={6} />
+  <div class="mode-intro">
+    <p class="mode-kicker">PUZZLES / LEVEL UP</p>
+    <h1>OverClocked <span class="mode-tag">6-BIT</span></h1>
+    <p><strong>Six bits. Six guesses.</strong> The same simple rules as Classic, but twice as many possible patterns (64 instead of 32).</p>
+  </div>
 
-	<img
-		class="game-art"
-		src="/logicdash-runners.png"
-		alt="Two cartoon figures shaped like a running &quot;0&quot; and &quot;1&quot;, sprinting side by side"
-		width="904"
-		height="319"
-		loading="lazy"
-	/>
+  <p class="mode-tip"><strong>Quick reminder:</strong> Tap the digits to choose a pattern, then press Guess. “2 bits off” means exactly two positions differ from the answer — but you won't be told which ones.</p>
+  <HammingGame bitLength={6} maxAttempts={6} />
+  <StandaloneStats mode="overclocked" />
+
+  <nav class="mode-links" aria-label="Other LogicDash puzzles">
+    <a href="/5-bit/"><strong>Classic</strong><span>Learn the rules with five bits ↗</span></a>
+    <a href="/quick-byte/"><strong>Quick Byte</strong><span>Take on the daily three-round challenge ↗</span></a>
+    <a href="/learn/hamming-distance/"><strong>The logic behind it</strong><span>Hamming distance explained ↗</span></a>
+  </nav>
+
+  <img class="game-art" src="/logicdash-runners.png"
+    alt="Two cartoon figures shaped like a running 0 and 1, sprinting side by side"
+    width="904" height="319" loading="lazy" />
 </Layout>
 
 <style>
-	.page-intro {
-		margin-bottom: 0.5rem;
-	}
-
-	.page-intro h1 {
-		margin: 0 0 0.15rem;
-		font-size: clamp(1.25rem, 3vw, 1.6rem);
-	}
-
-	.page-intro p {
-		margin: 0;
-		font-size: 0.85rem;
-	}
-
-	.game-art {
-		display: block;
-		width: 100%;
-		max-width: 6rem;
-		height: auto;
-		margin: 1.5rem auto 0;
-		opacity: 0.85;
-	}
+  .mode-intro { margin-bottom:.75rem; }
+  .mode-kicker { margin:0 0 .3rem; font:700 .67rem var(--font-mono); letter-spacing:.12em; color:var(--color-text-muted); }
+  .mode-intro h1 { margin:0 0 .25rem; font-size:clamp(1.5rem,5vw,2rem); }
+  .mode-intro p:last-child { margin:0; font-size:.86rem; line-height:1.5; }
+  .mode-tag { display:inline-block; vertical-align:middle; border:1px solid var(--color-border); border-radius:5px; padding:.22rem .35rem; font:700 .65rem var(--font-mono); letter-spacing:.08em; color:var(--color-accent); }
+  .mode-tip { padding:.7rem .85rem; background:var(--color-surface); border-left:3px solid var(--color-accent); border-radius:0 9px 9px 0; font-size:.79rem; line-height:1.5; margin:0 0 .8rem; }
+  .mode-links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.55rem; margin-top:1.1rem; }
+  .mode-links a { text-decoration:none; color:var(--color-text); padding:.75rem; border:1px solid var(--color-border); border-radius:10px; background:var(--color-surface); }
+  .mode-links a strong { display:block; font-size:.84rem; }
+  .mode-links a span { display:block; font-size:.72rem; margin-top:.22rem; color:var(--color-text-muted); line-height:1.4; }
+  .game-art { display:block; width:100%; max-width:6rem; height:auto; margin:1.5rem auto 0; opacity:.85; }
+  @media (max-width:560px) { .mode-links { grid-template-columns:1fr; } }
 </style>
-	

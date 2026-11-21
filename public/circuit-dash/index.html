@@ -1,0 +1,1492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn to read, wire and repair logic circuits in Circuit Dash, then take on the three-part Night Shift challenge.">
+<title>Circuit Dash | LogicDash</title>
+<style>
+:root{color-scheme:dark;--bg:#0b121d;--panel:#121d2c;--line:#394b60;--ink:#f1f6f9;--muted:#b5c3d2;--mint:#79efbc;--amber:#ffd080;--pink:#ffadb2}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+main{flex:1}
+.site-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;background:#121d2c;border-bottom:1px solid #394b60;position:relative;z-index:4}
+.site-header .site-logo{font-size:1.25rem;font-weight:700;text-decoration:none;color:#f1f6f9;letter-spacing:-.01em}
+.site-header .site-logo span,.site-footer .site-logo span{color:#ffae2e}
+.site-nav ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:20px;align-items:center}
+.site-nav a{color:#b5c3d2;font-size:.95rem;font-weight:600;text-decoration:none}
+.site-nav a:hover,.site-nav a:focus-visible{color:#f1f6f9}
+.site-nav a[aria-current="page"]{color:#ffae2e}
+.site-menu-toggle{display:none;justify-content:center;align-items:center;flex-direction:column;gap:4px;width:44px;height:44px;padding:0;border-color:#52667c;background:transparent}
+.site-menu-toggle span{display:block;width:18px;height:2px;border-radius:2px;background:#f1f6f9}
+.site-footer{background:#121d2c;border-top:1px solid #394b60;padding:16px 20px 12px;color:#b5c3d2}
+.site-footer-inner{max-width:960px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.site-footer .site-logo{font-weight:700;font-size:1.05rem;color:#f1f6f9;text-decoration:none}
+.site-footer p{font:.75rem ui-monospace,monospace;margin-top:4px;color:#b5c3d2}
+.site-footer-groups{display:flex;gap:36px;flex-wrap:wrap}
+.site-footer-groups strong{display:block;font:.7rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#ffae2e;margin-bottom:8px}
+.site-footer-groups ul{list-style:none;margin:0;padding:0}
+.site-footer-groups li+li{margin-top:5px}
+.site-footer-groups a{font-size:.85rem;font-weight:600;color:#b5c3d2;text-decoration:none}
+.site-footer-groups a:hover{color:#f1f6f9}
+.site-copyright{max-width:960px;margin:14px auto 0!important;text-align:center;border-top:1px solid #394b60;padding-top:9px}
+@media(max-width:960px){
+  .site-menu-toggle{display:flex}
+  .site-nav{display:none;position:absolute;top:100%;left:0;right:0;border-bottom:1px solid #394b60;background:#121d2c;padding:15px 20px;box-shadow:0 14px 20px #06101b88}
+  .site-nav.open{display:block}
+  .site-nav ul{display:grid;gap:3px}
+  .site-nav a{display:block;padding:10px 6px;min-height:44px}
+}
+@media(max-width:600px){.site-header{padding:7px 12px}.site-footer{padding:15px 12px}.site-footer-inner{gap:20px}.site-footer-groups{gap:24px}}
+
+main{width:100%;max-width:1280px;margin:auto;padding:clamp(13px,2.2vw,24px)}
+h1{font-size:clamp(1.85rem,7vw,3.35rem);letter-spacing:-.055em;line-height:1.08;margin:5px 0 12px}
+h2{margin:0 0 8px;font-size:1.2rem}
+p{margin:0}
+.brand,.label,.gate,.count{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.brand{color:var(--mint);font-weight:750;font-size:.85rem;letter-spacing:.08em}
+.goal{display:grid;max-width:75ch;color:var(--muted)}
+.goal p{grid-area:1/1;visibility:hidden}
+.goal p.current{visibility:visible}
+.goal.night-goals p:not(.night-goal),.goal.power-goals p:not(.power-goal),.goal:not(.night-goals) p.night-goal,.goal:not(.power-goals) p.power-goal{display:none}
+.goal strong{color:var(--ink)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-top:20px;padding:clamp(9px,2.3vw,18px)}
+.intro{padding:clamp(14px,3vw,24px)}
+.intro p,.intro dd{color:var(--muted)}
+.intro dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px;margin:16px 0}
+.intro dl div{border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+:is(.night-opening,.power-opening){width:100%;max-width:none;margin-inline:0;padding:clamp(18px,4vw,32px);border-color:#456f84;background:linear-gradient(155deg,#162d42,#121d2c 65%)}
+:is(.night-opening,.power-opening) .chapter-label{color:#80d9f2;font:800 .76rem ui-monospace,monospace;letter-spacing:.1em}
+:is(.night-opening,.power-opening) h2{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.16;margin:9px 0 15px}
+:is(.night-opening,.power-opening) p{color:#d4e1ed;max-width:92ch;line-height:1.65}
+:is(.night-opening,.power-opening) p+p{margin-top:12px}
+:is(.night-opening,.power-opening) .dispatch{max-width:92ch;border-left:3px solid #80d9f2;padding:11px 15px;margin:19px 0;background:#0d2032;border-radius:0 9px 9px 0}
+:is(.night-opening,.power-opening) .dispatch p{color:#f1f6f9;font-weight:650}
+:is(.night-opening,.power-opening) .mission-lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px}
+:is(.night-opening,.power-opening) .mission-lineup div{border:1px solid #456f84;border-radius:10px;padding:12px;background:#102338}
+:is(.night-opening,.power-opening) .mission-lineup strong{display:block;color:#80d9f2;font:800 .76rem ui-monospace,monospace}
+:is(.night-opening,.power-opening) .mission-lineup span{display:block;font-weight:800;margin:6px 0}
+:is(.night-opening,.power-opening) .mission-lineup small{color:#bcd1df;line-height:1.5;display:block}
+:is(.night-opening,.power-opening) .actions{margin-top:20px}
+:is(.night-opening,.power-opening) .action-link{background:#80d9f2;color:#0b1f2d}
+@media(max-width:570px){:is(.night-opening,.power-opening) .mission-lineup{grid-template-columns:1fr}:is(.night-opening,.power-opening) .mission-lineup div{padding:10px 12px}}
+.intro dt{font-weight:800;color:var(--mint)}
+.intro dd{margin:4px 0 0}
+.intro .actions,.finish .actions{margin-top:14px}
+.finish{border:1px solid #477e6c;background:#132921;border-radius:8px;padding:12px;margin-top:12px}
+.practice-link{color:var(--mint);display:inline-block;margin-top:12px;text-underline-offset:3px}
+.locked-notice{margin:12px 0 0;padding:10px 12px;border:1px solid var(--amber);border-radius:9px;color:var(--amber);background:#2b241b;font-size:.9rem}
+.action-link{display:inline-flex;align-items:center;min-height:44px;border-radius:8px;padding:7px 14px;font-size:.91rem;font-weight:750;text-decoration:none}
+.story{margin-top:14px;padding:13px 15px;border-left:3px solid var(--amber);background:#1d2937;border-radius:0 9px 9px 0}
+body[data-repair-chapter] #title{min-height:2.16em}
+body[data-repair-chapter] .goal{height:5.8em;overflow-y:auto}
+body[data-repair-chapter] .story{height:9.6em;overflow-y:auto;scrollbar-width:thin}
+.story-tag{font:800 .75rem/1.4 ui-monospace,monospace;letter-spacing:.09em;color:var(--amber);margin-bottom:6px}
+.story p{color:var(--ink);font-size:.93rem;max-width:70ch}
+.story p + p{margin-top:7px}
+.story-lead{font-weight:750}
+/* Chapter colours help players recognise the sequence.
+   Logic states always retain green=1, grey=0, amber=selection. */
+body[data-repair-chapter="night"]{--mission-accent:#80d9f2;--mission-panel:#142a3b;--mission-border:#456f84;--mission-grid:#294457}
+body[data-repair-chapter="power"]{--mission-accent:#95e3b4;--mission-panel:#142d26;--mission-border:#478366;--mission-grid:#2c4c3c}
+body[data-repair-chapter] .brand,
+body[data-repair-chapter] .story-tag{color:var(--mission-accent)}
+body[data-repair-chapter] .story{border-left-color:var(--mission-accent);background:var(--mission-panel)}
+body[data-repair-chapter] .panel#play{border-color:var(--mission-border)}
+body[data-repair-chapter] .board{border-color:var(--mission-border);background-color:var(--mission-panel);background-image:radial-gradient(var(--mission-grid) 1px,transparent 1px)}
+body[data-repair-chapter] .gate{background:var(--mission-panel);border-color:var(--mission-border);box-shadow:inset 0 2px 0 var(--mission-accent)}
+body[data-repair-chapter] .lamp:not(.lit){background:var(--mission-panel)}
+body[data-repair-chapter] #objective{color:var(--mission-accent)}
+body[data-repair-chapter] .readout{border-color:var(--mission-border)}
+.trace-toolbar{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:start;gap:9px 12px;margin:9px 0 12px}
+.trace-toolbar button{padding:7px 13px;min-height:44px;font-size:.88rem;font-weight:750}
+.trace-toolbar button[aria-pressed="true"]{background:#234a54;border-color:#80d9f2;color:#d3f8ff}
+.trace-description{display:block;font-size:.86rem;color:var(--muted);line-height:1.45;height:4.35em;overflow-y:auto;min-width:0;overflow-wrap:anywhere}
+.board.trace-active .port,.board.trace-active .toggle,.board.trace-active .gate,.board.trace-active .lamp{transition:opacity .15s,border-color .15s}
+.board.trace-active .port.trace-muted,.board.trace-active .toggle.trace-muted,.board.trace-active .gate.trace-muted,.board.trace-active .lamp.trace-muted{opacity:.35}
+.board.trace-active .trace-focus{outline:2px solid #d4f4ff;outline-offset:2px}
+.trace-select{font:800 .85rem ui-monospace,monospace;min-height:44px;min-width:45px;padding:4px 6px;border-radius:7px;background:transparent;border:1px solid transparent;color:inherit}
+.board:not(.trace-active) .trace-select{cursor:default}
+.trace-select:disabled{opacity:1}
+.board.trace-active .trace-select{border-color:#657f96;cursor:pointer}
+.board.trace-active .trace-select:hover{border-color:#d4f4ff}
+.board-head,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px 14px}
+.board-head{justify-content:space-between;margin-bottom:11px}
+.board-head strong{font-size:1rem}
+.count{font-size:.84rem;font-weight:750;color:var(--amber)}
+.board{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(105px,1fr) minmax(113px,1.35fr) minmax(92px,.85fr);gap:5px;min-height:254px;padding:10px 7px 13px;border:1px solid var(--line);border-radius:11px;background:#0c1624 radial-gradient(#2a3b50 1px,transparent 1px) 0 0/14px 14px}
+.board.two-gates{min-height:342px}
+.two-gates #gates{row-gap:22px}
+.board.three-gates{min-height:460px}
+.three-gates #gates{grid-template-rows:22px repeat(3,1fr)}
+.three-gates .gate{justify-self:center}
+.three-gates .inputs{grid-template-rows:22px repeat(4,1fr)}
+.wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:1}
+.column{display:grid;min-width:0;align-items:center;justify-items:center;grid-template-rows:22px repeat(2,1fr);row-gap:10px}
+.inputs{grid-template-rows:22px repeat(3,1fr)}
+.label{font-size:.74rem;text-transform:uppercase;letter-spacing:.055em;color:var(--muted);font-weight:700}
+button,summary{font:inherit;cursor:pointer}
+button{min-height:44px;border:1px solid #52667c;border-radius:8px;color:var(--ink);background:#1d2b3d}
+button:hover:not(:disabled){border-color:var(--mint)}
+button:disabled{opacity:.52;cursor:default}
+.port:disabled{opacity:1;cursor:default}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.input{display:flex;align-items:center;gap:3px;justify-self:start}
+.toggle{min-width:60px;padding:4px;font-size:.79rem;font-weight:700}
+.toggle span{display:block;font:700 .76rem ui-monospace,monospace;color:var(--muted)}
+.toggle[aria-pressed=true]{border-color:#477e6c;background:#15352f}
+.toggle[aria-pressed=true] span{color:var(--mint)}
+.wire-flow{stroke-dasharray:1 17;animation:signal-flow 1.5s linear infinite}
+@keyframes signal-flow{to{stroke-dashoffset:-18}}
+@media(prefers-reduced-motion:reduce){.wire-flow{display:none;animation:none}}
+.port{display:grid;place-content:center;justify-items:center;gap:4px;width:34px;min-height:44px;padding:0}
+.port-role{font:750 .65rem/1 ui-monospace,monospace;letter-spacing:.01em}
+.port[data-source].selected,.port[data-source].selected:hover{background:var(--amber);border-color:var(--amber);color:#251604}
+.port[data-socket].eligible{outline:1px dashed var(--amber);outline-offset:1px}
+.port.hint-port{outline:2px solid var(--amber);outline-offset:2px}
+.dot{height:9px;width:9px;border-radius:50%;border:1px solid currentColor;color:#b5c3d2}
+.on .dot{background:var(--mint);border-color:var(--mint)}
+.unfed .dot{border-style:dashed}
+.selected .dot{color:#251604;background:#251604;border-color:#251604}
+.gate{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px;width:min(100%,165px);padding:5px;border:1px solid #536980;border-radius:10px;background:#19283b;text-align:center;font-size:.86rem;font-weight:800}
+.gate:first-of-type{justify-self:start}
+.gate:nth-of-type(2){justify-self:end}
+.pins{display:grid;gap:4px}
+.lamp{display:flex;align-items:center;gap:5px;justify-self:end;inline-size:min(100%,5.75rem);min-block-size:4.5rem;color:var(--muted);background:#132030;border-radius:8px;padding-right:4px;font-size:.78rem;font-weight:750}
+.lamp .port{flex:none}
+.lamp-body{min-width:0}
+.lamp strong{display:block;block-size:2.2em;font:700 .73rem/1.1 ui-monospace,monospace}
+.bulb{display:block;width:15px;height:15px;margin:2px 0 7px;border-radius:50%;border:1px solid #8799ae;background:#152132;position:relative}
+.bulb::after{content:'';position:absolute;top:100%;left:30%;width:40%;height:3px;background:#8799ae;border-radius:0 0 2px 2px}
+.lamp.lit{background:#2b281d}
+.lamp.lit strong{color:#ffe5a5}
+.lamp.lit .bulb{border-color:#fff1ba;background:#ffdb7d;box-shadow:0 0 6px #ffe083,0 0 15px #ffc966a0}
+.lamp.lit .bulb::after{background:#c2a775}
+.controls{color:var(--muted);font-size:.91rem;margin:12px 0}
+.controls strong,.readout strong{color:var(--ink)}
+.readout{margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:.88rem}
+.readout p+p{margin-top:4px}
+.legend{color:var(--muted);font-size:.78rem;margin-top:7px}
+.practice-nav{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
+.practice-nav button{min-width:38px;padding:0 7px}
+.practice-nav [aria-current=step]{background:var(--mint);border-color:var(--mint);color:#09251b;font-weight:800}
+.practice-nav button.done:not([aria-current=step]){border-color:#477e6c;color:var(--mint)}
+.practice-nav.campaign-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}
+.mission-group{min-width:0;border:1px solid var(--group-border);border-radius:11px;padding:8px 9px;background:var(--group-bg)}
+.mission-group.night{--group-accent:#80d9f2;--group-border:#426f85;--group-bg:#142737}
+.mission-group.power{--group-accent:#95e3b4;--group-border:#478366;--group-bg:#142d26}
+.mission-group-title{font:750 .68rem/1.4 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.055em;color:var(--group-accent);margin-bottom:7px}
+.mission-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.mission-group .mission-numbers button{min-width:0;min-height:44px;padding:0 3px;border-color:var(--group-border);background:#182738;font:800 .94rem ui-monospace,monospace}
+.mission-group.power .mission-numbers button{background:#1c3028}
+.mission-group .mission-numbers button[aria-current=step]{background:var(--group-accent);color:#10231d;border-color:var(--group-accent);outline:2px solid var(--ink);outline-offset:2px}
+.mission-group .mission-numbers button:disabled{opacity:.48}
+.mission-group .mission-numbers button.done:not([aria-current=step]){border-color:var(--group-accent);color:var(--group-accent)}
+.mission-counter{font-size:.8rem;color:var(--muted);margin-top:6px}
+.actions button{padding:7px 14px;font-size:.91rem;font-weight:750}
+.primary{background:var(--mint);border-color:var(--mint);color:#09251b}
+.result{margin-top:12px;min-height:2.7em;color:var(--muted)}
+.result[data-kind=win]{color:var(--mint)}.result[data-kind=fail]{color:var(--pink)}
+.pointer{color:var(--muted);padding:8px 0}
+.pointer button{margin-top:8px;padding:5px 9px}
+details{margin-top:8px;padding:9px 0 0;border-top:1px solid var(--line)}
+summary{color:var(--muted);width:fit-content;font-size:.9rem}
+table{width:100%;margin-top:8px;border-collapse:collapse;font-size:.84rem;text-align:center}
+th,td{padding:6px 2px;border-bottom:1px solid var(--line)}
+td button{padding:3px 7px;min-height:36px}
+td button[aria-pressed=true]{border-color:var(--mint)}
+.bad{color:var(--pink)}
+@media(max-width:600px){
+  main{padding:12px}
+  .panel{margin-top:14px;padding:10px;border-radius:12px}
+  .story{margin-top:11px;padding:11px 12px}
+  .story p{font-size:.9rem;line-height:1.48}
+  body[data-repair-chapter] #title{min-height:2.16em}
+  body[data-repair-chapter] .goal{height:7.1em}
+  body[data-repair-chapter] .story{height:12.8em}
+  .board{gap:3px}
+  .board-head{align-items:baseline}
+  .practice-nav{gap:7px}
+  .practice-nav button{min-width:44px;min-height:44px}
+  .trace-toolbar{grid-template-columns:1fr;gap:5px}
+  .trace-toolbar button{justify-self:start}
+  .trace-description{height:5.8em}
+  .practice-nav.campaign-nav{gap:6px}
+  .mission-group{padding:7px 6px}
+  .mission-group-title{font-size:.61rem}
+  .actions{gap:8px}
+  .actions button{min-height:46px;padding:8px 13px}
+  .readout{font-size:.87rem;line-height:1.55}
+  .controls{font-size:.89rem;line-height:1.5}
+  .legend{line-height:1.5}
+  .pointer button{min-height:44px}
+  .gate{font-size:.83rem}
+  table{font-size:.78rem}
+  th,td{padding:7px 3px}
+}
+@media(max-width:390px){.board{padding-inline:4px;grid-template-columns:minmax(84px,1fr) minmax(96px,1.12fr) minmax(65px,.8fr);gap:2px}.toggle{min-width:48px;padding-inline:2px}.port{width:28px}.gate{padding:3px;gap:2px}.lamp{gap:3px;font-size:.72rem}.lamp .port{width:24px}.label{font-size:.68rem}.port-role{font-size:.59rem}}
+
+.power-opening{border-color:#478366;background:linear-gradient(155deg,#173a30,#121d2c 65%)}
+.power-opening .chapter-label,.power-opening .mission-lineup strong{color:#95e3b4}
+.power-opening .dispatch{border-left-color:#95e3b4;background:#10281e}
+.power-opening .mission-lineup div{border-color:#478366;background:#142d26}
+.power-opening .mission-lineup small{color:#c0dccd}
+.power-opening .action-link{background:#95e3b4;color:#10251d}
+.campaign-complete{width:100%;max-width:none;margin-inline:0;padding:clamp(22px,4vw,38px);border-color:#478366;background:linear-gradient(145deg,#183b32,#142635 68%,#13202f);text-align:center}
+.campaign-complete .complete-symbol{display:flex;align-items:center;justify-content:center;margin:24px auto 14px;width:76px;height:76px;border:2px solid #95e3b4;border-radius:50%;background:#1b4638;color:#c8f9db}
+.campaign-complete .complete-symbol svg{display:block;flex:none}
+.campaign-complete .terminal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-16px -20px 22px;padding:12px 18px;border-bottom:1px solid #37634e;background:#10271f;border-radius:12px 12px 0 0;color:#a8d9bd;font:700 .72rem ui-monospace,monospace;letter-spacing:.07em}
+.campaign-complete .terminal-lights{display:flex;gap:6px}
+.campaign-complete .terminal-lights i{width:9px;height:9px;border-radius:50%;background:#ff8f7b}
+.campaign-complete .terminal-lights i:nth-child(2){background:#ffd080}
+.campaign-complete .terminal-lights i:nth-child(3){background:#95e3b4}
+.campaign-complete .diagnostic-status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:640px;margin:18px auto;padding:12px;background:#0c201c;border:1px solid #37634e;border-radius:10px}
+.campaign-complete .diagnostic-status div{display:grid;gap:4px}
+.campaign-complete .diagnostic-status span{color:#adc7b8;font:700 .65rem ui-monospace,monospace;letter-spacing:.05em}
+.campaign-complete .diagnostic-status strong{color:#a8f5c9;font:800 clamp(1rem,2vw,1.35rem) ui-monospace,monospace}
+.campaign-complete .complete-count b{color:#a8f5c9;font-size:.72rem}
+@media(max-width:540px){.campaign-complete .terminal-top{font-size:.6rem}.campaign-complete .terminal-top span:last-child{display:none}.campaign-complete .diagnostic-status{gap:4px;padding:9px 5px}.campaign-complete .diagnostic-status span{font-size:.55rem}}
+.campaign-complete .chapter-label{color:#95e3b4;font:800 .78rem ui-monospace,monospace;letter-spacing:.12em}
+.campaign-complete h2{font-size:clamp(2rem,5vw,3rem);line-height:1.1;letter-spacing:-.04em;margin:10px 0 15px}
+.campaign-complete p{margin:0 auto;max-width:66ch;color:#d4e1ed;line-height:1.7}
+.campaign-complete p+p{margin-top:11px}
+.campaign-complete .complete-call{margin:20px auto;padding:15px 17px;text-align:left;max-width:78ch;border-left:3px solid #95e3b4;border-radius:0 9px 9px 0;background:#10281e}
+.campaign-complete .complete-call strong{color:#95e3b4;display:block;margin-bottom:5px;font:.78rem ui-monospace,monospace}
+.campaign-complete .complete-count{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.campaign-complete .complete-count span{border:1px solid #478366;color:#cbf5d9;border-radius:8px;padding:8px 11px;font:800 .85rem ui-monospace,monospace}
+.campaign-complete .actions{margin-top:23px;justify-content:center}
+body[data-story-screen] main > header{margin-bottom:0}
+body[data-story-screen] main > .panel{margin-top:8px}
+.progress-reset{margin-top:14px}
+.progress-reset button{background:transparent;border-color:#52667c;color:#cbd4dd;font-size:.83rem;padding:7px 12px;min-height:44px}
+.progress-reset button:hover{color:#f1f6f9;border-color:#f1f6f9}
+.chapter-outro{background:linear-gradient(140deg,#163448,#142535);border-color:#456f84}
+.chapter-outro .chapter-label{color:#80d9f2;font:800 .76rem ui-monospace,monospace;letter-spacing:.1em}
+.chapter-outro h2{font-size:clamp(1.7rem,4vw,2.4rem);margin:8px 0 14px}
+.chapter-outro p{max-width:85ch;color:#d4e1ed;line-height:1.65}
+.chapter-outro p+p{margin-top:12px}
+.chapter-outro .dispatch{max-width:90ch;padding:12px 15px;border-left:3px solid #80d9f2;background:#0d2032;margin:15px 0}
+.chapter-outro .actions{margin-top:20px}
+.chapter-outro .action-link{background:#80d9f2;color:#102431}
+.apprentice-outro{background:linear-gradient(145deg,#30281f,#172235);border-color:#887454}
+.apprentice-outro .chapter-label{color:#ffdc9d}
+.apprentice-outro .dispatch{background:#332719;border-left-color:#ffdc9d}
+.apprentice-outro .dispatch strong{display:block;color:#ffdc9d;font:.8rem ui-monospace,monospace;margin-bottom:8px}
+.apprentice-outro .action-link{background:#ffdc9d;color:#191e24}
+@media(min-width:900px){:is(.night-opening,.power-opening,.chapter-outro){padding:28px 36px}}
+
+.campaign-complete .action-link{background:#95e3b4;color:#10251d}
+.campaign-complete .action-link.secondary{background:#273c4b;border:1px solid #52667c;color:#f1f6f9}
+
+.campaign-status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;font:.78rem ui-monospace,monospace;color:#b5c3d2}
+.campaign-back{color:#80d9f2;text-decoration:none;font-weight:800}
+.campaign-back:hover{text-decoration:underline}
+.campaign-overview{border-color:#527f7c;background:linear-gradient(155deg,#142a3b,#111d2b)}
+.campaign-overview .chapter-label{font:.76rem ui-monospace,monospace;color:#a5e5e4;letter-spacing:.08em}
+.campaign-overview h2{font-size:clamp(1.6rem,3.8vw,2.7rem);margin:6px 0 12px}
+.campaign-overview>p{max-width:85ch;color:#d3deea;line-height:1.65}
+.campaign-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 12px}
+.map-chapter{min-width:0;border:1px solid var(--chapter-border);background:var(--chapter-bg);border-radius:12px;padding:14px}
+.map-chapter.apprentice{--chapter-border:#887454;--chapter-bg:#30281f;--chapter-accent:#ffdc9d}
+.map-chapter.night{--chapter-border:#456f84;--chapter-bg:#142a3b;--chapter-accent:#80d9f2}
+.map-chapter.power{--chapter-border:#478366;--chapter-bg:#142d26;--chapter-accent:#95e3b4}
+.map-chapter .chapter-name{color:var(--chapter-accent);font:800 .76rem ui-monospace,monospace;letter-spacing:.06em}
+.map-chapter h3{font-size:1.18rem;margin:7px 0 4px}
+.map-chapter .chapter-summary{color:#bcd0dd;font-size:.83rem;margin-bottom:12px;min-height:3em}
+.map-chapter .chapter-link{color:var(--chapter-accent);font-weight:750;text-decoration:none;display:inline-block;margin:5px 0 11px}
+.map-chapter .chapter-link:hover{text-decoration:underline}
+.map-levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.map-chapter:not(.apprentice) .map-levels{grid-template-columns:repeat(3,minmax(0,1fr))}
+.map-levels button,.campaign-levels button{min-height:44px;min-width:0;padding:6px 4px;border-radius:7px;font:800 .78rem ui-monospace,monospace}
+.map-levels button{color:var(--chapter-accent);border-color:var(--chapter-border);background:#172332}
+.map-levels button.done{border-color:var(--chapter-accent)}
+.map-levels button.next{background:var(--chapter-accent);color:#101923}
+.map-levels button:disabled{opacity:.42}
+.campaign-map-note{font-size:.8rem}
+.campaign-settings{margin-top:18px;color:#b5c3d2;font-size:.85rem}
+.campaign-settings summary{cursor:pointer;min-height:44px;padding:11px 0}
+.campaign-settings button{min-height:44px;background:transparent;border-color:#52667c;color:#d3deea}
+.campaign-nav{display:grid;grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr));gap:8px}
+.campaign-nav .mission-group{min-width:0}
+.campaign-nav .mission-group.apprentice{--group-accent:#ffdc9d;--group-border:#887454;--group-bg:#30281f}
+.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(10,minmax(0,1fr))}
+.campaign-nav .mission-group.apprentice .mission-numbers button{background:#30281f}
+.campaign-nav .mission-group-title a{color:var(--group-accent);text-decoration:none}
+.campaign-nav .mission-group-title a:hover{text-decoration:underline}
+@media(max-width:940px){.campaign-map{grid-template-columns:1fr}.campaign-nav{grid-template-columns:1fr}.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(10,minmax(0,1fr))}}
+@media(max-width:570px){.campaign-nav .mission-group.apprentice .mission-numbers{grid-template-columns:repeat(5,minmax(0,1fr))}.map-levels{grid-template-columns:repeat(5,minmax(0,1fr))}.campaign-map{gap:8px}.campaign-status{flex-wrap:wrap}}
+
+.compact-progress{margin:14px 0 5px}
+.compact-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px;font:750 .72rem ui-monospace,monospace;color:#b5c3d2}
+.compact-progress-head a{color:#80d9f2;text-decoration:none}
+.compact-progress-head a:hover{text-decoration:underline}
+.progress-track{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:4px}
+.progress-track button{min-width:0;min-height:32px;padding:5px 0 4px;border:1px solid #475c70;border-radius:5px;background:#172436;color:#a6b8c7;font:750 .72rem ui-monospace,monospace}
+.progress-track button:nth-child(-n+10){border-bottom:3px solid #887454}
+.progress-track button:nth-child(n+11):nth-child(-n+13){border-bottom:3px solid #456f84}
+.progress-track button:nth-child(n+14){border-bottom:3px solid #478366}
+.progress-track button.done{color:#b7f2d1;background:#21372e}
+.progress-track button[aria-current="step"]{background:#a5e5db;border-color:#c6fbeb;color:#102027;box-shadow:0 0 0 2px #c6fbeb66}
+.progress-track button:disabled{opacity:.38}
+.progress-track button:not(:disabled){cursor:pointer}
+@media(max-width:620px){
+  .progress-track{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+  .progress-track button{min-height:32px}
+}
+.intro-progress-help{border-left:3px solid #ffdc9d;background:#30281f;padding:10px 13px;border-radius:0 8px 8px 0;line-height:1.5;max-width:85ch;margin:14px 0}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="site-logo" href="/" aria-label="LogicDash home">Logic<span>Dash</span></a>
+  <button type="button" class="site-menu-toggle" id="site-menu-toggle" aria-label="Open menu" aria-controls="site-nav" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/quick-byte/">Quick Byte</a></li>
+      <li><a href="/#puzzles" aria-current="page">Puzzles</a></li>
+      <li><a href="/learn/">Learn</a></li>
+      <li><a href="/tools/">Tools</a></li>
+    </ul>
+  </nav>
+</header>
+<main>
+  <div class="compact-progress" id="compact-progress" hidden>
+    <div class="compact-progress-head"><span id="progress-current">LEVEL 1 / 16</span><a href="#overview">Mission map</a></div>
+    <div class="progress-track" id="progress-track" role="group" aria-label="Circuit Dash level progress"></div>
+  </div>
+  <header>
+    <div class="brand" id="brand"></div>
+    <h1 id="title" tabindex="-1"></h1>
+    <div class="goal" id="goal"></div>
+    <section class="story" id="story" aria-label="Mission briefing" hidden>
+      <div class="story-tag" id="story-tag"></div>
+      <p class="story-lead" id="story-lead"></p>
+      <p id="story-detail"></p>
+    </section>
+    <div class="campaign-status"><a href="#overview" class="campaign-back">⌂ Mission map</a><span id="overall-progress">0 / 16 completed</span></div>
+    <p class="locked-notice" id="locked-notice" role="status" hidden>Night Shift is locked. Complete the 10-level beginner course to unlock the repair missions permanently. Progress is saved in this browser.</p>
+  </header>
+  <section class="panel campaign-overview" id="campaign-overview" aria-labelledby="campaign-overview-title" hidden>
+    <div class="chapter-label">CIRCUIT DASH / CAMPAIGN MAP</div>
+    <h2 id="campaign-overview-title" tabindex="-1">Sixteen levels. One night on call.</h2>
+    <p>Start as an apprentice learning the wiring bench. Graduate to the overnight security call, then keep the building running when the storm arrives. Every completed mission stays available to review.</p>
+    <div class="campaign-map" id="campaign-map"></div>
+    <p class="campaign-map-note">✓ Completed &nbsp; · &nbsp; ● Next mission &nbsp; · &nbsp; <span aria-hidden="true">🔒</span> Locked until the previous level is complete</p>
+    <div class="actions"><button class="primary" id="campaign-continue">Continue campaign</button></div>
+    <details class="campaign-settings"><summary>Progress &amp; settings</summary><button type="button" class="reset-progress">Reset all saved progress</button></details>
+  </section>
+  <section class="panel night-opening" id="night-opening" aria-labelledby="night-opening-title" hidden>
+    <div class="chapter-label">SCENARIO B / NIGHT SHIFT · LEVELS 11–13</div>
+    <h2 id="night-opening-title" tabindex="-1">The building should be quiet.</h2>
+    <p>It's 23:42. The day staff have gone home, the corridors are empty, and the security desk is halfway through its final checks. Then the first warning comes in: an armed alarm has failed to respond to an open window.</p>
+    <div class="dispatch">
+      <div class="chapter-label">INCOMING CALL · SECURITY DESK</div>
+      <p>“We can see the entry sensor working, but the alarm isn't following it. There's nobody here to replace the whole panel. Can you find the bad connection?”</p>
+    </div>
+    <p>You're the technician on call. The circuits are already installed, but some wires go to the wrong inputs. You'll examine what each panel is supposed to do, test different switch settings, and repair the faulty connection before moving on.</p>
+    <p>One successful test isn't enough: your repair must work for <strong>every</strong> combination. If you lose the trail, switch on Trace Mode or reveal a hint. Neither costs a repair move.</p>
+    <div class="mission-lineup" aria-label="Tonight's repair assignments">
+      <div><strong>01 · 23:42</strong><span>Entry Alarm</span><small>An open window slips past the armed alarm</small></div>
+      <div><strong>02 · 00:18</strong><span>Sensor Check</span><small>The east-wing sensors are reporting the wrong state</small></div>
+      <div><strong>03 · 01:06</strong><span>Backup Relay</span><small>The last power-status check fails before handover</small></div>
+    </div>
+    <div class="actions">
+      <button id="night-begin" class="primary">Begin Night Shift</button>
+      <a class="action-link" href="#course" style="background:#26374a;color:#f1f6f9">Circuit Dash training</a>
+    </div>
+
+  </section>
+  <section class="panel power-opening" id="power-opening" aria-labelledby="power-opening-title" hidden>
+    <div class="chapter-label">SCENARIO C / POWER FAILURE · LEVELS 14–16</div>
+    <h2 id="power-opening-title" tabindex="-1">Just when you thought it was over.</h2>
+    <p>It's 02:11. The security faults are fixed, and your Night Shift report is almost signed off. Outside, the rain gets heavier. A flash of lightning is followed by a low thud from the plant room. Then the building lights go out.</p>
+    <div class="dispatch">
+      <div class="chapter-label">INCOMING CALL · CONTROL ROOM</div>
+      <p>“Main power's down. The backup supply is responding, but the emergency lights aren't. The lift controller's showing the wrong status too. We need those systems checked before anyone moves through the building.”</p>
+    </div>
+    <p>The storm hasn't damaged every circuit. Instead, three essential controllers are reading the wrong connections. This time, restoring one indicator won't be enough: you'll need to check how signals travel through several gates, and later repairs may require <strong>two</strong> wire changes.</p>
+    <p>Trace each existing path, test every switch combination and repair only the connections that are wrong. Your earlier Night Shift repairs remain complete. The building is counting on this final set of checks.</p>
+    <div class="mission-lineup" aria-label="Power Failure repair assignments">
+      <div><strong>04 · 02:11</strong><span>Emergency Lighting</span><small>Backup power is available, but the lights ignore it</small></div>
+      <div><strong>05 · 02:26</strong><span>Lift Interlock</span><small>Unsafe readings and calls must be corrected together</small></div>
+      <div><strong>06 · 02:48</strong><span>Control Room</span><small>Power status and hazard alerts need two final repairs</small></div>
+    </div>
+    <div class="actions">
+      <button id="power-begin" class="primary">Begin Power Failure</button>
+      <a class="action-link" href="#night-shift-intro" style="background:#26374a;color:#f1f6f9">Night Shift briefing</a>
+    </div>
+
+  </section>
+  <section class="panel chapter-outro apprentice-outro" id="apprentice-complete" aria-labelledby="apprentice-complete-title" hidden>
+    <div class="chapter-label">SCENARIO A / APPRENTICE SHIFT · ALL 10 CHECKS PASSED</div>
+    <h2 id="apprentice-complete-title" tabindex="-1">Congratulations. You've been promoted… sort of.</h2>
+    <p>18:06. Ten test circuits passed. Not one resistor was harmed. You put down your clipboard and prepare to clock off, rather pleased with yourself.</p>
+    <div class="dispatch">
+      <strong>MAINTENANCE SUPERVISOR · FINAL SIGN-OFF</strong>
+      <p>“Well done. You understand your AND from your OR, your XOR from your elbow. Here's your first assignment. Should be a quiet night.”</p>
+    </div>
+    <p>You're now an authorised circuit technician. The security team has three troublesome controllers waiting for the overnight shift. The simulator is over; it's time to fix something that matters.</p>
+    <p>23:42. Your phone rings. The caller ID reads <strong>SECURITY DESK</strong>.</p>
+    <div class="actions"><a class="action-link" href="#night-shift">Accept your first Night Shift</a><a class="action-link" href="#overview" style="background:#26374a;color:#f1f6f9">Mission map</a></div>
+  </section>
+  <section class="panel chapter-outro" id="night-complete" aria-labelledby="night-complete-title" hidden>
+    <div class="chapter-label">INCIDENT 01 / THREE REPAIRS COMPLETE</div>
+    <h2 id="night-complete-title" tabindex="-1">Night Shift — systems restored.</h2>
+    <p>01:34. The entry alarm is responding again. The sensor checks agree with the control panel, and the backup relay has passed its final test. You begin writing the handover report.</p>
+    <div class="dispatch"><p>“All three faults cleared. That's everything for tonight… unless the weather gets any worse.”</p></div>
+    <p>Outside, the rain is getting heavier. An ominous crack of thunder breaks the silence. Your phone rings again.</p>
+    <div class="actions"><a class="action-link" href="#power-failure">Continue to Power Failure</a><a class="action-link" href="#night-shift-intro" style="background:#26374a;color:#f1f6f9">Night Shift introduction</a></div>
+
+  </section>
+  <section class="panel campaign-complete" id="campaign-complete" aria-labelledby="campaign-complete-title" hidden>
+    <div class="terminal-top" aria-hidden="true"><span class="terminal-lights"><i></i><i></i><i></i></span><span>SYSTEM REPORT / 03:07</span><span>LD://INCIDENT-02</span></div>
+    <div class="complete-symbol" aria-hidden="true"><svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 25L20 34L39 13"/></svg></div>
+    <div class="chapter-label">INCIDENT REPORT / ALL SYSTEMS RESTORED</div>
+    <h2 id="campaign-complete-title" tabindex="-1">The building is back online.</h2>
+    <div class="diagnostic-status" aria-label="All six circuit repairs verified">
+      <div><span>CAMPAIGN LEVELS</span><strong>16 / 16</strong></div>
+      <div><span>REPAIRS</span><strong>06 / 06 PASS</strong></div>
+      <div><span>BUILDING STATUS</span><strong>ONLINE</strong></div>
+    </div>
+    <p>03:07. The emergency lights hold steady. The lift reports the correct safety status. In the control room, every indicator finally agrees with the circuits behind it.</p>
+    <div class="complete-call">
+      <strong>FINAL CALL · SECURITY DESK</strong>
+      <p>“All green here. Six faults found, six systems checked. That's the handover we needed. You can finally clock off.”</p>
+    </div>
+    <p>You've completed the full Night Shift and Power Failure storyline — diagnosing faulty connections, tracing signal paths and proving each repair across every test case.</p>
+    <div class="complete-count" aria-label="Repair missions one through six in three-bit binary, all completed">
+      <span>001 <b>PASS</b></span><span>010 <b>PASS</b></span><span>011 <b>PASS</b></span><span>100 <b>PASS</b></span><span>101 <b>PASS</b></span><span>110 <b>PASS</b></span>
+    </div>
+    <p style="margin-top:18px">For now, the maintenance log is closed. More incidents may be waiting after testing — but tonight's work is done. Your progress is saved in this browser.</p>
+    <div class="actions">
+      <a class="action-link" href="#overview">Mission map</a>
+      <a class="action-link secondary" href="#night-shift">Night Shift story</a>
+      <a class="action-link secondary" href="#power-failure">Power Failure story</a>
+    </div>
+
+  </section>
+  <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
+    <div class="chapter-label">SCENARIO A / APPRENTICE SHIFT · LEVEL 1 OF 16</div>
+    <h2 id="intro-title">First day on the circuit bench.</h2>
+    <p>You're the new apprentice on the building maintenance team. Before anyone hands you an overnight call-out, you'll need to learn how signals travel through switches, wires and logic gates. Pass the bench checks and earn your place on Night Shift.</p>
+    <p class="intro-progress-help"><strong>The numbered strip above is your mission tracker:</strong> levels 1–10 are apprentice training, 11–13 are Night Shift and 14–16 are Power Failure. The highlighted number is your current level; you can revisit completed levels at any time. Choose <strong>Mission map</strong> for the full story.</p>
+    <h3>How the board works</h3>
+    <p>Tap a switch to try a different input. Follow the wire to see where that value goes. Your job is to make the lamps behave as each level asks.</p>
+    <dl>
+      <div><dt>Switches</dt><dd>These are the inputs. A switch sends <strong>1</strong> when it’s on and <strong>0</strong> when it’s off.</dd></div>
+      <div><dt>Wires and sockets</dt><dd>A wire carries a value from <strong>OUT</strong> to <strong>IN</strong>. Tap those two sockets in that order to connect them.</dd></div>
+      <div><dt>Logic gates</dt><dd>A gate reads its inputs and applies a rule. Its OUT can send the result to a lamp or to another gate.</dd></div>
+      <div><dt>Lamps</dt><dd>A lamp lights when it receives 1 and stays dark when it receives 0. <strong>No signal</strong> means it has no value coming in yet.</dd></div>
+    </dl>
+    <p>Use <strong>What’s happening now</strong> to see the values behind the lights. <strong>Check step</strong> tells you when you’re ready for the next level.</p>
+    <div class="actions"><button class="primary" id="start">Pass induction · Level 2</button></div>
+  </section>
+  <section class="panel" id="play" aria-labelledby="objective" hidden>
+    <div class="board-head"><strong id="objective"></strong><span class="count" id="count"></span></div>
+    <div class="trace-toolbar" id="trace-toolbar" hidden>
+      <button type="button" id="trace-toggle" aria-pressed="false">Trace Mode: Off</button>
+      <span class="trace-description" id="trace-description" role="status">Highlight connected signals without changing any wires.</span>
+    </div>
+    <div class="board" id="board">
+      <svg class="wires" aria-hidden="true"></svg>
+      <div class="column inputs" id="inputs"></div>
+      <div class="column" id="gates"></div>
+      <div class="column" id="lamps"></div>
+    </div>
+    <p class="legend">Green carries 1 (on) · Grey carries 0 (off) · Dashed means no value yet</p>
+    <p class="controls" id="controls"></p>
+    <div class="actions">
+      <button class="primary" id="test">Test panel</button>
+      <button class="primary" id="next" hidden>Continue</button>
+      <button id="undo" disabled>Undo move</button>
+    </div>
+    <p class="result" id="result" role="status"></p>
+    <details id="pointers" hidden>
+      <summary>Need a hint? (optional)</summary>
+      <div class="pointer">
+        <p id="pointer-text" aria-live="polite" role="status">Choose how much help you want. Hints reveal one at a time.</p>
+        <button id="hint" type="button">Reveal hint 1 of 3</button>
+      </div>
+    </details>
+    <section class="finish" id="night-finish" aria-labelledby="night-finish-title" hidden>
+      <h2 id="night-finish-title">Night Shift — systems restored</h2>
+      <p>Entry alarm, sensor check and backup relay are all operational. The security desk signs off your report. But before you can leave, a storm knocks out the building's power. Emergency lighting, the lift controller and the control room need attention.</p>
+      <div class="actions"><a class="action-link primary" href="#power-failure">Read the Power Failure briefing</a></div>
+    </section>
+    <section class="finish" id="power-finish" aria-labelledby="power-finish-title" hidden>
+      <h2 id="power-finish-title">Power Failure — building back online</h2>
+      <p>Emergency lights respond, the lift safety checks work and the control room reports the correct signals.</p>
+      <div class="actions"><a class="action-link primary" href="#mission-complete">View mission report</a></div>
+    </section>
+    <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
+      <h2 id="finish-title">Apprentice Shift complete — Night Shift unlocked</h2>
+      <p>You've learned to trace signals, connect gates and fix a faulty circuit. A late-night call has come in from the security team. Three panels need repairing before the morning shift.</p>
+      <div class="actions"><a class="action-link primary" href="#apprentice-complete">Read your supervisor's sign-off</a></div>
+    </section>
+    <div class="readout" id="readout" aria-label="Live circuit explanation"></div>
+    <details id="reference" hidden><summary>Gate rules and truth table</summary><div id="rules"></div></details>
+    <details id="details" hidden><summary id="case-label">View test cases</summary><div id="cases"></div></details>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div><a class="site-logo" href="/">Logic<span>Dash</span></a><p>Puzzles. Learning. Useful tools.</p></div>
+    <div class="site-footer-groups">
+      <div><strong>Puzzles</strong><ul><li><a href="/5-bit/">Classic</a></li><li><a href="/overclocked/">OverClocked</a></li><li><a href="/quick-byte/">Quick Byte</a></li><li><a href="/circuit-dash/">Circuit Dash</a></li><li><a href="/circuit-dash/#overview">Mission map</a></li></ul></div>
+      <div><strong>Learn &amp; More</strong><ul><li><a href="/learn/">Learn / Byte Lab</a></li><li><a href="/tools/">The Tool Hut</a></li><li><a href="/how-to-play/">How to Play</a></li><li><a href="/about/">About</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/contact/">Contact</a></li></ul></div>
+    </div>
+  </div>
+  <p class="site-copyright">© <span id="copyright-year">2026</span> LogicDash. Built by a CS teacher who likes logic puzzles.</p>
+</footer>
+<script>
+const siteMenuToggle = document.getElementById('site-menu-toggle');
+const siteNav = document.getElementById('site-nav');
+siteMenuToggle.addEventListener('click',() => {
+  const opened = siteNav.classList.toggle('open');
+  siteMenuToggle.setAttribute('aria-expanded',String(opened));
+  siteMenuToggle.setAttribute('aria-label',opened ? 'Close menu' : 'Open menu');
+});
+siteNav.addEventListener('click',event => {
+  if (event.target.closest('a')) {
+    siteNav.classList.remove('open');
+    siteMenuToggle.setAttribute('aria-expanded','false');
+    siteMenuToggle.setAttribute('aria-label','Open menu');
+  }
+});
+document.addEventListener('keydown',event => {
+  if (event.key === 'Escape' && siteNav.classList.contains('open')) {
+    siteNav.classList.remove('open');
+    siteMenuToggle.setAttribute('aria-expanded','false');
+    siteMenuToggle.focus();
+  }
+});
+document.addEventListener('click',event => {
+  if (!siteNav.contains(event.target) && !siteMenuToggle.contains(event.target)) {
+    siteNav.classList.remove('open');
+    siteMenuToggle.setAttribute('aria-expanded','false');
+  }
+});
+document.getElementById('copyright-year').textContent = new Date().getFullYear();
+</script>
+<script>
+'use strict';
+
+const gateRules = {
+  and:{pins:['and1','and2'], rule:'Both inputs must be 1.', apply:(a,b) => a & b},
+  or:{pins:['or1','or2'], rule:'At least one input must be 1. Both is fine.', apply:(a,b) => a | b},
+  xor:{pins:['xor1','xor2'], rule:'Exactly one input must be 1. Both gives 0.', apply:(a,b) => a ^ b}
+};
+const twoSwitches = {a:'A', b:'B'};
+function gateLesson(gate, lesson) {
+  const [first,second] = gateRules[gate].pins;
+  return {
+    ...lesson, inputs:twoSwitches, lamps:{light:'Lamp'}, gates:[gate],
+    wiring:{[first]:'a', [second]:'b', light:gate}
+  };
+}
+const stages = [
+  {
+    title:'Circuit Dash',
+    goal:'Learn to read, wire and repair simple circuits, one step at a time.'
+  },
+  {
+    title:'Follow the signal', objective:'Turn the lamp on',
+    goal:'A circuit carries values along wires. Here, <strong>1 means on</strong> and <strong>0 means off</strong>.',
+    controls:'Tap <strong>Power</strong> and watch its 1 travel to the lamp. Then check the step.',
+    inputs:{power:'Power'}, lamps:{light:'Lamp'}, gates:[], wiring:{light:'power'}, initial:0,
+    observe:({light}) => light === 1,
+    pass:'The switch sent a 1 down the wire, so the lamp lit.', retry:'Turn Power on and check again.'
+  },
+  {
+    title:'Wire a switch', objective:'Connect the switch to the lamp',
+    goal:'<strong>OUT</strong> sends a value. <strong>IN</strong> receives one. An empty IN has no value yet.',
+    controls:'Tap <strong>OUT</strong> beside Power, then <strong>IN</strong> beside the lamp.',
+    inputs:{power:'Power'}, lamps:{light:'Lamp'}, gates:[], wiring:{light:null}, initial:1,
+    target:({power}) => ({light:power}),
+    pass:'The lamp now receives both 0 and 1 as you flip Power.', retry:'Connect Power OUT directly to the lamp IN.'
+  },
+  gateLesson('and',{
+    title:'The AND gate', objective:'Light the lamp through an AND gate',
+    goal:'A <strong>gate</strong> reads its inputs and applies a rule to decide what to send from OUT. AND sends a 1 only when both inputs are 1.',
+    controls:'Try turning on A by itself. Then turn both switches on and check.',
+    initial:0, observe:({light}) => light === 1,
+    pass:'AND received 1 and 1, so it sent 1.', retry:'AND needs both A and B on at the same time.'
+  }),
+  gateLesson('or',{
+    title:'The OR gate', objective:'Check that OR also lights with both switches on',
+    goal:'<strong>OR</strong> sends a 1 when at least one input is 1. It also sends a 1 when both are 1.',
+    controls:'A is already on. Turn B on as well and check what OR sends.',
+    initial:2, observe:({a,b,light}) => a === 1 && b === 1 && light === 1,
+    pass:'The lamp stayed on. OR accepts one or both inputs on.', retry:'Turn both A and B on and check again.'
+  }),
+  gateLesson('xor',{
+    title:'The XOR gate', objective:'Light the lamp through an XOR gate',
+    goal:'<strong>XOR</strong> sends a 1 when its two inputs differ. With both switches on, XOR sends 0.',
+    controls:'Both switches start on. Turn either one off and see what changes.',
+    initial:3, observe:({light}) => light === 1,
+    pass:'The inputs differ, so XOR sends 1.', retry:'Leave one switch on and one off.'
+  }),
+  {
+    title:'Wire a lamp', objective:'Make either switch light the lamp',
+    goal:'The OR gate is already reading A and B. Its output needs a wire to the lamp.',
+    controls:'Tap <strong>OUT</strong> on OR, then <strong>IN</strong> on the lamp. Check the step to test all four switch settings.',
+    inputs:twoSwitches, lamps:{light:'Lamp'}, gates:['or'],
+    wiring:{or1:'a', or2:'b', light:null}, initial:1,
+    target:({a,b}) => ({light:a | b}),
+    pass:'The lamp matches OR in all four cases.', retry:'If the lamp must respond to both switches, connect OR OUT to it.'
+  },
+  {
+    title:'Connect two gates', objective:'Finish the unlock circuit',
+    goal:'The lock opens when both keys are on, or when Override is on. AND checks the keys first. OR then reads that result and the Override switch.',
+    controls:'Tap <strong>AND OUT</strong>, then <strong>OR IN 2</strong> (the empty lower socket). Keep Override connected to OR IN 1.',
+    inputs:{a:'Key A', b:'Key B', override:'Override'}, lamps:{unlock:'Unlock'}, gates:['and','or'],
+    wiring:{and1:'a', and2:'b', or1:'override', or2:null, unlock:'or'}, initial:6,
+    target:({a,b,override}) => ({unlock:(a & b) | override}),
+    pass:'The keys can now unlock the panel through AND, and Override works on its own.', retry:'Look for the empty lower IN on OR. The AND output should feed that socket.'
+  },
+  {
+    title:'Share a signal', objective:'Make both lamps follow XOR',
+    goal:'One OUT can feed more than one IN. Both wires carry a copy of the same value.',
+    controls:'Left already follows XOR. Connect <strong>XOR OUT</strong> to <strong>Right IN</strong> and watch the wire branch.',
+    inputs:twoSwitches, lamps:{left:'Left', right:'Right'}, gates:['xor'],
+    wiring:{xor1:'a', xor2:'b', left:'xor', right:null}, initial:2,
+    target:({a,b}) => ({left:a ^ b, right:a ^ b}),
+    pass:'Both lamps receive the same XOR result.', retry:'Use the same XOR OUT to feed the second lamp.'
+  },
+  {
+    title:'Fix a fault', objective:'Repair the Ready lamp in one wire move',
+    goal:'This panel checks a hatch. <strong>Badge</strong> is on when it accepts an entry badge. <strong>Seal</strong> is on when the hatch is fully shut and sealed. The <strong>Ready</strong> lamp should light only when both checks pass.',
+    controls:'Try <strong>Test panel</strong> to see a failing case. Use the live explanation to find what each AND input is reading.',
+    inputs:{badge:'Badge', seal:'Seal'}, lamps:{ready:'Ready'}, gates:['and'],
+    wiring:{and1:'badge', and2:'badge', ready:'and'}, initial:2, repair:true,
+    target:({badge,seal}) => ({ready:badge & seal}),
+    pass:'Both switches now have to be on for Ready to light.'
+  }
+];
+const nightShift = [
+  {
+    title:'Entry alarm',
+    briefing:'23:42 · SECURITY DESK',
+    story:'The overnight guard reports that the alarm ignores an open window. The entry indicator works, but the armed alarm can miss an intrusion.',
+    objective:'Fix the panel in one wire move',
+    goal:'The <strong>Entry</strong> lamp should light when the door or window is open. The <strong>Alarm</strong> should light only when an entry is open and the system is armed.',
+    controls:'Test the panel, then trace the signals. To replace a wire, select the new <strong>OUT</strong> and the <strong>IN</strong> it should feed.',
+    inputs:{armed:'Armed', door:'Door', window:'Window'}, lamps:{entry:'Entry', alarm:'Alarm'},
+    gates:['or','and'], repair:true, initial:4,
+    wiring:{or1:'door', or2:'window', and1:'armed', and2:'door', entry:'or', alarm:'and'},
+    target:({armed,door,window}) => ({entry:door | window, alarm:(door | window) & armed}),
+    pass:'Entry and Alarm now work as intended.',
+    pointers:[
+      'Press Test panel. It sets the switches to the first failing case so you can follow the signals on the board.',
+      'When only the window is open, Entry lights but Alarm stays off. The OR gate already knows when either opening is open. What is the AND gate reading instead?',
+      'Connect OR OUT to AND IN 2. This replaces the Door wire at that socket. Leave Armed connected to AND IN 1, then test again.'
+    ],
+    hintFocus:'The OR gate already combines Door and Window correctly. The AND gate should use that combined signal, rather than one opening directly.',
+    hintRepair:[['or','and2']]
+  },
+  {
+    title:'Sensor check',
+    briefing:'00:18 · EAST WING',
+    story:'The entry panel is fixed, but the east-wing sensors are giving unreliable readings. The alert must depend on a real sensor change, not the Enable switch.',
+    objective:'Find the wrong connection in the sensor panel',
+    goal:'The <strong>Check</strong> lamp should light when exactly one of the Left and Right sensors is on. The <strong>Alert</strong> lamp should light only when Check is on and the panel is enabled.',
+    controls:'One wire is wrong. Test the panel and compare what the two lamps are reading.',
+    inputs:{enabled:'Enable', left:'Left', right:'Right'}, lamps:{check:'Check', alert:'Alert'},
+    gates:['xor','and'], repair:true, initial:4,
+    wiring:{xor1:'left', xor2:'enabled', and1:'enabled', and2:'xor', check:'xor', alert:'and'},
+    target:({enabled,left,right}) => ({check:left ^ right, alert:(left ^ right) & enabled}),
+    pass:'The sensors now drive Check, and Enable controls whether Alert can light.',
+    hintFocus:'XOR must compare Left and Right. One of its inputs currently reads Enable instead of a sensor.',
+    hintRepair:[['right','xor2']]
+  },
+  {
+    title:'Backup relay',
+    briefing:'01:06 · PLANT ROOM',
+    story:'One last fault before handover: the security relay reports the wrong Ready status. Check the two power supplies and the entry alarm together.',
+    objective:'Restore the Ready and Alarm lamps',
+    goal:'Power is available when exactly one supply, <strong>Main</strong> or <strong>Backup</strong>, is on. <strong>Ready</strong> should show whether power is available. <strong>Alarm</strong> should light only when power is available and the door or window is open.',
+    controls:'Test the panel across all 16 switch settings. Change one wire to make both lamps match their rules.',
+    inputs:{main:'Main', backup:'Backup', door:'Door', window:'Window'}, lamps:{ready:'Ready', alarm:'Alarm'},
+    gates:['xor','or','and'], repair:true, initial:10,
+    wiring:{xor1:'main', xor2:'backup', or1:'door', or2:'window', and1:'xor', and2:'or', ready:'and', alarm:'and'},
+    target:({main,backup,door,window}) => ({ready:main ^ backup, alarm:(main ^ backup) & (door | window)}),
+    pass:'Night Shift complete. Ready now shows power, and Alarm also checks for an open entry.',
+    hintFocus:'XOR correctly detects whether one supply is active. Alarm already uses AND, but Ready should not require an open door or window.',
+    hintRepair:[['xor','ready']]
+  }
+];
+const powerFailure = [
+  {
+    title:'Emergency lighting',
+    briefing:'02:11 · POWER FAILURE',
+    story:'A storm cuts the building supply just as the night shift ends. Backup power is available, but the emergency lights are not responding to it.',
+    objective:'Restore the backup lighting controller',
+    goal:'A storm has knocked out the building supply. The <strong>Supply</strong> lamp should light when either Main or Backup provides power. <strong>Lights</strong> should come on only when power is available and the Test switch is on.',
+    controls:'The supply indicator works, but the lighting controller ignores the backup supply. Find and replace the one incorrect wire.',
+    inputs:{main:'Main',backup:'Backup',test:'Test'},lamps:{supply:'Supply',lights:'Lights'},
+    gates:['or','and'],repair:true,moves:1,initial:5,
+    wiring:{or1:'main',or2:'backup',and1:'test',and2:'main',supply:'or',lights:'and'},
+    target:({main,backup,test:testing}) => ({supply:main | backup,lights:(main | backup) & testing}),
+    pass:'Emergency lights now work with either power source when Test is enabled.',
+    hintFocus:'OR already detects Main or Backup. The AND gate should combine Test with OR, not Test with Main alone.',
+    hintRepair:[['or','and2']]
+  },
+  {
+    title:'Lift interlock',
+    briefing:'02:26 · LIFT CONTROL',
+    story:'The lights are restored. The lift controller still cannot reliably tell when it is safe to operate or when someone has requested a lift.',
+    objective:'Repair both the safety and call indicators',
+    goal:'The lift controller is confused. <strong>Ready</strong> must light only if Power is on and the Doors are closed. The <strong>Call</strong> indicator should light if someone requests the lift or the lift is Ready. Neither indicator may incorrectly claim the lift is safe.',
+    controls:'Two connections are wrong. Trace the AND gate first, then check what the OR gate receives. You can replace up to two wires.',
+    inputs:{power:'Power',doors:'Doors closed',request:'Request'},lamps:{ready:'Ready',call:'Call'},
+    gates:['and','or'],repair:true,moves:2,initial:6,
+    wiring:{and1:'power',and2:'request',or1:'doors',or2:'request',ready:'and',call:'or'},
+    target:({power,doors,request}) => ({ready:power & doors,call:(power & doors) | request}),
+    pass:'Ready now requires power and closed doors; Call correctly combines the request and Ready signals.',
+    hintFocus:'AND must check Power and Doors closed. OR must then combine that AND result with Request. Trace both inputs of both gates.',
+    hintRepair:[['doors','and2'],['and','or1']]
+  },
+  {
+    title:'Control room',
+    briefing:'02:48 · CONTROL ROOM',
+    story:'The building is nearly back online. Two incorrect connections are causing the monitoring display to report the wrong power and hazard conditions.',
+    objective:'Restore the building monitoring panel',
+    goal:'The control room needs accurate readings. <strong>Power</strong> should report 1 when exactly one supply (Main or Backup) is active. <strong>Alarm</strong> should light only when power is available and either Heat or Smoke is detected.',
+    controls:'Two wires are incorrectly routed. Test all 16 switch combinations, use both repair moves, and make the two lamps agree with the rules.',
+    inputs:{main:'Main',backup:'Backup',heat:'Heat',smoke:'Smoke'},lamps:{power:'Power',alarm:'Alarm'},
+    gates:['xor','or','and'],repair:true,moves:2,initial:10,
+    wiring:{xor1:'main',xor2:'heat',or1:'heat',or2:'smoke',and1:'xor',and2:'backup',power:'xor',alarm:'and'},
+    target:({main,backup,heat,smoke}) => ({power:main ^ backup,alarm:(main ^ backup) & (heat | smoke)}),
+    pass:'Power Failure complete. Both monitoring circuits now pass every combination.',
+    hintFocus:'XOR should read Main and Backup. AND should receive the XOR result and the OR gate’s Heat-or-Smoke result.',
+    hintRepair:[['backup','xor2'],['or','and2']]
+  }
+];
+const allStages = [...stages,...nightShift,...powerFailure];
+const lastStep = stages.length - 1;
+const challengeStep = stages.length;
+const lastChallenge = challengeStep + nightShift.length - 1;
+const powerStart = lastChallenge + 1;
+const lastPower = allStages.length - 1;
+const progressKey = 'logicdash-circuit-dash-course';
+const previousProgressKey = 'logicdash-circuit-dash-beginner-path';
+const nightProgressKey = 'logicdash-circuit-dash-night-shift';
+const powerProgressKey = 'logicdash-circuit-dash-power-failure';
+const get = id => document.getElementById(id);
+const board = get('board');
+let step, stage, wires, pattern, source, tested, passed, message, hintStep;
+let tracing = false, traceTarget = null;
+let nightIntroOpen = false, powerIntroOpen = false, campaignCompleteOpen = false, nightCompleteOpen = false, apprenticeCompleteOpen = false, overviewOpen = false;
+let unlocked = savedProgress();
+let nightUnlocked = savedNightProgress();
+let powerUnlocked = savedPowerProgress();
+
+function savedProgress() {
+  try {
+    const current = localStorage.getItem(progressKey);
+    if (current !== null) {
+      const value = Number(current);
+      return Number.isInteger(value) && value >= 0 && value <= stages.length ? value : 0;
+    }
+    const previous = localStorage.getItem(previousProgressKey);
+    const value = Number(previous);
+    return previous !== null && Number.isInteger(value) && value >= 1 && value <= lastStep ? value + 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+function completeLevel() {
+  if (step >= powerStart) {
+    const next = step - powerStart + 1;
+    if (next > powerUnlocked) {
+      powerUnlocked = next;
+      saveProgress(powerProgressKey,powerUnlocked);
+    }
+    return;
+  }
+  if (step >= challengeStep) {
+    const next = step - challengeStep + 1;
+    if (next > nightUnlocked && step <= lastChallenge) {
+      nightUnlocked = next;
+      saveProgress(nightProgressKey,nightUnlocked);
+    }
+    return;
+  }
+  if (step < unlocked) return;
+  unlocked = step + 1;
+  saveProgress(progressKey,unlocked);
+}
+function savedNightProgress() {
+  try {
+    const value = Number(localStorage.getItem(nightProgressKey));
+    return Number.isInteger(value) && value >= 0 && value <= nightShift.length ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+function savedPowerProgress() {
+  try {
+    const raw = localStorage.getItem(powerProgressKey);
+    if (raw === null) return 0;
+    const value = Number(raw);
+    return Number.isInteger(value) && value >= 0 && value <= powerFailure.length ? value : 0;
+  } catch { return 0; }
+}
+function saveProgress(key,value) {
+  try { localStorage.setItem(key,String(value)); } catch {}
+}
+function challengeHash(index) {
+  if (index >= powerStart) {
+    const chapterLevel = index - powerStart + 1;
+    return '#power-failure-' + chapterLevel;
+  }
+  const level = index - challengeStep + 1;
+  return '#night-shift-' + level;
+}
+function completedCount() {
+  return unlocked + nightUnlocked + powerUnlocked;
+}
+function nextCampaignLevel() {
+  if (unlocked < stages.length) return unlocked;
+  if (nightUnlocked < nightShift.length) return challengeStep + nightUnlocked;
+  if (powerUnlocked < powerFailure.length) return powerStart + powerUnlocked;
+  return lastPower;
+}
+function levelCompleted(index) {
+  return index < challengeStep ? index < unlocked :
+    index < powerStart ? index - challengeStep < nightUnlocked :
+    index - powerStart < powerUnlocked;
+}
+function levelHash(index) {
+  return '#level-' + (index + 1);
+}
+function routeStep() {
+  const hash = location.hash;
+  const finishedTraining = unlocked >= stages.length;
+  const finishedNight = nightUnlocked >= nightShift.length;
+  const finishedAll = powerUnlocked >= powerFailure.length && finishedNight && finishedTraining;
+  const locked = message => {
+    get('locked-notice').textContent = message;
+    get('locked-notice').hidden = false;
+    return nextCampaignLevel();
+  };
+  get('locked-notice').hidden = true;
+  // Every URL names a single screen. Progress only decides whether it is unlocked.
+  if (!hash || hash === '#overview' || hash === '#course' || hash === '#training') return nextCampaignLevel();
+  if (hash === '#apprentice' || hash === '#apprentice-intro') return 0;
+  if (hash === '#apprentice-complete')
+    return finishedTraining ? lastStep : locked('Finish the apprentice shift to see your sign-off.');
+  if (hash === '#night-shift' || hash === '#night-shift-intro')
+    return finishedTraining ? challengeStep + Math.min(nightUnlocked,nightShift.length-1) :
+      locked('Complete Scenario A to unlock Night Shift.');
+  if (hash === '#night-shift-complete')
+    return finishedNight ? lastChallenge : locked('Complete Night Shift to unlock its ending.');
+  if (hash === '#power-failure' || hash === '#power-failure-intro')
+    return finishedNight ? powerStart + Math.min(powerUnlocked,powerFailure.length-1) :
+      locked('Complete Scenario B to unlock Power Failure.');
+  if (hash === '#mission-complete')
+    return finishedAll ? lastPower : locked('Complete all 16 levels to unlock the final report.');
+  const levelMatch = /^#level-(\d{1,2})$/.exec(hash);
+  if (levelMatch) {
+    const index = Number(levelMatch[1]) - 1;
+    return canEnter(index) ? index : locked('Complete earlier levels to unlock this mission.');
+  }
+  // Legacy deep links are kept so existing shared links still work.
+  const legacy = allStages.findIndex((_,index) => index >= challengeStep && challengeHash(index) === hash);
+  if (legacy >= challengeStep) return canEnter(legacy) ? legacy : locked('Complete earlier levels to unlock this mission.');
+  return nextCampaignLevel();
+}
+function begin(index) {
+  const hash = location.hash;
+  overviewOpen = !hash || hash === '#overview' || hash === '#course' || hash === '#training';
+  apprenticeCompleteOpen = hash === '#apprentice-complete' && unlocked === stages.length;
+  nightIntroOpen = (hash === '#night-shift' || hash === '#night-shift-intro') && unlocked >= stages.length;
+  powerIntroOpen = (hash === '#power-failure' || hash === '#power-failure-intro') && unlocked >= stages.length && nightUnlocked === nightShift.length;
+  campaignCompleteOpen = hash === '#mission-complete' && powerUnlocked === powerFailure.length && nightUnlocked === nightShift.length && unlocked === stages.length;
+  nightCompleteOpen = hash === '#night-shift-complete' && unlocked === stages.length && nightUnlocked === nightShift.length;
+  step = index;
+  stage = allStages[step];
+  const goal = get('goal');
+  goal.classList.toggle('night-goals',step >= challengeStep && step < powerStart);
+  goal.classList.toggle('power-goals',step >= powerStart);
+  Array.from(goal.children).forEach((paragraph, i) => paragraph.classList.toggle('current',i === step));
+  wires = {...stage.wiring};
+  pattern = stage.initial;
+  source = null;
+  tested = false;
+  passed = false;
+  message = '';
+  hintStep = 0;
+  tracing = false;
+  traceTarget = null;
+  get('pointers').open = false;
+}
+function inputMask(id) {
+  const keys = Object.keys(stage.inputs);
+  return 1 << (keys.length - keys.indexOf(id) - 1);
+}
+
+function inputsFor(index) {
+  return Object.fromEntries(Object.keys(stage.inputs).map(id => [id, Number(Boolean(index & inputMask(id)))]));
+}
+function valuesFor(index, wiring) {
+  const values = inputsFor(index);
+  function value(id) {
+    if (!id) return null;
+    if (id in values) return values[id];
+    const gate = gateRules[id];
+    const [left, right] = gate.pins.map(socket => value(wiring[socket]));
+    return (values[id] = left === null || right === null ? null : gate.apply(left, right));
+  }
+  for (const gate of stage.gates) value(gate);
+  for (const lamp of Object.keys(stage.lamps)) values[lamp] = value(wiring[lamp]);
+  return values;
+}
+function testCases(wiring) {
+  return Array.from({length:2 ** Object.keys(stage.inputs).length}, (_, index) => {
+    const actual = valuesFor(index,wiring);
+    const expected = stage.target(actual);
+    const failed = Object.keys(stage.lamps).filter(lamp => actual[lamp] !== expected[lamp]);
+    return {index, actual, expected, failed};
+  });
+}
+function makesLoop(jack, socket, wiring = wires) {
+  const destination = socket.slice(0,-1);
+  if (!stage.gates.includes(destination)) return false;
+  function dependsOnDestination(id) {
+    return id === destination || (stage.gates.includes(id) && gateRules[id].pins.some(pin => dependsOnDestination(wiring[pin])));
+  }
+  return dependsOnDestination(jack);
+}
+function movesUsed() {
+  return Object.keys(wires).filter(key => wires[key] !== stage.wiring[key]).length;
+}
+function moveUsed() { return movesUsed() > 0; }
+function canRewire() { return movesUsed() < (stage.moves ?? 1); }
+function socketName(key) {
+  if (key in stage.lamps) return stage.lamps[key] + ' input';
+  return key.slice(0,-1).toUpperCase() + ' input ' + key.at(-1);
+}
+function sourceName(key) {
+  return stage.inputs[key] ?? key.toUpperCase();
+}
+function signal(value) {
+  return value == null ? '–' : String(value);
+}
+function port(kind, id, value) {
+  const isSource = kind === 'source';
+  const name = isSource ? sourceName(id) + ' output' : socketName(id) + ' socket';
+  const selected = isSource && source === id;
+  const eligible = !isSource && source && wires[id] !== source && !makesLoop(source,id);
+  const hinted = hintStep === 3 && stage.hintRepair?.some(([from,to]) => (isSource && from === id) || (!isSource && to === id));
+  const pinLabel = isSource ? 'OUT' : ('IN' + (id in stage.lamps ? '' : ' ' + id.at(-1)));
+  return '<button class="port' + (value ? ' on' : '') + (value == null ? ' unfed' : '') +
+    (selected ? ' selected' : '') + (eligible ? ' eligible' : '') + (hinted ? ' hint-port' : '') +
+    '" data-' + kind + '="' + id + '" aria-label="' + name + ', ' + (value == null ? 'no signal' : value ? 'on' : 'off') + '"' +
+    (isSource ? ' aria-pressed="' + selected + '"' : '') + (!stage.target || !canRewire() ? ' disabled' : '') +
+    '><span class="dot" aria-hidden="true"></span><span class="port-role" aria-hidden="true">' +
+    pinLabel + '</span></button>';
+}
+function tracedSockets() {
+  if (!tracing || !traceTarget) return null;
+  const paths = new Set();
+  const seenBackward = new Set(), seenForward = new Set();
+  function backward(id) {
+    if (seenBackward.has(id)) return;
+    seenBackward.add(id);
+    if (stage.gates.includes(id)) {
+      for (const socket of gateRules[id].pins) {
+        if (wires[socket]) { paths.add(socket); backward(wires[socket]); }
+      }
+    } else if (Object.hasOwn(stage.lamps,id) && wires[id]) {
+      paths.add(id);
+      backward(wires[id]);
+    }
+  }
+  function forward(id) {
+    if (seenForward.has(id)) return;
+    seenForward.add(id);
+    for (const [socket,jack] of Object.entries(wires)) {
+      if (jack !== id) continue;
+      paths.add(socket);
+      const gate = socket.slice(0,-1);
+      if (stage.gates.includes(gate)) forward(gate);
+    }
+  }
+  backward(traceTarget);
+  if (!Object.hasOwn(stage.lamps,traceTarget)) forward(traceTarget);
+  return paths;
+}
+function traceMessage(paths) {
+  if (!tracing) return 'Highlight connected signals without changing any wires.';
+  if (!traceTarget) return 'Tap a switch, gate name or lamp label to inspect its connected signal path.';
+  const values = valuesFor(pattern,wires);
+  const name = stage.inputs[traceTarget] ?? stage.lamps[traceTarget] ?? traceTarget.toUpperCase();
+  const value = values[traceTarget];
+  return 'Tracing ' + name + ': ' + (value === null ? 'no signal' : 'value ' + value) +
+    '. ' + paths.size + ' connected ' + (paths.size === 1 ? 'wire' : 'wires') +
+    ' highlighted. Dimmed wires are outside this path. Tap another component or turn Trace Mode off.';
+}
+function hintText() {
+  if (!stage.hintRepair) return '';
+  if (!hintStep) return 'Reveal hints only if you need them. Each step gives more help.';
+  if (hintStep === 1) {
+    const failed = testCases(wires).find(row => row.failed.length);
+    if (!failed) return 'Every test case currently passes. Press Test panel to finish.';
+    const lamp = failed.failed[0];
+    const state = Object.entries(stage.inputs).map(([id,name]) => name + '=' + failed.actual[id]).join(', ');
+    return 'Hint 1 — Failing case: ' + state + '. ' + stage.lamps[lamp] +
+      ' should be ' + failed.expected[lamp] + ' but is ' +
+      (failed.actual[lamp] === null ? 'not connected' : failed.actual[lamp]) +
+      '. The switches have been set to this case.';
+  }
+  if (hintStep === 2) return 'Hint 2 — Trace the relevant gate: ' + stage.hintFocus;
+  return 'Hint 3 — Exact repair: ' + stage.hintRepair.map(([from,to]) =>
+    'Connect ' + sourceName(from) + ' OUT to ' + socketName(to) + ' IN').join('; then ') +
+    '. The required sockets are highlighted. If you have already used the move limit, choose Undo moves first.';
+}
+function render() {
+  const focused = document.activeElement?.dataset;
+  const isPower = step >= powerStart;
+  const isNight = step >= challengeStep && step < powerStart;
+  if (isNight || isPower) document.body.dataset.repairChapter = isNight ? 'night' : 'power';
+  else delete document.body.dataset.repairChapter;
+  const isRepair = isPower || isNight;
+  const stageList = isPower ? powerFailure : isNight ? nightShift : stages;
+  const offset = isPower ? powerStart : isNight ? challengeStep : 0;
+  const lastUnlocked = isPower ? powerUnlocked : isNight ? nightUnlocked : unlocked;
+  const chapter = isPower ? 'POWER FAILURE' : isNight ? 'NIGHT SHIFT' : 'CIRCUIT DASH';
+  const repairNumber = step - challengeStep + 1;
+  get('brand').textContent = 'CIRCUIT DASH / ' +
+    (isPower ? 'SCENARIO C · POWER FAILURE' : isNight ? 'SCENARIO B · NIGHT SHIFT' : 'SCENARIO A · APPRENTICE SHIFT') +
+    ' / LEVEL ' + (step+1) + ' OF ' + allStages.length;
+  const showingIntro = overviewOpen || apprenticeCompleteOpen || nightIntroOpen || powerIntroOpen || campaignCompleteOpen || nightCompleteOpen;
+  get('campaign-overview').hidden = !overviewOpen;
+  get('apprentice-complete').hidden = !apprenticeCompleteOpen;
+  get('overall-progress').textContent = completedCount() + ' / ' + allStages.length + ' completed';
+  document.body.toggleAttribute('data-story-screen',showingIntro);
+  get('brand').hidden = showingIntro;
+  get('title').hidden = showingIntro;
+  get('campaign-complete').hidden = !campaignCompleteOpen;
+  get('night-complete').hidden = !nightCompleteOpen;
+  get('compact-progress').hidden = showingIntro;
+  get('progress-current').textContent = 'LEVEL ' + (step+1) + ' / 16 · ' + (isPower ? 'POWER FAILURE' : isNight ? 'NIGHT SHIFT' : 'APPRENTICE SHIFT');
+  get('progress-track').innerHTML = allStages.map((level,index) => {
+    const done = levelCompleted(index);
+    return '<button type="button" data-level="' + index + '" title="Level ' + (index+1) + ': ' + level.title +
+      (done ? ' — completed' : '') + '" aria-label="Level ' + (index+1) + ', ' + level.title +
+      (done ? ', complete' : canEnter(index) ? ', available' : ', locked') + '"' +
+      (index === step ? ' aria-current="step"' : '') + (done ? ' class="done"' : '') +
+      (!canEnter(index) ? ' disabled' : '') + '>' + (index+1) + '</button>';
+  }).join('');
+  get('night-opening').hidden = !nightIntroOpen;
+  get('power-opening').hidden = !powerIntroOpen;
+  get('power-begin').textContent = powerUnlocked === 0 ? 'Start Power Failure' :
+    powerUnlocked < powerFailure.length ? 'Continue · Repair ' + (powerUnlocked+4) : 'View mission completion';
+  get('night-begin').textContent = nightUnlocked === 0 ? 'Start Night Shift' :
+    nightUnlocked < nightShift.length ? 'Continue · Repair ' + (nightUnlocked+1) : 'View Night Shift ending';
+  get('goal').hidden = showingIntro;
+  get('story').hidden = showingIntro || !stage.story;
+  get('intro').hidden = step !== 0 || showingIntro;
+  get('play').hidden = step === 0 || showingIntro;
+  get('title').textContent = campaignCompleteOpen ? 'Mission Complete' : apprenticeCompleteOpen ? 'Apprentice Shift complete' : nightCompleteOpen ? 'Night Shift complete' : nightIntroOpen ? 'Night Shift' : powerIntroOpen ? 'Power Failure' : stage.title;
+  get('finish').hidden = step !== lastStep || unlocked !== stages.length;
+  get('night-finish').hidden = step !== lastChallenge || nightUnlocked !== nightShift.length;
+  get('power-finish').hidden = step !== lastPower || powerUnlocked !== powerFailure.length;
+  const groups = [
+    {label:'A · APPRENTICE SHIFT',tone:'apprentice',start:0,list:stages,href:'#apprentice'},
+    {label:'B · NIGHT SHIFT',tone:'night',start:challengeStep,list:nightShift,href:'#night-shift'},
+    {label:'C · POWER FAILURE',tone:'power',start:powerStart,list:powerFailure,href:'#power-failure'}
+  ];
+  get('campaign-map').innerHTML = groups.map((group,i) => {
+    const accessible = i === 0 || (i === 1 ? unlocked === stages.length : nightUnlocked === nightShift.length);
+    const subtitle = ['Learn the logic, earn your first assignment','The overnight security call','A storm, a blackout, one final test'][i];
+    const summary = i === 0 ? unlocked : i === 1 ? nightUnlocked : powerUnlocked;
+    const name = ['Apprentice Shift','Night Shift','Power Failure'][i];
+    const count = group.list.length;
+    return '<section class="map-chapter ' + group.tone + '"><div class="chapter-name">SCENARIO ' +
+      ['A','B','C'][i] + ' · ' + summary + '/' + count + ' PASSED</div><h3>' + name +
+      '</h3><p class="chapter-summary">' + subtitle + '</p>' +
+      (accessible ? '<a class="chapter-link" href="' + group.href + '">Open scenario →</a>' :
+        '<span class="chapter-link" aria-label="Scenario locked">🔒 Locked</span>') +
+      '<div class="map-levels">' + group.list.map((level,index) => {
+        const absolute = group.start + index, done = levelCompleted(absolute);
+        return '<button type="button" data-level="' + absolute + '" class="' +
+          (done ? 'done' : absolute === nextCampaignLevel() ? 'next' : '') +
+          '" aria-label="Level ' + (absolute+1) + ': ' + level.title +
+          (done ? ', completed' : '') + '"' + (!canEnter(absolute) ? ' disabled' : '') +
+          '>' + (done ? '✓ ' : '') + (absolute+1) + '</button>';
+      }).join('') + '</div></section>';
+  }).join('');
+  const next = nextCampaignLevel();
+  get('campaign-continue').textContent = completedCount() === allStages.length ?
+    'View final system report' : 'Continue · Level ' + (next+1);
+  if (stage.story) {
+    get('story-tag').textContent = stage.briefing;
+    get('story-lead').textContent = stage.story;
+    get('story-detail').textContent = step === challengeStep
+      ? 'Assignment 1 of 2 · Night Shift — three linked repairs, one move each.'
+      : step === powerStart
+        ? 'Assignment 2 of 2 · Power Failure — begin with one wire, then tackle two-wire faults.'
+        : '';
+    get('story-detail').hidden = step !== challengeStep && step !== powerStart;
+  }
+  if (step === 0) return;
+  const values = valuesFor(pattern,wires);
+  const tracePaths = tracedSockets();
+  get('trace-toolbar').hidden = !stage.repair;
+  get('trace-toggle').setAttribute('aria-pressed',String(tracing));
+  get('trace-toggle').textContent = tracing ? 'Trace Mode: On' : 'Trace Mode: Off';
+  get('trace-description').textContent = traceMessage(tracePaths ?? new Set());
+  board.classList.toggle('trace-active',tracing);
+  board.classList.toggle('two-gates',stage.gates.length > 1);
+  board.classList.toggle('three-gates',stage.gates.length > 2);
+  get('objective').textContent = stage.objective;
+  get('controls').innerHTML = stage.controls;
+  get('test').textContent = stage.repair ? 'Test panel' : 'Check step';
+  get('next').textContent = 'Next level · ' + (step+2) + ' / ' + allStages.length;
+  get('next').hidden = !passed || step === lastPower || step === lastStep || step === lastChallenge;
+  get('inputs').innerHTML = '<span class="label">Switches</span>' + Object.entries(stage.inputs).map(([id,name]) =>
+    '<div class="input"><button class="toggle' + (tracePaths && ![...tracePaths].some(socket => wires[socket] === id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-toggle="' + id + '" aria-pressed="' + Boolean(values[id]) + '">' +
+    name + '<span>' + (values[id] ? 'ON' : 'OFF') + '</span></button>' + port('source',id,values[id]) + '</div>').join('');
+  get('gates').innerHTML = (stage.gates.length ? '<span class="label">Gates</span>' : '') + stage.gates.map(id =>
+    '<div class="gate" data-body="' + id + '"><div class="pins">' +
+    gateRules[id].pins.map(pin => port('socket',pin,values[wires[pin]])).join('') + '</div><span title="' +
+    gateRules[id].rule + '"><button type="button" class="trace-select' + (tracePaths && ![...tracePaths].some(socket => socket.startsWith(id) || wires[socket] === id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + id.toUpperCase() + ' gate"' + (!tracing ? ' disabled' : '') + '>' + id.toUpperCase() + '</button></span>' +
+    port('source',id,values[id]) + '</div>').join('');
+  get('lamps').innerHTML = '<span class="label">Lamps</span>' + Object.entries(stage.lamps).map(([id,name]) =>
+    '<div class="lamp' + (values[id] === 1 ? ' lit' : '') + '">' + port('socket',id,values[id]) +
+    '<span class="lamp-body"><span class="bulb" aria-hidden="true"></span><button type="button" class="trace-select' + (tracePaths && !tracePaths.has(id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + name + ' lamp"' + (!tracing ? ' disabled' : '') + '>' + name + '</button><strong>' +
+    (values[id] == null ? 'NO SIGNAL' : values[id] ? 'ON' : 'OFF') + '</strong></span></div>').join('');
+  get('count').textContent = stage.target ? movesUsed() + ' / ' + (stage.moves ?? 1) + ' ' + ((stage.moves ?? 1) === 1 ? 'move' : 'moves') : '';
+  get('undo').hidden = !stage.target;
+  get('undo').disabled = !moveUsed();
+  get('undo').textContent = (stage.moves ?? 1) > 1 ? 'Undo moves' : 'Undo move';
+  const result = get('result');
+  result.dataset.kind = tested ? (passed ? 'win' : 'fail') : '';
+  result.textContent = message || (source ? sourceName(source) + ' OUT selected. Choose a highlighted IN.' :
+    (moveUsed() ? (stage.repair ? (canRewire() ? 'Wire moved. You can test the panel or use another available move.' : 'Move limit reached. Test the panel or undo your moves.') : 'Wire connected. Check the step to test every switch setting.') : ''));
+  get('pointers').hidden = !stage.hintRepair || passed;
+  get('hint').hidden = hintStep >= 3;
+  get('hint').textContent = hintStep === 0 ? 'Reveal hint 1 of 3' :
+    hintStep === 1 ? 'Reveal hint 2 of 3' : 'Reveal solution (hint 3 of 3)';
+  get('pointer-text').textContent = hintText();
+  renderReadout(values);
+  get('reference').hidden = !stage.gates.length;
+  get('details').hidden = !stage.repair || !tested;
+  if (stage.repair && tested) renderCases(testCases(wires));
+  else get('details').open = false;
+  if (focused) {
+    const key = ['toggle','source','socket','case'].find(item => focused[item] !== undefined);
+    if (key) {
+      const matching = document.querySelector('[data-' + key + '="' + focused[key] + '"]');
+      if (matching?.disabled) get('test').focus({preventScroll:true});
+      else matching?.focus({preventScroll:true});
+    }
+  }
+  draw();
+}
+function renderReadout(values) {
+  const gateLines = stage.gates.map(id => {
+    const [first,second] = gateRules[id].pins;
+    const describePin = pin => wires[pin] ? sourceName(wires[pin]) + ' (' + signal(values[wires[pin]]) + ')' : 'empty';
+    const output = values[id] == null ? 'waiting for both input values' : signal(values[id]);
+    return '<p><strong>' + id.toUpperCase() + '</strong> reads ' + describePin(first) + ' at IN 1 and ' +
+      describePin(second) + ' at IN 2. <strong>OUT is ' + output + '.</strong> ' + gateRules[id].rule + '</p>';
+  });
+  const lampLines = Object.entries(stage.lamps).map(([id,name]) => {
+    if (!wires[id]) return '<p><strong>' + name + '</strong> has no wire connected.</p>';
+    if (values[id] == null) return '<p><strong>' + name + '</strong> is wired to ' + sourceName(wires[id]) + ' and is waiting for a value.</p>';
+    return '<p><strong>' + name + '</strong> receives ' + signal(values[id]) + ' from ' + sourceName(wires[id]) +
+      ' and is ' + (values[id] ? 'on' : 'off') + '.</p>';
+  });
+  get('readout').innerHTML = '<p><strong>What’s happening now</strong></p>' + gateLines.join('') + lampLines.join('');
+}
+function renderRules() {
+  const rules = Object.entries(gateRules);
+  get('rules').innerHTML = '<p class="controls">A truth table shows the output for every possible pair of inputs.</p>' +
+    '<table><thead><tr><th scope="col">IN 1</th><th scope="col">IN 2</th>' +
+    rules.map(([id]) => '<th scope="col">' + id.toUpperCase() + '</th>').join('') +
+    '</tr></thead><tbody>' + [[0,0],[0,1],[1,0],[1,1]].map(([a,b]) => '<tr><td>' + a + '</td><td>' + b + '</td>' +
+    rules.map(([,gate]) => '<td>' + gate.apply(a,b) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+}
+function renderCases(cases) {
+  const lamps = values => Object.keys(stage.lamps).map(id => signal(values[id])).join(' / ');
+  get('case-label').textContent = 'View all ' + cases.length + ' test cases';
+  get('cases').innerHTML = '<table><thead><tr><th scope="col">' + Object.values(stage.inputs).join(' / ') +
+    '</th><th scope="col">' + Object.values(stage.lamps).join(' / ') + ' target</th><th scope="col">Actual</th></tr></thead><tbody>' +
+    cases.map(({index,actual,expected,failed}) => '<tr><td><button data-case="' + index + '" aria-pressed="' + (index === pattern) + '">' +
+      Object.keys(stage.inputs).map(id => actual[id]).join(' / ') + '</button></td><td>' + lamps(expected) +
+      '</td><td class="' + (failed.length ? 'bad' : '') + '">' + lamps(actual) + '</td></tr>').join('') + '</tbody></table>';
+}
+function draw() {
+  if (step === 0) return;
+  const svg = board.querySelector('svg');
+  const base = svg.getBoundingClientRect();
+  const values = valuesFor(pattern,wires);
+  const tracePaths = tracedSockets();
+  svg.replaceChildren();
+  for (const [socket,jack] of Object.entries(wires)) {
+    if (!jack) continue;
+    const from = board.querySelector('[data-source="' + jack + '"] .dot').getBoundingClientRect();
+    const to = board.querySelector('[data-socket="' + socket + '"] .dot').getBoundingClientRect();
+    const x = from.right - base.left + 1;
+    const y = (from.top + from.bottom)/2 - base.top;
+    const endX = to.left - base.left - 1;
+    const endY = (to.top + to.bottom)/2 - base.top;
+    const lead = Math.min(20, Math.max(8, (endX-x)*.2));
+    const startTurn = x + lead;
+    const endTurn = endX - lead;
+    const middle = (startTurn + endTurn)/2;
+    let path = 'M ' + x + ' ' + y + ' H ' + startTurn + ' C ' + middle + ' ' + y + ', ' +
+      middle + ' ' + endY + ', ' + endTurn + ' ' + endY + ' H ' + endX;
+    const toGate = socket.slice(0,-1);
+    if (stage.gates.includes(jack) && stage.gates.includes(toGate)) {
+      const gateBox = id => board.querySelector('[data-body="' + id + '"]').getBoundingClientRect();
+      const fromGate = gateBox(jack);
+      const destGate = gateBox(toGate);
+      const destIndex = stage.gates.indexOf(toGate);
+      const stepDirection = Math.sign(stage.gates.indexOf(jack) - destIndex);
+      const adjacent = gateBox(stage.gates[destIndex + stepDirection]);
+      const lower = stepDirection === -1 ? destGate : adjacent;
+      const upper = stepDirection === -1 ? adjacent : destGate;
+      const extraLane = stage.gates.length === 3 && socket.endsWith('2') ? 6 : 0;
+      const gap = (upper.bottom + lower.top)/2 - base.top + extraLane;
+      const clearance = (base.width < 340 ? 7 : 14) + extraLane;
+      const outsideOut = Math.max(fromGate.right,adjacent.right) - base.left + clearance;
+      const outsideIn = destGate.left - base.left - clearance;
+      path = roundedRoute([[x,y],[outsideOut,y],[outsideOut,gap],[outsideIn,gap],[outsideIn,endY],[endX,endY]]);
+    }
+    const moved = jack !== stage.wiring[socket];
+    const line = wirePath(path,moved ? '#ffd080' : '#0c1624',moved ? 4.75 : 5.5);
+    const core = wirePath(path,values[jack] ? '#79efbc' : '#91a4ba',tracePaths?.has(socket) ? 4 : 2.4);
+    if (tracePaths && !tracePaths.has(socket)) { line.setAttribute('opacity','0.16'); core.setAttribute('opacity','0.16'); }
+    if (values[jack] == null) core.setAttribute('stroke-dasharray','4 5');
+    svg.append(line,core);
+    if (values[jack] === 1) {
+      const flow = wirePath(path,'#e0ffee',3);
+      flow.setAttribute('class','wire-flow');
+      if (tracePaths && !tracePaths.has(socket)) flow.setAttribute('opacity','0.12');
+      svg.append(flow);
+    }
+  }
+}
+function roundedRoute(points) {
+  const [firstX,firstY] = points[0];
+  const [lastX,lastY] = points.at(-1);
+  let path = 'M ' + firstX + ' ' + firstY;
+  for (let i = 1; i < points.length - 1; i++) {
+    const [x,y] = points[i];
+    const [px,py] = points[i-1];
+    const [nx,ny] = points[i+1];
+    const radius = Math.min(14,Math.hypot(px-x,py-y)/2,Math.hypot(nx-x,ny-y)/2);
+    if (radius === 0) {
+      path += ' L ' + x + ' ' + y;
+      continue;
+    }
+    const enter = [x + Math.sign(px-x)*radius, y + Math.sign(py-y)*radius];
+    const leave = [x + Math.sign(nx-x)*radius, y + Math.sign(ny-y)*radius];
+    path += ' L ' + enter.join(' ') + ' Q ' + x + ' ' + y + ' ' + leave.join(' ');
+  }
+  return path + ' L ' + lastX + ' ' + lastY;
+}
+function wirePath(path,color,width) {
+  const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+  line.setAttribute('d',path);
+  line.setAttribute('fill','none');
+  line.setAttribute('stroke',color);
+  line.setAttribute('stroke-width',width);
+  line.setAttribute('stroke-linejoin','round');
+  line.setAttribute('stroke-linecap','round');
+  return line;
+}
+function test() {
+  tested = true;
+  source = null;
+  if (!stage.repair) {
+    passed = stage.observe ? stage.observe(valuesFor(pattern,wires)) :
+      testCases(wires).every(row => !row.failed.length);
+    message = passed ? stage.pass : stage.retry;
+    return;
+  }
+  const cases = testCases(wires);
+  const failed = cases.filter(row => row.failed.length);
+  const first = failed[0];
+  passed = !first;
+  if (!first) {
+    message = 'All ' + cases.length + ' cases passed in ' + movesUsed() + ' ' +
+      (movesUsed() === 1 ? 'move' : 'moves') + '. ' + stage.pass;
+    return;
+  }
+  pattern = first.index;
+  const {actual,expected} = first;
+  const lamp = first.failed[0];
+  const inputState = Object.entries(stage.inputs).map(([id,name]) => name + ' ' + (actual[id] ? 'on' : 'off')).join(', ');
+  const observed = actual[lamp] == null ? 'receives no value' : ('is ' + (actual[lamp] ? 'on' : 'off'));
+  message = (cases.length - failed.length) + '/' + cases.length + ' passed. ' + inputState + '. ' +
+    stage.lamps[lamp] + ' should be ' + (expected[lamp] ? 'on' : 'off') + ' but ' + observed + '.';
+}
+function canEnter(index) {
+  if (!Number.isInteger(index) || index < 0 || index > lastPower) return false;
+  if (index < challengeStep) return index <= unlocked;
+  if (unlocked < stages.length) return false;
+  if (index < powerStart) return index <= challengeStep + nightUnlocked;
+  return nightUnlocked >= nightShift.length && index <= powerStart + powerUnlocked;
+}
+function goToLevel(index) {
+  if (!canEnter(index)) {
+    get('locked-notice').textContent = 'Complete the earlier missions to unlock this level.';
+    get('locked-notice').hidden = false;
+    return;
+  }
+  get('locked-notice').hidden = true;
+  begin(index);
+  get('details').open = false;
+  render();
+  if (overviewOpen) get('campaign-overview-title').focus({preventScroll:true});
+  else if (apprenticeCompleteOpen) get('apprentice-complete-title').focus({preventScroll:true});
+  else if (nightCompleteOpen) get('night-complete-title').focus({preventScroll:true});
+  else if (nightIntroOpen) get('night-opening-title').focus({preventScroll:true});
+  else if (powerIntroOpen) get('power-opening-title').focus({preventScroll:true});
+  else if (campaignCompleteOpen) get('campaign-complete-title').focus({preventScroll:true});
+  else get('title').focus({preventScroll:true});
+}
+function openLevel(index) {
+  if (!canEnter(index)) {
+    get('locked-notice').textContent = 'Complete the earlier missions to unlock this level.';
+    get('locked-notice').hidden = false;
+    return;
+  }
+  if (location.hash === levelHash(index)) goToLevel(index);
+  else location.hash = levelHash(index);
+}
+document.querySelector('main').addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (!button || button.disabled) return;
+  const {toggle,source:jack,socket,case:index,level,trace:traceId} = button.dataset;
+  if (button.id === 'campaign-continue') {
+    if (completedCount() === allStages.length) location.hash = '#mission-complete';
+    else if (nextCampaignLevel() === challengeStep) location.hash = '#night-shift';
+    else if (nextCampaignLevel() === powerStart) location.hash = '#power-failure';
+    else if (nextCampaignLevel() === 0) location.hash = '#apprentice';
+    else openLevel(nextCampaignLevel());
+    return;
+  }
+  if (button.classList.contains('reset-progress')) {
+    if (!window.confirm('Reset ALL Circuit Dash training, Night Shift and Power Failure progress in this browser? This cannot be undone.')) return;
+    for (const key of [progressKey,previousProgressKey,nightProgressKey,powerProgressKey]) {
+      try { localStorage.removeItem(key); } catch {}
+    }
+    unlocked = 0; nightUnlocked = 0; powerUnlocked = 0;
+    history.replaceState(null,'',location.pathname + '#overview');
+    goToLevel(0);
+    return;
+  }
+  if (button.id === 'power-begin') {
+    if (powerUnlocked === powerFailure.length) location.hash = '#mission-complete';
+    else openLevel(powerStart + powerUnlocked);
+    return;
+  }
+  if (button.id === 'night-begin') {
+    if (nightUnlocked === nightShift.length) location.hash = '#night-shift-complete';
+    else openLevel(challengeStep + nightUnlocked);
+    return;
+  }
+  if (button.id === 'trace-toggle') {
+    tracing = !tracing;
+    traceTarget = null;
+    source = null;
+    render();
+    return;
+  }
+  if (tracing && (traceId || toggle)) {
+    const id = traceId || toggle;
+    traceTarget = traceTarget === id ? null : id;
+    render();
+    return;
+  }
+  if (toggle) {
+    pattern ^= inputMask(toggle);
+    if (stage.observe) {
+      tested = false;
+      passed = false;
+      message = '';
+    }
+  } else if (index !== undefined) {
+    pattern = Number(index);
+  } else if (level !== undefined) {
+    const index = Number(level);
+    if (canEnter(index)) openLevel(index);
+    return;
+  } else if (button.id === 'start') {
+    completeLevel();
+    openLevel(1);
+    return;
+  } else if (button.id === 'test') {
+    test();
+    if (passed) {
+      completeLevel();
+      if (step === lastStep && unlocked === stages.length) {
+        location.hash = '#apprentice-complete';
+        return;
+      }
+      if (step === lastChallenge && nightUnlocked === nightShift.length) {
+        location.hash = '#night-shift-complete';
+        return;
+      }
+      if (step === lastPower && powerUnlocked === powerFailure.length) {
+        location.hash = '#mission-complete';
+        return;
+      }
+    }
+  } else if (button.id === 'next' && passed && step !== lastStep && step !== lastChallenge && step < lastPower) {
+    openLevel(step + 1);
+    return;
+  } else if (button.id === 'hint' && stage.hintRepair && hintStep < 3 && !passed) {
+    hintStep++;
+    if (hintStep === 1) {
+      const failed = testCases(wires).find(row => row.failed.length);
+      if (failed) pattern = failed.index;
+    }
+  } else if (button.id === 'undo') {
+    wires = {...stage.wiring};
+    source = null;
+    tested = false;
+    passed = false;
+    message = '';
+  } else if (jack && stage.target && canRewire()) {
+    source = source === jack ? null : jack;
+    message = '';
+  } else if (socket && stage.target && canRewire()) {
+    if (!source) message = 'Choose an OUT on a switch or gate first.';
+    else if (wires[socket] === source) message = 'That socket already has this signal. Choose another socket.';
+    else if (makesLoop(source,socket)) message = 'That connection would make a loop. Choose another socket.';
+    else {
+      wires[socket] = source;
+      source = null;
+      tested = false;
+      passed = false;
+      message = '';
+    }
+  }
+  render();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && source) {
+    source = null;
+    message = '';
+    render();
+  }
+});
+window.addEventListener('hashchange',() => goToLevel(routeStep()));
+get('goal').innerHTML = allStages.map((level,index) =>
+  (index >= powerStart ? '<p class="power-goal">' : index >= challengeStep ? '<p class="night-goal">' : '<p>') + level.goal + '</p>').join('');
+begin(routeStep());
+renderRules();
+new ResizeObserver(draw).observe(board);
+render();
+</script>
+</body>
+</html>
