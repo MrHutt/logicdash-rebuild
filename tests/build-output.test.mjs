@@ -50,7 +50,7 @@ test("Power Failure includes three missions, chapter unlocks, and configurable m
   for (const phrase of ["Emergency lighting", "Lift interlock", "Control room", "POWER FAILURE", "powerProgressKey", "const powerStart", "movesUsed()", "canRewire()"]) {
     assert.ok(circuit.includes(phrase), `Missing Power Failure mechanic: ${phrase}`);
   }
-  assert.match(circuit, /nightUnlocked < nightShift\\.length/, "Power Failure should remain locked before Night Shift completion");
+  assert.match(circuit, /nightUnlocked < nightShift\.length/, "Power Failure should remain locked before Night Shift completion");
   assert.match(circuit, /step === lastChallenge/, "Night Shift must end with the next-chapter action");
 });
 
