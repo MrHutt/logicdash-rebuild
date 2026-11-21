@@ -79,3 +79,27 @@ test("two-wire missions cannot be solved with a single changed socket", () => {
     }
   }
 });
+
+test("Trace Mode follows only existing connections without altering the circuit", () => {
+  const traceStart = html.indexOf("function tracedSockets()");
+  const traceEnd = html.indexOf("function traceMessage(", traceStart);
+  assert.ok(traceStart > 0 && traceEnd > traceStart, "Missing trace path implementation");
+  const traceFunction = html.slice(traceStart,traceEnd);
+  const stage = nightShift[0];
+  const wiringBefore = JSON.stringify(stage.wiring);
+  const trace = (traceTarget) => {
+    const result = vm.runInNewContext(
+      traceFunction + "\ntracedSockets()",
+      {tracing:true,traceTarget,stage,wires:stage.wiring,gateRules},
+      {timeout:2000}
+    );
+    return [...result].sort();
+  };
+  assert.deepEqual(trace("window"),["entry","or2"].sort(),
+    "Window path should show its live connections, not suggest the missing repair");
+  assert.deepEqual(trace("alarm"),["alarm","and1","and2"].sort(),
+    "Alarm trace should follow both wired inputs of AND");
+  assert.deepEqual(trace("or"),["entry","or1","or2"].sort(),
+    "OR trace should include its two inputs and live output");
+  assert.equal(JSON.stringify(stage.wiring),wiringBefore,"Trace Mode must not change wiring");
+});
