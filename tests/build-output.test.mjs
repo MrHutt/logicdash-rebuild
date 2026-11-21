@@ -57,7 +57,7 @@ test("Circuit Dash is one 16-level campaign with three scenarios", async () => {
     assert.match(circuit,new RegExp('id="'+id+'"'));
   }
   assert.match(home,/16-LEVEL STORY PUZZLE/);
-  assert.match(home,/Open Circuit Dash mission map/);
+  assert.match(home,/Train as an apprentice\. Repair Night Shift circuits\. Save the building\./);
   assert.doesNotMatch(home,/Circuit Dash \+ Night Shift/);
 });
 
@@ -134,11 +134,21 @@ test("Game view has only the top progress strip, placed after Level 1's inductio
   assert.match(circuit,/id="progress-track"/, "Sixteen numbered progress indicators missing");
   assert.match(circuit,/grid-template-columns:repeat\(16,minmax\(0,1fr\)\)/, "Desktop progress should be one row");
   assert.match(circuit,/grid-template-columns:repeat\(8,minmax\(0,1fr\)\)/, "Mobile progress should have short rows");
-  assert.ok(circuit.indexOf('id="compact-progress"') > circuit.indexOf('id="intro"'), "Level 1 progress must sit below its induction text");
+  assert.ok(circuit.indexOf('id="compact-progress"') < circuit.indexOf('<header>'), "Level navigation should always sit above the introductory heading and text");
   assert.ok(circuit.indexOf('id="compact-progress"') < circuit.indexOf('id="play"'), "Progress strip should precede circuit board");
   assert.doesNotMatch(circuit,/id="level-review"/, "Do not duplicate progress navigation below the puzzle");
   assert.doesNotMatch(circuit,/id="levels"/, "Do not keep a second level navigator");
+  assert.match(circuit,/The numbered strip above is your mission tracker/, "Level 1 explains the persistent navigation");
   assert.match(circuit,/get\('progress-track'\)\.innerHTML = allStages\.map/);
+});
+
+test("Homepage puzzle cards share a compact consistent layout", async () => {
+  const home = await text("index.html");
+  assert.match(home,/class="game-link game-circuit"/, "Circuit Dash should use the same linked-card pattern");
+  assert.match(home,/grid-template-columns:4\.3rem minmax\(0,1fr\) auto/, "Cards should share alignment");
+  assert.match(home,/min-height:145px/, "Cards should have compact heights");
+  assert.doesNotMatch(home,/game-actions/, "No nested CTA should stretch one card vertically");
+  assert.doesNotMatch(home,/game-combo/, "No special mismatched card");
 });
 
 test("built CSS/JavaScript files are generated", async () => {
