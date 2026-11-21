@@ -45,6 +45,15 @@ test("Circuit Dash includes the tutorial progression and Night Shift repair chal
   assert.match(circuit, /testCases\(wires\)/, "Missing repair case checker");
 });
 
+test("Power Failure includes three missions, chapter unlocks, and configurable move limits", async () => {
+  const circuit = await text("circuit-dash/index.html");
+  for (const phrase of ["Emergency lighting", "Lift interlock", "Control room", "POWER FAILURE", "powerProgressKey", "const powerStart", "movesUsed()", "canRewire()"]) {
+    assert.ok(circuit.includes(phrase), `Missing Power Failure mechanic: ${phrase}`);
+  }
+  assert.match(circuit, /nightUnlocked < nightShift\\.length/, "Power Failure should remain locked before Night Shift completion");
+  assert.match(circuit, /step === lastChallenge/, "Night Shift must end with the next-chapter action");
+});
+
 test("built CSS/JavaScript files are generated", async () => {
   const entries = await readdir(new URL("_astro/", root));
   assert.ok(entries.some((name) => name.endsWith(".css")), "Missing built CSS");
