@@ -1,0 +1,20 @@
+{
+  "name": "LogicDash production preview",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "forwardPorts": [
+    4323
+  ],
+  "portsAttributes": {
+    "4323": {
+      "label": "LogicDash production preview",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "npm ci",
+  "postStartCommand": "bash .devcontainer/start-preview.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  }
+}
