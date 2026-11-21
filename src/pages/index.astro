@@ -100,17 +100,15 @@ const explore = [
           <span class="game-arrow" aria-hidden="true">↗</span>
         </a>
       ))}
-      <div class="game-link game-combo">
+      <a href="/circuit-dash/" class="game-link game-circuit">
         <span class="game-mark" aria-hidden="true">⊕→1</span>
         <span class="game-info">
-          <small>NEW · 16-LEVEL STORY PUZZLE</small>
+          <small>16-LEVEL STORY PUZZLE</small>
           <strong>Circuit Dash</strong>
-          <span>One campaign. Three scenarios. Start as an apprentice, fix the Night Shift alarms and save the building from a power failure.</span>
-          <span class="game-actions">
-            <a href="/circuit-dash/">Open Circuit Dash mission map</a>
-          </span>
+          <span>Train as an apprentice. Repair Night Shift circuits. Save the building.</span>
         </span>
-      </div>
+        <span class="game-arrow" aria-hidden="true">↗</span>
+      </a>
     </div>
   </section>
 
@@ -167,21 +165,17 @@ const explore = [
   .pillar-action { color:var(--pillar-color); font:700 .78rem var(--font-mono); }
   .more-games { margin:1.8rem 0 0; }
   .section-heading--compact { margin-bottom:.85rem; }
-  .game-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; }
-  .game-link { display:flex; align-items:center; gap:.85rem; min-width:0; padding:1rem; border:1px solid var(--color-border); background:var(--color-surface); border-radius:12px; text-decoration:none; transition:border-color .15s; }
-  .game-link:hover { border-color:var(--color-accent); }
-  .game-combo:hover { border-color:var(--color-border); }
-  .game-combo .game-info { flex:1; }
-  .game-actions { display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem; }
-  .game-actions a { display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:.35rem .62rem;border:1px solid var(--color-accent);border-radius:7px;color:var(--color-text);text-decoration:none;font:700 .69rem var(--font-mono); }
-  .game-actions a:hover,.game-actions a:focus-visible { background:var(--color-accent);color:#111827; }
+  .game-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; align-items:stretch; }
+  .game-link { display:grid; grid-template-columns:4.3rem minmax(0,1fr) auto; align-items:center; gap:.8rem; min-width:0; min-height:145px; padding:1.1rem .9rem; border:1px solid var(--color-border); background:var(--color-surface); border-radius:12px; text-decoration:none; transition:border-color .15s,transform .15s; }
+  .game-link:hover,.game-link:focus-visible { border-color:var(--color-accent); transform:translateY(-2px); }
+  .game-link:focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
 
-  .game-mark { flex:none; padding:.7rem .5rem; min-width:5rem; text-align:center; background:#262318; border-radius:6px; color:#FBC66E; font:700 .81rem var(--font-mono); }
-  .game-info { min-width:0; display:flex; flex-direction:column; gap:.18rem; }
+  .game-mark { flex:none; padding:.7rem .35rem; min-width:0; text-align:center; background:#262318; border-radius:6px; color:#FBC66E; font:700 .81rem var(--font-mono); }
+  .game-info { min-width:0; display:flex; flex-direction:column; gap:.22rem; }
   .game-info small { color:var(--color-accent); font:700 .63rem var(--font-mono); letter-spacing:.08em; }
   .game-info strong { font-size:1rem; color:var(--color-text); }
   .game-info > span { font-size:.77rem; color:var(--color-text-muted); line-height:1.4; }
-  .game-arrow { color:var(--color-accent); margin-left:auto; align-self:start; }
+  .game-arrow { color:var(--color-accent); align-self:start; font-size:1.02rem; }
   .bottom-note { margin:1.5rem 0 .3rem; display:flex; align-items:center; justify-content:center; gap:.65rem; font-size:.83rem; color:var(--color-text-muted); text-align:center; }
   .terminal-prompt { color:#A3E635; font:700 1.2rem var(--font-mono); }
   .bottom-note p { margin:0; }
@@ -190,7 +184,7 @@ const explore = [
     .daily-feature { grid-template-columns:minmax(0,1.4fr) minmax(285px,.6fr); }
     .welcome { padding-bottom:.85rem; }
   }
-  @media(max-width:900px) { .game-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media(max-width:1000px) { .game-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media(max-width:760px) {
     .welcome { gap:.6rem; }
     .hero-art { width:26%; }
@@ -209,6 +203,7 @@ const explore = [
     .daily-feature { padding:1.2rem; gap:1rem; }
     .daily-feature h2 { font-size:3rem; }
     .game-grid { grid-template-columns:1fr; }
+    .game-link { min-height:120px; }
   }
   @media(prefers-reduced-motion:reduce) { .daily-cta,.pillar,.game-link { transition:none; } }
 </style>
