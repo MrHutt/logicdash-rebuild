@@ -1,0 +1,81 @@
+---
+interface Props {
+  mode: "classic" | "overclocked";
+}
+const { mode } = Astro.props;
+---
+
+<section class="personal-stats" data-game-mode={mode} aria-label="Your game statistics">
+  <div class="stats-heading">
+    <strong>YOUR {mode === "classic" ? "CLASSIC" : "OVERCLOCKED"} RECORD</strong>
+    <span>Saved on this device</span>
+  </div>
+  <div class="stats-grid">
+    <div class="stat"><strong data-games>0</strong><span>Games played</span></div>
+    <div class="stat"><strong data-rate>—</strong><span>Win rate</span></div>
+    <div class="stat"><strong data-best>—</strong><span>Best winning score</span></div>
+  </div>
+</section>
+
+<style>
+  .personal-stats { margin-top: .9rem; padding: .75rem .9rem; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); }
+  .stats-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .3rem .6rem; margin-bottom: .65rem; }
+  .stats-heading strong { font: 700 .7rem var(--font-mono); letter-spacing: .07em; color: var(--color-accent); }
+  .stats-heading span { font-size: .68rem; color: var(--color-text-muted); }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: .2rem; min-width: 0; }
+  .stat + .stat { border-left: 1px solid var(--color-border); }
+  .stat strong { font: 700 clamp(1.15rem, 4vw, 1.55rem) var(--font-mono); color: var(--color-text); font-variant-numeric: tabular-nums; }
+  .stat span { text-align: center; font-size: .69rem; line-height: 1.3; color: var(--color-text-muted); }
+  @media (max-width: 350px) { .personal-stats { padding: .7rem .5rem; } .stat span { font-size: .63rem; } }
+</style>
+
+<script>
+  interface RecordData { played: number; wins: number; best: number | null; }
+  interface RoundEnd { won: boolean; attempts: number; secret: string; }
+  const root = document.querySelector<HTMLElement>(".personal-stats[data-game-mode]");
+  const board = document.querySelector<HTMLElement>(".hamming-game");
+  if (root && board) {
+    const mode = root.dataset.gameMode;
+    const storageKey = `logicdash:standalone:${mode}:stats:v1`;
+    const blank = (): RecordData => ({ played: 0, wins: 0, best: null });
+    function load(): RecordData {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return blank();
+        const item: unknown = JSON.parse(raw);
+        if (!item || typeof item !== "object") return blank();
+        const data = item as Partial<RecordData>;
+        if (!Number.isSafeInteger(data.played) || data.played! < 0 ||
+            !Number.isSafeInteger(data.wins) || data.wins! < 0 ||
+            data.wins! > data.played! ||
+            (data.best !== null && data.best !== undefined &&
+              (!Number.isSafeInteger(data.best) || data.best < 1 || data.best > 6))) return blank();
+        return { played: data.played!, wins: data.wins!, best: data.best ?? null };
+      } catch { return blank(); }
+    }
+    let record = load();
+    function render() {
+      const played = root!.querySelector<HTMLElement>("[data-games]");
+      const rate = root!.querySelector<HTMLElement>("[data-rate]");
+      const best = root!.querySelector<HTMLElement>("[data-best]");
+      if (played) played.textContent = String(record.played);
+      if (rate) rate.textContent = record.played ? `${Math.round(100 * record.wins / record.played)}%` : "—";
+      if (best) best.textContent = record.best === null ? "—" : `${record.best} ${record.best === 1 ? "guess" : "guesses"}`;
+    }
+    render();
+    board.addEventListener("logicdash:round-end", (event) => {
+      const result = (event as CustomEvent<RoundEnd>).detail;
+      if (!result || !Number.isInteger(result.attempts) ||
+          result.attempts < 1 || result.attempts > 6 ||
+          typeof result.won !== "boolean") return;
+      record.played++;
+      if (result.won) {
+        record.wins++;
+        record.best = record.best === null ? result.attempts : Math.min(record.best, result.attempts);
+      }
+      try { localStorage.setItem(storageKey, JSON.stringify(record)); } catch {}
+      render();
+    });
+  }
+</script>
