@@ -609,7 +609,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 
 	infoToggle.addEventListener("click", (event) => {
 		event.stopPropagation();
-		setCaptionOpen(styleCaption.hidden);
+		setCaptionOpen(Boolean(styleCaption.hidden));
 	});
 
 	// --- Rendering ---------------------------------------------------------
@@ -694,7 +694,7 @@ import RefinedDigit from "../../components/RefinedDigit.astro";
 		requestAnimationFrame(fitClock);
 	}
 
-	settingsBtn.addEventListener("click", () => setDrawerOpen(controlsDrawer.hidden));
+	settingsBtn.addEventListener("click", () => setDrawerOpen(Boolean(controlsDrawer.hidden)));
 
 	// --- Saved preferences (best-effort: blocked storage just means the
 	// defaults come back next visit) ---------------------------------------
