@@ -91,7 +91,7 @@ test("Circuit Dash resumes current repair, shows completion ticks and uses the h
   const home = await text("index.html");
   assert.match(circuit,/max-width:1280px/, "Game should match homepage wide container");
   assert.match(circuit,/if \(!hash \|\| hash === '#course' \|\| hash === '#training'\) return Math\.min\(unlocked,lastStep\)/, "Circuit Dash opens the course, not Night Shift");
-  assert.match(circuit,/if \(nightUnlocked < nightShift\.length\) return challengeStep \+ nightUnlocked/, "Resume next Night Shift repair");
+  assert.match(circuit,/if \(unlocked >= stages\.length\) return challengeStep \+ Math\.min\(nightUnlocked,nightShift\.length-1\)/, "Night Shift introduction must resume unfinished repairs");
   assert.match(circuit,/<span aria-hidden="true">✓<\/span>/, "Completed steps need ticks");
   assert.match(circuit,/body\[data-repair-chapter\] \.story\{height:/, "Briefing should reserve stable space");
   assert.match(home,/href="\/circuit-dash\/"/, "Homepage must link Circuit Dash");
