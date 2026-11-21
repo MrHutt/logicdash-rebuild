@@ -203,6 +203,19 @@ td button[aria-pressed=true]{border-color:var(--mint)}
 .power-opening .mission-lineup div{border-color:#478366;background:#142d26}
 .power-opening .mission-lineup small{color:#c0dccd}
 .power-opening .action-link{background:#95e3b4;color:#10251d}
+.campaign-complete{max-width:900px;margin-inline:auto;padding:clamp(22px,4vw,38px);border-color:#478366;background:linear-gradient(145deg,#183b32,#142635 68%,#13202f);text-align:center}
+.campaign-complete .complete-symbol{display:grid;place-items:center;margin:0 auto 14px;width:76px;height:76px;border:2px solid #95e3b4;border-radius:50%;background:#1b4638;color:#c8f9db;font-size:2.8rem;font-weight:800}
+.campaign-complete .chapter-label{color:#95e3b4;font:800 .78rem ui-monospace,monospace;letter-spacing:.12em}
+.campaign-complete h2{font-size:clamp(2rem,5vw,3rem);line-height:1.1;letter-spacing:-.04em;margin:10px 0 15px}
+.campaign-complete p{margin:0 auto;max-width:66ch;color:#d4e1ed;line-height:1.7}
+.campaign-complete p+p{margin-top:11px}
+.campaign-complete .complete-call{margin:20px auto;padding:15px 17px;text-align:left;max-width:65ch;border-left:3px solid #95e3b4;border-radius:0 9px 9px 0;background:#10281e}
+.campaign-complete .complete-call strong{color:#95e3b4;display:block;margin-bottom:5px;font:.78rem ui-monospace,monospace}
+.campaign-complete .complete-count{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.campaign-complete .complete-count span{border:1px solid #478366;color:#cbf5d9;border-radius:8px;padding:8px 11px;font:800 .85rem ui-monospace,monospace}
+.campaign-complete .actions{margin-top:23px;justify-content:center}
+.campaign-complete .action-link{background:#95e3b4;color:#10251d}
+.campaign-complete .action-link.secondary{background:#273c4b;border:1px solid #52667c;color:#f1f6f9}
 </style>
 </head>
 <body>
@@ -261,6 +274,27 @@ td button[aria-pressed=true]{border-color:var(--mint)}
       <a class="action-link" href="#night-shift" style="background:#26374a;color:#f1f6f9">Night Shift briefing</a>
     </div>
   </section>
+  <section class="panel campaign-complete" id="campaign-complete" aria-labelledby="campaign-complete-title" hidden>
+    <div class="complete-symbol" aria-hidden="true">✓</div>
+    <div class="chapter-label">INCIDENT REPORT / ALL SYSTEMS RESTORED</div>
+    <h2 id="campaign-complete-title">The building is back online.</h2>
+    <p>03:07. The emergency lights hold steady. The lift reports the correct safety status. In the control room, every indicator finally agrees with the circuits behind it.</p>
+    <div class="complete-call">
+      <strong>FINAL CALL · SECURITY DESK</strong>
+      <p>“All green here. Six faults found, six systems checked. That's the handover we needed. You can finally clock off.”</p>
+    </div>
+    <p>You've completed the full Night Shift and Power Failure storyline — diagnosing faulty connections, tracing signal paths and proving each repair across every test case.</p>
+    <div class="complete-count" aria-label="Six of six repair missions completed">
+      <span>✓ 1</span><span>✓ 2</span><span>✓ 3</span><span>✓ 4</span><span>✓ 5</span><span>✓ 6</span>
+    </div>
+    <p style="margin-top:18px">For now, the maintenance log is closed. More incidents may be waiting after testing — but tonight's work is done. Your progress is saved in this browser.</p>
+    <div class="actions">
+      <a class="action-link" href="/circuit-dash/">Replay Circuit Dash</a>
+      <a class="action-link secondary" href="#night-shift">Replay Night Shift</a>
+      <a class="action-link secondary" href="#power-failure">Replay Power Failure</a>
+      <a class="action-link secondary" href="/">LogicDash home</a>
+    </div>
+  </section>
   <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
     <h2 id="intro-title">How the board works</h2>
     <p>Tap a switch to try a different input. Follow the wire to see where that value goes. Your job is to make the lamps behave as each level asks.</p>
@@ -307,7 +341,8 @@ td button[aria-pressed=true]{border-color:var(--mint)}
     </section>
     <section class="finish" id="power-finish" aria-labelledby="power-finish-title" hidden>
       <h2 id="power-finish-title">Power Failure — building back online</h2>
-      <p>Emergency lights respond, the lift safety checks work and the control room reports the correct signals. Six repairs completed across two assignments. Your progress is saved in this browser.</p>
+      <p>Emergency lights respond, the lift safety checks work and the control room reports the correct signals.</p>
+      <div class="actions"><a class="action-link primary" href="#mission-complete">View mission report</a></div>
     </section>
     <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
       <h2 id="finish-title">Training complete — first assignment unlocked</h2>
@@ -527,7 +562,7 @@ const get = id => document.getElementById(id);
 const board = get('board');
 let step, stage, wires, pattern, source, tested, passed, message, hintStep;
 let tracing = false, traceTarget = null;
-let nightIntroOpen = false, powerIntroOpen = false;
+let nightIntroOpen = false, powerIntroOpen = false, campaignCompleteOpen = false;
 let unlocked = savedProgress();
 let nightUnlocked = savedNightProgress();
 let powerUnlocked = savedPowerProgress();
@@ -598,6 +633,8 @@ function routeStep() {
   const hash = location.hash;
   // Circuit Dash is a separate training entry, never an automatic Night Shift redirect.
   if (!hash || hash === '#course' || hash === '#training') return Math.min(unlocked,lastStep);
+  if (hash === '#mission-complete' && powerUnlocked === powerFailure.length &&
+      nightUnlocked === nightShift.length && unlocked === stages.length) return lastPower;
   if (hash === '#power-failure') {
     if (unlocked < stages.length || nightUnlocked < nightShift.length) {
       get('locked-notice').textContent = 'Complete Night Shift to unlock Power Failure.';
@@ -636,6 +673,7 @@ function routeStep() {
 function begin(index) {
   nightIntroOpen = location.hash === '#night-shift' && unlocked >= stages.length;
   powerIntroOpen = location.hash === '#power-failure' && unlocked >= stages.length && nightUnlocked === nightShift.length;
+  campaignCompleteOpen = location.hash === '#mission-complete' && powerUnlocked === powerFailure.length && nightUnlocked === nightShift.length && unlocked === stages.length;
   step = index;
   stage = allStages[step];
   const goal = get('goal');
@@ -794,7 +832,8 @@ function render() {
     : chapter + ' / LEVEL ' + (step+1) + ' OF ' + stages.length;
   get('levels').setAttribute('aria-label', isRepair ? 'All repair missions, grouped by chapter' : 'Circuit Dash training levels');
   get('levels').classList.toggle('campaign-nav',isRepair);
-  const showingIntro = nightIntroOpen || powerIntroOpen;
+  const showingIntro = nightIntroOpen || powerIntroOpen || campaignCompleteOpen;
+  get('campaign-complete').hidden = !campaignCompleteOpen;
   get('return').hidden = !(isPower || isNight) || showingIntro;
   get('night-opening').hidden = !nightIntroOpen;
   get('power-opening').hidden = !powerIntroOpen;
@@ -807,7 +846,7 @@ function render() {
   get('story').hidden = showingIntro || !stage.story;
   get('intro').hidden = step !== 0 || showingIntro;
   get('play').hidden = step === 0 || showingIntro;
-  get('title').textContent = nightIntroOpen ? 'Night Shift' : powerIntroOpen ? 'Power Failure' : stage.title;
+  get('title').textContent = campaignCompleteOpen ? 'Mission Complete' : nightIntroOpen ? 'Night Shift' : powerIntroOpen ? 'Power Failure' : stage.title;
   get('finish').hidden = step !== lastStep || unlocked !== stages.length;
   get('night-finish').hidden = step !== lastChallenge || nightUnlocked !== nightShift.length;
   get('power-finish').hidden = step !== lastPower || powerUnlocked !== powerFailure.length;
@@ -1109,7 +1148,13 @@ document.querySelector('main').addEventListener('click', event => {
     return;
   } else if (button.id === 'test') {
     test();
-    if (passed) completeLevel();
+    if (passed) {
+      completeLevel();
+      if (step === lastPower && powerUnlocked === powerFailure.length) {
+        location.hash = '#mission-complete';
+        return;
+      }
+    }
   } else if (button.id === 'next' && passed && step !== lastStep && step !== lastChallenge && step < lastPower) {
     openLevel(step + 1);
     return;
