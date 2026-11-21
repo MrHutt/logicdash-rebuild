@@ -739,11 +739,11 @@ function render() {
   get('gates').innerHTML = (stage.gates.length ? '<span class="label">Gates</span>' : '') + stage.gates.map(id =>
     '<div class="gate" data-body="' + id + '"><div class="pins">' +
     gateRules[id].pins.map(pin => port('socket',pin,values[wires[pin]])).join('') + '</div><span title="' +
-    gateRules[id].rule + '"><button type="button" class="trace-select' + (tracePaths && ![...tracePaths].some(socket => socket.startsWith(id) || wires[socket] === id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + id.toUpperCase() + ' gate">' + id.toUpperCase() + '</button></span>' +
+    gateRules[id].rule + '"><button type="button" class="trace-select' + (tracePaths && ![...tracePaths].some(socket => socket.startsWith(id) || wires[socket] === id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + id.toUpperCase() + ' gate"' + (!tracing ? ' disabled' : '') + '>' + id.toUpperCase() + '</button></span>' +
     port('source',id,values[id]) + '</div>').join('');
   get('lamps').innerHTML = '<span class="label">Lamps</span>' + Object.entries(stage.lamps).map(([id,name]) =>
     '<div class="lamp' + (values[id] === 1 ? ' lit' : '') + '">' + port('socket',id,values[id]) +
-    '<span class="lamp-body"><span class="bulb" aria-hidden="true"></span><button type="button" class="trace-select' + (tracePaths && !tracePaths.has(id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + name + ' lamp">' + name + '</button><strong>' +
+    '<span class="lamp-body"><span class="bulb" aria-hidden="true"></span><button type="button" class="trace-select' + (tracePaths && !tracePaths.has(id) && traceTarget !== id ? ' trace-muted' : '') + (traceTarget === id ? ' trace-focus' : '') + '" data-trace="' + id + '" aria-label="Trace ' + name + ' lamp"' + (!tracing ? ' disabled' : '') + '>' + name + '</button><strong>' +
     (values[id] == null ? 'NO SIGNAL' : values[id] ? 'ON' : 'OFF') + '</strong></span></div>').join('');
   get('count').textContent = stage.target ? movesUsed() + ' / ' + (stage.moves ?? 1) + ' ' + ((stage.moves ?? 1) === 1 ? 'move' : 'moves') : '';
   get('undo').hidden = !stage.target;
