@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Learn logic gates, connect wires, and fix real circuit puzzles in Circuit Dash — a free LogicDash game.">
+<title>Circuit Dash | LogicDash</title>
+<style>
+:root{color-scheme:dark;--bg:#0b121d;--panel:#121d2c;--line:#394b60;--ink:#f1f6f9;--muted:#b5c3d2;--mint:#79efbc;--amber:#ffd080;--pink:#ffadb2}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+main{max-width:920px;margin:auto;padding:clamp(13px,4vw,36px)}
+h1{font-size:clamp(1.85rem,7vw,3.35rem);letter-spacing:-.055em;line-height:1.08;margin:5px 0 12px}
+h2{margin:0 0 8px;font-size:1.2rem}
+p{margin:0}
+.brand,.label,.gate,.count{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.brand{color:var(--mint);font-weight:750;font-size:.85rem;letter-spacing:.08em}
+.goal{display:grid;max-width:62ch;color:var(--muted)}
+.goal p{grid-area:1/1;visibility:hidden}
+.goal p.current{visibility:visible}
+.goal strong{color:var(--ink)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-top:20px;padding:clamp(9px,2.3vw,18px)}
+.intro{padding:clamp(14px,3vw,24px)}
+.intro p,.intro dd{color:var(--muted)}
+.intro dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px;margin:16px 0}
+.intro dl div{border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+.intro dt{font-weight:800;color:var(--mint)}
+.intro dd{margin:4px 0 0}
+.intro .actions,.finish .actions{margin-top:14px}
+.finish{border:1px solid #477e6c;background:#132921;border-radius:8px;padding:12px;margin-top:12px}
+.practice-link{color:var(--mint);display:inline-block;margin-top:12px;text-underline-offset:3px}
+.action-link{display:inline-flex;align-items:center;min-height:44px;border-radius:8px;padding:7px 14px;font-size:.91rem;font-weight:750;text-decoration:none}
+.board-head,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px 14px}
+.board-head{justify-content:space-between;margin-bottom:11px}
+.board-head strong{font-size:1rem}
+.count{font-size:.84rem;font-weight:750;color:var(--amber)}
+.board{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(105px,1fr) minmax(113px,1.35fr) minmax(92px,.85fr);gap:5px;min-height:254px;padding:10px 7px 13px;border:1px solid var(--line);border-radius:11px;background:#0c1624 radial-gradient(#2a3b50 1px,transparent 1px) 0 0/14px 14px}
+.board.two-gates{min-height:342px}
+.two-gates #gates{row-gap:22px}
+.wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:1}
+.column{display:grid;min-width:0;align-items:center;justify-items:center;grid-template-rows:22px repeat(2,1fr);row-gap:10px}
+.inputs{grid-template-rows:22px repeat(3,1fr)}
+.label{font-size:.74rem;text-transform:uppercase;letter-spacing:.055em;color:var(--muted);font-weight:700}
+button,summary{font:inherit;cursor:pointer}
+button{min-height:44px;border:1px solid #52667c;border-radius:8px;color:var(--ink);background:#1d2b3d}
+button:hover:not(:disabled){border-color:var(--mint)}
+button:disabled{opacity:.52;cursor:default}
+.port:disabled{opacity:1;cursor:default}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.input{display:flex;align-items:center;gap:3px;justify-self:start}
+.toggle{min-width:60px;padding:4px;font-size:.79rem;font-weight:700}
+.toggle span{display:block;font:700 .76rem ui-monospace,monospace;color:var(--muted)}
+.toggle[aria-pressed=true]{border-color:#477e6c;background:#15352f}
+.toggle[aria-pressed=true] span{color:var(--mint)}
+.wire-flow{stroke-dasharray:1 17;animation:signal-flow 1.5s linear infinite}
+@keyframes signal-flow{to{stroke-dashoffset:-18}}
+@media(prefers-reduced-motion:reduce){.wire-flow{display:none;animation:none}}
+.port{display:grid;place-content:center;justify-items:center;gap:4px;width:34px;min-height:44px;padding:0}
+.port-role{font:750 .65rem/1 ui-monospace,monospace;letter-spacing:.01em}
+.port[data-source].selected,.port[data-source].selected:hover{background:var(--amber);border-color:var(--amber);color:#251604}
+.port[data-socket].eligible{outline:1px dashed var(--amber);outline-offset:1px}
+.dot{height:9px;width:9px;border-radius:50%;border:1px solid currentColor;color:#b5c3d2}
+.on .dot{background:var(--mint);border-color:var(--mint)}
+.unfed .dot{border-style:dashed}
+.selected .dot{color:#251604;background:#251604;border-color:#251604}
+.gate{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px;width:min(100%,165px);padding:5px;border:1px solid #536980;border-radius:10px;background:#19283b;text-align:center;font-size:.86rem;font-weight:800}
+.gate:first-of-type{justify-self:start}
+.gate:nth-of-type(2){justify-self:end}
+.pins{display:grid;gap:4px}
+.lamp{display:flex;align-items:center;gap:5px;justify-self:end;inline-size:min(100%,5.75rem);min-block-size:4.5rem;color:var(--muted);background:#132030;border-radius:8px;padding-right:4px;font-size:.78rem;font-weight:750}
+.lamp .port{flex:none}
+.lamp-body{min-width:0}
+.lamp strong{display:block;block-size:2.2em;font:700 .73rem/1.1 ui-monospace,monospace}
+.bulb{display:block;width:15px;height:15px;margin:2px 0 7px;border-radius:50%;border:1px solid #8799ae;background:#152132;position:relative}
+.bulb::after{content:'';position:absolute;top:100%;left:30%;width:40%;height:3px;background:#8799ae;border-radius:0 0 2px 2px}
+.lamp.lit{background:#2b281d}
+.lamp.lit strong{color:#ffe5a5}
+.lamp.lit .bulb{border-color:#fff1ba;background:#ffdb7d;box-shadow:0 0 6px #ffe083,0 0 15px #ffc966a0}
+.lamp.lit .bulb::after{background:#c2a775}
+.controls{color:var(--muted);font-size:.91rem;margin:12px 0}
+.controls strong,.readout strong{color:var(--ink)}
+.readout{margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:.88rem}
+.readout p+p{margin-top:4px}
+.legend{color:var(--muted);font-size:.78rem;margin-top:7px}
+.practice-nav{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
+.practice-nav button{min-width:38px;padding:0 7px}
+.practice-nav [aria-current=step]{background:var(--mint);border-color:var(--mint);color:#09251b;font-weight:800}
+.actions button{padding:7px 14px;font-size:.91rem;font-weight:750}
+.primary{background:var(--mint);border-color:var(--mint);color:#09251b}
+.result{margin-top:12px;min-height:2.7em;color:var(--muted)}
+.result[data-kind=win]{color:var(--mint)}.result[data-kind=fail]{color:var(--pink)}
+details{margin-top:8px;padding:9px 0 0;border-top:1px solid var(--line)}
+summary{color:var(--muted);width:fit-content;font-size:.9rem}
+table{width:100%;margin-top:8px;border-collapse:collapse;font-size:.84rem;text-align:center}
+th,td{padding:6px 2px;border-bottom:1px solid var(--line)}
+td button{padding:3px 7px;min-height:36px}
+td button[aria-pressed=true]{border-color:var(--mint)}
+.bad{color:var(--pink)}
+@media(max-width:390px){.board{padding-inline:4px;grid-template-columns:minmax(84px,1fr) minmax(96px,1.12fr) minmax(65px,.8fr);gap:2px}.toggle{min-width:48px;padding-inline:2px}.port{width:28px}.gate{padding:3px;gap:2px}.lamp{gap:3px;font-size:.72rem}.lamp .port{width:24px}.label{font-size:.68rem}.port-role{font-size:.59rem}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a class="practice-link" href="/" style="margin:0 0 12px">← LogicDash home</a>
+    <div class="brand" id="brand"></div>
+    <h1 id="title" tabindex="-1"></h1>
+    <div class="goal" id="goal"></div>
+    <nav class="practice-nav" id="levels" aria-label="Circuit Dash levels"></nav>
+    <a class="practice-link" id="return" href="#course" hidden>Back to the beginner course</a>
+  </header>
+  <section class="panel intro" id="intro" aria-labelledby="intro-title" hidden>
+    <h2 id="intro-title">How the board works</h2>
+    <p>Tap a switch to try a different input. Follow the wire to see where that value goes. Your job is to make the lamps behave as each level asks.</p>
+    <dl>
+      <div><dt>Switches</dt><dd>These are the inputs. A switch sends <strong>1</strong> when it’s on and <strong>0</strong> when it’s off.</dd></div>
+      <div><dt>Wires and sockets</dt><dd>A wire carries a value from <strong>OUT</strong> to <strong>IN</strong>. Tap those two sockets in that order to connect them.</dd></div>
+      <div><dt>Logic gates</dt><dd>A gate reads its inputs and applies a rule. Its OUT can send the result to a lamp or to another gate.</dd></div>
+      <div><dt>Lamps</dt><dd>A lamp lights when it receives 1 and stays dark when it receives 0. <strong>No signal</strong> means it has no value coming in yet.</dd></div>
+    </dl>
+    <p>Use <strong>What’s happening now</strong> to see the values behind the lights. <strong>Check step</strong> tells you when you’re ready for the next level.</p>
+    <div class="actions"><button class="primary" id="start">Start Level 2</button></div>
+  </section>
+  <section class="panel" id="play" aria-labelledby="objective" hidden>
+    <div class="board-head"><strong id="objective"></strong><span class="count" id="count"></span></div>
+    <div class="board" id="board">
+      <svg class="wires" aria-hidden="true"></svg>
+      <div class="column inputs" id="inputs"></div>
+      <div class="column" id="gates"></div>
+      <div class="column" id="lamps"></div>
+    </div>
+    <p class="legend">Green carries 1 (on) · Grey carries 0 (off) · Dashed means no value yet</p>
+    <p class="controls" id="controls"></p>
+    <div class="actions">
+      <button class="primary" id="test">Test panel</button>
+      <button class="primary" id="next" hidden>Continue</button>
+      <button id="undo" disabled>Undo move</button>
+    </div>
+    <p class="result" id="result" role="status"></p>
+    <section class="finish" id="finish" aria-labelledby="finish-title" hidden>
+      <h2 id="finish-title">Beginner course complete</h2>
+      <div class="actions"><a class="action-link primary" href="#night-shift">Play Night Shift</a></div>
+    </section>
+    <div class="readout" id="readout" aria-label="Live circuit explanation"></div>
+    <details id="reference" hidden><summary>Gate rules and truth table</summary><div id="rules"></div></details>
+    <details id="details" hidden><summary id="case-label">View test cases</summary><div id="cases"></div></details>
+  </section>
+</main>
+<script>
+'use strict';
+
+const gateRules = {
+  and:{pins:['and1','and2'], rule:'Both inputs must be 1.', apply:(a,b) => a & b},
+  or:{pins:['or1','or2'], rule:'At least one input must be 1. Both is fine.', apply:(a,b) => a | b},
+  xor:{pins:['xor1','xor2'], rule:'Exactly one input must be 1. Both gives 0.', apply:(a,b) => a ^ b}
+};
+const twoSwitches = {a:'A', b:'B'};
+function gateLesson(gate, lesson) {
+  const [first,second] = gateRules[gate].pins;
+  return {
+    ...lesson, inputs:twoSwitches, lamps:{light:'Lamp'}, gates:[gate],
+    wiring:{[first]:'a', [second]:'b', light:gate}
+  };
+}
+const stages = [
+  {
+    title:'Circuit Dash',
+    goal:'Learn to read, wire and repair simple circuits, one step at a time.'
+  },
+  {
+    title:'Follow the signal', objective:'Turn the lamp on',
+    goal:'A circuit carries values along wires. Here, <strong>1 means on</strong> and <strong>0 means off</strong>.',
+    controls:'Tap <strong>Power</strong> and watch its 1 travel to the lamp. Then check the step.',
+    inputs:{power:'Power'}, lamps:{light:'Lamp'}, gates:[], wiring:{light:'power'}, initial:0,
+    observe:({light}) => light === 1,
+    pass:'The switch sent a 1 down the wire, so the lamp lit.', retry:'Turn Power on and check again.'
+  },
+  {
+    title:'Wire a switch', objective:'Connect the switch to the lamp',
+    goal:'<strong>OUT</strong> sends a value. <strong>IN</strong> receives one. An empty IN has no value yet.',
+    controls:'Tap <strong>OUT</strong> beside Power, then <strong>IN</strong> beside the lamp.',
+    inputs:{power:'Power'}, lamps:{light:'Lamp'}, gates:[], wiring:{light:null}, initial:1,
+    target:({power}) => ({light:power}),
+    pass:'The lamp now receives both 0 and 1 as you flip Power.', retry:'Connect Power OUT directly to the lamp IN.'
+  },
+  gateLesson('and',{
+    title:'The AND gate', objective:'Light the lamp through an AND gate',
+    goal:'A <strong>gate</strong> reads its inputs and applies a rule to decide what to send from OUT. AND sends a 1 only when both inputs are 1.',
+    controls:'Try turning on A by itself. Then turn both switches on and check.',
+    initial:0, observe:({light}) => light === 1,
+    pass:'AND received 1 and 1, so it sent 1.', retry:'AND needs both A and B on at the same time.'
+  }),
+  gateLesson('or',{
+    title:'The OR gate', objective:'Check that OR also lights with both switches on',
+    goal:'<strong>OR</strong> sends a 1 when at least one input is 1. It also sends a 1 when both are 1.',
+    controls:'A is already on. Turn B on as well and check what OR sends.',
+    initial:2, observe:({a,b,light}) => a === 1 && b === 1 && light === 1,
+    pass:'The lamp stayed on. OR accepts one or both inputs on.', retry:'Turn both A and B on and check again.'
+  }),
+  gateLesson('xor',{
+    title:'The XOR gate', objective:'Light the lamp through an XOR gate',
+    goal:'<strong>XOR</strong> sends a 1 when its two inputs differ. With both switches on, XOR sends 0.',
+    controls:'Both switches start on. Turn either one off and see what changes.',
+    initial:3, observe:({light}) => light === 1,
+    pass:'The inputs differ, so XOR sends 1.', retry:'Leave one switch on and one off.'
+  }),
+  {
+    title:'Wire a lamp', objective:'Make either switch light the lamp',
+    goal:'The OR gate is already reading A and B. Its output needs a wire to the lamp.',
+    controls:'Tap <strong>OUT</strong> on OR, then <strong>IN</strong> on the lamp. Check the step to test all four switch settings.',
+    inputs:twoSwitches, lamps:{light:'Lamp'}, gates:['or'],
+    wiring:{or1:'a', or2:'b', light:null}, initial:1,
+    target:({a,b}) => ({light:a | b}),
+    pass:'The lamp matches OR in all four cases.', retry:'If the lamp must respond to both switches, connect OR OUT to it.'
+  },
+  {
+    title:'Connect two gates', objective:'Finish the unlock circuit',
+    goal:'The lock opens when both keys are on, or when Override is on. AND checks the keys first. OR then reads that result and the Override switch.',
+    controls:'Tap <strong>AND OUT</strong>, then <strong>OR IN 2</strong> (the empty lower socket). Keep Override connected to OR IN 1.',
+    inputs:{a:'Key A', b:'Key B', override:'Override'}, lamps:{unlock:'Unlock'}, gates:['and','or'],
+    wiring:{and1:'a', and2:'b', or1:'override', or2:null, unlock:'or'}, initial:6,
+    target:({a,b,override}) => ({unlock:(a & b) | override}),
+    pass:'The keys can now unlock the panel through AND, and Override works on its own.', retry:'Look for the empty lower IN on OR. The AND output should feed that socket.'
+  },
+  {
+    title:'Share a signal', objective:'Make both lamps follow XOR',
+    goal:'One OUT can feed more than one IN. Both wires carry a copy of the same value.',
+    controls:'Left already follows XOR. Connect <strong>XOR OUT</strong> to <strong>Right IN</strong> and watch the wire branch.',
+    inputs:twoSwitches, lamps:{left:'Left', right:'Right'}, gates:['xor'],
+    wiring:{xor1:'a', xor2:'b', left:'xor', right:null}, initial:2,
+    target:({a,b}) => ({left:a ^ b, right:a ^ b}),
+    pass:'Both lamps receive the same XOR result.', retry:'Use the same XOR OUT to feed the second lamp.'
+  },
+  {
+    title:'Fix a fault', objective:'Repair the Ready lamp in one wire move',
+    goal:'This panel checks a hatch. <strong>Badge</strong> is on when it accepts an entry badge. <strong>Seal</strong> is on when the hatch is fully shut and sealed. The <strong>Ready</strong> lamp should light only when both checks pass.',
+    controls:'Try <strong>Test panel</strong> to see a failing case. Use the live explanation to find what each AND input is reading.',
+    inputs:{badge:'Badge', seal:'Seal'}, lamps:{ready:'Ready'}, gates:['and'],
+    wiring:{and1:'badge', and2:'badge', ready:'and'}, initial:2, repair:true,
+    target:({badge,seal}) => ({ready:badge & seal}),
+    pass:'Both switches now have to be on for Ready to light.'
+  }
+];
+const nightShift = {
+    title:'Night Shift', objective:'Fix the panel in one wire move',
+    goal:'The <strong>Entry</strong> lamp should light when the door or window is open. The <strong>Alarm</strong> should light only when an entry is open and the system is armed.',
+    controls:'Test the panel, then trace the signals. To replace a wire, select the new <strong>OUT</strong> and the <strong>IN</strong> it should feed.',
+    inputs:{armed:'Armed', door:'Door', window:'Window'}, lamps:{entry:'Entry', alarm:'Alarm'},
+    gates:['or','and'], repair:true, initial:4,
+    wiring:{or1:'door', or2:'window', and1:'armed', and2:'door', entry:'or', alarm:'and'},
+    target:({armed,door,window}) => ({entry:door | window, alarm:(door | window) & armed}),
+    pass:'Entry and Alarm now work as intended.'
+};
+const lastStep = stages.length - 1;
+const challengeStep = stages.length;
+const progressKey = 'logicdash-circuit-dash-course';
+const previousProgressKey = 'logicdash-circuit-dash-beginner-path';
+const get = id => document.getElementById(id);
+const board = get('board');
+let step, stage, wires, pattern, source, tested, passed, message;
+let unlocked = savedProgress();
+
+function savedProgress() {
+  try {
+    const current = localStorage.getItem(progressKey);
+    if (current !== null) {
+      const value = Number(current);
+      return Number.isInteger(value) && value >= 0 && value <= stages.length ? value : 0;
+    }
+    const previous = localStorage.getItem(previousProgressKey);
+    const value = Number(previous);
+    return previous !== null && Number.isInteger(value) && value >= 1 && value <= lastStep ? value + 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+function completeLevel() {
+  if (step >= stages.length || step < unlocked) return;
+  unlocked = step + 1;
+  try { localStorage.setItem(progressKey, String(unlocked)); } catch {}
+}
+function routeStep() {
+  return location.hash === '#night-shift' ? challengeStep : Math.min(unlocked,lastStep);
+}
+function begin(index) {
+  step = index;
+  stage = step === challengeStep ? nightShift : stages[step];
+  Array.from(get('goal').children).forEach((paragraph, i) => paragraph.classList.toggle('current',i === step));
+  wires = {...stage.wiring};
+  pattern = stage.initial;
+  source = null;
+  tested = false;
+  passed = false;
+  message = '';
+}
+function inputMask(id) {
+  const keys = Object.keys(stage.inputs);
+  return 1 << (keys.length - keys.indexOf(id) - 1);
+}
+
+function inputsFor(index) {
+  return Object.fromEntries(Object.keys(stage.inputs).map(id => [id, Number(Boolean(index & inputMask(id)))]));
+}
+function valuesFor(index, wiring) {
+  const values = inputsFor(index);
+  function value(id) {
+    if (!id) return null;
+    if (id in values) return values[id];
+    const gate = gateRules[id];
+    const [left, right] = gate.pins.map(socket => value(wiring[socket]));
+    return (values[id] = left === null || right === null ? null : gate.apply(left, right));
+  }
+  for (const gate of stage.gates) value(gate);
+  for (const lamp of Object.keys(stage.lamps)) values[lamp] = value(wiring[lamp]);
+  return values;
+}
+function testCases(wiring) {
+  return Array.from({length:2 ** Object.keys(stage.inputs).length}, (_, index) => {
+    const actual = valuesFor(index,wiring);
+    const expected = stage.target(actual);
+    const failed = Object.keys(stage.lamps).filter(lamp => actual[lamp] !== expected[lamp]);
+    return {index, actual, expected, failed};
+  });
+}
+function makesLoop(jack, socket, wiring = wires) {
+  const destination = socket.slice(0,-1);
+  if (!stage.gates.includes(destination)) return false;
+  function dependsOnDestination(id) {
+    return id === destination || (stage.gates.includes(id) && gateRules[id].pins.some(pin => dependsOnDestination(wiring[pin])));
+  }
+  return dependsOnDestination(jack);
+}
+function moveUsed() {
+  return Object.keys(wires).some(key => wires[key] !== stage.wiring[key]);
+}
+function socketName(key) {
+  if (key in stage.lamps) return stage.lamps[key] + ' input';
+  return key.slice(0,-1).toUpperCase() + ' input ' + key.at(-1);
+}
+function sourceName(key) {
+  return stage.inputs[key] ?? key.toUpperCase();
+}
+function signal(value) {
+  return value == null ? '–' : String(value);
+}
+function port(kind, id, value) {
+  const isSource = kind === 'source';
+  const name = isSource ? sourceName(id) + ' output' : socketName(id) + ' socket';
+  const selected = isSource && source === id;
+  const eligible = !isSource && source && wires[id] !== source && !makesLoop(source,id);
+  const pinLabel = isSource ? 'OUT' : ('IN' + (id in stage.lamps ? '' : ' ' + id.at(-1)));
+  return '<button class="port' + (value ? ' on' : '') + (value == null ? ' unfed' : '') +
+    (selected ? ' selected' : '') + (eligible ? ' eligible' : '') +
+    '" data-' + kind + '="' + id + '" aria-label="' + name + ', ' + (value == null ? 'no signal' : value ? 'on' : 'off') + '"' +
+    (isSource ? ' aria-pressed="' + selected + '"' : '') + (!stage.target || moveUsed() ? ' disabled' : '') +
+    '><span class="dot" aria-hidden="true"></span><span class="port-role" aria-hidden="true">' +
+    pinLabel + '</span></button>';
+}
+function render() {
+  const focused = document.activeElement?.dataset;
+  const challenge = step === challengeStep;
+  get('brand').textContent = challenge ? 'CIRCUIT DASH / REPAIR CHALLENGE' : 'CIRCUIT DASH / LEVEL ' + (step+1) + ' OF ' + stages.length;
+  get('levels').hidden = challenge;
+  get('return').hidden = !challenge;
+  get('intro').hidden = step !== 0;
+  get('play').hidden = step === 0;
+  get('finish').hidden = step !== lastStep || unlocked !== stages.length;
+  get('levels').innerHTML = stages.map((level,index) => '<button data-level="' + index + '" aria-label="Level ' +
+    (index+1) + ', ' + level.title + '"' + (index === step ? ' aria-current="step"' : '') +
+    (index > unlocked ? ' disabled' : '') + '>' + (index+1) + '</button>').join('');
+  get('title').textContent = stage.title;
+  if (step === 0) return;
+  const values = valuesFor(pattern,wires);
+  board.classList.toggle('two-gates',stage.gates.length > 1);
+  get('objective').textContent = stage.objective;
+  get('controls').innerHTML = stage.controls;
+  get('test').textContent = stage.repair ? 'Test panel' : 'Check step';
+  get('next').textContent = 'Next level';
+  get('next').hidden = step >= lastStep || !passed;
+  get('inputs').innerHTML = '<span class="label">Switches</span>' + Object.entries(stage.inputs).map(([id,name]) =>
+    '<div class="input"><button class="toggle" data-toggle="' + id + '" aria-pressed="' + Boolean(values[id]) + '">' +
+    name + '<span>' + (values[id] ? 'ON' : 'OFF') + '</span></button>' + port('source',id,values[id]) + '</div>').join('');
+  get('gates').innerHTML = (stage.gates.length ? '<span class="label">Gates</span>' : '') + stage.gates.map(id =>
+    '<div class="gate" data-body="' + id + '"><div class="pins">' +
+    gateRules[id].pins.map(pin => port('socket',pin,values[wires[pin]])).join('') + '</div><span title="' +
+    gateRules[id].rule + '">' + id.toUpperCase() + '</span>' +
+    port('source',id,values[id]) + '</div>').join('');
+  get('lamps').innerHTML = '<span class="label">Lamps</span>' + Object.entries(stage.lamps).map(([id,name]) =>
+    '<div class="lamp' + (values[id] === 1 ? ' lit' : '') + '">' + port('socket',id,values[id]) +
+    '<span class="lamp-body"><span class="bulb" aria-hidden="true"></span>' + name + '<strong>' +
+    (values[id] == null ? 'NO SIGNAL' : values[id] ? 'ON' : 'OFF') + '</strong></span></div>').join('');
+  get('count').textContent = stage.target ? (moveUsed() ? '1' : '0') + ' / 1 move' : '';
+  get('undo').hidden = !stage.target;
+  get('undo').disabled = !moveUsed();
+  const result = get('result');
+  result.dataset.kind = tested ? (passed ? 'win' : 'fail') : '';
+  result.textContent = message || (source ? sourceName(source) + ' OUT selected. Choose a highlighted IN.' :
+    (moveUsed() ? (stage.repair ? 'Wire moved. Test the panel to check your repair.' : 'Wire connected. Check the step to test every switch setting.') : ''));
+  renderReadout(values);
+  get('reference').hidden = !stage.gates.length;
+  get('details').hidden = !stage.repair || !tested;
+  if (stage.repair && tested) renderCases(testCases(wires));
+  else get('details').open = false;
+  if (focused) {
+    const key = ['toggle','source','socket','case'].find(item => focused[item] !== undefined);
+    if (key) {
+      const matching = document.querySelector('[data-' + key + '="' + focused[key] + '"]');
+      if (matching?.disabled) get('test').focus({preventScroll:true});
+      else matching?.focus({preventScroll:true});
+    }
+  }
+  draw();
+}
+function renderReadout(values) {
+  const gateLines = stage.gates.map(id => {
+    const [first,second] = gateRules[id].pins;
+    const describePin = pin => wires[pin] ? sourceName(wires[pin]) + ' (' + signal(values[wires[pin]]) + ')' : 'empty';
+    const output = values[id] == null ? 'waiting for both input values' : signal(values[id]);
+    return '<p><strong>' + id.toUpperCase() + '</strong> reads ' + describePin(first) + ' at IN 1 and ' +
+      describePin(second) + ' at IN 2. <strong>OUT is ' + output + '.</strong> ' + gateRules[id].rule + '</p>';
+  });
+  const lampLines = Object.entries(stage.lamps).map(([id,name]) => {
+    if (!wires[id]) return '<p><strong>' + name + '</strong> has no wire connected.</p>';
+    if (values[id] == null) return '<p><strong>' + name + '</strong> is wired to ' + sourceName(wires[id]) + ' and is waiting for a value.</p>';
+    return '<p><strong>' + name + '</strong> receives ' + signal(values[id]) + ' from ' + sourceName(wires[id]) +
+      ' and is ' + (values[id] ? 'on' : 'off') + '.</p>';
+  });
+  get('readout').innerHTML = '<p><strong>What’s happening now</strong></p>' + gateLines.join('') + lampLines.join('');
+}
+function renderRules() {
+  const rules = Object.entries(gateRules);
+  get('rules').innerHTML = '<p class="controls">A truth table shows the output for every possible pair of inputs.</p>' +
+    '<table><thead><tr><th scope="col">IN 1</th><th scope="col">IN 2</th>' +
+    rules.map(([id]) => '<th scope="col">' + id.toUpperCase() + '</th>').join('') +
+    '</tr></thead><tbody>' + [[0,0],[0,1],[1,0],[1,1]].map(([a,b]) => '<tr><td>' + a + '</td><td>' + b + '</td>' +
+    rules.map(([,gate]) => '<td>' + gate.apply(a,b) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+}
+function renderCases(cases) {
+  const lamps = values => Object.keys(stage.lamps).map(id => signal(values[id])).join(' / ');
+  get('case-label').textContent = 'View all ' + cases.length + ' test cases';
+  get('cases').innerHTML = '<table><thead><tr><th scope="col">' + Object.values(stage.inputs).join(' / ') +
+    '</th><th scope="col">' + Object.values(stage.lamps).join(' / ') + ' target</th><th scope="col">Actual</th></tr></thead><tbody>' +
+    cases.map(({index,actual,expected,failed}) => '<tr><td><button data-case="' + index + '" aria-pressed="' + (index === pattern) + '">' +
+      Object.keys(stage.inputs).map(id => actual[id]).join(' / ') + '</button></td><td>' + lamps(expected) +
+      '</td><td class="' + (failed.length ? 'bad' : '') + '">' + lamps(actual) + '</td></tr>').join('') + '</tbody></table>';
+}
+function draw() {
+  if (step === 0) return;
+  const svg = board.querySelector('svg');
+  const base = svg.getBoundingClientRect();
+  const values = valuesFor(pattern,wires);
+  svg.replaceChildren();
+  for (const [socket,jack] of Object.entries(wires)) {
+    if (!jack) continue;
+    const from = board.querySelector('[data-source="' + jack + '"] .dot').getBoundingClientRect();
+    const to = board.querySelector('[data-socket="' + socket + '"] .dot').getBoundingClientRect();
+    const x = from.right - base.left + 1;
+    const y = (from.top + from.bottom)/2 - base.top;
+    const endX = to.left - base.left - 1;
+    const endY = (to.top + to.bottom)/2 - base.top;
+    const lead = Math.min(20, Math.max(8, (endX-x)*.2));
+    const startTurn = x + lead;
+    const endTurn = endX - lead;
+    const middle = (startTurn + endTurn)/2;
+    let path = 'M ' + x + ' ' + y + ' H ' + startTurn + ' C ' + middle + ' ' + y + ', ' +
+      middle + ' ' + endY + ', ' + endTurn + ' ' + endY + ' H ' + endX;
+    const toGate = socket.slice(0,-1);
+    if (stage.gates.includes(jack) && stage.gates.includes(toGate)) {
+      const fromGate = board.querySelector('[data-body="' + jack + '"]').getBoundingClientRect();
+      const destGate = board.querySelector('[data-body="' + toGate + '"]').getBoundingClientRect();
+      const gap = (fromGate.top < destGate.top ? (fromGate.bottom + destGate.top) :
+        (fromGate.top + destGate.bottom))/2 - base.top;
+      const clearance = base.width < 340 ? 7 : 14;
+      const outsideOut = fromGate.right - base.left + clearance;
+      const outsideIn = destGate.left - base.left - clearance;
+      path = roundedRoute([[x,y],[outsideOut,y],[outsideOut,gap],[outsideIn,gap],[outsideIn,endY],[endX,endY]]);
+    }
+    const moved = jack !== stage.wiring[socket];
+    const line = wirePath(path,moved ? '#ffd080' : '#0c1624',moved ? 4.75 : 5.5);
+    const core = wirePath(path,values[jack] ? '#79efbc' : '#91a4ba',2.4);
+    if (values[jack] == null) core.setAttribute('stroke-dasharray','4 5');
+    svg.append(line,core);
+    if (values[jack] === 1) {
+      const flow = wirePath(path,'#e0ffee',3);
+      flow.setAttribute('class','wire-flow');
+      svg.append(flow);
+    }
+  }
+}
+function roundedRoute(points) {
+  const [firstX,firstY] = points[0];
+  const [lastX,lastY] = points.at(-1);
+  let path = 'M ' + firstX + ' ' + firstY;
+  for (let i = 1; i < points.length - 1; i++) {
+    const [x,y] = points[i];
+    const [px,py] = points[i-1];
+    const [nx,ny] = points[i+1];
+    const radius = Math.min(14,Math.hypot(px-x,py-y)/2,Math.hypot(nx-x,ny-y)/2);
+    if (radius === 0) {
+      path += ' L ' + x + ' ' + y;
+      continue;
+    }
+    const enter = [x + Math.sign(px-x)*radius, y + Math.sign(py-y)*radius];
+    const leave = [x + Math.sign(nx-x)*radius, y + Math.sign(ny-y)*radius];
+    path += ' L ' + enter.join(' ') + ' Q ' + x + ' ' + y + ' ' + leave.join(' ');
+  }
+  return path + ' L ' + lastX + ' ' + lastY;
+}
+function wirePath(path,color,width) {
+  const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+  line.setAttribute('d',path);
+  line.setAttribute('fill','none');
+  line.setAttribute('stroke',color);
+  line.setAttribute('stroke-width',width);
+  line.setAttribute('stroke-linejoin','round');
+  line.setAttribute('stroke-linecap','round');
+  return line;
+}
+function test() {
+  tested = true;
+  source = null;
+  if (!stage.repair) {
+    passed = stage.observe ? stage.observe(valuesFor(pattern,wires)) :
+      testCases(wires).every(row => !row.failed.length);
+    message = passed ? stage.pass : stage.retry;
+    return;
+  }
+  const cases = testCases(wires);
+  const failed = cases.filter(row => row.failed.length);
+  const first = failed[0];
+  passed = !first;
+  if (!first) {
+    message = 'All ' + cases.length + ' cases passed in one move. ' + stage.pass;
+    return;
+  }
+  pattern = first.index;
+  const {actual,expected} = first;
+  const lamp = first.failed[0];
+  const inputState = Object.entries(stage.inputs).map(([id,name]) => name + ' ' + (actual[id] ? 'on' : 'off')).join(', ');
+  const observed = actual[lamp] == null ? 'receives no value' : ('is ' + (actual[lamp] ? 'on' : 'off'));
+  message = (cases.length - failed.length) + '/' + cases.length + ' passed. ' + inputState + '. ' +
+    stage.lamps[lamp] + ' should be ' + (expected[lamp] ? 'on' : 'off') + ' but ' + observed + '.';
+}
+function goToLevel(index) {
+  begin(index);
+  get('details').open = false;
+  render();
+  get('title').focus();
+}
+document.querySelector('main').addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (!button || button.disabled) return;
+  const {toggle,source:jack,socket,case:index,level} = button.dataset;
+  if (toggle) {
+    pattern ^= inputMask(toggle);
+    if (stage.observe) {
+      tested = false;
+      passed = false;
+      message = '';
+    }
+  } else if (index !== undefined) {
+    pattern = Number(index);
+  } else if (level !== undefined && Number(level) <= unlocked && Number(level) !== step) {
+    goToLevel(Number(level));
+    return;
+  } else if (button.id === 'start') {
+    completeLevel();
+    goToLevel(1);
+    return;
+  } else if (button.id === 'test') {
+    test();
+    if (passed) completeLevel();
+  } else if (button.id === 'next' && step < lastStep && passed) {
+    goToLevel(step + 1);
+    return;
+  } else if (button.id === 'undo') {
+    wires = {...stage.wiring};
+    source = null;
+    tested = false;
+    passed = false;
+    message = '';
+  } else if (jack && stage.target && !moveUsed()) {
+    source = source === jack ? null : jack;
+    message = '';
+  } else if (socket && stage.target && !moveUsed()) {
+    if (!source) message = 'Choose an OUT on a switch or gate first.';
+    else if (wires[socket] === source) message = 'That socket already has this signal. Choose another socket.';
+    else if (makesLoop(source,socket)) message = 'That connection would make a loop. Choose another socket.';
+    else {
+      wires[socket] = source;
+      source = null;
+      tested = false;
+      passed = false;
+      message = '';
+    }
+  }
+  render();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && source) {
+    source = null;
+    message = '';
+    render();
+  }
+});
+window.addEventListener('hashchange',() => goToLevel(routeStep()));
+get('goal').innerHTML = [...stages,nightShift].map(level => '<p>' + level.goal + '</p>').join('');
+begin(routeStep());
+renderRules();
+new ResizeObserver(draw).observe(board);
+render();
+</script>
+</body>
+</html>
