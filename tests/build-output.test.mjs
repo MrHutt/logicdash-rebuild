@@ -105,7 +105,7 @@ test("Circuit Dash and Night Shift have separate entry routes and a dedicated st
   assert.match(circuit,/if \(hash === '#night-shift'\)/, "Night Shift must have an independent entry route");
   assert.match(circuit,/id="night-opening"/, "Missing Night Shift introduction");
   assert.match(circuit,/id="night-begin"/, "Missing story CTA");
-  assert.match(circuit,/nightIntroOpen = location\.hash === '#night-shift'/, "Story must open on the Night Shift link");
+  assert.match(circuit,/nightIntroOpen = \(location\.hash === '#night-shift' \|\| location\.hash === '#night-shift-intro'\)/, "Story must remain available through an explicit intro link");
   assert.match(circuit,/return '#night-shift-' \+ level/, "Mission deep links must differ from the story entry");
   assert.match(home,/href="\/circuit-dash\/#night-shift"/, "Homepage Night Shift link should open the story");
 });
@@ -116,7 +116,7 @@ test("Power Failure has a story introduction and separate direct repair routes",
   assert.match(circuit,/id="power-begin"/, "Power Failure begin button is missing");
   assert.match(circuit,/if \(hash === '#power-failure'\)/, "Power Failure chapter entry is missing");
   assert.match(circuit,/return '#power-failure-' \+ chapterLevel/, "Individual repair routes must not conflict with intro");
-  assert.match(circuit,/powerIntroOpen = location\.hash === '#power-failure'/, "Power Failure link must show introduction");
+  assert.match(circuit,/powerIntroOpen = \(location\.hash === '#power-failure' \|\| location\.hash === '#power-failure-intro'\)/, "Power Failure intro remains available after completion");
   assert.match(circuit,/id="night-finish"/, "Night Shift must link to the new chapter");
   assert.match(circuit,/Read the Power Failure briefing/, "Night Shift handover must introduce story");
   assert.match(circuit,/nightUnlocked < nightShift\.length/, "Power Failure requires Night Shift completion");
