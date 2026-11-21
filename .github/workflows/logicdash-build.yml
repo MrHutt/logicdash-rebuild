@@ -1,0 +1,54 @@
+name: LogicDash build and SiteGround package
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: logicdash-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and verify static site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Build from a clean output folder
+        run: |
+          rm -rf dist .astro
+          npm run build
+
+      - name: Verify critical pages, assets and redirects
+        run: node --test tests/build-output.test.mjs
+
+      # upload-artifact downloads as a ZIP whose root contains index.html,
+      # .htaccess, _astro/, quick-byte/, learn/, etc. No nested dist/ folder.
+      # Hidden files MUST be included: otherwise SiteGround loses .htaccess.
+      - name: Prepare SiteGround-ready download
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-artifact@v4
+        with:
+          name: logicdash-siteground-${{ github.run_number }}
+          path: dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
